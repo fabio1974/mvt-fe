@@ -18,7 +18,7 @@ function App() {
         <h1>Moveltrack Systems</h1>
         <p>Bem-vindo à página inicial da Moveltrack Systems.</p>
         <button onClick={() => setCount(count + 1)}>Contador: {count}</button>
-        <p>Este é um projeto base usando React + Vite.</p>
+        <p>Now Pushed using CICD / GitHub Actions.</p>
       </div>
     </>
   );
