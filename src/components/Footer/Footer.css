@@ -1,0 +1,62 @@
+.serra-footer {
+  background: #e8edf1;
+  color: #222;
+  font-family: 'Inter', Arial, sans-serif;
+  padding: 0 0 0 0;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.04);
+}
+
+.footer-container {
+  max-width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 32px;
+}
+
+.footer-logo img {
+  height: 36px;
+}
+
+.footer-links,
+.footer-social {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.footer-links a,
+.footer-social a {
+  color: #222;
+  text-decoration: none;
+  font-size: 1rem;
+  transition: color 0.2s;
+}
+
+.footer-links a:hover,
+.footer-social a:hover {
+  color: #0099ff;
+}
+
+.footer-bottom {
+  text-align: center;
+  padding: 24px 0 8px 0;
+  font-size: 0.95rem;
+  color: #888;
+}
+
+@media (max-width: 900px) {
+  .footer-container {
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 0 8px;
+  }
+  .footer-links,
+  .footer-social {
+    justify-content: center;
+    gap: 16px;
+  }
+}

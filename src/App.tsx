@@ -1,26 +1,18 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
 import "./App.css";
+import Header from "./components/Header/Header";
+import Footer from "./components/Footer/Footer";
+import Home from "./components/Home/Home";
 
 function App() {
-  const [count, setCount] = useState(0);
-
   return (
-    <>
-      <div className="home-page">
-        <img src={reactLogo} alt="React Logo" style={{ height: 80 }} />
-        <img
-          src={viteLogo}
-          alt="Vite Logo"
-          style={{ height: 80, marginLeft: 16 }}
-        />
-        <h1>Moveltrack Systems</h1>
-        <p>Bem-vindo à página inicial da Moveltrack Systems.</p>
-        <button onClick={() => setCount(count + 1)}>Contador: {count}</button>
-        <p>Now Pushed using CICD / GitHub Actions.</p>
-      </div>
-    </>
+    <div
+      className="App"
+      style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
+    >
+      <Header />
+      <Home />
+      <Footer />
+    </div>
   );
 }
 
