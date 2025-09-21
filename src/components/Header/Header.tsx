@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Header.css";
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const navigate = useNavigate();
   return (
     <header className="serra-header">
       <div className="header-container">
@@ -33,13 +35,22 @@ export default function Header() {
           <a href="/organizar-evento-esportivo">Materiais gratuitos</a>
           <a href="/blog">Blog</a>
         </nav>
-        <div className="actions">
+        <div className="actions" style={{ display: "flex", gap: 12 }}>
           <a href="#" className="btn primary">
             Criar evento
           </a>
-          <a href="#" className="btn secondary">
+          <button
+            className="btn secondary"
+            style={{
+              border: "none",
+              background: "none",
+              padding: 0,
+              cursor: "pointer",
+            }}
+            onClick={() => navigate("/login")}
+          >
             Acessar conta
-          </a>
+          </button>
         </div>
         <button
           className="menu-toggle"
@@ -72,13 +83,21 @@ export default function Header() {
           >
             Criar evento
           </a>
-          <a
-            href="#"
+          <button
             className="btn secondary"
-            onClick={() => setMenuOpen(false)}
+            style={{
+              border: "none",
+              background: "none",
+              padding: 0,
+              cursor: "pointer",
+            }}
+            onClick={() => {
+              setMenuOpen(false);
+              navigate("/login");
+            }}
           >
             Acessar conta
-          </a>
+          </button>
         </div>
       )}
     </header>
