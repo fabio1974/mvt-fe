@@ -1,7 +1,6 @@
-import { useNavigate } from "react-router-dom";
+// ...existing code...
 
 export default function LoginForm() {
-  const navigate = useNavigate();
   return (
     <form
       style={{

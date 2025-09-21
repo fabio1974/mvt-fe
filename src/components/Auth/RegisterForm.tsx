@@ -21,8 +21,9 @@ export default function RegisterForm() {
         password,
       });
       setSuccess("Usuário registrado com sucesso!");
-    } catch (err: any) {
-      setError(err?.response?.data?.message || "Erro ao registrar usuário.");
+    } catch (err) {
+      setError("Erro ao registrar usuário.");
+      console.error(err);
     } finally {
       setLoading(false);
     }
