@@ -10,7 +10,6 @@ import Section9 from "./sections/Section9";
 
 import "./Home.css";
 import SectionContainer from "./SectionContainer";
-
 export default function Home() {
   return (
     <main className="serra-home">

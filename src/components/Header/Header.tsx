@@ -5,6 +5,7 @@ import "./Header.css";
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const isMobile = window.innerWidth <= 600;
   return (
     <header className="serra-header">
       <div className="header-container">
@@ -39,18 +40,20 @@ export default function Header() {
           <a href="#" className="btn primary">
             Criar evento
           </a>
-          <button
-            className="btn secondary"
-            style={{
-              border: "none",
-              background: "none",
-              padding: 0,
-              cursor: "pointer",
-            }}
-            onClick={() => navigate("/login")}
-          >
-            Acessar conta
-          </button>
+          {!isMobile && (
+            <button
+              className="btn secondary"
+              style={{
+                border: "none",
+                background: "none",
+                padding: 0,
+                cursor: "pointer",
+              }}
+              onClick={() => navigate("/login")}
+            >
+              Acessar conta
+            </button>
+          )}
         </div>
         <button
           className="menu-toggle"

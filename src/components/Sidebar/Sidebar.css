@@ -1,8 +1,33 @@
+.sidebar-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: none;
+  border: none;
+  color: #222;
+  font-size: 1rem;
+  text-align: left;
+  padding: 10px 24px;
+  width: 100%;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.sidebar-menu-item:hover {
+  background: #f0f8ff;
+  color: #0099ff;
+}
+.sidebar-menu-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 .sidebar {
   width: 220px;
   background: #fff;
   box-shadow: 2px 0 8px rgba(0,0,0,0.06);
   min-height: 100vh;
+  height: 100vh;
   padding: 32px 0 0 0;
   display: flex;
   flex-direction: column;
@@ -13,11 +38,50 @@
   z-index: 100;
 }
 
-.sidebar-title {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #0099ff;
-  margin-bottom: 32px;
+.sidebar-footer {
+  background: #e8edf1;
+  width: 220px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.04);
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  transition: width 0.3s cubic-bezier(.4,0,.2,1);
+}
+.sidebar-footer.collapsed {
+  width: 60px;
+  justify-content: center;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 0 16px 0;
+  width: 100%;
+  justify-content: center;
+}
+.sidebar {
+  width: 220px;
+  background: #fff;
+  box-shadow: 2px 0 8px rgba(0,0,0,0.06);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 100;
+  transition: width 0.3s cubic-bezier(.4,0,.2,1);
+}
+.sidebar.collapsed {
+  width: 60px;
+  left: 0;
 }
 
 .sidebar-nav {
@@ -25,15 +89,46 @@
   flex-direction: column;
   gap: 18px;
   width: 100%;
+  flex: 1;
+  align-items: stretch;
 }
 
-.sidebar-nav button {
+.sidebar-footer {
+  background: #e8edf1;
+  width: 220px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.04);
+  position: fixed;
+  left: 0;
+  bottom: 0;
+}
+.sidebar-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
   background: none;
   border: none;
-  color: #222;
-  font-size: 1rem;
-  text-align: left;
-  padding: 10px 24px;
+  padding: 0;
+  margin: 0;
+}
+.sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+}
+.sidebar-close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding-right: 10px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
   width: 100%;
   border-radius: 8px;
   cursor: pointer;
