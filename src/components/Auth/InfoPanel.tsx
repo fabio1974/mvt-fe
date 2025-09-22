@@ -11,14 +11,14 @@ export default function InfoPanel() {
         alignItems: "center",
       }}
     >
-      <div style={{ maxWidth: 420, width: "100%", textAlign: "left" }}>
-        <h2 style={{ fontWeight: 600, fontSize: "1.3rem", marginBottom: 24 }}>
+      <div style={{ maxWidth: 420, width: "100%" }}>
+        <h2 style={{ fontWeight: 600, fontSize: "1.3rem", marginBottom: 24, textAlign: "center" }}>
           Faça login na sua conta para comprar com mais agilidade
         </h2>
-        <div style={{ color: "#555", fontSize: "1rem", marginBottom: 24 }}>
+        <div style={{ color: "#555", fontSize: "1rem", marginBottom: 24, textAlign: "center" }}>
           Na sua conta da Corridas da Serra, você encontra:
         </div>
-        <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+        <ul style={{ listStyle: "none", padding: "0 0 0 24px", margin: 0 }}>
           <li
             style={{ marginBottom: 16, display: "flex", alignItems: "center" }}
           >

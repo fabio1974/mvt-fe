@@ -34,6 +34,16 @@
   gap: 16px;
 }
 
+.btn.primary {
+  /* default visible */
+}
+
+@media (max-width: 900px) {
+  .actions .btn.primary {
+    display: none !important;
+  }
+}
+
 .btn {
   padding: 8px 20px;
   border-radius: 24px;
@@ -63,8 +73,43 @@
 }
 
 
+
 .mobile-menu {
-  display: none;
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 72px;
+  left: 0;
+  width: 100%;
+  background: #fff;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  z-index: 999;
+  padding: 24px 0;
+  gap: 16px;
+  align-items: center;
+}
+@media (max-width: 900px) {
+  .menu-toggle {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 40px;
+    height: 40px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 1001;
+  }
+  .menu-toggle .bar {
+    width: 24px;
+    height: 3px;
+    background: #0099ff;
+    margin: 3px 0;
+    border-radius: 2px;
+    transition: all 0.2s;
+  }
 }
 
 @media (max-width: 900px) {

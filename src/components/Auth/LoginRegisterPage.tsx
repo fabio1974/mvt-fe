@@ -1,9 +1,10 @@
 import InfoPanel from "./InfoPanel";
 import AuthTabs from "./AuthTabs";
+import "./LoginRegisterPage.css";
 
 export default function LoginRegisterPage() {
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#fafafa" }}>
+    <div className="login-register-layout">
       <InfoPanel />
       <AuthTabs />
     </div>
