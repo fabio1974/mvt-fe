@@ -16,14 +16,21 @@ export default function LoginForm() {
     setError("");
     setSuccess("");
     try {
-      await api.post("/auth/login", {
+      const response = await api.post<{ token: string }>("/auth/login", {
         username: email,
         password,
       });
-      setSuccess("Login realizado com sucesso!");
-      setTimeout(() => {
-        navigate("/");
-      }, 1000);
+      // Supondo que o token venha em response.data.token
+      if (response.data && response.data.token) {
+        localStorage.setItem("authToken", response.data.token);
+        setSuccess("Login realizado com sucesso!");
+        setTimeout(() => {
+          navigate("/");
+          window.location.reload(); // recarrega para atualizar estado global
+        }, 1000);
+      } else {
+        setError("Token não recebido. Verifique a resposta da API.");
+      }
     } catch (err) {
       if (
         err &&
