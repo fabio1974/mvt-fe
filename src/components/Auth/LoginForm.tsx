@@ -1,6 +1,54 @@
-// ...existing code...
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { api } from "../../services/api";
 
 export default function LoginForm() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    setSuccess("");
+    try {
+      await api.post("/auth/login", {
+        username: email,
+        password,
+      });
+      setSuccess("Login realizado com sucesso!");
+      setTimeout(() => {
+        navigate("/");
+      }, 1000);
+    } catch (err) {
+      if (
+        err &&
+        typeof err === "object" &&
+        "response" in err &&
+        err.response &&
+        typeof err.response === "object" &&
+        "data" in err.response &&
+        err.response.data &&
+        typeof err.response.data === "object" &&
+        "message" in err.response.data
+      ) {
+        setError(
+          typeof err.response.data.message === "string"
+            ? err.response.data.message
+            : "Erro ao fazer login."
+        );
+      } else {
+        setError("Erro ao fazer login.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <form
       style={{
@@ -10,6 +58,7 @@ export default function LoginForm() {
         flexDirection: "column",
         gap: 20,
       }}
+      onSubmit={handleSubmit}
     >
       <label style={{ textAlign: "left", fontWeight: 500, marginBottom: 4 }}>
         E-mail *
@@ -17,6 +66,8 @@ export default function LoginForm() {
           type="email"
           placeholder="Digite seu e-mail"
           required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           style={{
             width: "100%",
             padding: 12,
@@ -32,6 +83,8 @@ export default function LoginForm() {
           type="password"
           placeholder="Digite sua senha"
           required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
           style={{
             width: "100%",
             padding: 12,
@@ -54,9 +107,16 @@ export default function LoginForm() {
           marginTop: 8,
           cursor: "pointer",
         }}
+        disabled={loading}
       >
-        Acessar conta
+        {loading ? "Enviando..." : "Acessar conta"}
       </button>
+      {error && (
+        <div style={{ color: "#e74c3c", textAlign: "left" }}>{error}</div>
+      )}
+      {success && (
+        <div style={{ color: "#2ecc40", textAlign: "left" }}>{success}</div>
+      )}
       <div style={{ textAlign: "center", marginTop: 8 }}>
         Esqueceu sua senha?{" "}
         <a href="#" style={{ color: "#ff9900" }}>
