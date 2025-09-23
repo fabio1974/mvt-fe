@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { canCreateEvents } from "../../utils/auth";
 import "./Header.css";
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
   const isMobile = window.innerWidth <= 600;
+  const userCanCreateEvents = canCreateEvents();
   return (
     <header className="serra-header">
       <div className="header-container">
@@ -37,9 +39,11 @@ export default function Header() {
           <a href="/blog">Blog</a>
         </nav>
         <div className="actions" style={{ display: "flex", gap: 12 }}>
-          <a href="#" className="btn primary">
-            Criar evento
-          </a>
+          {userCanCreateEvents && (
+            <a href="#" className="btn primary">
+              Criar evento
+            </a>
+          )}
           {!isMobile && (
             <button
               className="btn secondary"
@@ -79,13 +83,15 @@ export default function Header() {
           <a href="/blog" onClick={() => setMenuOpen(false)}>
             Blog
           </a>
-          <a
-            href="#"
-            className="btn primary"
-            onClick={() => setMenuOpen(false)}
-          >
-            Criar evento
-          </a>
+          {userCanCreateEvents && (
+            <a
+              href="#"
+              className="btn primary"
+              onClick={() => setMenuOpen(false)}
+            >
+              Criar evento
+            </a>
+          )}
           <button
             className="btn secondary"
             style={{

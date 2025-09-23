@@ -3,6 +3,9 @@ import Header from "./components/Header/Header";
 import Footer from "./components/Footer/Footer";
 import Home from "./components/Home/Home";
 import LoginRegisterPage from "./components/Auth/LoginRegisterPage";
+import CreateEventPage from "./components/Events/CreateEventPage";
+import MyEventsPage from "./components/Events/MyEventsPage";
+import OrganizationPage from "./components/Organization/OrganizationPage";
 import Sidebar from "./components/Sidebar/Sidebar";
 import { Routes, Route } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -55,6 +58,9 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<LoginRegisterPage />} />
+          <Route path="/criar-evento" element={<CreateEventPage />} />
+          <Route path="/meus-eventos" element={<MyEventsPage />} />
+          <Route path="/organizacao" element={<OrganizationPage />} />
         </Routes>
         <Footer />
       </div>

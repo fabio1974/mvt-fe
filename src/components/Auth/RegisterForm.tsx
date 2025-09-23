@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { api } from "../../services/api";
 
 export default function RegisterForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState("USER");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -19,6 +20,7 @@ export default function RegisterForm() {
         name,
         email,
         password,
+        role: role || "USER",
       });
       setSuccess("Usuário registrado com sucesso!");
     } catch (err) {
@@ -44,7 +46,7 @@ export default function RegisterForm() {
         Nome *
         <input
           type="text"
-          placeholder="Digite seu primeiro nome"
+          placeholder="Digite seu nome completo"
           required
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -57,7 +59,7 @@ export default function RegisterForm() {
           }}
         />
       </label>
-      {/* ...other fields as before, omitted for brevity... */}
+
       <label style={{ textAlign: "left", fontWeight: 500, marginBottom: 4 }}>
         E-mail *
         <input
@@ -75,6 +77,7 @@ export default function RegisterForm() {
           }}
         />
       </label>
+
       <label style={{ textAlign: "left", fontWeight: 500, marginBottom: 4 }}>
         Senha *
         <input
@@ -92,7 +95,25 @@ export default function RegisterForm() {
           }}
         />
       </label>
-      {/* ...other fields as before, omitted for brevity... */}
+
+      <label style={{ textAlign: "left", fontWeight: 500, marginBottom: 4 }}>
+        Tipo de Usuário
+        <select
+          value={role}
+          onChange={(e) => setRole(e.target.value)}
+          style={{
+            width: "100%",
+            padding: 12,
+            marginTop: 4,
+            borderRadius: 8,
+            border: "1px solid #ddd",
+          }}
+        >
+          <option value="USER">Atleta</option>
+          <option value="ORGANIZER">Organizador</option>
+        </select>
+      </label>
+
       <button
         type="submit"
         style={{
@@ -110,6 +131,7 @@ export default function RegisterForm() {
       >
         {loading ? "Enviando..." : "Cadastrar"}
       </button>
+
       {error && (
         <div style={{ color: "#e74c3c", textAlign: "left" }}>{error}</div>
       )}

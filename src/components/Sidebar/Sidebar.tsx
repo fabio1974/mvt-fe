@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import React from "react";
+import { canCreateEvents, getUserName, getUserRole } from "../../utils/auth";
 import "./Sidebar.css";
 
 const menuItems = [
@@ -44,6 +45,27 @@ const menuItems = [
       </svg>
     ),
     path: "/criar-evento",
+  },
+  {
+    label: "Organização",
+    icon: (
+      <svg
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M3 21h18M5 21V7l8-4v18M19 21v-5h-6v5"
+          stroke="#0099ff"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    ),
+    path: "/organizacao",
   },
   {
     label: "Minhas inscrições",
@@ -135,16 +157,30 @@ interface SidebarProps {
 
 export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
   const navigate = useNavigate();
-  // Get user email from localStorage (set on login/register)
-  const userEmail = localStorage.getItem("userEmail") || "";
+  // Get user name from JWT token
+  const userName = getUserName() || "";
+  const userCanCreateEvents = canCreateEvents();
+  const userRole = getUserRole();
+
+  // Filtrar itens do menu baseado nas permissões do usuário
+  const filteredMenuItems = menuItems.filter((item) => {
+    if (item.label === "Criar evento") {
+      return userCanCreateEvents;
+    }
+    if (item.label === "Organização") {
+      return userRole === "ROLE_ORGANIZER";
+    }
+    return true;
+  });
+
   return (
     <aside className={`sidebar${collapsed ? " collapsed" : ""}`}>
       <div className="sidebar-header">
         <img src="/vite.svg" alt="Logo" className="sidebar-logo" />
-        {!collapsed && <span className="sidebar-site-name">{userEmail}</span>}
+        {!collapsed && <span className="sidebar-site-name">{userName}</span>}
       </div>
       <nav className="sidebar-nav">
-        {menuItems.map((item) => (
+        {filteredMenuItems.map((item) => (
           <button
             key={item.label}
             onClick={() => navigate(item.path)}
