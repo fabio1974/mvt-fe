@@ -139,3 +139,41 @@
   background: #f0f8ff;
   color: #0099ff;
 }
+
+/* Estilos responsivos para mobile */
+@media (max-width: 600px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    width: 60px !important;
+    height: 100vh;
+    box-shadow: 2px 0 12px rgba(0,0,0,0.15);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  
+  .sidebar.mobile-visible {
+    transform: translateX(0);
+  }
+  
+  /* Overlay para fechar o sidebar */
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+  
+  .sidebar-overlay.visible {
+    opacity: 1;
+    visibility: visible;
+  }
+}

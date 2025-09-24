@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import React from "react";
-import { canCreateEvents, getUserName, getUserRole } from "../../utils/auth";
+import { getUserName, getUserRole } from "../../utils/auth";
 import "./Sidebar.css";
 
 const menuItems = [
@@ -153,28 +153,41 @@ const menuItems = [
 interface SidebarProps {
   collapsed: boolean;
   setCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
+  isMobile?: boolean;
+  visible?: boolean;
+  onClose?: () => void;
 }
 
-export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
+export default function Sidebar({ collapsed, setCollapsed, isMobile = false, visible = true, onClose }: SidebarProps) {
   const navigate = useNavigate();
   // Get user name from JWT token
   const userName = getUserName() || "";
-  const userCanCreateEvents = canCreateEvents();
   const userRole = getUserRole();
 
   // Filtrar itens do menu baseado nas permissões do usuário
   const filteredMenuItems = menuItems.filter((item) => {
-    if (item.label === "Criar evento") {
-      return userCanCreateEvents;
-    }
-    if (item.label === "Organização") {
-      return userRole === "ROLE_ORGANIZER";
+    // Menus exclusivos para organizadores e admins
+    if (
+      item.label === "Criar evento" ||
+      item.label === "Meus eventos" ||
+      item.label === "Organização"
+    ) {
+      return userRole === "ROLE_ORGANIZER" || userRole === "ROLE_ADMIN";
     }
     return true;
   });
 
   return (
-    <aside className={`sidebar${collapsed ? " collapsed" : ""}`}>
+    <>
+      {/* Overlay para mobile */}
+      {isMobile && visible && (
+        <div 
+          className={`sidebar-overlay ${visible ? 'visible' : ''}`}
+          onClick={onClose}
+        />
+      )}
+      
+      <aside className={`sidebar${collapsed ? " collapsed" : ""}${isMobile && visible ? " mobile-visible" : ""}`}>
       <div className="sidebar-header">
         <img src="/vite.svg" alt="Logo" className="sidebar-logo" />
         {!collapsed && <span className="sidebar-site-name">{userName}</span>}
@@ -269,5 +282,6 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
         </span>
       </div>
     </aside>
+    </>
   );
 }

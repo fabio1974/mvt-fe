@@ -6,15 +6,20 @@
   margin: 0 15px;
   text-align: center;
   display: flex;
-  flex-direction: column;
+  flex-direction: column; 
   align-items: center;
+  max-width: 98%;
+  width: 100%;
+  box-sizing: border-box;
+  position: relative;
+  overflow: hidden;
 }
 .serra-home {
   display: flex;
   flex-direction: column;
   gap: 10px;
   padding: 10px;
-  background: #f4f7fa;
+  background: #ffffff;
 }
 
 
