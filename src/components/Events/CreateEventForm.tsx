@@ -2,6 +2,16 @@ import React, { useState, useEffect } from "react";
 import { api } from "../../services/api";
 import { useNavigate } from "react-router-dom";
 import { hasOrganization, getOrganizationId } from "../../utils/auth";
+import { FiCalendar } from "react-icons/fi";
+import {
+  FormContainer,
+  FormRow,
+  FormField,
+  FormInput,
+  FormSelect,
+  FormActions,
+  FormButton,
+} from "../Common/FormComponents";
 
 export default function CreateEventForm() {
   const [name, setName] = useState("");
@@ -76,256 +86,208 @@ export default function CreateEventForm() {
     }
   };
 
-  const inputStyle = {
-    width: "100%",
-    padding: 12,
-    marginTop: 4,
-    borderRadius: 8,
-    border: "1px solid #ddd",
-    fontSize: "1rem",
-  };
+  const eventTypeOptions = [
+    { value: "RUNNING", label: "Corrida" },
+    { value: "CYCLING", label: "Ciclismo" },
+    { value: "TRIATHLON", label: "Triathlon" },
+    { value: "SWIMMING", label: "Natação" },
+    { value: "OTHER", label: "Outro" },
+  ];
 
-  const labelStyle = {
-    textAlign: "left" as const,
-    fontWeight: 500,
-    marginBottom: 4,
-    display: "block",
-  };
+  const statusOptions = [
+    { value: "DRAFT", label: "Rascunho" },
+    { value: "PUBLISHED", label: "Publicado" },
+    { value: "CANCELLED", label: "Cancelado" },
+  ];
 
   return (
-    <div style={{ maxWidth: 600, margin: "0 auto", padding: "20px" }}>
-      <h2
-        style={{
-          textAlign: "center",
-          marginBottom: 32,
-          color: "#0099ff",
-          fontSize: "1.8rem",
-        }}
-      >
-        Criar Novo Evento Esportivo
-      </h2>
-
-      <form
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 16,
-        }}
-        onSubmit={handleSubmit}
-      >
-        <label style={labelStyle}>
-          Nome do Evento *
-          <input
-            type="text"
-            placeholder="Digite o nome do evento"
-            required
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            style={inputStyle}
-          />
-        </label>
-
-        <label style={labelStyle}>
-          Descrição *
-          <textarea
-            placeholder="Descreva o evento"
-            required
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={4}
-            style={inputStyle}
-          />
-        </label>
-
-        <div
-          style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}
+    <div
+      style={{
+        minHeight: "calc(100vh - 160px)",
+        padding: "40px 20px",
+        backgroundColor: "#f8f9fa",
+      }}
+    >
+      <div style={{ maxWidth: 800, margin: "0 auto" }}>
+        <FormContainer
+          title="Criar Novo Evento Esportivo"
+          icon={<FiCalendar />}
         >
-          <label style={labelStyle}>
-            Data do Evento *
-            <input
-              type="datetime-local"
-              required
-              value={eventDate}
-              onChange={(e) => setEventDate(e.target.value)}
-              style={inputStyle}
-            />
-          </label>
+          <form onSubmit={handleSubmit}>
+            {/* Nome e Descrição */}
+            <FormRow columns={1}>
+              <FormField label="Nome do Evento" required>
+                <FormInput
+                  type="text"
+                  placeholder="Digite o nome do evento"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                />
+              </FormField>
+            </FormRow>
 
-          <label style={labelStyle}>
-            Tipo de Evento *
-            <select
-              required
-              value={eventType}
-              onChange={(e) => setEventType(e.target.value)}
-              style={inputStyle}
-            >
-              <option value="RUNNING">Corrida</option>
-              <option value="CYCLING">Ciclismo</option>
-              <option value="TRIATHLON">Triathlon</option>
-              <option value="SWIMMING">Natação</option>
-              <option value="OTHER">Outro</option>
-            </select>
-          </label>
-        </div>
+            <FormRow columns={1}>
+              <FormField label="Descrição" required>
+                <textarea
+                  className="form-input"
+                  placeholder="Descreva o evento"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={4}
+                  required
+                />
+              </FormField>
+            </FormRow>
 
-        <div
-          style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}
-        >
-          <label style={labelStyle}>
-            Início das Inscrições *
-            <input
-              type="datetime-local"
-              required
-              value={registrationStart}
-              onChange={(e) => setRegistrationStart(e.target.value)}
-              style={inputStyle}
-            />
-          </label>
+            {/* Data do Evento e Tipo */}
+            <FormRow columns={2}>
+              <FormField label="Data do Evento" required>
+                <FormInput
+                  type="datetime-local"
+                  value={eventDate}
+                  onChange={(e) => setEventDate(e.target.value)}
+                  required
+                />
+              </FormField>
+              <FormField label="Tipo de Evento" required>
+                <FormSelect
+                  value={eventType}
+                  onChange={(e) => setEventType(e.target.value)}
+                  options={eventTypeOptions}
+                  required
+                />
+              </FormField>
+            </FormRow>
 
-          <label style={labelStyle}>
-            Fim das Inscrições *
-            <input
-              type="datetime-local"
-              required
-              value={registrationEnd}
-              onChange={(e) => setRegistrationEnd(e.target.value)}
-              style={inputStyle}
-            />
-          </label>
-        </div>
+            {/* Período das Inscrições */}
+            <FormRow columns={2}>
+              <FormField label="Início das Inscrições" required>
+                <FormInput
+                  type="datetime-local"
+                  value={registrationStart}
+                  onChange={(e) => setRegistrationStart(e.target.value)}
+                  required
+                />
+              </FormField>
+              <FormField label="Fim das Inscrições" required>
+                <FormInput
+                  type="datetime-local"
+                  value={registrationEnd}
+                  onChange={(e) => setRegistrationEnd(e.target.value)}
+                  required
+                />
+              </FormField>
+            </FormRow>
 
-        <label style={labelStyle}>
-          Local do Evento *
-          <input
-            type="text"
-            placeholder="Endereço ou local do evento"
-            required
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            style={inputStyle}
-          />
-        </label>
+            {/* Local do Evento */}
+            <FormRow columns={1}>
+              <FormField label="Local do Evento" required>
+                <FormInput
+                  type="text"
+                  placeholder="Endereço ou local do evento"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  required
+                />
+              </FormField>
+            </FormRow>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr 1fr",
-            gap: 16,
-          }}
-        >
-          <label style={labelStyle}>
-            Cidade *
-            <input
-              type="text"
-              placeholder="Cidade"
-              required
-              value={city}
-              onChange={(e) => setCity(e.target.value)}
-              style={inputStyle}
-            />
-          </label>
+            {/* Cidade */}
+            <FormRow columns={1}>
+              <FormField label="Cidade" required>
+                <FormInput
+                  type="text"
+                  placeholder="Cidade"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  required
+                />
+              </FormField>
+            </FormRow>
 
-          <label style={labelStyle}>
-            Estado *
-            <input
-              type="text"
-              placeholder="Estado/UF"
-              required
-              value={state}
-              onChange={(e) => setState(e.target.value)}
-              style={inputStyle}
-            />
-          </label>
+            {/* Estado e País */}
+            <FormRow columns={2}>
+              <FormField label="Estado" required>
+                <FormInput
+                  type="text"
+                  placeholder="Estado/UF"
+                  value={state}
+                  onChange={(e) => setState(e.target.value)}
+                  required
+                />
+              </FormField>
+              <FormField label="País" required>
+                <FormInput
+                  type="text"
+                  value={country}
+                  onChange={(e) => setCountry(e.target.value)}
+                  required
+                />
+              </FormField>
+            </FormRow>
 
-          <label style={labelStyle}>
-            País *
-            <input
-              type="text"
-              required
-              value={country}
-              onChange={(e) => setCountry(e.target.value)}
-              style={inputStyle}
-            />
-          </label>
-        </div>
+            {/* Máximo de Participantes e Status */}
+            <FormRow columns={2}>
+              <FormField label="Máximo de Participantes">
+                <FormInput
+                  type="number"
+                  placeholder="Ex: 500"
+                  value={maxParticipants}
+                  onChange={(e) => setMaxParticipants(e.target.value)}
+                  min="1"
+                />
+              </FormField>
+              <FormField label="Status" required>
+                <FormSelect
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  options={statusOptions}
+                  required
+                />
+              </FormField>
+            </FormRow>
 
-        <div
-          style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}
-        >
-          <label style={labelStyle}>
-            Máximo de Participantes
-            <input
-              type="number"
-              placeholder="Ex: 500"
-              value={maxParticipants}
-              onChange={(e) => setMaxParticipants(e.target.value)}
-              style={inputStyle}
-              min="1"
-            />
-          </label>
+            {/* Mensagens de erro e sucesso */}
+            {error && (
+              <div
+                style={{
+                  padding: 12,
+                  backgroundColor: "#ffe6e6",
+                  color: "#d32f2f",
+                  borderRadius: 8,
+                  border: "1px solid #ffcdd2",
+                  marginTop: "1rem",
+                }}
+              >
+                {error}
+              </div>
+            )}
 
-          <label style={labelStyle}>
-            Status *
-            <select
-              required
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              style={inputStyle}
-            >
-              <option value="DRAFT">Rascunho</option>
-              <option value="PUBLISHED">Publicado</option>
-              <option value="CANCELLED">Cancelado</option>
-            </select>
-          </label>
-        </div>
+            {success && (
+              <div
+                style={{
+                  padding: 12,
+                  backgroundColor: "#e8f5e8",
+                  color: "#2e7d32",
+                  borderRadius: 8,
+                  border: "1px solid #c8e6c9",
+                  marginTop: "1rem",
+                }}
+              >
+                {success}
+              </div>
+            )}
 
-        {error && (
-          <div
-            style={{
-              padding: 12,
-              backgroundColor: "#ffe6e6",
-              color: "#d32f2f",
-              borderRadius: 8,
-              border: "1px solid #ffcdd2",
-            }}
-          >
-            {error}
-          </div>
-        )}
-
-        {success && (
-          <div
-            style={{
-              padding: 12,
-              backgroundColor: "#e8f5e8",
-              color: "#2e7d32",
-              borderRadius: 8,
-              border: "1px solid #c8e6c9",
-            }}
-          >
-            {success}
-          </div>
-        )}
-
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            padding: 16,
-            backgroundColor: loading ? "#ccc" : "#0099ff",
-            color: "white",
-            border: "none",
-            borderRadius: 8,
-            fontSize: "1rem",
-            fontWeight: 600,
-            cursor: loading ? "not-allowed" : "pointer",
-            transition: "background-color 0.2s",
-            marginTop: 8,
-          }}
-        >
-          {loading ? "Criando..." : "Criar Evento"}
-        </button>
-      </form>
+            {/* Botão de Submit */}
+            <FormActions>
+              <FormButton type="submit" disabled={loading} variant="primary">
+                {loading ? "Criando..." : "Criar Evento"}
+              </FormButton>
+            </FormActions>
+          </form>
+        </FormContainer>
+      </div>
     </div>
   );
 }

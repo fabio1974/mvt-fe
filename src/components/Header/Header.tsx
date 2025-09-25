@@ -10,14 +10,20 @@ interface HeaderProps {
   sidebarVisible?: boolean;
 }
 
-export default function Header({ isMobile: propIsMobile, isLoggedIn: propIsLoggedIn, onToggleSidebar, sidebarVisible }: HeaderProps = {}) {
+export default function Header({
+  isMobile: propIsMobile,
+  isLoggedIn: propIsLoggedIn,
+  onToggleSidebar,
+  sidebarVisible,
+}: HeaderProps = {}) {
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
   const isMobile = propIsMobile ?? window.innerWidth <= 600;
   const userCanCreateEvents = canCreateEvents();
 
   // Informações do usuário logado
-  const isLoggedIn = propIsLoggedIn ?? Boolean(localStorage.getItem("authToken"));
+  const isLoggedIn =
+    propIsLoggedIn ?? Boolean(localStorage.getItem("authToken"));
   const userName = getUserName();
   const userRole = getUserRole();
 
@@ -65,19 +71,13 @@ export default function Header({ isMobile: propIsMobile, isLoggedIn: propIsLogge
             xmlns="http://www.w3.org/2000/svg"
             style={{ color: "#0099ff" }}
           >
-            <circle cx="12" cy="4" r="2" fill="currentColor"/>
-            <path 
-              d="M10.5 7.5L9 9l3 7 2-1-1.5-4.5L15 12l2-1-2.5-2.5-1.5-1z" 
+            <circle cx="12" cy="4" r="2" fill="currentColor" />
+            <path
+              d="M10.5 7.5L9 9l3 7 2-1-1.5-4.5L15 12l2-1-2.5-2.5-1.5-1z"
               fill="currentColor"
             />
-            <path 
-              d="M7 21l2-4 1.5 1L9 21z" 
-              fill="currentColor"
-            />
-            <path 
-              d="M17 21l-2-4-1.5 1L15 21z" 
-              fill="currentColor"
-            />
+            <path d="M7 21l2-4 1.5 1L9 21z" fill="currentColor" />
+            <path d="M17 21l-2-4-1.5 1L15 21z" fill="currentColor" />
           </svg>
         );
       default:
@@ -130,7 +130,7 @@ export default function Header({ isMobile: propIsMobile, isLoggedIn: propIsLogge
               cursor: "pointer",
               marginRight: "16px",
               transition: "all 0.2s ease",
-              boxShadow: "0 2px 4px rgba(0,0,0,0.05)"
+              boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
             }}
             onMouseEnter={(e) => {
               if (!sidebarVisible) {
@@ -152,13 +152,34 @@ export default function Header({ isMobile: propIsMobile, isLoggedIn: propIsLogge
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <rect x="3" y="6" width="18" height="2" fill={sidebarVisible ? "#0099ff" : "#6b7280"} rx="1"/>
-              <rect x="3" y="11" width="18" height="2" fill={sidebarVisible ? "#0099ff" : "#6b7280"} rx="1"/>
-              <rect x="3" y="16" width="18" height="2" fill={sidebarVisible ? "#0099ff" : "#6b7280"} rx="1"/>
+              <rect
+                x="3"
+                y="6"
+                width="18"
+                height="2"
+                fill={sidebarVisible ? "#0099ff" : "#6b7280"}
+                rx="1"
+              />
+              <rect
+                x="3"
+                y="11"
+                width="18"
+                height="2"
+                fill={sidebarVisible ? "#0099ff" : "#6b7280"}
+                rx="1"
+              />
+              <rect
+                x="3"
+                y="16"
+                width="18"
+                height="2"
+                fill={sidebarVisible ? "#0099ff" : "#6b7280"}
+                rx="1"
+              />
             </svg>
           </button>
         )}
-        
+
         <a
           href="/"
           className="logo"
@@ -183,7 +204,6 @@ export default function Header({ isMobile: propIsMobile, isLoggedIn: propIsLogge
         </a>
         <nav className={`nav ${menuOpen ? "open" : ""}`}>
           <a href="/eventos">Encontrar Competições</a>
-          <a href="/organizar-evento-esportivo">Materiais gratuitos</a>
           <a href="/blog">Blog</a>
         </nav>
         <div
@@ -272,12 +292,6 @@ export default function Header({ isMobile: propIsMobile, isLoggedIn: propIsLogge
         <div className="mobile-menu">
           <a href="/eventos" onClick={() => setMenuOpen(false)}>
             Encontrar Competições
-          </a>
-          <a
-            href="/organizar-evento-esportivo"
-            onClick={() => setMenuOpen(false)}
-          >
-            Materiais gratuitos
           </a>
           <a href="/blog" onClick={() => setMenuOpen(false)}>
             Blog

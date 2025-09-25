@@ -17,6 +17,26 @@
   background: #f0f8ff;
   color: #0099ff;
 }
+
+/* Item Admin com destaque especial */
+.sidebar-menu-item[data-item="Admin"] {
+  background: linear-gradient(135deg, #ff6b35, #f7931e);
+  color: white;
+  font-weight: 600;
+  margin: 8px 16px;
+  box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+}
+
+.sidebar-menu-item[data-item="Admin"]:hover {
+  background: linear-gradient(135deg, #ff5722, #e68900);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(255, 107, 53, 0.4);
+}
+
+.sidebar-menu-item[data-item="Admin"] svg path {
+  stroke: white !important;
+}
 .sidebar-menu-label {
   white-space: nowrap;
   overflow: hidden;

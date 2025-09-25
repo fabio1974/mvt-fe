@@ -1,151 +1,45 @@
 import { useNavigate } from "react-router-dom";
 import React from "react";
 import { getUserName, getUserRole } from "../../utils/auth";
+import { 
+  FiCalendar, 
+  FiPlus, 
+  FiSettings, 
+  FiBookmark, 
+  FiShield, 
+  FiUser 
+} from "react-icons/fi";
 import "./Sidebar.css";
 
 const menuItems = [
   {
     label: "Meus eventos",
-    icon: (
-      <svg
-        width="22"
-        height="22"
-        viewBox="0 0 24 24"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M4 4h16v16H4V4z"
-          stroke="#0099ff"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
+    icon: <FiCalendar size={22} color="#0099ff" />,
     path: "/meus-eventos",
   },
   {
     label: "Criar evento",
-    icon: (
-      <svg
-        width="22"
-        height="22"
-        viewBox="0 0 24 24"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M12 5v14M5 12h14"
-          stroke="#0099ff"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
+    icon: <FiPlus size={22} color="#0099ff" />,
     path: "/criar-evento",
   },
   {
     label: "Organização",
-    icon: (
-      <svg
-        width="22"
-        height="22"
-        viewBox="0 0 24 24"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M3 21h18M5 21V7l8-4v18M19 21v-5h-6v5"
-          stroke="#0099ff"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
+    icon: <FiSettings size={22} color="#0099ff" />,
     path: "/organizacao",
   },
   {
     label: "Minhas inscrições",
-    icon: (
-      <svg
-        width="22"
-        height="22"
-        viewBox="0 0 24 24"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <circle
-          cx="12"
-          cy="12"
-          r="8"
-          stroke="#0099ff"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M8 12h8"
-          stroke="#0099ff"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
+    icon: <FiBookmark size={22} color="#0099ff" />,
     path: "/inscricoes",
   },
   {
-    label: "Favoritos",
-    icon: (
-      <svg
-        width="22"
-        height="22"
-        viewBox="0 0 24 24"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"
-          stroke="#0099ff"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
-    path: "/favoritos",
+    label: "Eventos",
+    icon: <FiShield size={22} color="#0099ff" />,
+    path: "/admin/eventos",
   },
   {
     label: "Dados pessoais",
-    icon: (
-      <svg
-        width="22"
-        height="22"
-        viewBox="0 0 24 24"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <circle
-          cx="12"
-          cy="8"
-          r="4"
-          stroke="#0099ff"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M4 20v-1a7 7 0 0114 0v1"
-          stroke="#0099ff"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
+    icon: <FiUser size={22} color="#0099ff" />,
     path: "/dados-pessoais",
   },
 ];
@@ -158,7 +52,13 @@ interface SidebarProps {
   onClose?: () => void;
 }
 
-export default function Sidebar({ collapsed, setCollapsed, isMobile = false, visible = true, onClose }: SidebarProps) {
+export default function Sidebar({
+  collapsed,
+  setCollapsed,
+  isMobile = false,
+  visible = true,
+  onClose,
+}: SidebarProps) {
   const navigate = useNavigate();
   // Get user name from JWT token
   const userName = getUserName() || "";
@@ -174,6 +74,12 @@ export default function Sidebar({ collapsed, setCollapsed, isMobile = false, vis
     ) {
       return userRole === "ROLE_ORGANIZER" || userRole === "ROLE_ADMIN";
     }
+
+    // Menu exclusivo para admins
+    if (item.label === "Eventos") {
+      return userRole === "ROLE_ADMIN";
+    }
+
     return true;
   });
 
@@ -181,107 +87,112 @@ export default function Sidebar({ collapsed, setCollapsed, isMobile = false, vis
     <>
       {/* Overlay para mobile */}
       {isMobile && visible && (
-        <div 
-          className={`sidebar-overlay ${visible ? 'visible' : ''}`}
+        <div
+          className={`sidebar-overlay ${visible ? "visible" : ""}`}
           onClick={onClose}
         />
       )}
-      
-      <aside className={`sidebar${collapsed ? " collapsed" : ""}${isMobile && visible ? " mobile-visible" : ""}`}>
-      <div className="sidebar-header">
-        <img src="/vite.svg" alt="Logo" className="sidebar-logo" />
-        {!collapsed && <span className="sidebar-site-name">{userName}</span>}
-      </div>
-      <nav className="sidebar-nav">
-        {filteredMenuItems.map((item) => (
+
+      <aside
+        className={`sidebar${collapsed ? " collapsed" : ""}${
+          isMobile && visible ? " mobile-visible" : ""
+        }`}
+      >
+        <div className="sidebar-header">
+          <img src="/vite.svg" alt="Logo" className="sidebar-logo" />
+          {!collapsed && <span className="sidebar-site-name">{userName}</span>}
+        </div>
+        <nav className="sidebar-nav">
+          {filteredMenuItems.map((item) => (
+            <button
+              key={item.label}
+              onClick={() => navigate(item.path)}
+              className="sidebar-menu-item"
+              data-item={item.label}
+            >
+              {item.icon}
+              {!collapsed && (
+                <span className="sidebar-menu-label">{item.label}</span>
+              )}
+            </button>
+          ))}
           <button
-            key={item.label}
-            onClick={() => navigate(item.path)}
+            onClick={() => {
+              localStorage.removeItem("authToken");
+              navigate("/login");
+              window.location.reload();
+            }}
             className="sidebar-menu-item"
           >
-            {item.icon}
-            {!collapsed && (
-              <span className="sidebar-menu-label">{item.label}</span>
-            )}
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M16 17l-5-5 5-5"
+                stroke="#0099ff"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path
+                d="M19 12H9"
+                stroke="#0099ff"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            {!collapsed && <span className="sidebar-menu-label">Sair</span>}
           </button>
-        ))}
-        <button
-          onClick={() => {
-            localStorage.removeItem("authToken");
-            navigate("/login");
-            window.location.reload();
-          }}
-          className="sidebar-menu-item"
-        >
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
+        </nav>
+        <div className={`sidebar-footer${collapsed ? " collapsed" : ""}`}>
+          <span
+            className="sidebar-close-btn"
+            title="Fechar menu"
+            onClick={() => {
+              setCollapsed(!collapsed);
+            }}
           >
-            <path
-              d="M16 17l-5-5 5-5"
-              stroke="#0099ff"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M19 12H9"
-              stroke="#0099ff"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          {!collapsed && <span className="sidebar-menu-label">Sair</span>}
-        </button>
-      </nav>
-      <div className={`sidebar-footer${collapsed ? " collapsed" : ""}`}>
-        <span
-          className="sidebar-close-btn"
-          title="Fechar menu"
-          onClick={() => {
-            setCollapsed(!collapsed);
-          }}
-        >
-          {collapsed ? (
-            <svg
-              width="32"
-              height="32"
-              viewBox="0 0 32 32"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M12 8L20 16L12 24"
-                stroke="#0099ff"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          ) : (
-            <svg
-              width="32"
-              height="32"
-              viewBox="0 0 32 32"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M20 8L12 16L20 24"
-                stroke="#0099ff"
-                strokeWidth="3"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          )}
-        </span>
-      </div>
-    </aside>
+            {collapsed ? (
+              <svg
+                width="32"
+                height="32"
+                viewBox="0 0 32 32"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12 8L20 16L12 24"
+                  stroke="#0099ff"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            ) : (
+              <svg
+                width="32"
+                height="32"
+                viewBox="0 0 32 32"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M20 8L12 16L20 24"
+                  stroke="#0099ff"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            )}
+          </span>
+        </div>
+      </aside>
     </>
   );
 }

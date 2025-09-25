@@ -3,7 +3,7 @@ import { api } from "../../services/api";
 
 export default function RegisterForm() {
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("USER");
   const [loading, setLoading] = useState(false);
@@ -18,7 +18,7 @@ export default function RegisterForm() {
     try {
       await api.post("/auth/register", {
         name,
-        email,
+        username,
         password,
         role: role || "USER",
       });
@@ -66,8 +66,8 @@ export default function RegisterForm() {
           type="email"
           placeholder="Digite seu e-mail"
           required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
           style={{
             width: "100%",
             padding: 12,

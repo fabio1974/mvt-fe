@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { api } from "../../services/api";
 
 export default function LoginForm() {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -17,7 +17,7 @@ export default function LoginForm() {
     setSuccess("");
     try {
       const response = await api.post<{ token: string }>("/auth/login", {
-        username: email,
+        username,
         password,
       });
       // Supondo que o token venha em response.data.token
@@ -73,8 +73,8 @@ export default function LoginForm() {
           type="email"
           placeholder="Digite seu e-mail"
           required
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
           style={{
             width: "100%",
             padding: 12,
@@ -126,7 +126,7 @@ export default function LoginForm() {
       )}
       <div style={{ textAlign: "center", marginTop: 8 }}>
         Esqueceu sua senha?{" "}
-        <a href="#" style={{ color: "#ff9900" }}>
+        <a href="/recuperar-senha" style={{ color: "#ff9900" }}>
           Clique aqui.
         </a>
       </div>

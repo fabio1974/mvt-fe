@@ -91,3 +91,9 @@ export function getUserId(): string | null {
   const decoded = decodeJWT(token);
   return decoded?.userId || null;
 }
+
+// Função para verificar se o usuário é admin
+export function isAdmin(): boolean {
+  const role = getUserRole();
+  return role === 'ROLE_ADMIN';
+}

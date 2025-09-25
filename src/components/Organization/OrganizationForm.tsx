@@ -2,6 +2,16 @@ import { useState } from "react";
 import { api } from "../../services/api";
 import { useNavigate } from "react-router-dom";
 import { getUserId } from "../../utils/auth";
+import {
+  FormContainer,
+  FormRow,
+  FormField,
+  FormInput,
+  FormTextarea,
+  FormActions,
+  FormButton,
+} from "../Common/FormComponents";
+import { FiSettings, FiSave } from "react-icons/fi";
 
 interface OrganizationFormProps {
   fromCreateEvent?: boolean;
@@ -145,233 +155,136 @@ export default function OrganizationForm({
         </div>
       )}
 
-      <form
-        style={{
-          maxWidth: 600,
-          margin: "0 auto",
-          padding: "40px",
-          backgroundColor: "white",
-          borderRadius: 12,
-          boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-          display: "flex",
-          flexDirection: "column",
-          gap: 16,
-        }}
-        onSubmit={handleSubmit}
-      >
-        <label style={{ textAlign: "left", fontWeight: 500, marginBottom: 4 }}>
-          Nome da Organização *
-          <input
-            type="text"
-            placeholder="Nome da sua organização"
-            required
-            value={name}
-            onChange={(e) => handleNameChange(e.target.value)}
-            style={{
-              width: "100%",
-              padding: 12,
-              marginTop: 4,
-              borderRadius: 8,
-              border: "1px solid #ddd",
-            }}
-          />
-        </label>
+      <div style={{ maxWidth: 600, margin: "0 auto" }}>
+        <FormContainer title="Informações da Organização" icon={<FiSettings />}>
+          <form onSubmit={handleSubmit}>
+            <FormRow columns={1}>
+              <FormField label="Nome da Organização" required>
+                <FormInput
+                  type="text"
+                  placeholder="Nome da sua organização"
+                  required
+                  value={name}
+                  onChange={(e) => handleNameChange(e.target.value)}
+                />
+              </FormField>
+            </FormRow>
 
-        <label style={{ textAlign: "left", fontWeight: 500, marginBottom: 4 }}>
-          Slug (URL amigável) *
-          <input
-            type="text"
-            placeholder="slug-da-organizacao"
-            required
-            value={slug}
-            onChange={(e) => setSlug(e.target.value)}
-            style={{
-              width: "100%",
-              padding: 12,
-              marginTop: 4,
-              borderRadius: 8,
-              border: "1px solid #ddd",
-              backgroundColor: "#f8f9fa",
-            }}
-          />
-          <small style={{ color: "#666", fontSize: "0.875rem" }}>
-            Gerado automaticamente a partir do nome. Você pode editá-lo se
-            desejar.
-          </small>
-        </label>
+            <FormRow columns={1}>
+              <FormField label="Slug (URL amigável)" required>
+                <FormInput
+                  type="text"
+                  placeholder="slug-da-organizacao"
+                  required
+                  value={slug}
+                  onChange={(e) => setSlug(e.target.value)}
+                  style={{ backgroundColor: "#f8f9fa" }}
+                />
+                <small
+                  style={{ color: "#666", fontSize: "0.875rem", marginTop: 2 }}
+                >
+                  Gerado automaticamente a partir do nome. Você pode editá-lo se
+                  desejar.
+                </small>
+              </FormField>
+            </FormRow>
 
-        <label style={{ textAlign: "left", fontWeight: 500, marginBottom: 4 }}>
-          Descrição *
-          <textarea
-            placeholder="Descreva sua organização"
-            required
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={4}
-            style={{
-              width: "100%",
-              padding: 12,
-              marginTop: 4,
-              borderRadius: 8,
-              border: "1px solid #ddd",
-              resize: "vertical",
-              fontFamily: "inherit",
-            }}
-          />
-        </label>
+            <FormRow columns={1}>
+              <FormField label="Descrição" required>
+                <FormTextarea
+                  placeholder="Descreva sua organização"
+                  required
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={4}
+                />
+              </FormField>
+            </FormRow>
 
-        <div style={{ display: "flex", gap: 12 }}>
-          <label
-            style={{
-              textAlign: "left",
-              fontWeight: 500,
-              marginBottom: 4,
-              flex: 1,
-            }}
-          >
-            E-mail de Contato *
-            <input
-              type="email"
-              placeholder="contato@organizacao.com"
-              required
-              value={contactEmail}
-              onChange={(e) => setContactEmail(e.target.value)}
-              style={{
-                width: "100%",
-                padding: 12,
-                marginTop: 4,
-                borderRadius: 8,
-                border: "1px solid #ddd",
-              }}
-            />
-          </label>
+            <FormRow columns={2}>
+              <FormField label="E-mail de Contato" required>
+                <FormInput
+                  type="email"
+                  placeholder="contato@organizacao.com"
+                  required
+                  value={contactEmail}
+                  onChange={(e) => setContactEmail(e.target.value)}
+                />
+              </FormField>
 
-          <label
-            style={{
-              textAlign: "left",
-              fontWeight: 500,
-              marginBottom: 4,
-              flex: 1,
-            }}
-          >
-            Telefone
-            <input
-              type="tel"
-              placeholder="(11) 99999-9999"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              style={{
-                width: "100%",
-                padding: 12,
-                marginTop: 4,
-                borderRadius: 8,
-                border: "1px solid #ddd",
-              }}
-            />
-          </label>
-        </div>
+              <FormField label="Telefone">
+                <FormInput
+                  type="tel"
+                  placeholder="(11) 99999-9999"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                />
+              </FormField>
+            </FormRow>
 
-        <div style={{ display: "flex", gap: 12 }}>
-          <label
-            style={{
-              textAlign: "left",
-              fontWeight: 500,
-              marginBottom: 4,
-              flex: 1,
-            }}
-          >
-            Website
-            <input
-              type="url"
-              placeholder="https://www.suaorganizacao.com"
-              value={website}
-              onChange={(e) => setWebsite(e.target.value)}
-              style={{
-                width: "100%",
-                padding: 12,
-                marginTop: 4,
-                borderRadius: 8,
-                border: "1px solid #ddd",
-              }}
-            />
-          </label>
+            <FormRow columns={2}>
+              <FormField label="Website">
+                <FormInput
+                  type="url"
+                  placeholder="https://www.suaorganizacao.com"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                />
+              </FormField>
 
-          <label
-            style={{
-              textAlign: "left",
-              fontWeight: 500,
-              marginBottom: 4,
-              flex: 1,
-            }}
-          >
-            URL do Logo
-            <input
-              type="url"
-              placeholder="https://exemplo.com/logo.png"
-              value={logoUrl}
-              onChange={(e) => setLogoUrl(e.target.value)}
-              style={{
-                width: "100%",
-                padding: 12,
-                marginTop: 4,
-                borderRadius: 8,
-                border: "1px solid #ddd",
-              }}
-            />
-          </label>
-        </div>
+              <FormField label="URL do Logo">
+                <FormInput
+                  type="url"
+                  placeholder="https://exemplo.com/logo.png"
+                  value={logoUrl}
+                  onChange={(e) => setLogoUrl(e.target.value)}
+                />
+              </FormField>
+            </FormRow>
 
-        <button
-          type="submit"
-          style={{
-            background: "#0099ff",
-            color: "#fff",
-            fontWeight: 600,
-            border: "none",
-            borderRadius: 24,
-            padding: "14px 0",
-            fontSize: "1.1rem",
-            marginTop: 24,
-            cursor: "pointer",
-          }}
-          disabled={loading}
-        >
-          {loading ? "Cadastrando..." : "Cadastrar Organização"}
-        </button>
+            <FormActions>
+              <FormButton
+                type="submit"
+                variant="primary"
+                disabled={loading}
+                icon={<FiSave />}
+              >
+                {loading ? "Cadastrando..." : "Cadastrar Organização"}
+              </FormButton>
+            </FormActions>
 
-        {error && (
-          <div style={{ color: "#e74c3c", textAlign: "center" }}>{error}</div>
-        )}
-        {success && (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 16,
-              marginTop: 16,
-            }}
-          >
-            <div style={{ color: "#2ecc40", fontSize: "1rem" }}>{success}</div>
-            <button
-              onClick={() => navigate("/criar-evento")}
-              style={{
-                background: "#0099ff",
-                color: "#fff",
-                fontWeight: 600,
-                border: "none",
-                borderRadius: 20,
-                padding: "8px 16px",
-                fontSize: "0.9rem",
-                cursor: "pointer",
-                whiteSpace: "nowrap",
-              }}
-            >
-              Cadastrar Evento
-            </button>
-          </div>
-        )}
-      </form>
+            {error && (
+              <div
+                style={{ color: "#ef4444", textAlign: "center", marginTop: 16 }}
+              >
+                {error}
+              </div>
+            )}
+            {success && (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 16,
+                  marginTop: 16,
+                }}
+              >
+                <div style={{ color: "#10b981", fontSize: "1rem" }}>
+                  {success}
+                </div>
+                <FormButton
+                  type="button"
+                  variant="secondary"
+                  onClick={() => navigate("/criar-evento")}
+                >
+                  Cadastrar Evento
+                </FormButton>
+              </div>
+            )}
+          </form>
+        </FormContainer>
+      </div>
     </div>
   );
 }
