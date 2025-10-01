@@ -97,3 +97,19 @@ export function isAdmin(): boolean {
   const role = getUserRole();
   return role === 'ROLE_ADMIN';
 }
+
+// Função para obter dados adicionais do usuário para inscrição
+export function getUserAdditionalData() {
+  const token = localStorage.getItem('authToken');
+  if (!token) return null;
+  
+  const decoded = decodeJWT(token);
+  return {
+    birthDate: decoded?.dateOfBirth || null,
+    gender: decoded?.gender || null,
+    city: decoded?.city || null,
+    state: decoded?.state || null,
+    cpf: decoded?.cpf || null,
+    phone: decoded?.phone || null,
+  };
+}

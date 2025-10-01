@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { api } from "../../services/api";
 import { getOrganizationId, getUserRole } from "../../utils/auth";
 
@@ -13,6 +14,7 @@ interface Event {
   eventType: string;
   status: string;
   maxParticipants?: number;
+  slug?: string;
 }
 
 export default function MyEventsPage() {
@@ -23,6 +25,7 @@ export default function MyEventsPage() {
   const [activeTab, setActiveTab] = useState<"created" | "registered">(
     "created"
   );
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchMyEvents = async () => {
@@ -335,6 +338,7 @@ export default function MyEventsPage() {
                       }}
                     >
                       <button
+                        onClick={() => navigate(`/evento/${event.slug ? `${event.slug}-${event.id}` : event.id}`)}
                         style={{
                           padding: "8px 16px",
                           backgroundColor: "#0099ff",

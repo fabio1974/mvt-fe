@@ -44,9 +44,10 @@ const EventFilters: React.FC<EventFiltersProps> = ({
   });
 
   const statusOptions = [
-    { value: "active", label: "Ativo" },
-    { value: "cancelled", label: "Cancelado" },
-    { value: "finished", label: "Finalizado" },
+    { value: "DRAFT", label: "Rascunho" },
+    { value: "PUBLISHED", label: "Publicado" },
+    { value: "CANCELLED", label: "Cancelado" },
+    { value: "COMPLETED", label: "Concluído" },
   ];
 
   const sportOptions = [

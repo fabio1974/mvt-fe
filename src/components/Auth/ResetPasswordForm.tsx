@@ -1,39 +1,41 @@
-import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../services/api";
+import { useState } from "react";
+import {
+  FormField,
+  FormInput,
+  FormActions,
+  FormButton,
+} from "../Common/FormComponents";
+
+interface ResetPasswordFormData {
+  username: string;
+  newPassword: string;
+  confirmPassword: string;
+}
 
 export default function ResetPasswordForm() {
-  const [username, setUsername] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<ResetPasswordFormData>();
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+  const newPassword = watch("newPassword");
+
+  const onSubmit = async (data: ResetPasswordFormData) => {
     setError("");
     setSuccess("");
 
-    if (newPassword !== confirmPassword) {
-      setError("As senhas não coincidem.");
-      setLoading(false);
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      setError("A senha deve ter pelo menos 6 caracteres.");
-      setLoading(false);
-      return;
-    }
-
     try {
       await api.post("/auth/reset-password", {
-        username,
-        newPassword,
+        username: data.username,
+        newPassword: data.newPassword,
       });
 
       setSuccess("Senha alterada com sucesso! Redirecionando para o login...");
@@ -54,8 +56,6 @@ export default function ResetPasswordForm() {
         (err as ApiError)?.response?.data?.message ||
         "Erro ao alterar senha. Verifique se o email existe e tente novamente.";
       setError(errorMessage);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -69,16 +69,6 @@ export default function ResetPasswordForm() {
         gap: 20,
       }}
     >
-      <h3
-        style={{
-          textAlign: "center",
-          marginBottom: 16,
-          color: "#333",
-          fontSize: "1.2rem",
-        }}
-      >
-        Recuperar Senha
-      </h3>
       <p
         style={{
           textAlign: "center",
@@ -91,103 +81,103 @@ export default function ResetPasswordForm() {
       </p>
 
       <form
-        onSubmit={handleSubmit}
+        onSubmit={handleSubmit(onSubmit)}
         style={{
           display: "flex",
           flexDirection: "column",
           gap: 20,
         }}
       >
-        <label style={{ textAlign: "left", fontWeight: 500, marginBottom: 4 }}>
-          E-mail *
-          <input
+        <FormField label="E-mail" required error={errors.username?.message}>
+          <FormInput
             type="email"
             placeholder="Digite seu e-mail"
-            required
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            style={{
-              width: "100%",
-              padding: 12,
-              marginTop: 4,
-              borderRadius: 8,
-              border: "1px solid #ddd",
-              boxSizing: "border-box",
-            }}
+            {...register("username", {
+              required: "E-mail é obrigatório",
+              pattern: {
+                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                message: "E-mail inválido",
+              },
+            })}
           />
-        </label>
+        </FormField>
 
-        <label style={{ textAlign: "left", fontWeight: 500, marginBottom: 4 }}>
-          Nova Senha *
-          <input
+        <FormField
+          label="Nova Senha"
+          required
+          error={errors.newPassword?.message}
+        >
+          <FormInput
             type="password"
             placeholder="Digite sua nova senha"
-            required
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-            style={{
-              width: "100%",
-              padding: 12,
-              marginTop: 4,
-              borderRadius: 8,
-              border: "1px solid #ddd",
-              boxSizing: "border-box",
-            }}
+            {...register("newPassword", {
+              required: "Nova senha é obrigatória",
+              minLength: {
+                value: 6,
+                message: "A senha deve ter pelo menos 6 caracteres",
+              },
+            })}
           />
-        </label>
+        </FormField>
 
-        <label style={{ textAlign: "left", fontWeight: 500, marginBottom: 4 }}>
-          Confirmar Nova Senha *
-          <input
+        <FormField
+          label="Confirmar Nova Senha"
+          required
+          error={errors.confirmPassword?.message}
+        >
+          <FormInput
             type="password"
             placeholder="Confirme sua nova senha"
-            required
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
+            {...register("confirmPassword", {
+              required: "Confirmação de senha é obrigatória",
+              validate: (value) =>
+                value === newPassword || "As senhas não coincidem",
+            })}
+          />
+        </FormField>
+
+        <FormActions align="center">
+          <FormButton
+            type="submit"
+            variant="primary"
+            disabled={isSubmitting}
             style={{
               width: "100%",
-              padding: 12,
-              marginTop: 4,
-              borderRadius: 8,
-              border: "1px solid #ddd",
-              boxSizing: "border-box",
+              background: "linear-gradient(90deg, #0099ff, #006dc7)",
+              color: "#fff",
+              padding: "14px 0",
+              borderRadius: "14px",
+              fontWeight: 600,
+              fontSize: "1rem",
+              border: "none",
+              cursor: isSubmitting ? "not-allowed" : "pointer",
+              boxShadow: "0 8px 22px -6px rgba(0,153,255,0.5)",
+              transition: "transform 0.25s ease, box-shadow 0.25s ease",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
-          />
-        </label>
-
-        <button
-          type="submit"
-          style={{
-            background: "#ff9900",
-            color: "#fff",
-            fontWeight: 600,
-            border: "none",
-            borderRadius: 24,
-            padding: "14px 0",
-            fontSize: "1.1rem",
-            marginTop: 8,
-            cursor: "pointer",
-            transition: "background 0.2s ease",
-          }}
-          disabled={loading}
-          onMouseEnter={(e) => {
-            if (!loading) {
-              e.currentTarget.style.background = "#e68900";
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!loading) {
-              e.currentTarget.style.background = "#ff9900";
-            }
-          }}
-        >
-          {loading ? "Alterando senha..." : "Alterar Senha"}
-        </button>
+            onMouseEnter={(e) => {
+              if (!isSubmitting) {
+                e.currentTarget.style.transform = "translateY(-3px)";
+                e.currentTarget.style.boxShadow =
+                  "0 12px 26px -6px rgba(0,153,255,0.55)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow =
+                "0 8px 22px -6px rgba(0,153,255,0.5)";
+            }}
+          >
+            {isSubmitting ? "Alterando senha..." : "Alterar Senha"}
+          </FormButton>
+        </FormActions>
       </form>
 
       {error && (
         <div
-          style={{ color: "#dc3545", textAlign: "center", fontSize: "0.9rem" }}
+          style={{ color: "#e74c3c", textAlign: "center", fontSize: "0.9rem" }}
         >
           {error}
         </div>
@@ -195,7 +185,7 @@ export default function ResetPasswordForm() {
 
       {success && (
         <div
-          style={{ color: "#28a745", textAlign: "center", fontSize: "0.9rem" }}
+          style={{ color: "#0099ff", textAlign: "center", fontSize: "0.9rem" }}
         >
           {success}
         </div>

@@ -1,13 +1,13 @@
 import { useNavigate } from "react-router-dom";
 import React from "react";
-import { getUserName, getUserRole } from "../../utils/auth";
-import { 
-  FiCalendar, 
-  FiPlus, 
-  FiSettings, 
-  FiBookmark, 
-  FiShield, 
-  FiUser 
+import { getUserRole } from "../../utils/auth";
+import {
+  FiCalendar,
+  FiPlus,
+  FiSettings,
+  FiBookmark,
+  FiShield,
+  FiUser,
 } from "react-icons/fi";
 import "./Sidebar.css";
 
@@ -30,7 +30,7 @@ const menuItems = [
   {
     label: "Minhas inscrições",
     icon: <FiBookmark size={22} color="#0099ff" />,
-    path: "/inscricoes",
+    path: "/minhas-inscricoes",
   },
   {
     label: "Eventos",
@@ -60,8 +60,7 @@ export default function Sidebar({
   onClose,
 }: SidebarProps) {
   const navigate = useNavigate();
-  // Get user name from JWT token
-  const userName = getUserName() || "";
+  // Get user role from JWT token
   const userRole = getUserRole();
 
   // Filtrar itens do menu baseado nas permissões do usuário
@@ -100,7 +99,6 @@ export default function Sidebar({
       >
         <div className="sidebar-header">
           <img src="/vite.svg" alt="Logo" className="sidebar-logo" />
-          {!collapsed && <span className="sidebar-site-name">{userName}</span>}
         </div>
         <nav className="sidebar-nav">
           {filteredMenuItems.map((item) => (

@@ -126,6 +126,24 @@
   border-color: #9ca3af;
 }
 
+.form-input:disabled,
+.form-select:disabled,
+.form-textarea:disabled {
+  background-color: #f9fafb;
+  color: #6b7280;
+  cursor: not-allowed;
+  border-color: #d1d5db;
+}
+
+.form-input:read-only,
+.form-select:read-only,
+.form-textarea:read-only {
+  background-color: #f3f4f6;
+  color: #4b5563;
+  cursor: default;
+  border-color: #d1d5db;
+}
+
 .form-textarea {
   height: auto;
   min-height: 80px;

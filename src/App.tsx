@@ -7,8 +7,12 @@ import ResetPasswordPage from "./components/Auth/ResetPasswordPage";
 import CreateEventPage from "./components/Events/CreateEventPage";
 import MyEventsPage from "./components/Events/MyEventsPage";
 import EventDetailPage from "./components/Events/EventDetailPage";
+import EventRegistrationPage from "./components/Events/EventRegistrationPage";
 import OrganizationPage from "./components/Organization/OrganizationPage";
 import AdminEventsPage from "./components/Admin/AdminEventsPage";
+import PaymentSuccessPage from "./components/Payment/PaymentSuccessPage";
+import PaymentCancelPage from "./components/Payment/PaymentCancelPage";
+import MyRegistrationsPage from "./components/User/MyRegistrationsPage";
 import Sidebar from "./components/Sidebar/Sidebar";
 import { Routes, Route } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -85,6 +89,7 @@ function App() {
           isLoggedIn={isLoggedIn}
           onToggleSidebar={toggleSidebarMobile}
           sidebarVisible={sidebarVisible}
+          sidebarCollapsed={sidebarCollapsed}
         />
         <Routes>
           <Route path="/" element={<Home />} />
@@ -93,8 +98,15 @@ function App() {
           <Route path="/criar-evento" element={<CreateEventPage />} />
           <Route path="/meus-eventos" element={<MyEventsPage />} />
           <Route path="/evento/:slug" element={<EventDetailPage />} />
+          <Route
+            path="/evento/:slug/inscricao"
+            element={<EventRegistrationPage />}
+          />
           <Route path="/organizacao" element={<OrganizationPage />} />
           <Route path="/admin/eventos" element={<AdminEventsPage />} />
+          <Route path="/minhas-inscricoes" element={<MyRegistrationsPage />} />
+          <Route path="/payment/success" element={<PaymentSuccessPage />} />
+          <Route path="/payment/cancel" element={<PaymentCancelPage />} />
         </Routes>
         <Footer />
       </div>

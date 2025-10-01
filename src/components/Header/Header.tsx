@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { canCreateEvents, getUserName, getUserRole } from "../../utils/auth";
+import { getUserName, getUserRole } from "../../utils/auth";
 import "./Header.css";
 
 interface HeaderProps {
@@ -8,6 +8,7 @@ interface HeaderProps {
   isLoggedIn?: boolean;
   onToggleSidebar?: () => void;
   sidebarVisible?: boolean;
+  sidebarCollapsed?: boolean;
 }
 
 export default function Header({
@@ -15,17 +16,27 @@ export default function Header({
   isLoggedIn: propIsLoggedIn,
   onToggleSidebar,
   sidebarVisible,
+  sidebarCollapsed,
 }: HeaderProps = {}) {
   const [menuOpen, setMenuOpen] = useState(false);
   const navigate = useNavigate();
   const isMobile = propIsMobile ?? window.innerWidth <= 600;
-  const userCanCreateEvents = canCreateEvents();
 
   // Informações do usuário logado
   const isLoggedIn =
     propIsLoggedIn ?? Boolean(localStorage.getItem("authToken"));
   const userName = getUserName();
   const userRole = getUserRole();
+
+  // Determinar classes do header baseado no sidebar
+  const headerClasses = [
+    "serra-header",
+    "modern",
+    sidebarVisible && !isMobile ? "with-sidebar" : "",
+    sidebarCollapsed && !isMobile ? "sidebar-collapsed" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
 
   // Função para retornar ícone baseado no tipo de usuário
   const getUserIcon = (role: string | null) => {
@@ -112,8 +123,8 @@ export default function Header({
     }
   };
   return (
-    <header className="serra-header">
-      <div className="header-container">
+    <header className={headerClasses}>
+      <div className="header-container modern-inner">
         {/* Toggle do sidebar para mobile */}
         {isMobile && isLoggedIn && (
           <button
@@ -180,31 +191,18 @@ export default function Header({
           </button>
         )}
 
-        <a
-          href="/"
-          className="logo"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-            textDecoration: "none",
-          }}
-        >
-          <img src="/vite.svg" alt="Corridas da Serra" />
-          <span
-            style={{
-              fontWeight: 700,
-              fontSize: "1.3rem",
-              color: "#0099ff",
-              fontFamily: "Inter, Arial, sans-serif",
-            }}
-          >
-            Corridas da Serra
-          </span>
+        <a href="/" className="logo modern-brand">
+          <div className="brand-logo-wrapper">
+            <img src="/vite.svg" alt="Corridas da Serra" />
+          </div>
+          <div className="brand-text-block">
+            <span className="brand-title">Corridas da Serra</span>
+            <span className="brand-sub">Eventos Esportivos</span>
+          </div>
         </a>
-        <nav className={`nav ${menuOpen ? "open" : ""}`}>
-          <a href="/eventos">Encontrar Competições</a>
-          <a href="/blog">Blog</a>
+        <nav className={`nav modern-nav ${menuOpen ? "open" : ""}`}>
+          <a href="/eventos">Eventos</a>
+          <a href="/contato">Contato</a>
         </nav>
         <div
           style={{
@@ -214,26 +212,19 @@ export default function Header({
           }}
         >
           {/* Botões de ação */}
-          <div className="actions">
-            {userCanCreateEvents && (
-              <a href="#" className="btn primary">
-                Criar evento
-              </a>
-            )}
-
+          <div className="actions modern-actions">
             {!isMobile && !isLoggedIn && (
               <button
-                className="btn secondary"
-                style={{
-                  border: "none",
-                  background: "none",
-                  padding: 0,
-                  cursor: "pointer",
-                }}
+                className="btn header-ghost"
                 onClick={() => navigate("/login")}
               >
-                Acessar conta
+                Entrar
               </button>
+            )}
+            {!isLoggedIn && (
+              <a href="/login" className="btn header-cta">
+                Inscrever-se
+              </a>
             )}
           </div>
         </div>
@@ -271,7 +262,7 @@ export default function Header({
         )}
 
         <button
-          className={`menu-toggle ${menuOpen ? "open" : ""}`}
+          className={`menu-toggle modern ${menuOpen ? "open" : ""}`}
           onClick={() => setMenuOpen(!menuOpen)}
           aria-label="Abrir menu"
         >
@@ -289,37 +280,29 @@ export default function Header({
         </button>
       </div>
       {menuOpen && (
-        <div className="mobile-menu">
+        <div className="mobile-menu modern-mobile">
           <a href="/eventos" onClick={() => setMenuOpen(false)}>
-            Encontrar Competições
+            Eventos
           </a>
-          <a href="/blog" onClick={() => setMenuOpen(false)}>
-            Blog
+          <a href="/contato" onClick={() => setMenuOpen(false)}>
+            Contato
           </a>
-          {userCanCreateEvents && (
-            <a
-              href="#"
-              className="btn primary"
-              onClick={() => setMenuOpen(false)}
-            >
-              Criar evento
-            </a>
+          {!isLoggedIn && (
+            <>
+              <button
+                className="btn header-ghost"
+                onClick={() => {
+                  setMenuOpen(false);
+                  navigate("/login");
+                }}
+              >
+                Entrar
+              </button>
+              <a href="/login" className="btn header-cta mobile">
+                Inscrever-se
+              </a>
+            </>
           )}
-          <button
-            className="btn secondary"
-            style={{
-              border: "none",
-              background: "none",
-              padding: 0,
-              cursor: "pointer",
-            }}
-            onClick={() => {
-              setMenuOpen(false);
-              navigate("/login");
-            }}
-          >
-            Acessar conta
-          </button>
         </div>
       )}
     </header>

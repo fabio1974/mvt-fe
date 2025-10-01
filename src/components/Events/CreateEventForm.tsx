@@ -11,14 +11,17 @@ import {
   FormSelect,
   FormActions,
   FormButton,
+  FormDatePicker,
+  FormDateRangePicker,
+  CityTypeahead,
 } from "../Common/FormComponents";
 
 export default function CreateEventForm() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [eventDate, setEventDate] = useState("");
-  const [registrationStart, setRegistrationStart] = useState("");
-  const [registrationEnd, setRegistrationEnd] = useState("");
+  const [eventDate, setEventDate] = useState<Date | null>(null);
+  const [registrationStart, setRegistrationStart] = useState<Date | null>(null);
+  const [registrationEnd, setRegistrationEnd] = useState<Date | null>(null);
   const [location, setLocation] = useState("");
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
@@ -60,9 +63,9 @@ export default function CreateEventForm() {
       const eventData = {
         name,
         description,
-        eventDate,
-        registrationStart,
-        registrationEnd,
+        eventDate: eventDate?.toISOString(),
+        registrationStart: registrationStart?.toISOString(),
+        registrationEnd: registrationEnd?.toISOString(),
         location,
         city,
         state,
@@ -143,10 +146,11 @@ export default function CreateEventForm() {
             {/* Data do Evento e Tipo */}
             <FormRow columns={2}>
               <FormField label="Data do Evento" required>
-                <FormInput
-                  type="datetime-local"
-                  value={eventDate}
-                  onChange={(e) => setEventDate(e.target.value)}
+                <FormDatePicker
+                  selected={eventDate}
+                  onChange={(date) => setEventDate(date)}
+                  placeholder="Selecione a data"
+                  minDate={new Date()}
                   required
                 />
               </FormField>
@@ -161,20 +165,17 @@ export default function CreateEventForm() {
             </FormRow>
 
             {/* Período das Inscrições */}
-            <FormRow columns={2}>
-              <FormField label="Início das Inscrições" required>
-                <FormInput
-                  type="datetime-local"
-                  value={registrationStart}
-                  onChange={(e) => setRegistrationStart(e.target.value)}
-                  required
-                />
-              </FormField>
-              <FormField label="Fim das Inscrições" required>
-                <FormInput
-                  type="datetime-local"
-                  value={registrationEnd}
-                  onChange={(e) => setRegistrationEnd(e.target.value)}
+            <FormRow columns={1}>
+              <FormField label="Período das Inscrições" required>
+                <FormDateRangePicker
+                  startDate={registrationStart}
+                  endDate={registrationEnd}
+                  onStartDateChange={setRegistrationStart}
+                  onEndDateChange={setRegistrationEnd}
+                  startPlaceholder="Início das inscrições"
+                  endPlaceholder="Fim das inscrições"
+                  minDate={new Date()}
+                  maxDate={eventDate || undefined}
                   required
                 />
               </FormField>
@@ -193,30 +194,33 @@ export default function CreateEventForm() {
               </FormField>
             </FormRow>
 
-            {/* Cidade */}
-            <FormRow columns={1}>
+            {/* Cidade e Estado */}
+            <FormRow columns={2}>
               <FormField label="Cidade" required>
+                <CityTypeahead
+                  value={city}
+                  onCitySelect={(selectedCity) => {
+                    setCity(selectedCity.name);
+                    setState(selectedCity.state);
+                  }}
+                  placeholder="Digite o nome da cidade..."
+                  required
+                />
+              </FormField>
+              <FormField label="Estado" required>
                 <FormInput
                   type="text"
-                  placeholder="Cidade"
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
+                  placeholder="Estado será preenchido automaticamente"
+                  value={state}
+                  onChange={(e) => setState(e.target.value)}
+                  disabled
                   required
                 />
               </FormField>
             </FormRow>
 
-            {/* Estado e País */}
-            <FormRow columns={2}>
-              <FormField label="Estado" required>
-                <FormInput
-                  type="text"
-                  placeholder="Estado/UF"
-                  value={state}
-                  onChange={(e) => setState(e.target.value)}
-                  required
-                />
-              </FormField>
+            {/* País */}
+            <FormRow columns={1}>
               <FormField label="País" required>
                 <FormInput
                   type="text"

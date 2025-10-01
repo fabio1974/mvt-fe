@@ -33,10 +33,10 @@ export default function AuthTabs() {
             border: "none",
             background: "none",
             fontWeight: activeTab === "login" ? 700 : 400,
-            color: activeTab === "login" ? "#ff9900" : "#888",
+            color: activeTab === "login" ? "#0099ff" : "#888",
             borderBottom:
               activeTab === "login"
-                ? "2px solid #ff9900"
+                ? "2px solid #0099ff"
                 : "2px solid transparent",
             padding: "8px 24px",
             cursor: "pointer",
@@ -51,10 +51,10 @@ export default function AuthTabs() {
             border: "none",
             background: "none",
             fontWeight: activeTab === "register" ? 700 : 400,
-            color: activeTab === "register" ? "#ff9900" : "#888",
+            color: activeTab === "register" ? "#0099ff" : "#888",
             borderBottom:
               activeTab === "register"
-                ? "2px solid #ff9900"
+                ? "2px solid #0099ff"
                 : "2px solid transparent",
             padding: "8px 24px",
             cursor: "pointer",

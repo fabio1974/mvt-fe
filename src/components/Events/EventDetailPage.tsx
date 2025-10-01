@@ -26,8 +26,6 @@ export default function EventDetailPage() {
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [enrolling, setEnrolling] = useState(false);
-  const [enrolled, setEnrolled] = useState(false);
 
   // Verificar se usuário está logado
   const isLoggedIn = Boolean(localStorage.getItem("authToken"));
@@ -98,59 +96,6 @@ export default function EventDetailPage() {
         return "Cancelado";
       default:
         return status;
-    }
-  };
-
-  const handleEnrollment = async () => {
-    if (!event) return;
-
-    if (!isLoggedIn) {
-      alert("Você precisa estar logado para se inscrever no evento.");
-      navigate("/login");
-      return;
-    }
-
-    try {
-      setEnrolling(true);
-
-      // Fazer a requisição de inscrição
-      const token = localStorage.getItem("authToken");
-      const response = await api.post(
-        `/events/${event.id}/enroll`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response.status === 200 || response.status === 201) {
-        setEnrolled(true);
-        alert("Inscrição realizada com sucesso!");
-
-        // Atualizar dados do evento para mostrar novo número de participantes
-        const updatedEvent = await api.get(`/events/public/${event.id}`);
-        setEvent(updatedEvent.data as Event);
-      }
-    } catch (err: unknown) {
-      console.error("Erro ao se inscrever:", err);
-
-      // Type guard para erro de axios
-      if (err && typeof err === "object" && "response" in err) {
-        const axiosError = err as { response: { status: number } };
-        if (axiosError.response?.status === 409) {
-          alert("Você já está inscrito neste evento.");
-        } else if (axiosError.response?.status === 400) {
-          alert("Evento lotado ou inscrições encerradas.");
-        } else {
-          alert("Erro ao realizar inscrição. Tente novamente.");
-        }
-      } else {
-        alert("Erro ao realizar inscrição. Tente novamente.");
-      }
-    } finally {
-      setEnrolling(false);
     }
   };
 
@@ -593,15 +538,25 @@ export default function EventDetailPage() {
 
               {/* Botão de inscrição */}
               <button
-                onClick={handleEnrollment}
-                disabled={enrolling || enrolled || event.status !== "PUBLISHED"}
+                onClick={() => {
+                  if (!isLoggedIn) {
+                    alert(
+                      "Você precisa estar logado para se inscrever no evento."
+                    );
+                    navigate("/login");
+                    return;
+                  }
+                  if (event.status !== "PUBLISHED") {
+                    alert("Inscrições não estão disponíveis para este evento.");
+                    return;
+                  }
+                  navigate(`/evento/${slug}/inscricao`);
+                }}
+                disabled={event.status !== "PUBLISHED"}
                 style={{
                   width: "100%",
-                  background: enrolled
-                    ? "#22c55e"
-                    : event.status !== "PUBLISHED"
-                    ? "#9ca3af"
-                    : "#0099ff",
+                  background:
+                    event.status !== "PUBLISHED" ? "#9ca3af" : "#0099ff",
                   color: "white",
                   border: "none",
                   padding: "16px",
@@ -609,35 +564,28 @@ export default function EventDetailPage() {
                   fontSize: "1.1rem",
                   fontWeight: "700",
                   cursor:
-                    enrolling || enrolled || event.status !== "PUBLISHED"
-                      ? "not-allowed"
-                      : "pointer",
+                    event.status !== "PUBLISHED" ? "not-allowed" : "pointer",
                   transition: "all 0.2s ease",
                   textTransform: "uppercase",
                   letterSpacing: "0.5px",
-                  opacity: enrolling ? 0.7 : 1,
                 }}
                 onMouseEnter={(e) => {
-                  if (!enrolling && !enrolled && event.status === "PUBLISHED") {
+                  if (event.status === "PUBLISHED") {
                     e.currentTarget.style.background = "#0077cc";
                     e.currentTarget.style.transform = "translateY(-2px)";
                   }
                 }}
                 onMouseLeave={(e) => {
-                  if (!enrolling && !enrolled && event.status === "PUBLISHED") {
+                  if (event.status === "PUBLISHED") {
                     e.currentTarget.style.background = "#0099ff";
                     e.currentTarget.style.transform = "translateY(0)";
                   }
                 }}
               >
-                {enrolling
-                  ? "Inscrevendo..."
-                  : enrolled
-                  ? "✓ Inscrito"
-                  : event.status !== "PUBLISHED"
+                {event.status !== "PUBLISHED"
                   ? "Inscrições indisponíveis"
                   : isLoggedIn
-                  ? "Inscrever-se"
+                  ? "Fazer Inscrição"
                   : "Fazer login para se inscrever"}
               </button>
             </div>

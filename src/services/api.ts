@@ -21,3 +21,6 @@ api.interceptors.request.use(
     return Promise.reject(error);
   }
 );
+
+// This file now only contains the axios configuration.
+// All payment-related services have been moved to /services/payment.ts
