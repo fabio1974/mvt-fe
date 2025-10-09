@@ -100,30 +100,37 @@ export const FormInput: React.FC<FormInputProps> = ({
 
 interface FormSelectProps
   extends React.SelectHTMLAttributes<HTMLSelectElement> {
-  options: Array<{ value: string; label: string }>;
+  options?: Array<{ value: string; label: string }>;
   placeholder?: string;
+  children?: React.ReactNode;
 }
 
 export const FormSelect: React.FC<FormSelectProps> = ({
   options,
   placeholder = "Selecione...",
   className = "",
+  children,
   ...props
 }) => {
   return (
     <select className={`form-select ${className}`} {...props}>
-      <option value="">{placeholder}</option>
-      {options.map((option) => (
-        <option key={option.value} value={option.value}>
-          {option.label}
-        </option>
-      ))}
+      {children ? (
+        children
+      ) : (
+        <>
+          <option value="">{placeholder}</option>
+          {options?.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </>
+      )}
     </select>
   );
 };
 
-interface FormTextareaProps
-  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {}
+type FormTextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement>;
 
 export const FormTextarea: React.FC<FormTextareaProps> = ({
   className = "",
@@ -134,18 +141,80 @@ export const FormTextarea: React.FC<FormTextareaProps> = ({
 
 interface FormActionsProps {
   children: React.ReactNode;
-  align?: "left" | "center" | "right";
+  error?: string | null;
+  success?: string | null;
   className?: string;
 }
 
 export const FormActions: React.FC<FormActionsProps> = ({
   children,
-  align = "right",
+  error,
+  success,
   className = "",
 }) => {
   return (
-    <div className={`form-actions form-actions-${align} ${className}`}>
-      {children}
+    <div
+      className={className}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        marginTop: 24,
+        paddingTop: 24,
+        borderTop: "1px solid #e0e0e0",
+        gap: 16,
+      }}
+    >
+      {/* Linha dos botões - alinhados à esquerda */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-start",
+          alignItems: "center",
+          gap: 12,
+        }}
+      >
+        {children}
+      </div>
+
+      {/* Linha das mensagens - centralizadas */}
+      {(error || success) && (
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            width: "100%",
+          }}
+        >
+          {error && (
+            <div
+              style={{
+                padding: 12,
+                backgroundColor: "#ffe6e6",
+                color: "#d32f2f",
+                borderRadius: 8,
+                border: "1px solid #ffcdd2",
+              }}
+            >
+              {error}
+            </div>
+          )}
+
+          {success && (
+            <div
+              style={{
+                padding: 12,
+                backgroundColor: "#e8f5e8",
+                color: "#2e7d32",
+                borderRadius: 8,
+                border: "1px solid #c8e6c9",
+              }}
+            >
+              {success}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };

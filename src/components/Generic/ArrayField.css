@@ -1,0 +1,20 @@
+/* ArrayField - Grid Layout Horizontal */
+.array-field-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+  gap: 16px 12px !important;
+}
+
+/* Responsivo - mobile */
+@media (max-width: 640px) {
+  .array-field-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Tablet */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .array-field-grid {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)) !important;
+  }
+}

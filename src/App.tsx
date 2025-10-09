@@ -8,14 +8,26 @@ import CreateEventPage from "./components/Events/CreateEventPage";
 import MyEventsPage from "./components/Events/MyEventsPage";
 import EventDetailPage from "./components/Events/EventDetailPage";
 import EventRegistrationPage from "./components/Events/EventRegistrationPage";
+import EventsCRUDPage from "./components/Events/EventsCRUDPage";
 import OrganizationPage from "./components/Organization/OrganizationPage";
+import OrganizationRegistrationsPage from "./components/Organization/OrganizationRegistrationsPage";
 import AdminEventsPage from "./components/Admin/AdminEventsPage";
 import PaymentSuccessPage from "./components/Payment/PaymentSuccessPage";
 import PaymentCancelPage from "./components/Payment/PaymentCancelPage";
 import MyRegistrationsPage from "./components/User/MyRegistrationsPage";
+import PersonalDataPage from "./components/User/PersonalDataPage";
 import Sidebar from "./components/Sidebar/Sidebar";
+import Toast from "./components/Common/Toast";
+import MetadataLoader from "./components/Common/MetadataLoader";
+import { MetadataProvider } from "./contexts/MetadataContext";
 import { Routes, Route } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { registerToast } from "./utils/toast";
+
+interface ToastState {
+  message: string;
+  type: "success" | "error" | "warning" | "info";
+}
 
 function App() {
   // Usuário está logado se existe token no localStorage
@@ -27,6 +39,16 @@ function App() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(
     () => window.innerWidth <= 600
   );
+
+  // Estado do toast
+  const [toast, setToast] = useState<ToastState | null>(null);
+
+  // Registrar callback do toast
+  useEffect(() => {
+    registerToast((message, type) => {
+      setToast({ message, type });
+    });
+  }, []);
 
   // Controle de responsividade
   useEffect(() => {
@@ -59,58 +81,81 @@ function App() {
   const getSidebarWidth = () => {
     if (!isLoggedIn) return 0;
     if (isMobile) return sidebarVisible ? 60 : 0;
-    return sidebarCollapsed ? 60 : 220;
+    return sidebarCollapsed ? 78 : 280;
   };
 
   const sidebarWidth = getSidebarWidth();
   return (
-    <div className="App" style={{ display: "flex", minHeight: "100vh" }}>
-      {isLoggedIn && sidebarVisible && (
-        <Sidebar
-          collapsed={sidebarCollapsed}
-          setCollapsed={setSidebarCollapsed}
-          isMobile={isMobile}
-          visible={sidebarVisible}
-          onClose={() => setSidebarVisible(false)}
-        />
-      )}
-      <div
-        style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          minHeight: "100vh",
-          marginLeft: sidebarWidth,
-          transition: "margin-left 0.3s ease",
-        }}
-      >
-        <Header
-          isMobile={isMobile}
-          isLoggedIn={isLoggedIn}
-          onToggleSidebar={toggleSidebarMobile}
-          sidebarVisible={sidebarVisible}
-          sidebarCollapsed={sidebarCollapsed}
-        />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<LoginRegisterPage />} />
-          <Route path="/recuperar-senha" element={<ResetPasswordPage />} />
-          <Route path="/criar-evento" element={<CreateEventPage />} />
-          <Route path="/meus-eventos" element={<MyEventsPage />} />
-          <Route path="/evento/:slug" element={<EventDetailPage />} />
-          <Route
-            path="/evento/:slug/inscricao"
-            element={<EventRegistrationPage />}
-          />
-          <Route path="/organizacao" element={<OrganizationPage />} />
-          <Route path="/admin/eventos" element={<AdminEventsPage />} />
-          <Route path="/minhas-inscricoes" element={<MyRegistrationsPage />} />
-          <Route path="/payment/success" element={<PaymentSuccessPage />} />
-          <Route path="/payment/cancel" element={<PaymentCancelPage />} />
-        </Routes>
-        <Footer />
-      </div>
-    </div>
+    <MetadataProvider>
+      <MetadataLoader>
+        <div className="App" style={{ display: "flex", minHeight: "100vh" }}>
+          {isLoggedIn && sidebarVisible && (
+            <Sidebar
+              collapsed={sidebarCollapsed}
+              setCollapsed={setSidebarCollapsed}
+              isMobile={isMobile}
+              visible={sidebarVisible}
+              onClose={() => setSidebarVisible(false)}
+            />
+          )}
+          <div
+            style={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              minHeight: "100vh",
+              marginLeft: sidebarWidth,
+              transition: "margin-left 0.3s ease",
+            }}
+          >
+            <Header
+              isMobile={isMobile}
+              isLoggedIn={isLoggedIn}
+              onToggleSidebar={toggleSidebarMobile}
+              sidebarVisible={sidebarVisible}
+              sidebarCollapsed={sidebarCollapsed}
+            />
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<LoginRegisterPage />} />
+              <Route path="/recuperar-senha" element={<ResetPasswordPage />} />
+              <Route path="/eventos" element={<EventsCRUDPage />} />
+              <Route path="/criar-evento" element={<CreateEventPage />} />
+              <Route path="/editar-evento/:id" element={<CreateEventPage />} />
+              <Route path="/meus-eventos" element={<MyEventsPage />} />
+              <Route path="/evento/:slug" element={<EventDetailPage />} />
+              <Route
+                path="/evento/:slug/inscricao"
+                element={<EventRegistrationPage />}
+              />
+              <Route path="/organizacao" element={<OrganizationPage />} />
+              <Route
+                path="/organizacao/inscricoes"
+                element={<OrganizationRegistrationsPage />}
+              />
+              <Route path="/dados-pessoais" element={<PersonalDataPage />} />
+              <Route path="/admin/eventos" element={<AdminEventsPage />} />
+              <Route
+                path="/minhas-inscricoes"
+                element={<MyRegistrationsPage />}
+              />
+              <Route path="/payment/success" element={<PaymentSuccessPage />} />
+              <Route path="/payment/cancel" element={<PaymentCancelPage />} />
+            </Routes>
+            <Footer isLoggedIn={isLoggedIn} sidebarWidth={sidebarWidth} />
+          </div>
+
+          {/* Toast Global */}
+          {toast && (
+            <Toast
+              message={toast.message}
+              type={toast.type}
+              onClose={() => setToast(null)}
+            />
+          )}
+        </div>
+      </MetadataLoader>
+    </MetadataProvider>
   );
 }
 

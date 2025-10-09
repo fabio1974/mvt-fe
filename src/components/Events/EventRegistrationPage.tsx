@@ -215,8 +215,16 @@ export default function EventRegistrationPage() {
       // Mostrar o formulário de pagamento
       setShowPayment(true);
     } catch (err) {
-      const error = err as { response?: { status?: number } };
-      if (error.response?.status === 409) {
+      const error = err as {
+        response?: { status?: number; data?: { message?: string } };
+      };
+
+      // Tenta pegar a mensagem do backend primeiro
+      const backendMessage = error.response?.data?.message;
+
+      if (backendMessage) {
+        setError(backendMessage);
+      } else if (error.response?.status === 409) {
         setError("Usuário já está inscrito neste evento.");
       } else if (error.response?.status === 400) {
         setError(

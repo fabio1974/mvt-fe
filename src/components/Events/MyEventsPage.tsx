@@ -338,7 +338,16 @@ export default function MyEventsPage() {
                       }}
                     >
                       <button
-                        onClick={() => navigate(`/evento/${event.slug ? `${event.slug}-${event.id}` : event.id}`)}
+                        onClick={() => {
+                          navigate(
+                            `/evento/${
+                              event.slug
+                                ? `${event.slug}-${event.id}`
+                                : event.id
+                            }`
+                          );
+                          window.scrollTo({ top: 0, behavior: "smooth" });
+                        }}
                         style={{
                           padding: "8px 16px",
                           backgroundColor: "#0099ff",
@@ -352,6 +361,10 @@ export default function MyEventsPage() {
                         Ver Detalhes
                       </button>
                       <button
+                        onClick={() => {
+                          navigate(`/editar-evento/${event.id}`);
+                          window.scrollTo({ top: 0, behavior: "smooth" });
+                        }}
                         style={{
                           padding: "8px 16px",
                           backgroundColor: "transparent",

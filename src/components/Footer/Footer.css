@@ -205,3 +205,109 @@
   .legal-row { flex-direction: column; align-items: flex-start; } 
   .legal-links { flex-wrap: wrap; justify-content: flex-start; } 
 }
+
+/* ====================================
+   FOOTER COMPACTO (Usuários Logados)
+   ==================================== */
+.serra-footer.compact {
+  background: #0d4a80;
+  color: #e2e8f0;
+  font-family: 'Inter', Arial, sans-serif;
+  padding: 16px 56px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 1000;
+  transition: left 0.35s cubic-bezier(0.4,0,0.2,1), width 0.35s cubic-bezier(0.4,0,0.2,1);
+}
+
+.compact-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1400px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+}
+
+.compact-copyright {
+  margin: 0;
+  font-size: 0.875rem;
+  color: #cbd5e1;
+  font-weight: 400;
+}
+
+.compact-links {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+
+.compact-links a {
+  color: #cbd5e1;
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: color 0.25s ease;
+  position: relative;
+}
+
+.compact-links a:after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #61b4ff, #fff);
+  transition: width 0.25s ease;
+  border-radius: 2px;
+}
+
+.compact-links a:hover {
+  color: #ffffff;
+}
+
+.compact-links a:hover:after {
+  width: 100%;
+}
+
+/* Responsivo - Footer Compacto */
+@media (max-width: 768px) {
+  .serra-footer.compact {
+    padding: 16px 32px;
+  }
+  
+  .compact-content {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+  }
+  
+  .compact-links {
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .serra-footer.compact {
+    padding: 12px 20px;
+  }
+  
+  .compact-copyright {
+    font-size: 0.75rem;
+  }
+  
+  .compact-links a {
+    font-size: 0.75rem;
+  }
+  
+  .compact-links {
+    gap: 12px;
+  }
+}

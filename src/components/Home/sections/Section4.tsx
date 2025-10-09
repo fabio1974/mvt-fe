@@ -40,19 +40,28 @@ type EventCardProps = {
 function EventCard({ id, image, date, title, location, city }: EventCardProps) {
   const eventUrl = getEventUrl(title, id);
 
+  const handleClick = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
-    <Link to={eventUrl} style={{ textDecoration: "none", color: "inherit" }}>
+    <Link
+      to={eventUrl}
+      onClick={handleClick}
+      style={{ textDecoration: "none", color: "inherit" }}
+    >
       <div
         style={{
           background: "#ffffff",
           borderRadius: 20,
           boxShadow: "0 6px 20px rgba(0,0,0,0.1)",
           width: 280,
+          minWidth: 280,
           padding: 20,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          margin: "0 12px",
+          margin: 0,
           transition: "transform 0.3s ease, box-shadow 0.3s ease",
           cursor: "pointer",
           border: "1px solid #f1f3f4",
@@ -178,6 +187,24 @@ export default function Section4() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [currentPage, setCurrentPage] = useState(0);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  // Ajustar eventos por página baseado no tamanho da tela
+  const eventsPerPage = isMobile ? 1 : 3;
+
+  // Detectar mudanças de tamanho da tela
+  useEffect(() => {
+    const handleResize = () => {
+      const newIsMobile = window.innerWidth <= 768;
+      if (newIsMobile !== isMobile) {
+        setIsMobile(newIsMobile);
+        setCurrentPage(0); // Resetar para primeira página ao mudar de modo
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [isMobile]);
 
   // Função para formatar a data
   const formatEventDate = (dateString: string) => {
@@ -236,8 +263,7 @@ export default function Section4() {
           .sort(
             (a, b) =>
               new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime()
-          )
-          .slice(0, 6); // Limitar a 6 eventos
+          );
 
         setEvents(publishedEvents);
       } catch (err) {
@@ -333,6 +359,22 @@ export default function Section4() {
     location: formatFullDate(event.eventDate),
     city: event.location, // Usar location como city
   }));
+
+  // Calcular eventos da página atual
+  const totalPages = Math.ceil(eventCards.length / eventsPerPage);
+  const startIndex = currentPage * eventsPerPage;
+  const endIndex = startIndex + eventsPerPage;
+  const currentEvents = eventCards.slice(startIndex, endIndex);
+
+  // Funções de navegação
+  const handlePrevious = () => {
+    setCurrentPage((prev) => Math.max(0, prev - 1));
+  };
+
+  const handleNext = () => {
+    setCurrentPage((prev) => Math.min(totalPages - 1, prev + 1));
+  };
+
   if (loading) {
     return (
       <div
@@ -396,15 +438,22 @@ export default function Section4() {
     <div
       style={{
         background: "#f8f9fa",
-        padding: "48px 32px 64px 32px",
+        padding: "48px 16px 64px 16px",
         margin: 0,
         borderRadius: 16,
         boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
         width: "100%",
         boxSizing: "border-box",
+        overflow: "visible",
       }}
     >
-      <div style={{}}>
+      <div
+        style={{
+          maxWidth: 1600,
+          margin: "0 auto",
+          padding: "0 16px",
+        }}
+      >
         <h2
           style={{
             fontSize: "2.8rem",
@@ -477,47 +526,237 @@ export default function Section4() {
         <div
           style={{
             display: "flex",
-            gap: 24,
+            flexDirection: isMobile ? "column" : "row",
+            gap: isMobile ? 24 : 16,
             justifyContent: "center",
-            flexWrap: "wrap",
-            maxWidth: 1200,
+            alignItems: "center",
+            flexWrap: "nowrap",
+            maxWidth: "100%",
             margin: "0 auto",
+            position: "relative",
           }}
         >
-          {eventCards.length > 0 ? (
-            eventCards.map((eventCard, idx) => (
-              <EventCard key={`event-${idx}`} {...eventCard} />
-            ))
-          ) : (
-            <div
-              style={{
-                textAlign: "center",
-                color: "#6c757d",
-                fontSize: "1.2rem",
-                padding: "60px 20px",
-                backgroundColor: "#ffffff",
-                borderRadius: 16,
-                boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-                maxWidth: 500,
-                margin: "0 auto",
-              }}
-            >
-              <div style={{ fontSize: "3rem", marginBottom: 16 }}>🏃‍♂️</div>
-              <p style={{ margin: 0, fontWeight: 500 }}>
-                Nenhum evento disponível no momento.
-              </p>
-              <p
+          {/* Botão Anterior - Desktop: à esquerda | Mobile: em cima */}
+          <button
+            onClick={handlePrevious}
+            disabled={currentPage === 0}
+            style={{
+              width: isMobile ? "100%" : 40,
+              height: isMobile ? 50 : 380,
+              borderRadius: isMobile ? 12 : 0,
+              border: "none",
+              background:
+                currentPage === 0
+                  ? "transparent"
+                  : "linear-gradient(135deg, rgba(0,153,255,0.1), rgba(0,153,255,0.2))",
+              color: currentPage === 0 ? "#adb5bd" : "#0099ff",
+              fontSize: isMobile ? 16 : 24,
+              fontWeight: isMobile ? 600 : "normal",
+              cursor: currentPage === 0 ? "not-allowed" : "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+              boxShadow: "none",
+              flexShrink: 0,
+              order: isMobile ? 1 : 0,
+              position: "relative",
+              overflow: "hidden",
+              padding: 0,
+            }}
+            onMouseOver={(e) => {
+              if (currentPage !== 0) {
+                e.currentTarget.style.background =
+                  "linear-gradient(135deg, rgba(0,153,255,0.25), rgba(0,153,255,0.35))";
+                if (!isMobile) {
+                  e.currentTarget.style.transform = "translateX(-4px)";
+                }
+              }
+            }}
+            onMouseOut={(e) => {
+              if (currentPage !== 0) {
+                e.currentTarget.style.background =
+                  "linear-gradient(135deg, rgba(0,153,255,0.1), rgba(0,153,255,0.2))";
+                if (!isMobile) {
+                  e.currentTarget.style.transform = "translateX(0)";
+                }
+              }
+            }}
+          >
+            {isMobile ? (
+              <>← Anterior</>
+            ) : (
+              <svg
+                width="40"
+                height="380"
+                viewBox="0 0 40 380"
                 style={{
-                  margin: "8px 0 0 0",
-                  fontSize: "1rem",
-                  color: "#8e9297",
+                  filter:
+                    currentPage === 0
+                      ? "none"
+                      : "drop-shadow(0 4px 12px rgba(0,153,255,0.3))",
                 }}
               >
-                Novos desafios em breve!
-              </p>
-            </div>
-          )}
+                {/* Triângulo isósceles apontando para esquerda */}
+                <path
+                  d="M 40 0 L 40 380 L 0 190 Z"
+                  fill={currentPage === 0 ? "#e9ecef" : "#0099ff"}
+                  opacity={currentPage === 0 ? "0.3" : "0.9"}
+                />
+              </svg>
+            )}
+          </button>
+
+          {/* Container dos eventos */}
+          <div
+            style={{
+              display: "flex",
+              gap: 24,
+              justifyContent: "center",
+              flexWrap: "nowrap",
+              width: isMobile ? "280px" : "auto",
+              maxWidth: isMobile ? "100%" : "none",
+              overflow: "visible",
+              order: isMobile ? 2 : 1,
+            }}
+          >
+            {currentEvents.length > 0 ? (
+              currentEvents.map((eventCard, idx) => (
+                <EventCard key={`event-${startIndex + idx}`} {...eventCard} />
+              ))
+            ) : (
+              <div
+                style={{
+                  textAlign: "center",
+                  color: "#6c757d",
+                  fontSize: "1.2rem",
+                  padding: "60px 20px",
+                  backgroundColor: "#ffffff",
+                  borderRadius: 16,
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                  maxWidth: 500,
+                  margin: "0 auto",
+                }}
+              >
+                <div style={{ fontSize: "3rem", marginBottom: 16 }}>🏃‍♂️</div>
+                <p style={{ margin: 0, fontWeight: 500 }}>
+                  Nenhum evento disponível no momento.
+                </p>
+                <p
+                  style={{
+                    margin: "8px 0 0 0",
+                    fontSize: "1rem",
+                    color: "#8e9297",
+                  }}
+                >
+                  Novos desafios em breve!
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Botão Próximo - Desktop: à direita | Mobile: embaixo */}
+          <button
+            onClick={handleNext}
+            disabled={currentPage >= totalPages - 1}
+            style={{
+              width: isMobile ? "100%" : 40,
+              height: isMobile ? 50 : 380,
+              borderRadius: isMobile ? 12 : 0,
+              border: "none",
+              background:
+                currentPage >= totalPages - 1
+                  ? "transparent"
+                  : "linear-gradient(135deg, rgba(0,153,255,0.1), rgba(0,153,255,0.2))",
+              color: currentPage >= totalPages - 1 ? "#adb5bd" : "#0099ff",
+              fontSize: isMobile ? 16 : 24,
+              fontWeight: isMobile ? 600 : "normal",
+              cursor: currentPage >= totalPages - 1 ? "not-allowed" : "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+              boxShadow: "none",
+              flexShrink: 0,
+              order: isMobile ? 3 : 2,
+              position: "relative",
+              overflow: "hidden",
+              padding: 0,
+            }}
+            onMouseOver={(e) => {
+              if (currentPage < totalPages - 1) {
+                e.currentTarget.style.background =
+                  "linear-gradient(135deg, rgba(0,153,255,0.25), rgba(0,153,255,0.35))";
+                if (!isMobile) {
+                  e.currentTarget.style.transform = "translateX(4px)";
+                }
+              }
+            }}
+            onMouseOut={(e) => {
+              if (currentPage < totalPages - 1) {
+                e.currentTarget.style.background =
+                  "linear-gradient(135deg, rgba(0,153,255,0.1), rgba(0,153,255,0.2))";
+                if (!isMobile) {
+                  e.currentTarget.style.transform = "translateX(0)";
+                }
+              }
+            }}
+          >
+            {isMobile ? (
+              <>Próximo →</>
+            ) : (
+              <svg
+                width="40"
+                height="380"
+                viewBox="0 0 40 380"
+                style={{
+                  filter:
+                    currentPage >= totalPages - 1
+                      ? "none"
+                      : "drop-shadow(0 4px 12px rgba(0,153,255,0.3))",
+                }}
+              >
+                {/* Triângulo isósceles apontando para direita */}
+                <path
+                  d="M 0 0 L 40 190 L 0 380 Z"
+                  fill={currentPage >= totalPages - 1 ? "#e9ecef" : "#0099ff"}
+                  opacity={currentPage >= totalPages - 1 ? "0.3" : "0.9"}
+                />
+              </svg>
+            )}
+          </button>
         </div>
+
+        {/* Indicador de página */}
+        {totalPages > 1 && (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              gap: 8,
+              marginTop: 32,
+            }}
+          >
+            {Array.from({ length: totalPages }).map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentPage(index)}
+                style={{
+                  width: currentPage === index ? 24 : 10,
+                  height: 10,
+                  borderRadius: 5,
+                  border: "none",
+                  background: currentPage === index ? "#0099ff" : "#cbd5e1",
+                  cursor: "pointer",
+                  transition: "all 0.3s ease",
+                }}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

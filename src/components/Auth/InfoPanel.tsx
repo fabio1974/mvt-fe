@@ -3,7 +3,7 @@ export default function InfoPanel() {
     <div
       style={{
         flex: 1,
-        padding: "48px 32px",
+        padding: "24px 32px",
         background: "#fafafa",
         display: "flex",
         flexDirection: "column",
@@ -16,7 +16,7 @@ export default function InfoPanel() {
           style={{
             fontWeight: 600,
             fontSize: "1.3rem",
-            marginBottom: 24,
+            marginBottom: 16,
             textAlign: "center",
           }}
         >
@@ -26,7 +26,7 @@ export default function InfoPanel() {
           style={{
             color: "#555",
             fontSize: "1rem",
-            marginBottom: 24,
+            marginBottom: 16,
             textAlign: "center",
           }}
         >
@@ -34,7 +34,7 @@ export default function InfoPanel() {
         </div>
         <ul style={{ listStyle: "none", padding: "0 0 0 24px", margin: 0 }}>
           <li
-            style={{ marginBottom: 16, display: "flex", alignItems: "center" }}
+            style={{ marginBottom: 12, display: "flex", alignItems: "center" }}
           >
             <span style={{ color: "#ff9900", fontSize: 22, marginRight: 8 }}>
               ✔
@@ -42,7 +42,7 @@ export default function InfoPanel() {
             Seus eventos favoritos salvos
           </li>
           <li
-            style={{ marginBottom: 16, display: "flex", alignItems: "center" }}
+            style={{ marginBottom: 12, display: "flex", alignItems: "center" }}
           >
             <span style={{ color: "#ff9900", fontSize: 22, marginRight: 8 }}>
               ✔

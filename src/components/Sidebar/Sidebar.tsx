@@ -8,6 +8,7 @@ import {
   FiBookmark,
   FiShield,
   FiUser,
+  FiUsers,
 } from "react-icons/fi";
 import "./Sidebar.css";
 
@@ -23,6 +24,11 @@ const menuItems = [
     path: "/criar-evento",
   },
   {
+    label: "Inscrições",
+    icon: <FiUsers size={22} color="#0099ff" />,
+    path: "/organizacao/inscricoes",
+  },
+  {
     label: "Organização",
     icon: <FiSettings size={22} color="#0099ff" />,
     path: "/organizacao",
@@ -35,7 +41,7 @@ const menuItems = [
   {
     label: "Eventos",
     icon: <FiShield size={22} color="#0099ff" />,
-    path: "/admin/eventos",
+    path: "/eventos",
   },
   {
     label: "Dados pessoais",
@@ -69,7 +75,8 @@ export default function Sidebar({
     if (
       item.label === "Criar evento" ||
       item.label === "Meus eventos" ||
-      item.label === "Organização"
+      item.label === "Organização" ||
+      item.label === "Inscrições"
     ) {
       return userRole === "ROLE_ORGANIZER" || userRole === "ROLE_ADMIN";
     }

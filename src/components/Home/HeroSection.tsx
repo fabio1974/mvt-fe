@@ -2,6 +2,13 @@ import "./Home.css";
 
 // Hero principal inspirado na landing, com imagem de fundo e overlay
 export default function HeroSection() {
+  const scrollToEvents = () => {
+    const eventsSection = document.getElementById("explorar-eventos");
+    if (eventsSection) {
+      eventsSection.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
   return (
     <section className="hero-section">
       <div className="hero-bg" />
@@ -16,9 +23,9 @@ export default function HeroSection() {
           desafiadoras. Sua aventura atlética começa aqui.
         </p>
         <div className="hero-actions">
-          <a href="/eventos" className="btn hero primary">
+          <button onClick={scrollToEvents} className="btn hero primary">
             Explorar Eventos →
-          </a>
+          </button>
           <button className="btn hero ghost">Ver como funciona</button>
         </div>
         <div className="hero-stats">

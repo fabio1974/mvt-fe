@@ -2,12 +2,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../services/api";
 import { useState } from "react";
-import {
-  FormField,
-  FormInput,
-  FormActions,
-  FormButton,
-} from "../Common/FormComponents";
+import { FormField, FormInput, FormButton } from "../Common/FormComponents";
 
 interface ResetPasswordFormData {
   username: string;
@@ -44,17 +39,53 @@ export default function ResetPasswordForm() {
       setTimeout(() => {
         navigate("/login");
       }, 2000);
-    } catch (err: unknown) {
-      interface ApiError {
-        response?: {
-          data?: {
-            message?: string;
-          };
-        };
+    } catch (err) {
+      // Extrair mensagens de erro do backend
+      let errorMessage = "";
+
+      if (err && typeof err === "object" && "response" in err) {
+        const response = (
+          err as {
+            response?: {
+              data?: {
+                fieldErrors?: Record<string, string>;
+                message?: string;
+                error?: string;
+              };
+            };
+          }
+        ).response;
+
+        if (response?.data) {
+          const { fieldErrors, message, error } = response.data;
+
+          // Prioridade 1: fieldErrors - erros específicos de cada campo
+          if (fieldErrors && Object.keys(fieldErrors).length > 0) {
+            errorMessage = Object.entries(fieldErrors)
+              .map(([field, msg]) => `${field}: ${msg}`)
+              .join("; ");
+          }
+          // Prioridade 2: message - mensagem geral
+          else if (message) {
+            errorMessage = message;
+          }
+          // Prioridade 3: error
+          else if (error) {
+            errorMessage = error;
+          }
+        }
       }
-      const errorMessage =
-        (err as ApiError)?.response?.data?.message ||
-        "Erro ao alterar senha. Verifique se o email existe e tente novamente.";
+      // Prioridade 4: mensagem genérica do erro
+      else if (err && typeof err === "object" && "message" in err) {
+        errorMessage = (err as { message: string }).message;
+      }
+
+      // Fallback
+      if (!errorMessage) {
+        errorMessage =
+          "Erro ao alterar senha. Verifique se o email existe e tente novamente.";
+      }
+
       setError(errorMessage);
     }
   };
@@ -66,14 +97,13 @@ export default function ResetPasswordForm() {
         margin: "0 auto",
         display: "flex",
         flexDirection: "column",
-        gap: 20,
       }}
     >
       <p
         style={{
           textAlign: "center",
           color: "#666",
-          marginBottom: 20,
+          marginBottom: 12,
           fontSize: "0.9rem",
         }}
       >
@@ -85,7 +115,7 @@ export default function ResetPasswordForm() {
         style={{
           display: "flex",
           flexDirection: "column",
-          gap: 20,
+          gap: 12,
         }}
       >
         <FormField label="E-mail" required error={errors.username?.message}>
@@ -136,7 +166,9 @@ export default function ResetPasswordForm() {
           />
         </FormField>
 
-        <FormActions align="center">
+        <div
+          style={{ display: "flex", justifyContent: "center", marginTop: 24 }}
+        >
           <FormButton
             type="submit"
             variant="primary"
@@ -172,7 +204,7 @@ export default function ResetPasswordForm() {
           >
             {isSubmitting ? "Alterando senha..." : "Alterar Senha"}
           </FormButton>
-        </FormActions>
+        </div>
       </form>
 
       {error && (

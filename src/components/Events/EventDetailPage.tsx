@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { api } from "../../services/api";
 import { extractIdFromSlug } from "../../utils/slug";
+import { getUserRole } from "../../utils/auth";
 import DummyImage from "../dummy_images/DummyImage";
 import "./EventDetailPage.css";
 
@@ -18,6 +19,18 @@ interface Event {
   status: "DRAFT" | "PUBLISHED" | "CANCELLED";
   slug?: string;
   image?: string;
+  categories?: Array<{
+    id: number;
+    name: string;
+    minAge?: number | null;
+    maxAge?: number | null;
+    gender?: string | null;
+    distance?: number | null;
+    distanceUnit?: string | null;
+    price?: number | null;
+    maxParticipants?: number | null;
+    observations?: string | null;
+  }>;
 }
 
 export default function EventDetailPage() {
@@ -42,7 +55,19 @@ export default function EventDetailPage() {
           setError("URL inválida");
           return;
         }
-        const response = await api.get(`/events/public/${eventId}`);
+
+        // Verificar se é ADMIN ou ORGANIZER para poder ver eventos não publicados
+        const userRole = getUserRole();
+        const isAdminOrOrganizer =
+          userRole === "ROLE_ADMIN" || userRole === "ROLE_ORGANIZER";
+
+        // ADMIN e ORGANIZER podem ver qualquer evento (publicado ou não)
+        // Outros usuários só veem eventos públicos
+        const endpoint = isAdminOrOrganizer
+          ? `/events/${eventId}`
+          : `/events/public/${eventId}`;
+
+        const response = await api.get(endpoint);
         setEvent(response.data as Event);
       } catch (err) {
         console.error("Erro ao carregar evento:", err);
@@ -359,10 +384,112 @@ export default function EventDetailPage() {
                   lineHeight: "1.7",
                   fontSize: "1.1rem",
                   margin: 0,
+                  marginBottom:
+                    event.categories && event.categories.length > 0
+                      ? "32px"
+                      : 0,
                 }}
               >
                 {event.description}
               </p>
+
+              {/* Categorias do Evento */}
+              {event.categories && event.categories.length > 0 && (
+                <div>
+                  <h3
+                    style={{
+                      fontSize: "1.3rem",
+                      fontWeight: "700",
+                      color: "#1f2937",
+                      marginBottom: "16px",
+                      marginTop: "32px",
+                    }}
+                  >
+                    Categorias
+                  </h3>
+                  <div
+                    style={{
+                      display: "grid",
+                      gap: "12px",
+                    }}
+                  >
+                    {event.categories.map((category, index) => (
+                      <div
+                        key={index}
+                        style={{
+                          padding: "16px 20px",
+                          backgroundColor: "#f8f9fa",
+                          borderRadius: "8px",
+                          border: "1px solid #e5e7eb",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "12px",
+                        }}
+                      >
+                        <div
+                          style={{
+                            width: "8px",
+                            height: "8px",
+                            borderRadius: "50%",
+                            backgroundColor: "#0099ff",
+                            flexShrink: 0,
+                          }}
+                        />
+                        <div style={{ flex: 1 }}>
+                          <p
+                            style={{
+                              margin: 0,
+                              fontSize: "1rem",
+                              fontWeight: "600",
+                              color: "#1f2937",
+                            }}
+                          >
+                            {category.name}
+                          </p>
+                          {category.observations && (
+                            <p
+                              style={{
+                                margin: "4px 0 0 0",
+                                fontSize: "0.875rem",
+                                color: "#6b7280",
+                              }}
+                            >
+                              {category.observations}
+                            </p>
+                          )}
+                        </div>
+                        {category.price !== null &&
+                          category.price !== undefined && (
+                            <div
+                              style={{
+                                padding: "6px 12px",
+                                backgroundColor: "#e3f2fd",
+                                borderRadius: "6px",
+                                flexShrink: 0,
+                              }}
+                            >
+                              <p
+                                style={{
+                                  margin: 0,
+                                  fontSize: "0.9rem",
+                                  fontWeight: "600",
+                                  color: "#0099ff",
+                                }}
+                              >
+                                {category.price === 0
+                                  ? "Gratuito"
+                                  : new Intl.NumberFormat("pt-BR", {
+                                      style: "currency",
+                                      currency: "BRL",
+                                    }).format(category.price)}
+                              </p>
+                            </div>
+                          )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

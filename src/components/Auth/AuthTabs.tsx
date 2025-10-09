@@ -8,7 +8,7 @@ export default function AuthTabs() {
     <div
       style={{
         flex: 1,
-        padding: "48px 32px",
+        padding: "24px 32px",
         background: "#fff",
         display: "flex",
         flexDirection: "column",
@@ -19,14 +19,14 @@ export default function AuthTabs() {
         style={{
           fontWeight: 700,
           fontSize: "1.5rem",
-          marginBottom: 24,
+          marginBottom: 16,
           textAlign: "center",
         }}
       >
         Acessar conta na Corridas da Serra
       </h2>
       <div
-        style={{ display: "flex", justifyContent: "center", marginBottom: 32 }}
+        style={{ display: "flex", justifyContent: "center", marginBottom: 24 }}
       >
         <button
           style={{
@@ -65,7 +65,11 @@ export default function AuthTabs() {
           CRIAR CONTA
         </button>
       </div>
-      {activeTab === "login" ? <LoginForm /> : <RegisterForm />}
+      {activeTab === "login" ? (
+        <LoginForm />
+      ) : (
+        <RegisterForm onSuccess={() => setActiveTab("login")} />
+      )}
     </div>
   );
 }

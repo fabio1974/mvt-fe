@@ -1,6 +1,39 @@
 import "./Footer.css";
 
-export default function Footer() {
+interface FooterProps {
+  isLoggedIn?: boolean;
+  sidebarWidth?: number;
+}
+
+export default function Footer({
+  isLoggedIn = false,
+  sidebarWidth = 0,
+}: FooterProps) {
+  // Footer compacto para usuários logados
+  if (isLoggedIn) {
+    return (
+      <footer
+        className="serra-footer compact"
+        style={{
+          left: `${sidebarWidth}px`,
+          width: `calc(100% - ${sidebarWidth}px)`,
+        }}
+      >
+        <div className="compact-content">
+          <p className="compact-copyright">
+            © 2025 Corridas da Serra. Todos os direitos reservados.
+          </p>
+          <div className="compact-links">
+            <a href="#">TERMOS</a>
+            <a href="#">PRIVACIDADE</a>
+            <a href="#">COOKIES</a>
+          </div>
+        </div>
+      </footer>
+    );
+  }
+
+  // Footer completo para usuários não logados
   return (
     <footer className="serra-footer modern">
       <div className="footer-grid">

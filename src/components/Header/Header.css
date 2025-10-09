@@ -12,17 +12,6 @@
   border-bottom: 1px solid rgba(220,210,195,0.4);
   box-shadow: 0 4px 24px -8px rgba(15,23,42,0.15);
   transition: all 0.35s cubic-bezier(0.4,0,0.2,1);
-  margin-left: 0;
-}
-
-.serra-header.modern.with-sidebar {
-  margin-left: 0;
-  width: 100%;
-}
-
-.serra-header.modern.with-sidebar.sidebar-collapsed {
-  margin-left: 0;
-  width: 100%;
 }
 
 .header-container.modern-inner { display:flex; align-items:center; justify-content:space-between; height:72px; margin:0 auto; padding:0 42px; max-width:1500px; }
@@ -66,3 +55,43 @@
   .modern-nav { display:none; }
   .modern-actions { display:none; }
 }
+
+/* Logout Button Styles */
+.btn.logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80%;
+  padding: 14px 24px;
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  box-shadow: 0 8px 20px -6px rgba(239, 68, 68, 0.4);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 8px;
+}
+
+.btn.logout-btn:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -6px rgba(239, 68, 68, 0.5);
+}
+
+.btn.logout-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px -4px rgba(239, 68, 68, 0.4);
+}
+
+.btn.logout-btn svg {
+  transition: transform 0.3s ease;
+}
+
+.btn.logout-btn:hover svg {
+  transform: translateX(3px);
+}
+

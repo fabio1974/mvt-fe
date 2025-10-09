@@ -27,7 +27,7 @@ export default function Home() {
         <SectionContainer>
           <Section3 />
         </SectionContainer>
-        <SectionContainer>
+        <SectionContainer id="explorar-eventos">
           <Section4 />
         </SectionContainer>
         <SectionContainer>

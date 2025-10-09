@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { api } from "../../services/api";
 import { useNavigate } from "react-router-dom";
-import { getUserId } from "../../utils/auth";
+import { getUserId, getOrganizationId } from "../../utils/auth";
 import {
   FormContainer,
   FormRow,
@@ -11,7 +11,7 @@ import {
   FormActions,
   FormButton,
 } from "../Common/FormComponents";
-import { FiSettings, FiSave } from "react-icons/fi";
+import { FiSettings, FiSave, FiEdit, FiPlus } from "react-icons/fi";
 
 interface OrganizationFormProps {
   fromCreateEvent?: boolean;
@@ -31,6 +31,7 @@ interface OrganizationResponse {
 export default function OrganizationForm({
   fromCreateEvent = false,
 }: OrganizationFormProps) {
+  const navigate = useNavigate();
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [contactEmail, setContactEmail] = useState("");
@@ -39,9 +40,83 @@ export default function OrganizationForm({
   const [description, setDescription] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadingData, setLoadingData] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const navigate = useNavigate();
+  const [organizationId, setOrganizationId] = useState<number | null>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+
+  // Carregar organização existente ao montar o componente
+  useEffect(() => {
+    const loadOrganization = async () => {
+      const orgId = getOrganizationId();
+      const userId = getUserId();
+
+      // Tentar carregar por organizationId primeiro
+      if (orgId) {
+        try {
+          const response = await api.get<OrganizationResponse>(
+            `/organizations/${orgId}`
+          );
+          const org = response.data;
+
+          // Preencher formulário com dados existentes
+          setOrganizationId(org.id);
+          setName(org.name);
+          setSlug(org.slug);
+          setContactEmail(org.contactEmail);
+          setPhone(org.phone || "");
+          setWebsite(org.website || "");
+          setDescription(org.description);
+          setLogoUrl(org.logoUrl || "");
+
+          // Inicia em modo visualização (campos desabilitados)
+          setIsEditMode(false);
+          setLoadingData(false);
+          return;
+        } catch (err) {
+          console.error("Erro ao carregar organização pelo ID:", err);
+        }
+      }
+
+      // Se não encontrou por orgId, tentar carregar pelo userId
+      if (userId) {
+        try {
+          const response = await api.get<OrganizationResponse>(
+            `/organizations/user/${userId}`
+          );
+          const org = response.data;
+
+          // Preencher formulário com dados existentes
+          setOrganizationId(org.id);
+          setName(org.name);
+          setSlug(org.slug);
+          setContactEmail(org.contactEmail);
+          setPhone(org.phone || "");
+          setWebsite(org.website || "");
+          setDescription(org.description);
+          setLogoUrl(org.logoUrl || "");
+
+          // Salvar organizationId no localStorage para próximas vezes
+          localStorage.setItem("organizationId", org.id.toString());
+
+          // Inicia em modo visualização (campos desabilitados)
+          setIsEditMode(false);
+        } catch (err) {
+          console.error("Erro ao carregar organização pelo userId:", err);
+          // Se não encontrar por nenhum dos dois, mantém em modo criação
+          setIsEditMode(true);
+        }
+      } else {
+        // Sem organização e sem userId, modo criação
+        setIsEditMode(true);
+      }
+
+      setLoadingData(false);
+    };
+
+    loadOrganization();
+  }, []);
 
   // Função para gerar slug automaticamente a partir do nome
   const generateSlug = (name: string) => {
@@ -64,50 +139,121 @@ export default function OrganizationForm({
     setLoading(true);
     setError("");
     setSuccess("");
+
     try {
-      // 1. Criar a organização
-      const response = await api.post<OrganizationResponse>("/organizations", {
-        name,
-        slug,
-        contactEmail,
-        phone,
-        website,
-        description,
-        logoUrl,
-      });
+      if (organizationId) {
+        // Atualizar organização existente
+        await api.put(`/organizations/${organizationId}`, {
+          name,
+          slug,
+          contactEmail,
+          phone,
+          website,
+          description,
+          logoUrl,
+        });
 
-      // 2. Salvar o ID da organização no localStorage
-      if (response.data && response.data.id) {
-        const organizationId = response.data.id;
-        localStorage.setItem("organizationId", organizationId.toString());
+        setSuccess("Organização atualizada com sucesso!");
+        // Após salvar, volta para modo visualização
+        setIsEditMode(false);
+      } else {
+        // Criar nova organização
+        const userId = getUserId();
 
-        // 3. Atualizar o usuário no backend para vincular à organização
-        try {
-          const userId = getUserId();
-          if (userId) {
-            await api.put(`/users/${userId}/organization`, {
-              organizationId: organizationId,
-            });
-          } else {
-            console.error("User ID não encontrado no token");
+        if (!userId) {
+          setError("Erro: Usuário não identificado. Faça login novamente.");
+          setLoading(false);
+          return;
+        }
+
+        const response = await api.post<OrganizationResponse>(
+          "/organizations",
+          {
+            name,
+            slug,
+            contactEmail,
+            phone,
+            website,
+            description,
+            logoUrl,
+            userId, // Enviar userId no payload para vincular organização ao usuário
           }
-        } catch (updateErr) {
-          console.error(
-            "Erro ao atualizar usuário com organizationId:",
-            updateErr
-          );
-          // Não falha o processo principal, mas loga o erro
+        );
+
+        // Salvar o ID da organização no localStorage
+        if (response.data && response.data.id) {
+          const newOrgId = response.data.id;
+          setOrganizationId(newOrgId);
+          localStorage.setItem("organizationId", newOrgId.toString());
+        }
+
+        setSuccess("Organização cadastrada com sucesso!");
+        // Após cadastrar, desabilita campos e muda para modo visualização
+        setIsEditMode(false);
+      }
+    } catch (err) {
+      console.error(err);
+
+      // Extrair mensagem de erro do backend
+      let errorMessage = organizationId
+        ? "Erro ao atualizar organização."
+        : "Erro ao cadastrar organização.";
+
+      if (err && typeof err === "object" && "response" in err) {
+        const response = (
+          err as {
+            response?: {
+              data?: {
+                fieldErrors?: Record<string, string>;
+                message?: string;
+                error?: string;
+              };
+            };
+          }
+        ).response;
+
+        if (response?.data) {
+          const { fieldErrors, message, error } = response.data;
+
+          // Prioridade: fieldErrors > message > error > mensagem padrão
+          if (fieldErrors && Object.keys(fieldErrors).length > 0) {
+            errorMessage = Object.entries(fieldErrors)
+              .map(([field, msg]) => `${field}: ${msg}`)
+              .join("; ");
+          } else if (message) {
+            errorMessage = message;
+          } else if (error) {
+            errorMessage = error;
+          }
         }
       }
 
-      setSuccess("Organização cadastrada com sucesso!");
-    } catch (err) {
-      setError("Erro ao cadastrar organização.");
-      console.error(err);
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
+
+  const handleEditClick = () => {
+    setIsEditMode(true);
+    setSuccess("");
+    setError("");
+  };
+
+  if (loadingData) {
+    return (
+      <div
+        style={{
+          minHeight: "calc(100vh - 160px)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <p>Carregando...</p>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -166,6 +312,7 @@ export default function OrganizationForm({
                   required
                   value={name}
                   onChange={(e) => handleNameChange(e.target.value)}
+                  disabled={!isEditMode}
                 />
               </FormField>
             </FormRow>
@@ -179,6 +326,7 @@ export default function OrganizationForm({
                   value={slug}
                   onChange={(e) => setSlug(e.target.value)}
                   style={{ backgroundColor: "#f8f9fa" }}
+                  disabled={!isEditMode}
                 />
                 <small
                   style={{ color: "#666", fontSize: "0.875rem", marginTop: 2 }}
@@ -197,6 +345,7 @@ export default function OrganizationForm({
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={4}
+                  disabled={!isEditMode}
                 />
               </FormField>
             </FormRow>
@@ -209,6 +358,7 @@ export default function OrganizationForm({
                   required
                   value={contactEmail}
                   onChange={(e) => setContactEmail(e.target.value)}
+                  disabled={!isEditMode}
                 />
               </FormField>
 
@@ -218,6 +368,7 @@ export default function OrganizationForm({
                   placeholder="(11) 99999-9999"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
+                  disabled={!isEditMode}
                 />
               </FormField>
             </FormRow>
@@ -229,6 +380,7 @@ export default function OrganizationForm({
                   placeholder="https://www.suaorganizacao.com"
                   value={website}
                   onChange={(e) => setWebsite(e.target.value)}
+                  disabled={!isEditMode}
                 />
               </FormField>
 
@@ -238,50 +390,55 @@ export default function OrganizationForm({
                   placeholder="https://exemplo.com/logo.png"
                   value={logoUrl}
                   onChange={(e) => setLogoUrl(e.target.value)}
+                  disabled={!isEditMode}
                 />
               </FormField>
             </FormRow>
 
-            <FormActions>
-              <FormButton
-                type="submit"
-                variant="primary"
-                disabled={loading}
-                icon={<FiSave />}
-              >
-                {loading ? "Cadastrando..." : "Cadastrar Organização"}
-              </FormButton>
-            </FormActions>
-
-            {error && (
-              <div
-                style={{ color: "#ef4444", textAlign: "center", marginTop: 16 }}
-              >
-                {error}
-              </div>
-            )}
-            {success && (
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  gap: 16,
-                  marginTop: 16,
-                }}
-              >
-                <div style={{ color: "#10b981", fontSize: "1rem" }}>
-                  {success}
-                </div>
+            {/* Ações e Mensagens */}
+            <FormActions error={error} success={success}>
+              {/* Botão de Editar - só aparece quando acessa pelo menu Organização (!fromCreateEvent) */}
+              {organizationId && !isEditMode && !fromCreateEvent && (
                 <FormButton
                   type="button"
                   variant="secondary"
+                  icon={<FiEdit />}
+                  onClick={handleEditClick}
+                >
+                  Editar Organização
+                </FormButton>
+              )}
+
+              {/* Botão Cadastrar Evento - só aparece quando vem do fluxo de criação de evento */}
+              {organizationId && !isEditMode && fromCreateEvent && (
+                <FormButton
+                  type="button"
+                  variant="primary"
+                  icon={<FiPlus />}
                   onClick={() => navigate("/criar-evento")}
                 >
                   Cadastrar Evento
                 </FormButton>
-              </div>
-            )}
+              )}
+
+              {/* Botão de Salvar - aparece sempre que está em modo edição (novo cadastro ou editando) */}
+              {(!organizationId || isEditMode) && (
+                <FormButton
+                  type="submit"
+                  variant="primary"
+                  disabled={loading}
+                  icon={<FiSave />}
+                >
+                  {loading
+                    ? organizationId
+                      ? "Salvando..."
+                      : "Cadastrando..."
+                    : organizationId
+                    ? "Salvar Organização"
+                    : "Cadastrar Organização"}
+                </FormButton>
+              )}
+            </FormActions>
           </form>
         </FormContainer>
       </div>

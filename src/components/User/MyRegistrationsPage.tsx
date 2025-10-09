@@ -342,7 +342,19 @@ export default function MyRegistrationsPage() {
                 : `Você não possui inscrições com status ${filter}.`}
             </p>
             <button
-              onClick={() => navigate("/")}
+              onClick={() => {
+                navigate("/");
+                setTimeout(() => {
+                  const eventsSection =
+                    document.getElementById("explorar-eventos");
+                  if (eventsSection) {
+                    eventsSection.scrollIntoView({
+                      behavior: "smooth",
+                      block: "start",
+                    });
+                  }
+                }, 100);
+              }}
               className="empty-state-button"
             >
               Explorar Eventos

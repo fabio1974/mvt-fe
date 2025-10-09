@@ -2,12 +2,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../services/api";
 import { useState } from "react";
-import {
-  FormField,
-  FormInput,
-  FormActions,
-  FormButton,
-} from "../Common/FormComponents";
+import { FormField, FormInput, FormButton } from "../Common/FormComponents";
 
 interface LoginFormData {
   username: string;
@@ -43,25 +38,52 @@ export default function LoginForm() {
         setError("Token não recebido. Verifique a resposta da API.");
       }
     } catch (err) {
-      if (
-        err &&
-        typeof err === "object" &&
-        "response" in err &&
-        err.response &&
-        typeof err.response === "object" &&
-        "data" in err.response &&
-        err.response.data &&
-        typeof err.response.data === "object" &&
-        "message" in err.response.data
-      ) {
-        setError(
-          typeof err.response.data.message === "string"
-            ? err.response.data.message
-            : "Erro ao fazer login."
-        );
-      } else {
-        setError("Erro ao fazer login.");
+      // Extrair mensagens de erro do backend
+      let errorMessage = "";
+
+      if (err && typeof err === "object" && "response" in err) {
+        const response = (
+          err as {
+            response?: {
+              data?: {
+                fieldErrors?: Record<string, string>;
+                message?: string;
+                error?: string;
+              };
+            };
+          }
+        ).response;
+
+        if (response?.data) {
+          const { fieldErrors, message, error } = response.data;
+
+          // Prioridade 1: fieldErrors - erros específicos de cada campo
+          if (fieldErrors && Object.keys(fieldErrors).length > 0) {
+            errorMessage = Object.entries(fieldErrors)
+              .map(([field, msg]) => `${field}: ${msg}`)
+              .join("; ");
+          }
+          // Prioridade 2: message - mensagem geral
+          else if (message) {
+            errorMessage = message;
+          }
+          // Prioridade 3: error
+          else if (error) {
+            errorMessage = error;
+          }
+        }
       }
+      // Prioridade 4: mensagem genérica do erro
+      else if (err && typeof err === "object" && "message" in err) {
+        errorMessage = (err as { message: string }).message;
+      }
+
+      // Fallback
+      if (!errorMessage) {
+        errorMessage = "Erro ao fazer login.";
+      }
+
+      setError(errorMessage);
     }
   };
 
@@ -72,7 +94,6 @@ export default function LoginForm() {
         margin: "0 auto",
         display: "flex",
         flexDirection: "column",
-        gap: 20,
       }}
       onSubmit={handleSubmit(onSubmit)}
     >
@@ -104,7 +125,7 @@ export default function LoginForm() {
         />
       </FormField>
 
-      <FormActions align="center">
+      <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>
         <FormButton
           type="submit"
           variant="primary"
@@ -140,7 +161,7 @@ export default function LoginForm() {
         >
           {isSubmitting ? "Enviando..." : "Entrar"}
         </FormButton>
-      </FormActions>
+      </div>
 
       {error && (
         <div

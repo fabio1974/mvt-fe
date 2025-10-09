@@ -3,8 +3,16 @@ import "./Home.css";
 
 interface SectionContainerProps {
   children: React.ReactNode;
+  id?: string;
 }
 
-export default function SectionContainer({ children }: SectionContainerProps) {
-  return <section className="section-container">{children}</section>;
+export default function SectionContainer({
+  children,
+  id,
+}: SectionContainerProps) {
+  return (
+    <section className="section-container" id={id}>
+      {children}
+    </section>
+  );
 }
