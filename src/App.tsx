@@ -4,7 +4,6 @@ import Footer from "./components/Footer/Footer";
 import Home from "./components/Home/Home";
 import LoginRegisterPage from "./components/Auth/LoginRegisterPage";
 import ResetPasswordPage from "./components/Auth/ResetPasswordPage";
-import CreateEventPage from "./components/Events/CreateEventPage";
 import MyEventsPage from "./components/Events/MyEventsPage";
 import EventDetailPage from "./components/Events/EventDetailPage";
 import EventRegistrationPage from "./components/Events/EventRegistrationPage";
@@ -120,8 +119,6 @@ function App() {
               <Route path="/login" element={<LoginRegisterPage />} />
               <Route path="/recuperar-senha" element={<ResetPasswordPage />} />
               <Route path="/eventos" element={<EventsCRUDPage />} />
-              <Route path="/criar-evento" element={<CreateEventPage />} />
-              <Route path="/editar-evento/:id" element={<CreateEventPage />} />
               <Route path="/meus-eventos" element={<MyEventsPage />} />
               <Route path="/evento/:slug" element={<EventDetailPage />} />
               <Route

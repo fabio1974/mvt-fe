@@ -1,16 +1,17 @@
-import React from "react";
+import React, { useState } from "react";
 import { FiSearch, FiRefreshCw } from "react-icons/fi";
 import type { FilterMetadata } from "../../types/metadata";
 import EntitySelect from "../Common/EntitySelect";
 import EntityTypeahead from "../Common/EntityTypeahead";
+import { CityTypeahead } from "../Common/CityTypeahead";
 import {
   FormContainer,
-  FormRow,
   FormField,
   FormInput,
   FormSelect,
   FormActions,
   FormButton,
+  FormDatePicker,
 } from "../Common/FormComponents";
 
 interface EntityFiltersProps {
@@ -26,7 +27,15 @@ const EntityFilters: React.FC<EntityFiltersProps> = ({
   onChange,
   onClear,
 }) => {
+  // Estado para armazenar os estados das cidades selecionadas (para exibição readonly)
+  const [cityStates, setCityStates] = useState<Record<string, string>>({});
+
   const renderFilter = (filter: FilterMetadata) => {
+    // Oculta filtros marcados como não visíveis
+    if (filter.visible === false) {
+      return null;
+    }
+
     switch (filter.type.toLowerCase()) {
       case "text":
         return (
@@ -75,14 +84,65 @@ const EntityFilters: React.FC<EntityFiltersProps> = ({
           </FormField>
         );
 
-      case "date":
+      case "date": {
+        const dateValue = values[filter.name]
+          ? new Date(values[filter.name])
+          : null;
         return (
           <FormField key={filter.name} label={filter.label}>
-            <FormInput
-              type="date"
+            <FormDatePicker
+              selected={dateValue}
+              onChange={(date) => {
+                if (date) {
+                  const formatted = date.toISOString().split("T")[0];
+                  onChange(filter.name, formatted);
+                } else {
+                  onChange(filter.name, "");
+                }
+              }}
+              placeholder={filter.placeholder || undefined}
+              showTimeSelect={false}
+              dateFormat="dd/MM/yyyy"
+            />
+          </FormField>
+        );
+      }
+
+      case "datetime": {
+        const datetimeValue = values[filter.name]
+          ? new Date(values[filter.name])
+          : null;
+        return (
+          <FormField key={filter.name} label={filter.label}>
+            <FormDatePicker
+              selected={datetimeValue}
+              onChange={(date) => {
+                if (date) {
+                  const formatted = date.toISOString();
+                  onChange(filter.name, formatted);
+                } else {
+                  onChange(filter.name, "");
+                }
+              }}
+              placeholder={filter.placeholder || undefined}
+              showTimeSelect={true}
+              dateFormat="dd/MM/yyyy HH:mm"
+            />
+          </FormField>
+        );
+      }
+
+      case "boolean":
+        return (
+          <FormField key={filter.name} label={filter.label}>
+            <FormSelect
               value={values[filter.name] || ""}
               onChange={(e) => onChange(filter.name, e.target.value)}
-            />
+            >
+              <option value="">Todos</option>
+              <option value="true">Sim</option>
+              <option value="false">Não</option>
+            </FormSelect>
           </FormField>
         );
 
@@ -93,6 +153,47 @@ const EntityFilters: React.FC<EntityFiltersProps> = ({
             `Filter ${filter.name} is type 'entity' but missing entityConfig`
           );
           return null;
+        }
+
+        // Detecta se é um filtro de cidade (city, cityId, ou entityName === 'city')
+        const isCityFilter =
+          filter.name === "city" ||
+          filter.name === "cityId" ||
+          filter.entityConfig.entityName === "city";
+
+        if (isCityFilter) {
+          return (
+            <React.Fragment key={filter.name}>
+              <FormField label={filter.label}>
+                <CityTypeahead
+                  value={values[filter.name] || ""}
+                  onCitySelect={(city) => {
+                    onChange(filter.name, city.name);
+                    // Armazena o estado da cidade para exibição
+                    setCityStates((prev) => ({
+                      ...prev,
+                      [filter.name]: city.stateCode || city.state || "",
+                    }));
+                  }}
+                  placeholder={filter.placeholder || "Digite o nome da cidade"}
+                />
+              </FormField>
+
+              <FormField label="Estado">
+                <FormInput
+                  type="text"
+                  value={cityStates[filter.name] || ""}
+                  readOnly
+                  disabled
+                  placeholder="--"
+                  style={{
+                    backgroundColor: "#f3f4f6",
+                    cursor: "not-allowed",
+                  }}
+                />
+              </FormField>
+            </React.Fragment>
+          );
         }
 
         // Decide qual componente renderizar baseado em renderAs
@@ -118,32 +219,11 @@ const EntityFilters: React.FC<EntityFiltersProps> = ({
     }
   };
 
-  // Agrupa filtros em linhas (máximo 4 por linha)
-  const renderFiltersInRows = () => {
-    const rows: FilterMetadata[][] = [];
-    const filtersPerRow = 4;
-
-    for (let i = 0; i < filters.length; i += filtersPerRow) {
-      rows.push(filters.slice(i, i + filtersPerRow));
-    }
-
-    return rows.map((row, rowIndex) => (
-      <FormRow key={rowIndex} columns={row.length}>
-        {row.map(renderFilter)}
-      </FormRow>
-    ));
-  };
-
   return (
-    <FormContainer
-      title="Filtros"
-      icon={<FiSearch />}
-      collapsible={true}
-      defaultCollapsed={false}
-    >
-      {renderFiltersInRows()}
+    <FormContainer title="Filtros" icon={<FiSearch />}>
+      <div className="form-filters-grid">{filters.map(renderFilter)}</div>
 
-      <FormActions align="left">
+      <FormActions>
         <FormButton
           type="button"
           variant="secondary"

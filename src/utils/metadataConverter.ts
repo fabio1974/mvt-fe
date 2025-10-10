@@ -6,15 +6,21 @@ import type { EntityMetadata, FormMetadata, FormFieldMetadata, FormSectionMetada
 function mapFieldType(backendType: string): FormFieldMetadata['type'] {
   const typeMap: Record<string, FormFieldMetadata['type']> = {
     'string': 'text',
+    'text': 'text',
+    'textarea': 'textarea', // ← IMPORTANTE: Preserva textarea
     'integer': 'number',
     'long': 'number',
     'double': 'number',
     'number': 'number',
+    'currency': 'number', // ← Adiciona currency
     'boolean': 'boolean',
     'date': 'date',
     'datetime': 'date',
     'enum': 'select',
     'select': 'select', // Backend já envia "select" para enums
+    'city': 'city', // Tipo especial para cidades
+    'entity': 'entity', // ← Adiciona entity
+    'nested': 'array', // ← Adiciona nested
   };
 
   return typeMap[backendType] || 'text';
@@ -80,8 +86,11 @@ function convertFieldToFormField(field: FieldMetadata): FormFieldMetadata | null
     name: field.name,
     label: field.label,
     type: mappedType,
+    width: field.width, // Largura no grid de 12 colunas
     required: field.required || false,
     placeholder: field.placeholder || `Digite ${field.label.toLowerCase()}`,
+    format: field.format || undefined, // Formato de exibição (ex: "dd/MM/yyyy HH:mm")
+    relationship: field.relationship, // Mantém informação de relacionamento
   };
 
   // Adiciona validações se existirem
@@ -146,12 +155,19 @@ export function convertEntityMetadataToFormMetadata(
 
   sourceFields.forEach(field => {
     // Se o campo tem tipo 'nested' e includeRelationships é true, é um relacionamento
+    // Campos nested sempre são incluídos se includeRelationships for true, independente de visible
     if (field.type === 'nested' && field.relationship && includeRelationships) {
       const relationshipField = convertFieldToFormField(field);
       if (relationshipField) {
         relationshipFields.push(relationshipField);
       }
     } else if (field.type !== 'nested') {
+      // Para campos normais (não nested), ignora campos marcados como não visíveis
+      if (field.visible === false) {
+        console.log(`[convertEntityMetadataToFormMetadata] Skipping hidden field: ${field.name}`);
+        return;
+      }
+      
       // Campos normais (não nested)
       const formField = convertFieldToFormField(field);
       if (formField) {
@@ -159,6 +175,11 @@ export function convertEntityMetadataToFormMetadata(
       }
     }
   });
+
+  // Converte TODOS os campos (incluindo não visíveis) para manter no originalFields
+  const allFields: FormFieldMetadata[] = sourceFields
+    .map(field => convertFieldToFormField(field))
+    .filter((field): field is FormFieldMetadata => field !== null);
 
   console.log('[convertEntityMetadataToFormMetadata] Processed fields:', {
     basicFieldsCount: basicFields.length,
@@ -173,7 +194,7 @@ export function convertEntityMetadataToFormMetadata(
   if (basicFields.length > 0) {
     sections.push({
       id: 'basic-info',
-      title: 'Informações Básicas',
+      title: `Formulário de ${entityMetadata.label}`, // Ex: "Formulário de Eventos"
       fields: basicFields,
       columns: 2,
     });
@@ -191,9 +212,10 @@ export function convertEntityMetadataToFormMetadata(
   return {
     entityName: entityMetadata.name,
     title: entityMetadata.label,
-    description: `Formulário de ${entityMetadata.label.toLowerCase()}`,
+    description: undefined, // Removido, agora está no título da seção
     endpoint: entityMetadata.endpoint,
     sections,
+    originalFields: allFields, // Mantém todos os campos, incluindo os não visíveis
     submitLabel: 'Salvar',
     cancelLabel: 'Cancelar',
   };

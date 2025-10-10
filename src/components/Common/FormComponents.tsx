@@ -29,7 +29,7 @@ export const FormContainer: React.FC<FormContainerProps> = ({
 
 interface FormRowProps {
   children: React.ReactNode;
-  columns?: 1 | 2 | 3 | 4 | 5 | 6;
+  columns?: 1 | 2 | 3 | 4 | 5 | 6 | 12;
   className?: string;
 }
 

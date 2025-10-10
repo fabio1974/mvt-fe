@@ -51,7 +51,21 @@
 }
 
 @media (max-width: 900px) {
-  .header-container.modern-inner { height:56px; padding:0 18px; }
+  .serra-header.modern {
+    width: 100vw; /* Garante largura total da viewport */
+    margin: 0;
+    padding: 0;
+    left: 0;
+    right: 0;
+  }
+  
+  .header-container.modern-inner { 
+    height:56px; 
+    padding:0 18px;
+    max-width: 100%; /* Remove limite de largura em mobile */
+    margin: 0;
+  }
+  
   .modern-nav { display:none; }
   .modern-actions { display:none; }
 }

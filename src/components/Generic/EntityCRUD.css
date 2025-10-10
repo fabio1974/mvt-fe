@@ -180,6 +180,12 @@
 }
 
 /* Responsive */
+@media (max-width: 900px) {
+  .entity-crud-breadcrumb {
+    top: 56px; /* Altura do header mobile */
+  }
+}
+
 @media (max-width: 768px) {
   .entity-crud-container {
     padding: 0 10px 1rem 10px;

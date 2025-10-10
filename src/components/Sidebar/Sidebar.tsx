@@ -19,9 +19,9 @@ const menuItems = [
     path: "/meus-eventos",
   },
   {
-    label: "Criar evento",
+    label: "Gerenciar Eventos",
     icon: <FiPlus size={22} color="#0099ff" />,
-    path: "/criar-evento",
+    path: "/eventos",
   },
   {
     label: "Inscrições",

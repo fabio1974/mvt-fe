@@ -48,12 +48,7 @@ const EntitySelect: React.FC<EntitySelectProps> = ({
       try {
         let endpoint = config.endpoint;
 
-        // Remove /api do início se existir (baseURL do axios já inclui /api)
-        if (endpoint.startsWith("/api/")) {
-          endpoint = endpoint.substring(4);
-        }
-
-        // Se não tem /api e não começa com /, adiciona
+        // Garante que o endpoint começa com /
         if (!endpoint.startsWith("/")) {
           endpoint = `/${endpoint}`;
         }

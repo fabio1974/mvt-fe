@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { FiPlus, FiHome, FiChevronRight, FiArrowLeft } from "react-icons/fi";
 import EntityTable from "./EntityTable";
 import EntityForm from "./EntityForm";
+import ErrorBoundary from "../Common/ErrorBoundary";
 import { useMetadata } from "../../hooks/useMetadata";
 import { useFormMetadata } from "../../hooks/useFormMetadata";
 import { api } from "../../services/api";
@@ -193,17 +194,19 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
       <div className="entity-crud-container">
         <Breadcrumb mode={viewMode} />
 
-        <EntityTable
-          key={refreshKey}
-          entityName={entityName}
-          apiEndpoint={apiEndpoint}
-          onView={handleView}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          showActions={true}
-          customRenderers={customRenderers}
-          hideHeader={true}
-        />
+        <ErrorBoundary>
+          <EntityTable
+            key={refreshKey}
+            entityName={entityName}
+            apiEndpoint={apiEndpoint}
+            onView={handleView}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            showActions={true}
+            customRenderers={customRenderers}
+            hideHeader={true}
+          />
+        </ErrorBoundary>
       </div>
     );
   }
@@ -240,6 +243,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
           onSuccess={handleFormSuccess}
           onCancel={handleBackToTable}
           readonly={isReadonly}
+          mode={viewMode}
         />
       </div>
     </div>

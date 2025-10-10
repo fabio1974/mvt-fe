@@ -98,13 +98,14 @@ const EntityTable: React.FC<EntityTableProps> = ({
         JSON.stringify(entityMetadata, null, 2)
       );
       if (entityMetadata) {
-        setMetadata(entityMetadata);
-        setItemsPerPage(entityMetadata.pagination?.defaultPageSize || 10);
-        console.log(
-          "✅ Metadata carregada para entidade:",
-          entityName,
-          entityMetadata
-        );
+        // Garante que filters seja um array mesmo quando backend envia null
+        const normalizedMetadata = {
+          ...entityMetadata,
+          filters: entityMetadata.filters || [],
+        };
+
+        setMetadata(normalizedMetadata);
+        setItemsPerPage(normalizedMetadata.pagination?.defaultPageSize || 10);
       } else {
         const errorMsg = `Metadata não encontrada para entidade: ${entityName}`;
         setError(errorMsg);
@@ -135,10 +136,9 @@ const EntityTable: React.FC<EntityTableProps> = ({
           );
         }
 
-        // Remove /api do início se existir (baseURL do axios já inclui /api)
-        if (endpoint.startsWith("/api/")) {
-          endpoint = endpoint.substring(4); // Remove '/api'
-          console.log("⚠️ Removendo /api duplicado do endpoint:", endpoint);
+        // Garante que o endpoint começa com /
+        if (!endpoint.startsWith("/")) {
+          endpoint = `/${endpoint}`;
         }
 
         const params = new URLSearchParams({
@@ -261,7 +261,15 @@ const EntityTable: React.FC<EntityTableProps> = ({
   }
 
   // Valida se metadata tem a estrutura correta
-  if (!metadata.fields || !Array.isArray(metadata.fields)) {
+  // Usa tableFields se disponível (novo formato), senão usa fields (formato antigo)
+  const fieldsSource =
+    metadata.tableFields &&
+    Array.isArray(metadata.tableFields) &&
+    metadata.tableFields.length > 0
+      ? metadata.tableFields
+      : metadata.fields;
+
+  if (!fieldsSource || !Array.isArray(fieldsSource)) {
     return (
       <div className="entity-table-error">
         Erro: Metadata inválida para entidade {entityName}. Estrutura esperada
@@ -271,7 +279,7 @@ const EntityTable: React.FC<EntityTableProps> = ({
     );
   }
 
-  const visibleFields = metadata.fields.filter((f) => f.visible) || [];
+  const visibleFields = fieldsSource.filter((f) => f.visible) || [];
 
   return (
     <div className="entity-table-page">
@@ -285,16 +293,14 @@ const EntityTable: React.FC<EntityTableProps> = ({
         </div>
       )}
 
-      {metadata.filters &&
-        Array.isArray(metadata.filters) &&
-        metadata.filters.length > 0 && (
-          <EntityFilters
-            filters={metadata.filters}
-            values={filters}
-            onChange={handleFilterChange}
-            onClear={clearFilters}
-          />
-        )}
+      {metadata.filters && metadata.filters.length > 0 && (
+        <EntityFilters
+          filters={metadata.filters}
+          values={filters}
+          onChange={handleFilterChange}
+          onClear={clearFilters}
+        />
+      )}
 
       {loading ? (
         <div className="entity-table-loading">
@@ -305,86 +311,90 @@ const EntityTable: React.FC<EntityTableProps> = ({
         <div className="entity-table-error">{error}</div>
       ) : (
         <div className="entity-table-container">
-          <table className="entity-table">
-            <thead>
-              <tr>
-                {visibleFields.map((field) => (
-                  <th
-                    key={field.name}
-                    style={{ textAlign: getAlignment(field.align) }}
-                  >
-                    {field.label}
-                  </th>
-                ))}
-                {showActions && <th style={{ textAlign: "center" }}>Ações</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {!data || data.length === 0 ? (
+          <div className="entity-table-scroll">
+            <table className="entity-table">
+              <thead>
                 <tr>
-                  <td
-                    colSpan={visibleFields.length + (showActions ? 1 : 0)}
-                    className="no-data"
-                  >
-                    Nenhum registro encontrado
-                  </td>
+                  {visibleFields.map((field) => (
+                    <th
+                      key={field.name}
+                      style={{ textAlign: getAlignment(field.align) }}
+                    >
+                      {field.label}
+                    </th>
+                  ))}
+                  {showActions && (
+                    <th style={{ textAlign: "center" }}>Ações</th>
+                  )}
                 </tr>
-              ) : (
-                data.map((row, index) => (
-                  <tr key={row?.id ?? index}>
-                    {visibleFields.map((field) => {
-                      const value = getFieldValue(row, field);
-                      const customRenderer = customRenderers?.[field.name];
-
-                      return (
-                        <td
-                          key={field.name}
-                          style={{ textAlign: getAlignment(field.align) }}
-                        >
-                          {customRenderer
-                            ? customRenderer(value, row)
-                            : formatValue(value, field)}
-                        </td>
-                      );
-                    })}
-                    {showActions && (
-                      <td style={{ textAlign: "center" }}>
-                        <div className="actions">
-                          {onView && (
-                            <button
-                              className="btn-action btn-view"
-                              onClick={() => onView(row.id)}
-                              title="Visualizar"
-                            >
-                              <FiEye />
-                            </button>
-                          )}
-                          {onEdit && (
-                            <button
-                              className="btn-action btn-edit"
-                              onClick={() => onEdit(row.id)}
-                              title="Editar"
-                            >
-                              <FiEdit />
-                            </button>
-                          )}
-                          {onDelete && (
-                            <button
-                              className="btn-action btn-delete"
-                              onClick={() => onDelete(row.id)}
-                              title="Excluir"
-                            >
-                              <FiTrash2 />
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    )}
+              </thead>
+              <tbody>
+                {!data || data.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan={visibleFields.length + (showActions ? 1 : 0)}
+                      className="no-data"
+                    >
+                      Nenhum registro encontrado
+                    </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  data.map((row, index) => (
+                    <tr key={row?.id ?? index}>
+                      {visibleFields.map((field) => {
+                        const value = getFieldValue(row, field);
+                        const customRenderer = customRenderers?.[field.name];
+
+                        return (
+                          <td
+                            key={field.name}
+                            style={{ textAlign: getAlignment(field.align) }}
+                          >
+                            {customRenderer
+                              ? customRenderer(value, row)
+                              : formatValue(value, field)}
+                          </td>
+                        );
+                      })}
+                      {showActions && (
+                        <td style={{ textAlign: "center" }}>
+                          <div className="actions">
+                            {onView && (
+                              <button
+                                className="btn-action btn-view"
+                                onClick={() => onView(row.id)}
+                                title="Visualizar"
+                              >
+                                <FiEye />
+                              </button>
+                            )}
+                            {onEdit && (
+                              <button
+                                className="btn-action btn-edit"
+                                onClick={() => onEdit(row.id)}
+                                title="Editar"
+                              >
+                                <FiEdit />
+                              </button>
+                            )}
+                            {onDelete && (
+                              <button
+                                className="btn-action btn-delete"
+                                onClick={() => onDelete(row.id)}
+                                title="Excluir"
+                              >
+                                <FiTrash2 />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      )}
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
 
           {/* Footer com paginação */}
           <div className="table-footer">
@@ -448,7 +458,9 @@ const EntityTable: React.FC<EntityTableProps> = ({
                 }}
                 className="page-size-select"
               >
-                {metadata.pagination.pageSizeOptions.map((size) => (
+                {(
+                  metadata.pagination?.pageSizeOptions || [5, 10, 20, 50, 100]
+                ).map((size) => (
                   <option key={size} value={size}>
                     {size}
                   </option>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../services/api";
 import { showToast } from "../../utils/toast";
+import { useOrganization } from "../../hooks/useOrganization";
 import type {
   FormMetadata,
   FormFieldMetadata,
@@ -9,7 +10,6 @@ import type {
 } from "../../types/metadata";
 import {
   FormContainer,
-  FormRow,
   FormField,
   FormInput,
   FormSelect,
@@ -19,6 +19,7 @@ import {
   FormDatePicker,
 } from "../Common/FormComponents";
 import { ArrayField } from "./ArrayField";
+import { CityTypeahead } from "../Common/CityTypeahead";
 import { FiSave, FiX, FiAlertCircle } from "react-icons/fi";
 
 interface EntityFormProps {
@@ -34,6 +35,8 @@ interface EntityFormProps {
   initialValues?: Record<string, unknown>;
   /** Modo somente leitura (visualização) */
   readonly?: boolean;
+  /** Modo do formulário (create, edit, view) */
+  mode?: "create" | "edit" | "view";
 }
 
 /**
@@ -54,21 +57,52 @@ const EntityForm: React.FC<EntityFormProps> = ({
   onCancel,
   initialValues = {},
   readonly = false,
+  mode,
 }) => {
   const navigate = useNavigate();
+  const { organizationId } = useOrganization();
+
+  // Determina o modo automaticamente se não foi passado
+  const formMode = mode || (entityId ? (readonly ? "view" : "edit") : "create");
+
   const [formData, setFormData] = useState<Record<string, unknown>>(() => {
     // Inicializa formData apenas na primeira renderização
     const defaultValues: Record<string, unknown> = {};
 
-    metadata.sections.forEach((section) => {
-      section.fields.forEach((field) => {
-        if (field.defaultValue !== undefined) {
-          defaultValues[field.name] = field.defaultValue;
-        } else if (field.type === "array") {
-          defaultValues[field.name] = [];
-        }
-      });
+    // Usa originalFields se disponível (inclui campos não visíveis), senão usa sections
+    const allFields = metadata.originalFields || 
+      metadata.sections.flatMap(section => section.fields);
+
+    console.log('🔍 [EntityForm Init] Debug:', {
+      entityId,
+      organizationId,
+      hasOriginalFields: !!metadata.originalFields,
+      originalFieldsCount: metadata.originalFields?.length,
+      allFieldsCount: allFields.length,
+      allFieldNames: allFields.map(f => f.name)
     });
+
+    allFields.forEach((field) => {
+      // Auto-preenche organizationId se não estiver editando
+      if (!entityId && organizationId) {
+        // Detecta campos relacionados com Organization
+        if (field.name === "organizationId" || field.name === "organization") {
+          console.log(
+            `🏢 Auto-preenchendo organizationId com valor: ${organizationId}`
+          );
+          // Sempre salva como 'organizationId' (será usado no submit)
+          defaultValues["organizationId"] = organizationId;
+        }
+      }
+
+      if (field.defaultValue !== undefined) {
+        defaultValues[field.name] = field.defaultValue;
+      } else if (field.type === "array") {
+        defaultValues[field.name] = [];
+      }
+    });
+
+    console.log('✅ [EntityForm Init] defaultValues:', defaultValues);
 
     return { ...defaultValues, ...initialValues };
   });
@@ -76,7 +110,15 @@ const EntityForm: React.FC<EntityFormProps> = ({
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(false);
 
+  // Estado para armazenar os estados das cidades selecionadas (para exibição readonly)
+  const [cityStates, setCityStates] = useState<Record<string, string>>({});
+
   // REMOVIDO: useEffect que resetava formData toda vez
+
+  // Limpa erros quando o formulário é montado ou quando muda de entidade
+  useEffect(() => {
+    setErrors({});
+  }, [entityId, metadata.endpoint]);
 
   // Carrega dados da entidade se estiver editando
   useEffect(() => {
@@ -131,27 +173,46 @@ const EntityForm: React.FC<EntityFormProps> = ({
       const { min, max, minLength, maxLength, pattern, message } =
         field.validation;
 
-      if (min !== undefined && Number(value) < min) {
+      // Validações numéricas (min/max) - para campos number
+      const isNumericField = field.type === "number";
+
+      if (isNumericField && min !== undefined && Number(value) < min) {
         return message || `${field.label} deve ser maior ou igual a ${min}`;
       }
 
-      if (max !== undefined && Number(value) > max) {
+      if (isNumericField && max !== undefined && Number(value) > max) {
         return message || `${field.label} deve ser menor ou igual a ${max}`;
       }
 
-      if (minLength !== undefined && String(value).length < minLength) {
+      // Validações de comprimento (minLength/maxLength) - para campos de texto
+      const isTextField =
+        field.type === "text" ||
+        field.type === "textarea" ||
+        field.type === "email" ||
+        field.type === "password";
+
+      if (
+        isTextField &&
+        minLength !== undefined &&
+        String(value).length < minLength
+      ) {
         return (
           message || `${field.label} deve ter no mínimo ${minLength} caracteres`
         );
       }
 
-      if (maxLength !== undefined && String(value).length > maxLength) {
+      if (
+        isTextField &&
+        maxLength !== undefined &&
+        String(value).length > maxLength
+      ) {
         return (
           message || `${field.label} deve ter no máximo ${maxLength} caracteres`
         );
       }
 
-      if (pattern && !new RegExp(pattern).test(String(value))) {
+      // Validação de padrão (pattern) - apenas para campos de texto
+      if (isTextField && pattern && !new RegExp(pattern).test(String(value))) {
         return message || `${field.label} não está no formato correto`;
       }
     }
@@ -188,12 +249,46 @@ const EntityForm: React.FC<EntityFormProps> = ({
     try {
       setLoading(true);
 
+      // Prepara o payload para envio
+      const finalData = { ...formData };
+
+      // Obtém todos os campos (incluindo não visíveis)
+      const allFields = metadata.originalFields || 
+        metadata.sections.flatMap(section => section.fields);
+
+      console.log('🔍 [EntityForm Submit] Processando payload:', {
+        hasOriginalFields: !!metadata.originalFields,
+        allFieldsCount: allFields.length,
+        formDataKeys: Object.keys(formData)
+      });
+
+      // Injeta organizationId se necessário
+      if (!entityId && organizationId) {
+        const hasOrganizationField = allFields.some(
+          field => field.name === "organizationId" || field.name === "organization"
+        );
+
+        if (hasOrganizationField && !finalData.organizationId && !finalData.organization) {
+          console.log(`🏢 Injetando organizationId: ${organizationId}`);
+          finalData.organizationId = organizationId;
+        }
+        
+        // Se tiver 'organization', renomeia para 'organizationId'
+        if (finalData.organization && !finalData.organizationId) {
+          console.log(`🔄 Renomeando 'organization' para 'organizationId'`);
+          finalData.organizationId = finalData.organization;
+          delete finalData.organization;
+        }
+      }
+
+      console.log('📤 [EntityForm Submit] Payload final:', finalData);
+
       const method = entityId ? "put" : "post";
       const url = entityId
         ? `${metadata.endpoint}/${entityId}`
         : metadata.endpoint;
 
-      const response = await api[method](url, formData);
+      const response = await api[method](url, finalData);
 
       showToast(
         entityId ? "Atualizado com sucesso!" : "Criado com sucesso!",
@@ -231,6 +326,23 @@ const EntityForm: React.FC<EntityFormProps> = ({
 
   // Renderiza um campo baseado no tipo
   const renderField = (field: FormFieldMetadata) => {
+    // Oculta campos marcados como não visíveis
+    if (field.visible === false) {
+      return null;
+    }
+
+    // Oculta campos de organização quando auto-preenchidos (modo criar)
+    if (
+      !entityId &&
+      organizationId &&
+      (field.name === "organizationId" || field.name === "organization")
+    ) {
+      console.log(
+        `🔒 Ocultando campo ${field.name} (auto-preenchido com organizationId: ${organizationId})`
+      );
+      return null;
+    }
+
     // Para campos array, garantir que o valor padrão seja array vazio
     const defaultValue = field.type === "array" ? [] : "";
     const value = formData[field.name] ?? defaultValue;
@@ -250,13 +362,14 @@ const EntityForm: React.FC<EntityFormProps> = ({
       }
     }
 
+    let fieldContent: React.ReactNode;
+
     switch (field.type) {
       case "text":
       case "email":
       case "password":
-        return (
+        fieldContent = (
           <FormField
-            key={field.name}
             label={field.label}
             required={field.required}
             error={error}
@@ -271,11 +384,11 @@ const EntityForm: React.FC<EntityFormProps> = ({
             />
           </FormField>
         );
+        break;
 
       case "number":
-        return (
+        fieldContent = (
           <FormField
-            key={field.name}
             label={field.label}
             required={field.required}
             error={error}
@@ -292,11 +405,11 @@ const EntityForm: React.FC<EntityFormProps> = ({
             />
           </FormField>
         );
+        break;
 
       case "textarea":
-        return (
+        fieldContent = (
           <FormField
-            key={field.name}
             label={field.label}
             required={field.required}
             error={error}
@@ -310,11 +423,11 @@ const EntityForm: React.FC<EntityFormProps> = ({
             />
           </FormField>
         );
+        break;
 
       case "select":
-        return (
+        fieldContent = (
           <FormField
-            key={field.name}
             label={field.label}
             required={field.required}
             error={error}
@@ -337,11 +450,18 @@ const EntityForm: React.FC<EntityFormProps> = ({
             </FormSelect>
           </FormField>
         );
+        break;
 
-      case "date":
-        return (
+      case "date": {
+        // Detecta automaticamente se deve mostrar hora/minuto
+        // Baseado no formato recebido do backend (ex: "dd/MM/yyyy HH:mm" = com hora)
+        const shouldShowTime =
+          field.format?.includes("HH") || field.format?.includes("mm") || false;
+        const dateFormat =
+          field.format || (shouldShowTime ? "dd/MM/yyyy HH:mm" : "dd/MM/yyyy");
+
+        fieldContent = (
           <FormField
-            key={field.name}
             label={field.label}
             required={field.required}
             error={error}
@@ -351,26 +471,171 @@ const EntityForm: React.FC<EntityFormProps> = ({
               onChange={(date) =>
                 handleChange(field.name, date?.toISOString() || "")
               }
+              showTimeSelect={shouldShowTime}
+              dateFormat={dateFormat}
+              placeholder={field.placeholder}
             />
           </FormField>
         );
+        break;
+      }
 
       case "boolean":
-        return (
-          <FormField key={field.name} label={field.label} error={error}>
+        fieldContent = (
+          <div
+            style={{ display: "flex", alignItems: "center", minHeight: "40px" }}
+          >
             <label
-              style={{ display: "flex", alignItems: "center", gap: "8px" }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                cursor: "pointer",
+                userSelect: "none",
+              }}
             >
               <input
                 type="checkbox"
                 checked={!!value}
                 onChange={(e) => handleChange(field.name, e.target.checked)}
-                disabled={field.disabled || loading}
+                disabled={field.disabled || loading || readonly}
+                style={{
+                  width: "18px",
+                  height: "18px",
+                  cursor:
+                    field.disabled || loading || readonly
+                      ? "not-allowed"
+                      : "pointer",
+                }}
               />
-              {field.placeholder || field.label}
+              <span style={{ fontSize: "14px", color: "#374151" }}>
+                {field.label}
+              </span>
             </label>
-          </FormField>
+          </div>
         );
+        break;
+
+      case "city":
+        fieldContent = (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "2fr 100px",
+              gap: "1rem",
+              alignItems: "end",
+            }}
+          >
+            <FormField
+              label={field.label}
+              required={field.required}
+              error={error}
+            >
+              <CityTypeahead
+                value={stringValue}
+                onCitySelect={(city) => {
+                  // CityTypeahead retorna um objeto City, então pega apenas o nome
+                  handleChange(field.name, city.name);
+                  // Armazena o estado da cidade para exibição
+                  setCityStates((prev) => ({
+                    ...prev,
+                    [field.name]: city.stateCode || city.state || "",
+                  }));
+                }}
+                placeholder={field.placeholder || "Digite o nome da cidade"}
+              />
+            </FormField>
+
+            <FormField label="Estado" required={false}>
+              <FormInput
+                type="text"
+                value={cityStates[field.name] || ""}
+                readOnly
+                disabled
+                placeholder="--"
+                style={{
+                  backgroundColor: "#f3f4f6",
+                  cursor: "not-allowed",
+                  textAlign: "center",
+                }}
+              />
+            </FormField>
+          </div>
+        );
+        break;
+
+      case "entity":
+        // Campo de entidade relacionada (ex: city, organization, etc)
+        // Por enquanto, usa CityTypeahead como fallback
+        // TODO: Implementar EntitySelect/EntityTypeahead genérico
+        if (field.name === "city" || field.name === "cityId") {
+          fieldContent = (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "2fr 100px",
+                gap: "1rem",
+                alignItems: "end",
+              }}
+            >
+              <FormField
+                label={field.label}
+                required={field.required}
+                error={error}
+              >
+                <CityTypeahead
+                  value={stringValue}
+                  onCitySelect={(city) => {
+                    handleChange(field.name, city.name);
+                    // Armazena o estado da cidade para exibição
+                    setCityStates((prev) => ({
+                      ...prev,
+                      [field.name]: city.stateCode || city.state || "",
+                    }));
+                  }}
+                  placeholder={field.placeholder || "Digite o nome da cidade"}
+                />
+              </FormField>
+
+              <FormField label="Estado" required={false}>
+                <FormInput
+                  type="text"
+                  value={cityStates[field.name] || ""}
+                  readOnly
+                  disabled
+                  placeholder="--"
+                  style={{
+                    backgroundColor: "#f3f4f6",
+                    cursor: "not-allowed",
+                    textAlign: "center",
+                  }}
+                />
+              </FormField>
+            </div>
+          );
+        } else {
+          // Para outras entidades, renderiza como texto por enquanto
+          console.warn(
+            `Campo entity ${field.name} não tem componente específico. Renderizando como text.`
+          );
+          fieldContent = (
+            <FormField
+              label={field.label}
+              required={field.required}
+              error={error}
+            >
+              <FormInput
+                type="text"
+                placeholder={field.placeholder}
+                value={stringValue}
+                onChange={(e) => handleChange(field.name, e.target.value)}
+                disabled={field.disabled || loading || readonly}
+                required={field.required}
+              />
+            </FormField>
+          );
+        }
+        break;
 
       case "array":
         if (!field.arrayConfig) {
@@ -380,14 +645,17 @@ const EntityForm: React.FC<EntityFormProps> = ({
           return null;
         }
 
-        // ArrayField ocupa largura completa - não usa FormField/FormRow
+        // ArrayField ocupa largura completa - não envolve no grid
         return (
           <div
             key={field.name}
             style={{ gridColumn: "1 / -1", marginTop: "16px" }}
           >
             <ArrayField
-              config={field.arrayConfig}
+              config={{
+                ...field.arrayConfig,
+                label: field.arrayConfig?.label || field.label,
+              }}
               value={Array.isArray(value) ? value : []}
               onChange={(val) => handleChange(field.name, val)}
               disabled={field.disabled || loading}
@@ -397,17 +665,82 @@ const EntityForm: React.FC<EntityFormProps> = ({
         );
 
       default:
-        return null;
+        fieldContent = null;
+        break;
     }
+
+    // Retorna o conteúdo do campo diretamente (wrapper é feito no renderSection)
+    return fieldContent;
   };
 
   // Renderiza uma seção
-  const renderSection = (section: FormSectionMetadata) => {
-    const columns = section.columns || 2;
+  const renderSection = (section: FormSectionMetadata, index: number) => {
+    // Customiza o título da primeira seção baseado no modo
+    let sectionTitle = section.title;
+    if (index === 0 && section.id === "basic-info") {
+      const actionLabel = {
+        create: "Criar",
+        edit: "Editar",
+        view: "Visualizar",
+      }[formMode];
+
+      // Substitui "Formulário de X" por "Criar/Editar/Visualizar X"
+      // E converte plural para singular (Eventos → Evento)
+      sectionTitle = section.title
+        .replace(/^Formulário de\s+/, `${actionLabel} `)
+        .replace(/s$/, ""); // Remove 's' final para singular
+    }
+
+    // Separa campos por tipo para organização
+    const regularFields = section.fields.filter(
+      (f) => f.type !== "array" && f.type !== "textarea"
+    );
+    const textareaFields = section.fields.filter((f) => f.type === "textarea");
+    const arrayFields = section.fields.filter((f) => f.type === "array");
 
     return (
-      <FormContainer key={section.id} title={section.title} icon={section.icon}>
-        <FormRow columns={columns}>{section.fields.map(renderField)}</FormRow>
+      <FormContainer key={section.id} title={sectionTitle} icon={section.icon}>
+        {/* Grid responsivo moderno - campos normais */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+            gap: "16px",
+            marginBottom:
+              textareaFields.length > 0 || arrayFields.length > 0
+                ? "16px"
+                : "0",
+          }}
+        >
+          {regularFields.map((field) => (
+            <div key={field.name}>{renderField(field)}</div>
+          ))}
+        </div>
+
+        {/* Campos textarea aparecem depois, com largura dupla */}
+        {textareaFields.length > 0 && (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+              gap: "16px",
+              marginBottom: arrayFields.length > 0 ? "16px" : "0",
+            }}
+          >
+            {textareaFields.map((field) => (
+              <div key={field.name} className="form-field-wide">
+                {renderField(field)}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Campos array aparecem por último, ocupando largura completa */}
+        {arrayFields.map((field) => (
+          <div key={field.name} style={{ marginTop: "16px" }}>
+            {renderField(field)}
+          </div>
+        ))}
       </FormContainer>
     );
   };
@@ -424,20 +757,8 @@ const EntityForm: React.FC<EntityFormProps> = ({
 
   return (
     <form onSubmit={handleSubmit}>
-      {metadata.description && (
-        <div
-          style={{
-            marginBottom: "16px",
-            color: "#6b7280",
-            fontSize: "14px",
-          }}
-        >
-          {metadata.description}
-        </div>
-      )}
-
       {/* Renderiza todas as seções */}
-      {metadata.sections.map(renderSection)}
+      {metadata.sections.map((section, index) => renderSection(section, index))}
 
       {/* Mensagem de erro geral */}
       {Object.keys(errors).length > 0 && (

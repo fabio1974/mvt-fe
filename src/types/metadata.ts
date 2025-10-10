@@ -75,6 +75,8 @@ export interface FilterMetadata {
   field: string;
   placeholder?: string | null;
   options?: FilterOption[] | null;
+  /** Se o filtro está visível */
+  visible?: boolean;
   /** Configuração para filtros de entidade relacionada */
   entityConfig?: EntityFilterConfig | null;
 }
@@ -97,8 +99,8 @@ export interface EntityMetadata {
   // Para formulários (EntityForm)
   formFields?: FieldMetadata[]; // Campos para formulários (com validações, options, nested)
   
-  filters: FilterMetadata[];
-  pagination: PaginationConfig;
+  filters?: FilterMetadata[] | null; // Pode ser null quando backend não define filtros
+  pagination?: PaginationConfig | null; // Pode ser null quando backend não define paginação
 }
 
 export interface MetadataResponse {
@@ -128,6 +130,8 @@ export type FormFieldType =
 export interface ArrayFieldConfig {
   /** Tipo de item no array */
   itemType: 'text' | 'number' | 'select' | 'object';
+  /** Label plural do campo (ex: "Categorias") - enviado pelo backend */
+  label?: string;
   /** Label para o botão de adicionar */
   addLabel?: string;
   /** Label para cada item (pode usar {index}) */
@@ -153,10 +157,16 @@ export interface FormFieldMetadata {
   label: string;
   /** Tipo do campo */
   type: FormFieldType;
+  /** Largura do campo no grid de 12 colunas (1-12) */
+  width?: number;
   /** Se o campo é obrigatório */
   required?: boolean;
+  /** Se o campo é visível no formulário */
+  visible?: boolean;
   /** Placeholder do campo */
   placeholder?: string;
+  /** Formato de exibição (ex: "dd/MM/yyyy", "dd/MM/yyyy HH:mm") */
+  format?: string;
   /** Valor padrão */
   defaultValue?: string | number | boolean | Date | null;
   /** Opções para select */
@@ -165,6 +175,8 @@ export interface FormFieldMetadata {
   entityConfig?: EntityFilterConfig;
   /** Configuração para campos de array (listas dinâmicas) */
   arrayConfig?: ArrayFieldConfig;
+  /** Informações de relacionamento (para transformar payload) */
+  relationship?: RelationshipMetadata;
   /** Validação customizada */
   validation?: {
     min?: number;
@@ -212,6 +224,8 @@ export interface FormMetadata {
   method?: 'POST' | 'PUT' | 'PATCH';
   /** Seções do formulário */
   sections: FormSectionMetadata[];
+  /** Campos originais do backend (incluindo os não visíveis) */
+  originalFields?: FormFieldMetadata[];
   /** Texto do botão de submit */
   submitLabel?: string;
   /** Texto do botão de cancelar */

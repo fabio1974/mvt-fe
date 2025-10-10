@@ -7,7 +7,12 @@ import {
   FiChevronUp,
 } from "react-icons/fi";
 import type { ArrayFieldConfig } from "../../types/metadata";
-import { FormInput, FormSelect } from "../Common/FormComponents";
+import {
+  FormField,
+  FormInput,
+  FormSelect,
+  FormTextarea,
+} from "../Common/FormComponents";
 import "./ArrayField.css";
 
 interface ArrayFieldProps {
@@ -24,14 +29,42 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
   onChange,
   disabled = false,
 }) => {
-  const {
-    itemType,
-    addLabel = "Adicionar",
-    itemLabel = "Item {index}",
-    fields = [],
-    minItems = 0,
-    maxItems = 100,
-  } = config;
+  const { itemType, fields = [], minItems = 0, maxItems = 100 } = config;
+
+  // 🔄 Converte plural em singular (Categorias → Categoria)
+  const pluralToSingular = (plural: string): string => {
+    // Remove 's' final para a maioria dos plurais portugueses
+    if (plural.endsWith("s")) {
+      return plural.slice(0, -1);
+    }
+    return plural;
+  };
+
+  // 🏷️ Gera labels inteligentes baseados no field.label do backend
+  const generateSmartLabels = () => {
+    // Backend manda field.label = "Categorias" (plural)
+    const pluralLabel = config.label || "Items";
+
+    // Converte para singular: "Categorias" → "Categoria"
+    const singularName = pluralToSingular(pluralLabel);
+
+    // 🎯 SEMPRE gera os labels do singular, ignorando qualquer valor do backend
+    // Backend não envia addLabel/itemLabel, então geramos aqui
+    const itemLabel = `${singularName} {index}`;
+    const addLabel = `Adicionar ${singularName}`;
+
+    console.log("🏷️ ArrayField Smart Labels:", {
+      "config.label (plural)": config.label,
+      singularName: singularName,
+      addLabel: addLabel,
+      itemLabel: itemLabel,
+      pluralLabel: pluralLabel,
+    });
+
+    return { itemLabel, addLabel, pluralLabel };
+  };
+
+  const { itemLabel, addLabel, pluralLabel } = generateSmartLabels();
 
   // Cada item controla seu próprio estado de collapse
   const [collapsedItems, setCollapsedItems] = useState<Record<number, boolean>>(
@@ -225,95 +258,124 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
         {/* Conteúdo expandido */}
         {!isItemCollapsed && (
           <div style={{ padding: "20px" }}>
-            <div
-              data-component="array-field-grid"
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(3, 1fr)",
-                gap: "16px 12px",
-                marginBottom: "16px",
-              }}
-            >
-              {fields.map((field) => (
-                <div
-                  key={field.name}
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "6px",
-                    minWidth: 0,
-                  }}
-                >
-                  <label
-                    style={{
-                      fontSize: "13px",
-                      fontWeight: 600,
-                      color: "#374151",
-                    }}
-                  >
-                    {field.label}
-                    {field.required && (
-                      <span style={{ color: "#dc2626" }}> *</span>
-                    )}
-                  </label>
-                  {field.type === "select" ? (
-                    <FormSelect
-                      value={String(itemObj[field.name] || "")}
-                      onChange={(e) =>
-                        handleFieldChange(index, field.name, e.target.value)
-                      }
-                      disabled={disabled}
-                      required={field.required}
-                    >
-                      <option value="">Selecione...</option>
-                      {field.options?.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </option>
-                      ))}
-                    </FormSelect>
-                  ) : field.type === "textarea" ? (
-                    <textarea
-                      value={String(itemObj[field.name] || "")}
-                      onChange={(e) =>
-                        handleFieldChange(index, field.name, e.target.value)
-                      }
-                      placeholder={field.placeholder}
-                      disabled={disabled}
-                      required={field.required}
+            {/* Separa campos normais dos textareas */}
+            {(() => {
+              const regularFields = fields.filter((f) => f.type !== "textarea");
+              const textareaFields = fields.filter(
+                (f) => f.type === "textarea"
+              );
+
+              return (
+                <>
+                  {/* Grid para campos normais */}
+                  {regularFields.length > 0 && (
+                    <div
+                      data-component="array-field-grid"
                       style={{
-                        padding: "10px 14px",
-                        border: "1px solid #d1d5db",
-                        borderRadius: "6px",
-                        fontSize: "14px",
-                        minHeight: "80px",
-                        resize: "vertical",
-                        fontFamily: "inherit",
+                        display: "grid",
+                        gridTemplateColumns:
+                          "repeat(auto-fit, minmax(200px, 1fr))",
+                        gap: "16px",
+                        marginBottom:
+                          textareaFields.length > 0 ? "16px" : "16px",
                       }}
-                    />
-                  ) : (
-                    <FormInput
-                      type={field.type === "number" ? "number" : field.type}
-                      value={String(itemObj[field.name] || "")}
-                      onChange={(e) =>
-                        handleFieldChange(
-                          index,
-                          field.name,
-                          field.type === "number"
-                            ? Number(e.target.value)
-                            : e.target.value
-                        )
-                      }
-                      placeholder={field.placeholder}
-                      disabled={disabled}
-                      required={field.required}
-                      min={field.validation?.min}
-                      max={field.validation?.max}
-                    />
+                    >
+                      {regularFields.map((field) => (
+                        <FormField
+                          key={field.name}
+                          label={field.label}
+                          required={field.required}
+                        >
+                          {field.type === "select" ? (
+                            <FormSelect
+                              value={String(itemObj[field.name] || "")}
+                              onChange={(e) =>
+                                handleFieldChange(
+                                  index,
+                                  field.name,
+                                  e.target.value
+                                )
+                              }
+                              disabled={disabled}
+                              required={field.required}
+                            >
+                              <option value="">Selecione...</option>
+                              {field.options
+                                ?.slice()
+                                .sort((a, b) =>
+                                  a.label.localeCompare(b.label, "pt-BR")
+                                )
+                                .map((opt) => (
+                                  <option key={opt.value} value={opt.value}>
+                                    {opt.label}
+                                  </option>
+                                ))}
+                            </FormSelect>
+                          ) : (
+                            <FormInput
+                              type={
+                                field.type === "number" ? "number" : field.type
+                              }
+                              value={String(itemObj[field.name] || "")}
+                              onChange={(e) =>
+                                handleFieldChange(
+                                  index,
+                                  field.name,
+                                  field.type === "number"
+                                    ? Number(e.target.value)
+                                    : e.target.value
+                                )
+                              }
+                              placeholder={field.placeholder}
+                              disabled={disabled}
+                              required={field.required}
+                              min={field.validation?.min}
+                              max={field.validation?.max}
+                            />
+                          )}
+                        </FormField>
+                      ))}
+                    </div>
                   )}
-                </div>
-              ))}
-            </div>
+
+                  {/* Grid para textareas (largura dupla) */}
+                  {textareaFields.length > 0 && (
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns:
+                          "repeat(auto-fit, minmax(200px, 1fr))",
+                        gap: "16px",
+                        marginBottom: "16px",
+                      }}
+                    >
+                      {textareaFields.map((field) => (
+                        <div key={field.name} className="form-field-wide">
+                          <FormField
+                            label={field.label}
+                            required={field.required}
+                          >
+                            <FormTextarea
+                              value={String(itemObj[field.name] || "")}
+                              onChange={(e) =>
+                                handleFieldChange(
+                                  index,
+                                  field.name,
+                                  e.target.value
+                                )
+                              }
+                              placeholder={field.placeholder}
+                              disabled={disabled}
+                              required={field.required}
+                            />
+                          </FormField>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </>
+              );
+            })()}
           </div>
         )}
       </div>
@@ -344,7 +406,7 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
               fontWeight: 600,
             }}
           >
-            {config.itemLabel?.replace(" {index}", "s") || "Itens"}
+            {pluralLabel}
           </h4>
           <p
             style={{ margin: "4px 0 0 0", fontSize: "13px", color: "#64748b" }}

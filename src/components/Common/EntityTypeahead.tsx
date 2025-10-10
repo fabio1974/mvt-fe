@@ -79,10 +79,7 @@ const EntityTypeahead: React.FC<EntityTypeaheadProps> = ({
       try {
         let endpoint = config.endpoint;
 
-        if (endpoint.startsWith("/api/")) {
-          endpoint = endpoint.substring(4);
-        }
-
+        // Garante que o endpoint começa com /
         if (!endpoint.startsWith("/")) {
           endpoint = `/${endpoint}`;
         }
@@ -128,9 +125,7 @@ const EntityTypeahead: React.FC<EntityTypeaheadProps> = ({
     const fetchSelectedItem = async () => {
       try {
         let endpoint = config.endpoint;
-        if (endpoint.startsWith("/api/")) {
-          endpoint = endpoint.substring(4);
-        }
+        // Garante que o endpoint começa com /
         if (!endpoint.startsWith("/")) {
           endpoint = `/${endpoint}`;
         }
@@ -225,13 +220,6 @@ const EntityTypeahead: React.FC<EntityTypeaheadProps> = ({
           </div>
         )}
       </div>
-
-      {/* Mensagem de ajuda */}
-      {!value && searchTerm.length < 2 && (
-        <div className="entity-help-text">
-          Digite ao menos 2 caracteres para buscar
-        </div>
-      )}
     </div>
   );
 };

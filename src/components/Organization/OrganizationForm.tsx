@@ -409,15 +409,15 @@ export default function OrganizationForm({
                 </FormButton>
               )}
 
-              {/* Botão Cadastrar Evento - só aparece quando vem do fluxo de criação de evento */}
+              {/* Botão Gerenciar Eventos - só aparece quando vem do fluxo de criação de evento */}
               {organizationId && !isEditMode && fromCreateEvent && (
                 <FormButton
                   type="button"
                   variant="primary"
                   icon={<FiPlus />}
-                  onClick={() => navigate("/criar-evento")}
+                  onClick={() => navigate("/eventos")}
                 >
-                  Cadastrar Evento
+                  Gerenciar Eventos
                 </FormButton>
               )}
 
