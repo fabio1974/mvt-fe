@@ -98,6 +98,22 @@ const EntityTable: React.FC<EntityTableProps> = ({
         JSON.stringify(entityMetadata, null, 2)
       );
       if (entityMetadata) {
+        // Log dos campos ENUM/SELECT para debug
+        const enumFields = entityMetadata.tableFields?.filter(
+          (f) => f.type === "enum" || f.type === "select"
+        );
+        console.log(
+          "🔍 Campos ENUM/SELECT encontrados:",
+          enumFields?.map((f) => ({
+            name: f.name,
+            label: f.label,
+            type: f.type,
+            hasOptions: !!f.options,
+            optionsCount: f.options?.length || 0,
+            options: f.options,
+          }))
+        );
+
         // Garante que filters seja um array mesmo quando backend envia null
         const normalizedMetadata = {
           ...entityMetadata,
@@ -219,9 +235,52 @@ const EntityTable: React.FC<EntityTableProps> = ({
 
   const formatValue = (value: any, field: FieldMetadata): string => {
     if (value === null || value === undefined) return "-";
+
+    // Se o valor é um objeto (relacionamento), tenta extrair o campo apropriado
+    if (typeof value === "object" && !Array.isArray(value)) {
+      // Se o field tem relationship com labelField definido, usa ele
+      if (field.relationship?.labelField) {
+        const displayValue = value[field.relationship.labelField];
+        if (displayValue) return String(displayValue);
+      }
+
+      // Fallback: tenta campos comuns de display em ordem de prioridade
+      const displayValue =
+        value.name ||
+        value.title ||
+        value.label ||
+        value.displayName ||
+        value.username ||
+        value.email;
+      if (displayValue) return String(displayValue);
+
+      // Último fallback para ID
+      return value.id ? `ID: ${value.id}` : String(value);
+    }
+
     if (!field.type) return String(value);
 
     switch (field.type.toLowerCase()) {
+      case "enum":
+      case "select":
+        // Traduz ENUM/SELECT usando as options do metadata (já carregado do backend)
+        if (field.options && field.options.length > 0) {
+          const option = field.options.find(
+            (opt) => opt.value === String(value)
+          );
+          if (option) {
+            console.log(
+              `🔄 Traduzindo ${field.name}: "${value}" → "${option.label}"`
+            );
+            return option.label;
+          }
+        }
+        console.log(
+          `⚠️ Sem tradução para ${field.name}: "${value}" (options:`,
+          field.options,
+          ")"
+        );
+        return String(value);
       case "date":
         return new Date(value).toLocaleDateString("pt-BR");
       case "datetime":

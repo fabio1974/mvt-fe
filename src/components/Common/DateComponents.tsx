@@ -21,6 +21,8 @@ interface FormDatePickerProps {
   showMonthDropdown?: boolean;
   yearDropdownItemNumber?: number;
   scrollableYearDropdown?: boolean;
+  disabled?: boolean;
+  readOnly?: boolean;
 }
 
 export const FormDatePicker: React.FC<FormDatePickerProps> = ({
@@ -37,6 +39,8 @@ export const FormDatePicker: React.FC<FormDatePickerProps> = ({
   showMonthDropdown = false,
   yearDropdownItemNumber = 100,
   scrollableYearDropdown = false,
+  disabled = false,
+  readOnly = false,
 }) => {
   return (
     <DatePicker
@@ -57,6 +61,8 @@ export const FormDatePicker: React.FC<FormDatePickerProps> = ({
       className={`form-datepicker ${className}`}
       required={required}
       autoComplete="off"
+      disabled={disabled || readOnly}
+      readOnly={readOnly}
     />
   );
 };

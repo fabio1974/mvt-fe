@@ -63,6 +63,22 @@
   box-sizing: border-box !important;
 }
 
+/* Estilo para campos disabled/readonly */
+.react-datepicker__input-container input:disabled,
+.react-datepicker__input-container input[readonly] {
+  background-color: #f3f4f6 !important;
+  cursor: not-allowed !important;
+  color: #6b7280 !important;
+  border-color: #d1d5db !important;
+}
+
+.form-datepicker:disabled,
+.form-datepicker[readonly] {
+  background-color: #f3f4f6 !important;
+  cursor: not-allowed !important;
+  color: #6b7280 !important;
+}
+
 /* React DatePicker Custom Styles */
 .react-datepicker {
   font-family: inherit;

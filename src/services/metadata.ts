@@ -15,13 +15,8 @@ class MetadataService {
       const response = await api.get<MetadataResponse>('/metadata');
       const metadata = response.data;
 
-      // Armazena no cache, normalizando endpoints
+      // Armazena no cache
       Object.entries(metadata).forEach(([entityName, entityMetadata]) => {
-        // Normaliza endpoint removendo /api/ se existir (baseURL já tem /api)
-        if (entityMetadata.endpoint?.startsWith('/api/')) {
-          entityMetadata.endpoint = entityMetadata.endpoint.substring(4);
-        }
-        
         this.metadataCache.set(entityName, entityMetadata);
       });
 

@@ -1,6 +1,6 @@
 // Tipos para o sistema de metadata do backend
 
-export type FieldType = 'string' | 'integer' | 'long' | 'double' | 'boolean' | 'date' | 'datetime' | 'enum' | 'nested' | 'actions';
+export type FieldType = 'string' | 'integer' | 'long' | 'double' | 'boolean' | 'date' | 'datetime' | 'enum' | 'select' | 'nested' | 'actions';
 export type Alignment = 'left' | 'center' | 'right';
 export type FilterType = 'text' | 'select' | 'date' | 'number' | 'boolean' | 'entity';
 
@@ -33,6 +33,8 @@ export interface RelationshipMetadata {
   targetEndpoint: string;
   cascade?: boolean;
   fields?: FieldMetadata[];
+  /** Campo a ser exibido quando renderizando o relacionamento (vem do @DisplayLabel do backend) */
+  labelField?: string;
 }
 
 export interface FilterOption {

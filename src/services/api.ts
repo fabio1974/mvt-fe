@@ -3,14 +3,40 @@ import { showToast } from "../utils/toast";
 
 console.log("VITE_API_URL:", import.meta.env.VITE_API_URL);
 
+// Helper para normalizar URLs e evitar duplicação de /api
+const normalizeUrl = (url: string): string => {
+  const original = url;
+  // Remove todas as ocorrências de /api do início da URL
+  // Isso corrige tanto /api/organizations quanto /api/api/organizations
+  let normalized = url;
+  while (normalized.startsWith('/api/') || normalized.startsWith('/api')) {
+    normalized = normalized.replace(/^\/api\/?/, '/');
+  }
+  // Se sobrou apenas '/', mantém assim
+  normalized = normalized || '/';
+  
+  // Log apenas se houve normalização (debug)
+  if (original !== normalized) {
+    console.log(`[URL Normalizada] ${original} → ${normalized}`);
+  }
+  
+  return normalized;
+};
+
 export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
   withCredentials: true,
 });
 
-// Interceptor para adicionar token de autorização automaticamente
+// Interceptor para normalizar URLs e evitar duplicação de /api
 api.interceptors.request.use(
   (config) => {
+    // Normaliza a URL para evitar /api/api
+    if (config.url) {
+      config.url = normalizeUrl(config.url);
+    }
+    
+    // Adiciona token de autorização
     const token = localStorage.getItem("authToken");
     if (token) {
       config.headers = config.headers || {};

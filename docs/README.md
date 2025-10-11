@@ -1,8 +1,20 @@
-# 📚 Documentação do Projeto MVT-FE
+# 📚 Documentação MVT-FE
 
-Documentação completa do projeto Mountain Valley Trails - Frontend.
+**Sistema de Gestão de Eventos Esportivos - Frontend**
 
-## 📁 Estrutura da Documentação
+---
+
+## 🚀 Quick Start
+
+**Novo aqui?** Comece por:
+
+1. **[QUICK_START_API.md](./QUICK_START_API.md)** - Guia rápido de uso da API ⚡
+2. **[RESUMO_CORRECOES.md](./RESUMO_CORRECOES.md)** - Últimas correções implementadas 🔧
+3. **[guides/QUICK_START_GUIDE.md](./guides/QUICK_START_GUIDE.md)** - Setup inicial do projeto
+
+---
+
+## � Estrutura da Documentação
 
 ### 🎯 Guias Principais (`/guides`)
 

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { FiX } from "react-icons/fi";
 import { api } from "../../services/api";
 import "./FormComponents.css";
+import "./EntityComponents.css";
 
 interface City {
   id: number;
@@ -16,6 +18,8 @@ interface CityTypeaheadProps {
   placeholder?: string;
   required?: boolean;
   className?: string;
+  disabled?: boolean;
+  readOnly?: boolean;
 }
 
 export const CityTypeahead: React.FC<CityTypeaheadProps> = ({
@@ -24,6 +28,8 @@ export const CityTypeahead: React.FC<CityTypeaheadProps> = ({
   placeholder = "Digite o nome da cidade...",
   required = false,
   className = "",
+  disabled = false,
+  readOnly = false,
 }) => {
   const [inputValue, setInputValue] = useState(value);
   const [cities, setCities] = useState<City[]>([]);
@@ -85,6 +91,20 @@ export const CityTypeahead: React.FC<CityTypeaheadProps> = ({
     setCities([]);
     onCitySelect(city);
   };
+
+  const handleClear = () => {
+    setInputValue("");
+    setCities([]);
+    setIsOpen(false);
+    // Cria um objeto City vazio para limpar a seleção
+    onCitySelect({
+      id: 0,
+      name: "",
+      state: "",
+      stateCode: "",
+    });
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!isOpen || cities.length === 0) return;
 
@@ -142,17 +162,33 @@ export const CityTypeahead: React.FC<CityTypeaheadProps> = ({
 
   return (
     <div className={`city-typeahead ${className}`}>
-      <input
-        ref={inputRef}
-        type="text"
-        className="form-input"
-        value={inputValue}
-        onChange={handleInputChange}
-        onKeyDown={handleKeyDown}
-        placeholder={placeholder}
-        required={required}
-        autoComplete="off"
-      />
+      <div style={{ position: "relative" }}>
+        <input
+          ref={inputRef}
+          type="text"
+          className="form-input"
+          value={inputValue}
+          onChange={handleInputChange}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          required={required}
+          autoComplete="off"
+          disabled={disabled || readOnly}
+          readOnly={readOnly}
+        />
+
+        {/* Botão de limpar */}
+        {inputValue && !disabled && !readOnly && (
+          <button
+            type="button"
+            onClick={handleClear}
+            className="entity-clear-button"
+            title="Limpar seleção"
+          >
+            <FiX />
+          </button>
+        )}
+      </div>
 
       {isOpen && (
         <ul ref={listRef} className="city-typeahead-list">

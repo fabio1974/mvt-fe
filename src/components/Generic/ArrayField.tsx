@@ -211,32 +211,34 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
           )}
 
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            {/* Botão remover */}
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleRemove(index);
-              }}
-              disabled={disabled || value.length === 0}
-              style={{
-                padding: "6px 12px",
-                backgroundColor: value.length === 0 ? "#fef2f2" : "#fee2e2",
-                border: "1px solid #fca5a5",
-                borderRadius: "6px",
-                color: "#dc2626",
-                cursor: value.length === 0 ? "not-allowed" : "pointer",
-                opacity: value.length === 0 ? 0.5 : 1,
-                display: "flex",
-                alignItems: "center",
-                gap: "4px",
-                fontSize: "13px",
-              }}
-              title="Remover"
-            >
-              <FiTrash2 size={14} />
-              Remover
-            </button>
+            {/* Botão remover - escondido no modo readonly */}
+            {!disabled && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleRemove(index);
+                }}
+                disabled={value.length === 0}
+                style={{
+                  padding: "6px 12px",
+                  backgroundColor: value.length === 0 ? "#fef2f2" : "#fee2e2",
+                  border: "1px solid #fca5a5",
+                  borderRadius: "6px",
+                  color: "#dc2626",
+                  cursor: value.length === 0 ? "not-allowed" : "pointer",
+                  opacity: value.length === 0 ? 0.5 : 1,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "4px",
+                  fontSize: "13px",
+                }}
+                title="Remover"
+              >
+                <FiTrash2 size={14} />
+                Remover
+              </button>
+            )}
 
             {/* Ícone de expandir/recolher */}
             <div
@@ -390,7 +392,7 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          marginBottom: "16px",
+          marginBottom: value.length === 0 && disabled ? "0" : "16px",
           padding: "12px 16px",
           backgroundColor: "#f8fafc",
           borderRadius: "8px",
@@ -417,34 +419,36 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
           </p>
         </div>
 
-        {/* Botão adicionar no header - sempre visível */}
-        <button
-          type="button"
-          onClick={handleStartAdd}
-          disabled={disabled || value.length >= maxItems}
-          style={{
-            padding: "10px 20px",
-            backgroundColor: value.length >= maxItems ? "#e2e8f0" : "#3b82f6",
-            border: "none",
-            borderRadius: "6px",
-            color: "#fff",
-            cursor: value.length >= maxItems ? "not-allowed" : "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            fontSize: "14px",
-            fontWeight: 500,
-            opacity: value.length >= maxItems ? 0.5 : 1,
-          }}
-          title={
-            value.length >= maxItems
-              ? `Máximo de ${maxItems} itens atingido`
-              : addLabel
-          }
-        >
-          <FiPlus size={16} />
-          {addLabel}
-        </button>
+        {/* Botão adicionar no header - escondido no modo readonly */}
+        {!disabled && (
+          <button
+            type="button"
+            onClick={handleStartAdd}
+            disabled={value.length >= maxItems}
+            style={{
+              padding: "10px 20px",
+              backgroundColor: value.length >= maxItems ? "#e2e8f0" : "#3b82f6",
+              border: "none",
+              borderRadius: "6px",
+              color: "#fff",
+              cursor: value.length >= maxItems ? "not-allowed" : "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              fontSize: "14px",
+              fontWeight: 500,
+              opacity: value.length >= maxItems ? 0.5 : 1,
+            }}
+            title={
+              value.length >= maxItems
+                ? `Máximo de ${maxItems} itens atingido`
+                : addLabel
+            }
+          >
+            <FiPlus size={16} />
+            {addLabel}
+          </button>
+        )}
       </div>
 
       {/* Lista de itens */}
@@ -454,8 +458,8 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
         </div>
       )}
 
-      {/* Mensagem de lista vazia */}
-      {value.length === 0 && (
+      {/* Mensagem de lista vazia - escondida no modo readonly */}
+      {value.length === 0 && !disabled && (
         <div
           style={{
             padding: "24px",
@@ -479,8 +483,8 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
         </div>
       )}
 
-      {/* Validações */}
-      {minItems > 0 && value.length < minItems && (
+      {/* Validações - escondidas no modo readonly */}
+      {!disabled && minItems > 0 && value.length < minItems && (
         <div
           style={{
             marginTop: "8px",
@@ -497,7 +501,7 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
         </div>
       )}
 
-      {maxItems && value.length >= maxItems && (
+      {!disabled && maxItems && value.length >= maxItems && (
         <div
           style={{
             marginTop: "8px",

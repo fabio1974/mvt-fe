@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { FiX } from "react-icons/fi";
 import { api } from "../../services/api";
 import type { EntityFilterConfig } from "../../types/metadata";
 import "./EntityComponents.css";
@@ -186,7 +187,7 @@ const EntityTypeahead: React.FC<EntityTypeaheadProps> = ({
             className="entity-clear-button"
             title="Limpar seleção"
           >
-            ×
+            <FiX />
           </button>
         )}
 
