@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FiPlus,
   FiTrash2,
@@ -13,6 +13,7 @@ import {
   FormSelect,
   FormTextarea,
 } from "../Common/FormComponents";
+import { executeComputedField } from "../../utils/computedFields";
 import "./ArrayField.css";
 
 interface ArrayFieldProps {
@@ -64,12 +65,58 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
     return { itemLabel, addLabel, pluralLabel };
   };
 
-  const { itemLabel, addLabel, pluralLabel } = generateSmartLabels();
+  const { itemLabel, addLabel } = generateSmartLabels();
 
   // Cada item controla seu próprio estado de collapse
   const [collapsedItems, setCollapsedItems] = useState<Record<number, boolean>>(
     {}
   );
+
+  // 🧮 Recalcula campos computados para cada item do array
+  useEffect(() => {
+    const computedFields = fields.filter(
+      (f) => f.computed && f.computedDependencies
+    );
+
+    if (computedFields.length === 0 || !Array.isArray(value)) return;
+
+    console.log(
+      "🧮 [ArrayField] Computed fields detectados:",
+      computedFields.map((f) => ({
+        name: f.name,
+        computed: f.computed,
+        dependencies: f.computedDependencies,
+      }))
+    );
+
+    let hasChanges = false;
+    const newValue = value.map((item, index) => {
+      if (typeof item !== "object" || item === null) return item;
+
+      const itemObj = item as Record<string, unknown>;
+      const updatedItem = { ...itemObj };
+
+      computedFields.forEach((field) => {
+        if (!field.computed) return;
+
+        const computedValue = executeComputedField(field.computed, itemObj);
+
+        if (computedValue !== null && computedValue !== itemObj[field.name]) {
+          console.log(
+            `🧮 [ArrayField] Item ${index}: ${field.name} = "${computedValue}"`
+          );
+          updatedItem[field.name] = computedValue;
+          hasChanges = true;
+        }
+      });
+
+      return updatedItem;
+    });
+
+    if (hasChanges) {
+      onChange(newValue);
+    }
+  }, [value, fields, onChange]);
 
   const createEmptyItem = (): Record<string, unknown> => {
     if (itemType === "object") {
@@ -143,8 +190,36 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
     const label = itemLabel.replace("{index}", String(index + 1));
     const isItemCollapsed = collapsedItems[index] !== false; // Por padrão, colapsado
 
-    // Pega os 3 primeiros campos para mostrar no resumo
-    const summaryFields = fields.slice(0, 3);
+    // 🏷️ Extrai o nome singular do metadata para usar como descrição
+    const singularName = pluralToSingular(config.label || "Item");
+
+    // 🎯 Pega o valor do campo para exibir como label
+    // Prioridade: 1) labelField do config, 2) campo "name", 3) primeiro campo não-id
+    let labelFieldValue: unknown = null;
+
+    if (config.labelField && itemObj[config.labelField]) {
+      labelFieldValue = itemObj[config.labelField];
+    } else if (itemObj["name"]) {
+      labelFieldValue = itemObj["name"];
+    } else {
+      // Pega o primeiro campo que não seja id, event, eventId, etc
+      const displayField = Object.keys(itemObj).find(
+        (key) =>
+          !["id", "event", "eventId", "createdAt", "updatedAt"].includes(key) &&
+          itemObj[key] != null
+      );
+      if (displayField) {
+        labelFieldValue = itemObj[displayField];
+      }
+    }
+
+    console.log("🏷️ ArrayField renderItemCard:", {
+      index,
+      "config.labelField": config.labelField,
+      "itemObj keys": Object.keys(itemObj),
+      labelFieldValue,
+      "itemObj.name": itemObj["name"],
+    });
 
     return (
       <div
@@ -182,31 +257,42 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
             }}
           >
             <FiMenu size={14} color="#9ca3af" />
-            <strong style={{ color: "#374151", fontSize: "14px" }}>
-              {label}
-            </strong>
+            <div style={{ display: "flex", flexDirection: "column" }}>
+              <strong style={{ color: "#374151", fontSize: "14px" }}>
+                {label}
+              </strong>
+              {isItemCollapsed && (
+                <span
+                  style={{
+                    fontSize: "12px",
+                    color: "#9ca3af",
+                    marginTop: "2px",
+                  }}
+                >
+                  {singularName as string}
+                </span>
+              )}
+            </div>
           </div>
 
-          {/* Summary quando colapsado */}
-          {isItemCollapsed && (
+          {/* Label do item quando colapsado */}
+          {isItemCollapsed && labelFieldValue != null && (
             <div
               style={{
-                fontSize: "13px",
-                color: "#6b7280",
+                fontSize: "14px",
+                color: "#1e40af",
                 marginRight: "12px",
                 flex: 1,
+                fontWeight: "600",
+                padding: "6px 12px",
+                backgroundColor: "#dbeafe",
+                borderRadius: "6px",
+                border: "1px solid #3b82f6",
               }}
             >
-              {summaryFields.map((field, idx) => {
-                const val = itemObj[field.name];
-                if (!val) return null;
-                return (
-                  <span key={field.name}>
-                    {field.label}: <strong>{String(val)}</strong>
-                    {idx < summaryFields.length - 1 && val && " • "}
-                  </span>
-                );
-              })}
+              {typeof labelFieldValue === "object"
+                ? JSON.stringify(labelFieldValue)
+                : String(labelFieldValue)}
             </div>
           )}
 
@@ -288,7 +374,17 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
                           label={field.label}
                           required={field.required}
                         >
-                          {field.type === "select" ? (
+                          {/* 🧮 Campos computados são readonly */}
+                          {field.computed ? (
+                            <FormInput
+                              type="text"
+                              value={String(itemObj[field.name] || "")}
+                              onChange={() => {}} // No-op
+                              disabled={true}
+                              required={field.required}
+                              className="bg-gray-100 cursor-not-allowed"
+                            />
+                          ) : field.type === "select" ? (
                             <FormSelect
                               value={String(itemObj[field.name] || "")}
                               onChange={(e) =>
@@ -386,7 +482,7 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
 
   return (
     <div>
-      {/* Header com título e botão adicionar */}
+      {/* Header com contador e botão adicionar */}
       <div
         style={{
           display: "flex",
@@ -400,19 +496,7 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
         }}
       >
         <div>
-          <h4
-            style={{
-              margin: 0,
-              fontSize: "15px",
-              color: "#334155",
-              fontWeight: 600,
-            }}
-          >
-            {pluralLabel}
-          </h4>
-          <p
-            style={{ margin: "4px 0 0 0", fontSize: "13px", color: "#64748b" }}
-          >
+          <p style={{ margin: 0, fontSize: "13px", color: "#64748b" }}>
             {value.length}{" "}
             {value.length === 1 ? "item adicionado" : "itens adicionados"}
             {minItems > 0 && ` (mínimo: ${minItems})`}
@@ -478,7 +562,7 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
             Nenhum item adicionado
           </p>
           <p style={{ margin: 0, fontSize: "13px" }}>
-            Clique em "{addLabel}" para adicionar o primeiro item
+            Clique em "{addLabel}" acima para adicionar o primeiro item
           </p>
         </div>
       )}

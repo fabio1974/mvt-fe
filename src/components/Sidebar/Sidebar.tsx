@@ -6,7 +6,6 @@ import {
   FiPlus,
   FiSettings,
   FiBookmark,
-  FiShield,
   FiUser,
   FiUsers,
 } from "react-icons/fi";
@@ -37,11 +36,6 @@ const menuItems = [
     label: "Minhas inscrições",
     icon: <FiBookmark size={22} color="#0099ff" />,
     path: "/minhas-inscricoes",
-  },
-  {
-    label: "Eventos",
-    icon: <FiShield size={22} color="#0099ff" />,
-    path: "/eventos",
   },
   {
     label: "Dados pessoais",
@@ -79,11 +73,6 @@ export default function Sidebar({
       item.label === "Inscrições"
     ) {
       return userRole === "ROLE_ORGANIZER" || userRole === "ROLE_ADMIN";
-    }
-
-    // Menu exclusivo para admins
-    if (item.label === "Eventos") {
-      return userRole === "ROLE_ADMIN";
     }
 
     return true;

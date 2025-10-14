@@ -124,11 +124,28 @@ const ExampleEventsListPage: React.FC = () => {
     } catch (error: unknown) {
       console.error("❌ Erro ao excluir evento:", error);
 
-      const errorMessage =
-        (error as { response?: { data?: { message?: string } } }).response?.data
-          ?.message || "Erro ao excluir evento. Tente novamente.";
+      const err = error as {
+        response?: { data?: { message?: string }; status?: number };
+      };
+      const errorMessage = err.response?.data?.message || "";
+      const isConstraintError =
+        errorMessage.toLowerCase().includes("constraint") ||
+        errorMessage.toLowerCase().includes("foreign key") ||
+        errorMessage.toLowerCase().includes("referenced") ||
+        err.response?.status === 409;
 
-      showToast(`❌ ${errorMessage}`, "error");
+      if (isConstraintError) {
+        showToast(
+          "❌ Não é possível excluir este evento porque ele possui inscrições ou outras informações vinculadas. " +
+            "Você precisa remover as informações relacionadas primeiro.",
+          "error"
+        );
+      } else {
+        showToast(
+          `❌ ${errorMessage || "Erro ao excluir evento. Tente novamente."}`,
+          "error"
+        );
+      }
     }
   };
 

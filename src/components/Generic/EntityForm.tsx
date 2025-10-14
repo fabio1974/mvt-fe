@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { api } from "../../services/api";
 import { showToast } from "../../utils/toast";
 import { useOrganization } from "../../hooks/useOrganization";
+import { executeComputedField } from "../../utils/computedFields";
 import type {
   FormMetadata,
   FormFieldMetadata,
@@ -21,6 +22,7 @@ import {
 import { ArrayField } from "./ArrayField";
 import { CityTypeahead } from "../Common/CityTypeahead";
 import { FiSave, FiX, FiAlertCircle, FiArrowLeft } from "react-icons/fi";
+import "../../highlighted-computed-field.css";
 
 interface EntityFormProps {
   /** Metadata do formulário */
@@ -61,6 +63,25 @@ const EntityForm: React.FC<EntityFormProps> = ({
 }) => {
   const navigate = useNavigate();
   const { organizationId } = useOrganization();
+
+  // 🔍 Log do metadata completo para debug
+  console.log("🔍 [EntityForm] Metadata recebido:", {
+    endpoint: metadata.endpoint,
+    entityName: metadata.entityName,
+    sectionsCount: metadata.sections.length,
+    sections: metadata.sections.map((s) => ({
+      id: s.id,
+      title: s.title,
+      fieldsCount: s.fields.length,
+      fields: s.fields.map((f) => ({
+        name: f.name,
+        type: f.type,
+        label: f.label,
+        computed: f.computed,
+        computedDependencies: f.computedDependencies,
+      })),
+    })),
+  });
 
   // Determina o modo automaticamente se não foi passado
   const formMode = mode || (entityId ? (readonly ? "view" : "edit") : "create");
@@ -170,10 +191,17 @@ const EntityForm: React.FC<EntityFormProps> = ({
         }
 
         // ✅ Se backend retornar organization como objeto, extrai o ID
-        if (typeof data.organization === "object" && data.organization !== null) {
+        if (
+          typeof data.organization === "object" &&
+          data.organization !== null
+        ) {
           const orgObj = data.organization as { id: number; name?: string };
           data.organizationId = orgObj.id;
-          console.log(`🏢 Organization carregada: {id: ${orgObj.id}, name: "${orgObj.name || 'N/A'}"}`);
+          console.log(
+            `🏢 Organization carregada: {id: ${orgObj.id}, name: "${
+              orgObj.name || "N/A"
+            }"}`
+          );
         }
 
         setFormData((prev) => ({ ...prev, ...data }));
@@ -187,6 +215,44 @@ const EntityForm: React.FC<EntityFormProps> = ({
 
     loadEntity();
   }, [entityId, metadata.endpoint]);
+
+  // 🧮 Recalcula campos computados quando suas dependências mudam
+  useEffect(() => {
+    // Coleta todos os campos computados de todas as seções
+    const computedFields = metadata.sections
+      .flatMap((section) => section.fields)
+      .filter((field) => field.computed && field.computedDependencies);
+
+    if (computedFields.length === 0) return;
+
+    console.log(
+      "🧮 [EntityForm] Campos computados detectados:",
+      computedFields.map((f) => ({
+        name: f.name,
+        computed: f.computed,
+        dependencies: f.computedDependencies,
+      }))
+    );
+
+    // Para cada campo computado, verifica se alguma dependência mudou
+    computedFields.forEach((field) => {
+      if (!field.computed || !field.computedDependencies) return;
+
+      const result = executeComputedField(field.computed, formData);
+
+      // Só atualiza se o valor calculado for diferente do atual
+      if (result !== null && result !== formData[field.name]) {
+        setFormData((prev) => ({
+          ...prev,
+          [field.name]: result,
+        }));
+      }
+    });
+  }, [
+    // Observa mudanças no formData
+    formData,
+    metadata.sections,
+  ]);
 
   // Atualiza valor de um campo
   const handleChange = (fieldName: string, value: unknown) => {
@@ -312,7 +378,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
 
       // ✅ Converte campos de relacionamento para formato {id: number}
       // Backend espera: { organization: { id: 6 }, city: { id: 964 } }
-      
+
       // Injeta organization se necessário
       if (!entityId && organizationId) {
         const hasOrganizationField = allFields.some(
@@ -333,11 +399,13 @@ const EntityForm: React.FC<EntityFormProps> = ({
       if (finalData.organizationId && !finalData.organization) {
         finalData.organization = { id: finalData.organizationId };
         delete finalData.organizationId;
-        console.log(`🔄 Convertendo organizationId → organization: {id: ${finalData.organizationId}}`);
+        console.log(
+          `🔄 Convertendo organizationId → organization: {id: ${finalData.organizationId}}`
+        );
       }
 
       // ✅ Converte cityId para city: {id}
-      if (finalData.cityId && typeof finalData.cityId !== 'object') {
+      if (finalData.cityId && typeof finalData.cityId !== "object") {
         finalData.city = { id: parseInt(String(finalData.cityId)) };
         delete finalData.cityId;
         console.log(`🏙️ Convertendo cityId → city: {id: ${finalData.cityId}}`);
@@ -425,6 +493,23 @@ const EntityForm: React.FC<EntityFormProps> = ({
     }
 
     let fieldContent: React.ReactNode;
+
+    // 🧮 Campos computados são sempre readonly
+    if (field.computed) {
+      return (
+        <FormField label={field.label} required={field.required} error={error}>
+          <FormInput
+            type="text"
+            placeholder={field.placeholder}
+            value={stringValue}
+            onChange={() => {}} // No-op, field is computed
+            disabled={true}
+            required={field.required}
+            className="bg-gray-100 cursor-not-allowed highlighted-computed-field"
+          />
+        </FormField>
+      );
+    }
 
     switch (field.type) {
       case "text":
@@ -719,7 +804,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
         }
         break;
 
-      case "array":
+      case "array": {
         if (!field.arrayConfig) {
           console.warn(
             `Campo ${field.name} é do tipo 'array' mas falta arrayConfig`
@@ -727,7 +812,36 @@ const EntityForm: React.FC<EntityFormProps> = ({
           return null;
         }
 
+        // ✅ CORREÇÃO GENÉRICA: Remove campo de relacionamento com o pai
+        // Ex: Em Event.categories, remove o campo "event" dos items
+        // O campo pai será injetado automaticamente no save
+        const filteredFields =
+          field.arrayConfig.fields?.filter((f) => {
+            // Remove campos que referenciam a entidade pai
+            // Detecta por nome (ex: "event", "eventId") ou por tipo entity com mesmo nome
+            const parentEntityName = metadata.entityName; // ex: "event"
+            const isParentReference =
+              f.name === parentEntityName ||
+              f.name === `${parentEntityName}Id` ||
+              (f.type === "entity" &&
+                f.relationship?.targetEntity === parentEntityName);
+
+            if (isParentReference) {
+              console.log(
+                `🚫 ArrayField: Campo "${f.name}" removido (referencia ao pai "${parentEntityName}")`
+              );
+            }
+
+            return !isParentReference;
+          }) || [];
+
         // ArrayField ocupa largura completa - não envolve no grid
+        console.log("🔍 ArrayField config:", {
+          fieldName: field.name,
+          "field.relationship?.labelField": field.relationship?.labelField,
+          "field.arrayConfig": field.arrayConfig,
+        });
+
         return (
           <div
             key={field.name}
@@ -737,6 +851,8 @@ const EntityForm: React.FC<EntityFormProps> = ({
               config={{
                 ...field.arrayConfig,
                 label: field.arrayConfig?.label || field.label,
+                fields: filteredFields, // ✅ Usa campos filtrados
+                labelField: field.relationship?.labelField, // ✅ Passa o campo a ser usado como label
               }}
               value={Array.isArray(value) ? value : []}
               onChange={(val) => handleChange(field.name, val)}
@@ -745,6 +861,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
             />
           </div>
         );
+      }
 
       default:
         fieldContent = null;
@@ -795,8 +912,13 @@ const EntityForm: React.FC<EntityFormProps> = ({
       }
     }
 
+    // 🎨 Oculta título de seções que só contêm campos array (relacionamentos 1:N)
+    const onlyHasArrayFields =
+      regularFields.length === 0 && textareaFields.length === 0;
+    const finalTitle = onlyHasArrayFields ? "" : sectionTitle;
+
     return (
-      <FormContainer key={section.id} title={sectionTitle} icon={section.icon}>
+      <FormContainer key={section.id} title={finalTitle} icon={section.icon}>
         {/* Grid responsivo moderno - campos normais */}
         {regularFields.length > 0 && (
           <div

@@ -86,9 +86,27 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
       await api.delete(`${endpoint}/${id}`);
       showToast("Registro excluído com sucesso!", "success");
       setRefreshKey((prev) => prev + 1); // Force refresh da tabela
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao excluir:", error);
-      showToast("Erro ao excluir registro", "error");
+
+      // Verifica se é erro de constraint (conflito de integridade referencial)
+      const errorMessage =
+        error?.response?.data?.message || error?.message || "";
+      const isConstraintError =
+        errorMessage.toLowerCase().includes("constraint") ||
+        errorMessage.toLowerCase().includes("foreign key") ||
+        errorMessage.toLowerCase().includes("referenced") ||
+        error?.response?.status === 409;
+
+      if (isConstraintError) {
+        showToast(
+          "Não é possível excluir este registro porque ele está sendo usado em outras partes do sistema. " +
+            "Você precisa remover as informações relacionadas primeiro.",
+          "error"
+        );
+      } else {
+        showToast("Erro ao excluir registro. Tente novamente.", "error");
+      }
     }
   };
 

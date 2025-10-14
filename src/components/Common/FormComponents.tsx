@@ -16,12 +16,14 @@ export const FormContainer: React.FC<FormContainerProps> = ({
 }) => {
   return (
     <div className={`form-container ${className}`}>
-      <div className="form-header">
-        <h3>
-          {icon && <span className="form-icon">{icon}</span>}
-          {title}
-        </h3>
-      </div>
+      {title && (
+        <div className="form-header">
+          <h3>
+            {icon && <span className="form-icon">{icon}</span>}
+            {title}
+          </h3>
+        </div>
+      )}
       <div className="form-content">{children}</div>
     </div>
   );

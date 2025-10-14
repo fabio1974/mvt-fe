@@ -45,8 +45,27 @@ function convertFieldToFormField(field: FieldMetadata): FormFieldMetadata | null
         : field.name;
 
       // Converte os campos da entidade relacionada
+      // 🚫 Lista de campos que devem ser sempre ocultados em nested/array fields
+      const alwaysHiddenInNested = ['currentParticipants', 'createdAt', 'updatedAt', 'id'];
+      
       const relatedFields: FormFieldMetadata[] = field.relationship.fields
         ? field.relationship.fields
+            .filter(f => {
+              console.log(`🔍 [Nested Field Check] ${f.name} - visible: ${f.visible} (inside ${field.name})`);
+              
+              // Ignora campos na lista de sempre ocultos
+              if (alwaysHiddenInNested.includes(f.name)) {
+                console.log(`🚫 [convertFieldToFormField] Auto-hiding field: ${f.name} (in alwaysHiddenInNested list)`);
+                return false;
+              }
+              
+              // Ignora campos com visible === false (explicitamente false, não null ou undefined)
+              if (f.visible === false) {
+                console.log(`❌ [convertFieldToFormField] Skipping hidden nested field: ${f.name} (inside ${field.name})`);
+                return false;
+              }
+              return true;
+            })
             .map(convertFieldToFormField)
             .filter((f): f is FormFieldMetadata => f !== null)
         : [
@@ -116,6 +135,17 @@ function convertFieldToFormField(field: FieldMetadata): FormFieldMetadata | null
     formField.options = field.options;
   }
 
+  // 🧮 Adiciona campos computados
+  if (field.computed) {
+    formField.computed = field.computed;
+    console.log(`✅ [metadataConverter] Campo computado detectado: ${field.name} -> função: ${field.computed}`);
+  }
+  
+  if (field.computedDependencies && field.computedDependencies.length > 0) {
+    formField.computedDependencies = field.computedDependencies;
+    console.log(`✅ [metadataConverter] Dependências: ${field.name} -> [${field.computedDependencies.join(', ')}]`);
+  }
+
   return formField;
 }
 
@@ -145,7 +175,9 @@ export function convertEntityMetadataToFormMetadata(
       name: f.name,
       type: f.type,
       hasRelationship: !!f.relationship,
-      hasOptions: !!(f.options && f.options.length > 0)
+      hasOptions: !!(f.options && f.options.length > 0),
+      computed: f.computed,
+      computedDependencies: f.computedDependencies
     }))
   });
 
@@ -184,7 +216,12 @@ export function convertEntityMetadataToFormMetadata(
   console.log('[convertEntityMetadataToFormMetadata] Processed fields:', {
     basicFieldsCount: basicFields.length,
     relationshipFieldsCount: relationshipFields.length,
-    basicFields: basicFields.map(f => f.name),
+    basicFields: basicFields.map(f => ({
+      name: f.name,
+      type: f.type,
+      computed: f.computed,
+      computedDependencies: f.computedDependencies
+    })),
     relationshipFields: relationshipFields.map(f => f.name)
   });
 

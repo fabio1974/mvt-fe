@@ -10,19 +10,23 @@ interface ToastProps {
 export default function Toast({
   message,
   type = "info",
-  duration = 3000,
+  duration,
   onClose,
 }: ToastProps) {
   const [visible, setVisible] = useState(true);
+
+  // Calcula duração baseada no tamanho da mensagem
+  // Mensagens mais longas ficam visíveis por mais tempo
+  const calculatedDuration = duration || Math.max(5000, message.length * 50);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setVisible(false);
       setTimeout(onClose, 300); // Wait for animation to finish
-    }, duration);
+    }, calculatedDuration);
 
     return () => clearTimeout(timer);
-  }, [duration, onClose]);
+  }, [calculatedDuration, onClose]);
 
   const colors = {
     success: { bg: "#10b981", border: "#059669" },

@@ -25,6 +25,9 @@ export interface FieldMetadata {
   pattern?: string;
   options?: FilterOption[];
   relationship?: RelationshipMetadata;
+  // 🧮 Campos computados
+  computed?: string | null;
+  computedDependencies?: string[] | null;
 }
 
 export interface RelationshipMetadata {
@@ -150,6 +153,8 @@ export interface ArrayFieldConfig {
   maxItems?: number;
   /** Se pode reordenar itens */
   sortable?: boolean;
+  /** Campo a ser usado como label do item (ex: "name") */
+  labelField?: string;
 }
 
 export interface FormFieldMetadata {
@@ -194,6 +199,10 @@ export interface FormFieldMetadata {
   helpText?: string;
   /** Condição para exibir o campo (expressão) */
   showIf?: string;
+  /** Campo calculado: nome da função de cálculo */
+  computed?: string;
+  /** Campo calculado: dependências (campos que quando mudam, recalculam este campo) */
+  computedDependencies?: string[];
 }
 
 export interface FormSectionMetadata {
