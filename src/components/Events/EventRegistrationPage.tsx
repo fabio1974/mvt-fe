@@ -115,6 +115,22 @@ export default function EventRegistrationPage() {
     console.log("Estado mudou para:", state);
   }, [state]);
 
+  const getSportText = (eventType: string): string => {
+    const sports: Record<string, string> = {
+      RUNNING: "Corrida",
+      FOOTBALL: "Futebol",
+      BASKETBALL: "Basquete",
+      VOLLEYBALL: "Vôlei",
+      TENNIS: "Tênis",
+      SWIMMING: "Natação",
+      CYCLING: "Ciclismo",
+      TRAIL_RUNNING: "Trail Running",
+      TRIATHLON: "Triatlo",
+      MARATHON: "Maratona",
+    };
+    return sports[eventType] || eventType;
+  };
+
   // Carregar dados do evento
   useEffect(() => {
     const fetchEvent = async () => {
@@ -324,7 +340,7 @@ export default function EventRegistrationPage() {
             {event.state}
           </p>
           <p style={{ color: "#6b7280" }}>
-            <strong>Modalidade:</strong> {event.eventType}
+            <strong>Modalidade:</strong> {getSportText(event.eventType)}
           </p>
         </div>
 

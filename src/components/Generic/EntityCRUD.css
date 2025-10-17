@@ -129,6 +129,28 @@
   background: #1d4ed8;
 }
 
+/* Botão Editar - azul com ícone branco em contorno */
+.btn-edit {
+  background: #3b82f6;
+  color: white;
+}
+
+.btn-edit svg {
+  stroke: white;
+  fill: none;
+}
+
+.btn-edit:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+
+.btn-edit:active {
+  transform: translateY(0);
+  background: #1d4ed8;
+}
+
 .entity-crud-form-wrapper {
   background: white;
   border-radius: 12px;

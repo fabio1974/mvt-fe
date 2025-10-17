@@ -167,11 +167,117 @@
   overflow: hidden;
   text-overflow: ellipsis;
   transition: opacity 0.3s ease;
+  flex: 1;
 }
 
 .sidebar.collapsed .sidebar-menu-label {
   opacity: 0;
   width: 0;
+}
+
+/* Grupos de menu */
+.sidebar-menu-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar-group-header {
+  font-weight: 600;
+  background: linear-gradient(135deg, rgba(0,153,255,0.12), rgba(0,109,199,0.08));
+  border-color: rgba(0,153,255,0.3);
+  position: relative;
+}
+
+.sidebar-group-header:hover {
+  background: linear-gradient(135deg, rgba(0,153,255,0.18), rgba(0,109,199,0.12));
+}
+
+.sidebar-group-chevron {
+  margin-left: auto;
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+}
+
+/* Sub-items */
+.sidebar-sub-items {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-left: 8px;
+  margin-top: 4px;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sidebar-sub-item {
+  font-size: 0.88rem;
+  padding: 11px 16px;
+  background: rgba(255,255,255,0.35);
+  border-left: 3px solid transparent;
+  margin-left: 12px;
+}
+
+.sidebar-sub-item:hover {
+  background: rgba(0,153,255,0.06);
+  border-left-color: #0099ff;
+  transform: translateX(6px);
+}
+
+.sidebar-sub-item.active {
+  background: rgba(0,153,255,0.12);
+  border-left-color: #0099ff;
+  color: #0369a1;
+  font-weight: 600;
+}
+
+.sidebar-sub-item svg {
+  width: 18px;
+  height: 18px;
+}
+
+/* Item ativo (primeiro nível) */
+.sidebar-menu-item.active {
+  background: linear-gradient(135deg, rgba(0,153,255,0.15), rgba(0,109,199,0.1));
+  border-color: rgba(0,153,255,0.5);
+  color: #0369a1;
+  font-weight: 600;
+}
+
+.sidebar-menu-item.active::before {
+  transform: scaleY(1);
+}
+
+/* Botão sair com estilo especial */
+.sidebar-logout {
+  margin-top: auto;
+  background: rgba(239,68,68,0.08);
+  border-color: rgba(239,68,68,0.3);
+  color: #dc2626;
+}
+
+.sidebar-logout:hover {
+  background: rgba(239,68,68,0.15);
+  border-color: rgba(239,68,68,0.5);
+  color: #b91c1c;
+}
+
+.sidebar-logout svg path {
+  stroke: #dc2626 !important;
+}
+
+.sidebar-logout:hover svg path {
+  stroke: #b91c1c !important;
 }
 
 /* Item Eventos (Admin) com destaque especial */

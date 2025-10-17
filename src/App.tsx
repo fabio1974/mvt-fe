@@ -9,7 +9,9 @@ import EventDetailPage from "./components/Events/EventDetailPage";
 import EventRegistrationPage from "./components/Events/EventRegistrationPage";
 import EventsCRUDPage from "./components/Events/EventsCRUDPage";
 import OrganizationPage from "./components/Organization/OrganizationPage";
+import OrganizationCRUDPage from "./components/Organization/OrganizationCRUDPage";
 import OrganizationRegistrationsPage from "./components/Organization/OrganizationRegistrationsPage";
+import RegistrationsCRUDPage from "./components/Registration/RegistrationsCRUDPage";
 import AdminEventsPage from "./components/Admin/AdminEventsPage";
 import PaymentSuccessPage from "./components/Payment/PaymentSuccessPage";
 import PaymentCancelPage from "./components/Payment/PaymentCancelPage";
@@ -125,7 +127,12 @@ function App() {
                 path="/evento/:slug/inscricao"
                 element={<EventRegistrationPage />}
               />
+              <Route path="/inscricoes" element={<RegistrationsCRUDPage />} />
               <Route path="/organizacao" element={<OrganizationPage />} />
+              <Route
+                path="/organizacao/gerenciar"
+                element={<OrganizationCRUDPage />}
+              />
               <Route
                 path="/organizacao/inscricoes"
                 element={<OrganizationRegistrationsPage />}

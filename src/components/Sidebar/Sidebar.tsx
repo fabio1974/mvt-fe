@@ -1,5 +1,5 @@
-import { useNavigate } from "react-router-dom";
-import React from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
 import { getUserRole } from "../../utils/auth";
 import {
   FiCalendar,
@@ -8,41 +8,89 @@ import {
   FiBookmark,
   FiUser,
   FiUsers,
+  FiBriefcase,
+  FiClipboard,
+  FiChevronDown,
+  FiChevronRight,
 } from "react-icons/fi";
 import "./Sidebar.css";
 
-const menuItems = [
+interface MenuItem {
+  label: string;
+  icon: React.ReactNode;
+  path: string;
+  roles?: string[];
+}
+
+interface MenuGroup {
+  label: string;
+  icon: React.ReactNode;
+  items: MenuItem[];
+  roles?: string[];
+}
+
+// Itens de menu organizados por grupos
+const menuStructure: (MenuItem | MenuGroup)[] = [
+  // Grupo: Meus Dados
   {
-    label: "Meus eventos",
-    icon: <FiCalendar size={22} color="#0099ff" />,
-    path: "/meus-eventos",
+    label: "Meus Dados",
+    icon: <FiUser size={22} color="#0099ff" />,
+    items: [
+      {
+        label: "Dados Pessoais",
+        icon: <FiUser size={20} color="#0099ff" />,
+        path: "/dados-pessoais",
+      },
+      {
+        label: "Meus Eventos",
+        icon: <FiCalendar size={20} color="#0099ff" />,
+        path: "/meus-eventos",
+        roles: ["ROLE_ORGANIZER", "ROLE_ADMIN"],
+      },
+      {
+        label: "Minhas Inscrições",
+        icon: <FiBookmark size={20} color="#0099ff" />,
+        path: "/minhas-inscricoes",
+      },
+      {
+        label: "Organização",
+        icon: <FiSettings size={20} color="#0099ff" />,
+        path: "/organizacao",
+        roles: ["ROLE_ORGANIZER", "ROLE_ADMIN"],
+      },
+    ].sort((a, b) => a.label.localeCompare(b.label, "pt-BR")),
   },
+  // Itens de primeiro nível (ordem alfabética)
   {
     label: "Gerenciar Eventos",
     icon: <FiPlus size={22} color="#0099ff" />,
     path: "/eventos",
+    roles: ["ROLE_ORGANIZER", "ROLE_ADMIN"],
+  },
+  {
+    label: "Gerenciar Inscrições",
+    icon: <FiClipboard size={22} color="#0099ff" />,
+    path: "/inscricoes",
+    roles: ["ROLE_ORGANIZER", "ROLE_ADMIN"],
+  },
+  {
+    label: "Gerenciar Organização",
+    icon: <FiBriefcase size={22} color="#0099ff" />,
+    path: "/organizacao/gerenciar",
+    roles: ["ROLE_ADMIN"],
   },
   {
     label: "Inscrições",
     icon: <FiUsers size={22} color="#0099ff" />,
     path: "/organizacao/inscricoes",
+    roles: ["ROLE_ORGANIZER", "ROLE_ADMIN"],
   },
-  {
-    label: "Organização",
-    icon: <FiSettings size={22} color="#0099ff" />,
-    path: "/organizacao",
-  },
-  {
-    label: "Minhas inscrições",
-    icon: <FiBookmark size={22} color="#0099ff" />,
-    path: "/minhas-inscricoes",
-  },
-  {
-    label: "Dados pessoais",
-    icon: <FiUser size={22} color="#0099ff" />,
-    path: "/dados-pessoais",
-  },
-];
+].sort((a, b) => {
+  // Mantém "Meus Dados" no topo, resto em ordem alfabética
+  if ("items" in a && a.label === "Meus Dados") return -1;
+  if ("items" in b && b.label === "Meus Dados") return 1;
+  return a.label.localeCompare(b.label, "pt-BR");
+});
 
 interface SidebarProps {
   collapsed: boolean;
@@ -60,23 +108,104 @@ export default function Sidebar({
   onClose,
 }: SidebarProps) {
   const navigate = useNavigate();
-  // Get user role from JWT token
+  const location = useLocation();
   const userRole = getUserRole();
+  
+  // Estado para controlar grupos expandidos
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(
+    new Set(["Meus Dados"]) // "Meus Dados" expandido por padrão
+  );
 
-  // Filtrar itens do menu baseado nas permissões do usuário
-  const filteredMenuItems = menuItems.filter((item) => {
-    // Menus exclusivos para organizadores e admins
-    if (
-      item.label === "Criar evento" ||
-      item.label === "Meus eventos" ||
-      item.label === "Organização" ||
-      item.label === "Inscrições"
-    ) {
-      return userRole === "ROLE_ORGANIZER" || userRole === "ROLE_ADMIN";
+  // Verifica se item tem permissão
+  const hasPermission = (item: MenuItem | MenuGroup): boolean => {
+    if (!item.roles || item.roles.length === 0) return true;
+    return item.roles.includes(userRole || "");
+  };
+
+  // Verifica se grupo tem pelo menos um item com permissão
+  const groupHasVisibleItems = (group: MenuGroup): boolean => {
+    return group.items.some(item => hasPermission(item));
+  };
+
+  // Toggle grupo expandido
+  const toggleGroup = (groupLabel: string) => {
+    if (collapsed) {
+      // Se sidebar está colapsado, expande ao clicar
+      setCollapsed(false);
     }
+    
+    setExpandedGroups((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(groupLabel)) {
+        newSet.delete(groupLabel);
+      } else {
+        newSet.add(groupLabel);
+      }
+      return newSet;
+    });
+  };
 
-    return true;
-  });
+  // Verifica se caminho está ativo
+  const isActive = (path: string): boolean => {
+    return location.pathname === path;
+  };
+
+  // Renderiza item de menu
+  const renderMenuItem = (item: MenuItem, isSubItem = false) => {
+    if (!hasPermission(item)) return null;
+
+    return (
+      <button
+        key={item.path}
+        onClick={() => {
+          navigate(item.path);
+          if (isMobile && onClose) onClose();
+        }}
+        className={`sidebar-menu-item${isSubItem ? " sidebar-sub-item" : ""}${
+          isActive(item.path) ? " active" : ""
+        }`}
+        data-item={item.label}
+      >
+        {item.icon}
+        {!collapsed && (
+          <span className="sidebar-menu-label">{item.label}</span>
+        )}
+      </button>
+    );
+  };
+
+  // Renderiza grupo de menu
+  const renderMenuGroup = (group: MenuGroup) => {
+    if (!hasPermission(group) || !groupHasVisibleItems(group)) return null;
+
+    const isExpanded = expandedGroups.has(group.label);
+
+    return (
+      <div key={group.label} className="sidebar-menu-group">
+        <button
+          onClick={() => toggleGroup(group.label)}
+          className="sidebar-menu-item sidebar-group-header"
+        >
+          {group.icon}
+          {!collapsed && (
+            <>
+              <span className="sidebar-menu-label">{group.label}</span>
+              {isExpanded ? (
+                <FiChevronDown className="sidebar-group-chevron" />
+              ) : (
+                <FiChevronRight className="sidebar-group-chevron" />
+              )}
+            </>
+          )}
+        </button>
+        {isExpanded && !collapsed && (
+          <div className="sidebar-sub-items">
+            {group.items.map((item) => renderMenuItem(item, true))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <>
@@ -97,26 +226,24 @@ export default function Sidebar({
           <img src="/vite.svg" alt="Logo" className="sidebar-logo" />
         </div>
         <nav className="sidebar-nav">
-          {filteredMenuItems.map((item) => (
-            <button
-              key={item.label}
-              onClick={() => navigate(item.path)}
-              className="sidebar-menu-item"
-              data-item={item.label}
-            >
-              {item.icon}
-              {!collapsed && (
-                <span className="sidebar-menu-label">{item.label}</span>
-              )}
-            </button>
-          ))}
+          {menuStructure.map((item) => {
+            if ("items" in item) {
+              // É um grupo
+              return renderMenuGroup(item);
+            } else {
+              // É um item simples
+              return renderMenuItem(item);
+            }
+          })}
+          
+          {/* Botão Sair */}
           <button
             onClick={() => {
               localStorage.removeItem("authToken");
               navigate("/login");
               window.location.reload();
             }}
-            className="sidebar-menu-item"
+            className="sidebar-menu-item sidebar-logout"
           >
             <svg
               width="22"

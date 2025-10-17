@@ -83,12 +83,13 @@ export function getUserName(): string | null {
   return decoded?.name || null;
 }
 
-// Função para obter o ID do usuário
+// Função para obter o ID do usuário (UUID)
 export function getUserId(): string | null {
   const token = localStorage.getItem('authToken');
   if (!token) return null;
   
   const decoded = decodeJWT(token);
+  // Retorna o userId que é um UUID string
   return decoded?.userId || null;
 }
 

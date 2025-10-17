@@ -17,9 +17,16 @@ interface Event {
   slug?: string;
 }
 
+interface Registration {
+  id: number;
+  event: Event;
+  status: string;
+  registrationDate: string;
+}
+
 export default function MyEventsPage() {
   const [events, setEvents] = useState<Event[]>([]);
-  const [registrations, setRegistrations] = useState<Event[]>([]);
+  const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState<"created" | "registered">(
@@ -55,10 +62,18 @@ export default function MyEventsPage() {
           const registrationsResponse = await api.get(
             "/registrations/my-registrations"
           );
-          setRegistrations((registrationsResponse.data as Event[]) || []);
+          const registrationsData =
+            registrationsResponse.data as Registration[];
+          setRegistrations(registrationsData || []);
+          console.log("✅ Inscrições carregadas:", registrationsData.length);
         } catch (regError) {
-          console.warn("Erro ao carregar inscrições:", regError);
+          console.warn(
+            "⚠️ Erro ao carregar inscrições (não crítico):",
+            regError
+          );
           setRegistrations([]);
+          // Não mostra erro ao usuário, apenas loga no console
+          // A aba de inscrições vai mostrar "Nenhuma inscrição encontrada"
         }
       } catch (err) {
         setError("Erro ao carregar eventos");
@@ -73,6 +88,34 @@ export default function MyEventsPage() {
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("pt-BR");
+  };
+
+  const getSportText = (eventType: string): string => {
+    const sports: Record<string, string> = {
+      RUNNING: "Corrida",
+      FOOTBALL: "Futebol",
+      BASKETBALL: "Basquete",
+      VOLLEYBALL: "Vôlei",
+      TENNIS: "Tênis",
+      SWIMMING: "Natação",
+      CYCLING: "Ciclismo",
+      TRAIL_RUNNING: "Trail Running",
+      TRIATHLON: "Triatlo",
+      MARATHON: "Maratona",
+    };
+    return sports[eventType] || eventType;
+  };
+
+  const getStatusText = (status: string): string => {
+    const texts: Record<string, string> = {
+      DRAFT: "Rascunho",
+      PUBLISHED: "Publicado",
+      ACTIVE: "Ativo",
+      FINISHED: "Finalizado",
+      CANCELLED: "Cancelado",
+      COMPLETED: "Concluído",
+    };
+    return texts[status] || status;
   };
 
   if (loading) {
@@ -146,6 +189,7 @@ export default function MyEventsPage() {
             color: activeTab === "created" ? "white" : "#666",
             cursor: "pointer",
             fontWeight: 500,
+            transition: "all 0.2s",
           }}
         >
           Eventos Criados ({events.length})
@@ -161,6 +205,7 @@ export default function MyEventsPage() {
             color: activeTab === "registered" ? "white" : "#666",
             cursor: "pointer",
             fontWeight: 500,
+            transition: "all 0.2s",
           }}
         >
           Minhas Inscrições ({registrations.length})
@@ -181,6 +226,7 @@ export default function MyEventsPage() {
           </div>
         )}
 
+        {/* Aba: Eventos Criados */}
         {activeTab === "created" && (
           <div>
             {events.length === 0 ? (
@@ -256,7 +302,7 @@ export default function MyEventsPage() {
                           fontWeight: 500,
                         }}
                       >
-                        {event.status === "ACTIVE" ? "Ativo" : event.status}
+                        {getStatusText(event.status)}
                       </span>
                     </div>
 
@@ -311,7 +357,7 @@ export default function MyEventsPage() {
                         }}
                       >
                         <span>🏃</span>
-                        <span>{event.eventType}</span>
+                        <span>{getSportText(event.eventType)}</span>
                       </div>
                       {event.maxParticipants && (
                         <div
@@ -398,6 +444,7 @@ export default function MyEventsPage() {
           </div>
         )}
 
+        {/* Aba: Minhas Inscrições */}
         {activeTab === "registered" && (
           <div>
             {registrations.length === 0 ? (
@@ -410,42 +457,183 @@ export default function MyEventsPage() {
                   textAlign: "center",
                 }}
               >
-                <p>Você ainda não se inscreveu em nenhum evento.</p>
+                <h3 style={{ color: "#0099ff", marginBottom: 16 }}>
+                  Nenhuma inscrição encontrada
+                </h3>
+                <p style={{ color: "#666", marginBottom: 24 }}>
+                  Você ainda não se inscreveu em nenhum evento.
+                </p>
+                <p
+                  style={{ color: "#999", fontSize: "0.85rem", marginTop: 16 }}
+                >
+                  💡 Navegue pelos eventos disponíveis e faça sua inscrição!
+                </p>
               </div>
             ) : (
               <div style={{ display: "grid", gap: 16 }}>
-                {registrations.map((event) => (
-                  <div
-                    key={event.id}
-                    style={{
-                      padding: 24,
-                      backgroundColor: "white",
-                      borderRadius: 12,
-                      boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-                    }}
-                  >
-                    <h3 style={{ color: "#0099ff", marginBottom: 8 }}>
-                      {event.name}
-                    </h3>
-                    <p style={{ color: "#666", marginBottom: 12 }}>
-                      {event.description}
-                    </p>
+                {registrations.map((registration) => {
+                  const event = registration.event;
+                  return (
                     <div
+                      key={registration.id}
                       style={{
-                        display: "flex",
-                        gap: 16,
-                        fontSize: "0.9rem",
-                        color: "#888",
+                        padding: 24,
+                        backgroundColor: "white",
+                        borderRadius: 12,
+                        boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                        border: "1px solid #e9ecef",
                       }}
                     >
-                      <span>📅 {formatDate(event.eventDate)}</span>
-                      <span>
-                        📍 {event.city}, {event.state}
-                      </span>
-                      <span>🏃 {event.eventType}</span>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "flex-start",
+                          marginBottom: 12,
+                        }}
+                      >
+                        <h3
+                          style={{
+                            color: "#0099ff",
+                            marginBottom: 0,
+                            fontSize: "1.2rem",
+                          }}
+                        >
+                          {event.name}
+                        </h3>
+                        <span
+                          style={{
+                            padding: "4px 12px",
+                            backgroundColor:
+                              registration.status === "CONFIRMED"
+                                ? "#e8f5e8"
+                                : registration.status === "PENDING"
+                                ? "#fff3cd"
+                                : "#fee",
+                            color:
+                              registration.status === "CONFIRMED"
+                                ? "#2d7d32"
+                                : registration.status === "PENDING"
+                                ? "#856404"
+                                : "#c33",
+                            borderRadius: 16,
+                            fontSize: "0.8rem",
+                            fontWeight: 500,
+                          }}
+                        >
+                          {registration.status === "CONFIRMED"
+                            ? "Confirmada"
+                            : registration.status === "PENDING"
+                            ? "Pendente"
+                            : registration.status === "CANCELLED"
+                            ? "Cancelada"
+                            : registration.status}
+                        </span>
+                      </div>
+
+                      <p
+                        style={{
+                          color: "#666",
+                          marginBottom: 16,
+                          lineHeight: 1.5,
+                        }}
+                      >
+                        {event.description}
+                      </p>
+
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns:
+                            "repeat(auto-fit, minmax(200px, 1fr))",
+                          gap: 12,
+                          fontSize: "0.9rem",
+                          color: "#555",
+                          marginBottom: 16,
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                          }}
+                        >
+                          <span>📅</span>
+                          <span>{formatDate(event.eventDate)}</span>
+                        </div>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                          }}
+                        >
+                          <span>📍</span>
+                          <span>
+                            {event.city}, {event.state}
+                          </span>
+                        </div>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                          }}
+                        >
+                          <span>🏃</span>
+                          <span>{getSportText(event.eventType)}</span>
+                        </div>
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 8,
+                          }}
+                        >
+                          <span>📝</span>
+                          <span>
+                            Inscrito em{" "}
+                            {formatDate(registration.registrationDate)}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div
+                        style={{
+                          display: "flex",
+                          gap: 12,
+                          paddingTop: 16,
+                          borderTop: "1px solid #e9ecef",
+                        }}
+                      >
+                        <button
+                          onClick={() => {
+                            navigate(
+                              `/evento/${
+                                event.slug
+                                  ? `${event.slug}-${event.id}`
+                                  : event.id
+                              }`
+                            );
+                            window.scrollTo({ top: 0, behavior: "smooth" });
+                          }}
+                          style={{
+                            padding: "8px 16px",
+                            backgroundColor: "#0099ff",
+                            color: "white",
+                            border: "none",
+                            borderRadius: 6,
+                            cursor: "pointer",
+                            fontSize: "0.9rem",
+                          }}
+                        >
+                          Ver Detalhes
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

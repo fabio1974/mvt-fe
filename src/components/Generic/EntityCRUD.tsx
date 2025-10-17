@@ -1,5 +1,11 @@
 import React, { useState } from "react";
-import { FiPlus, FiHome, FiChevronRight, FiArrowLeft } from "react-icons/fi";
+import {
+  FiPlus,
+  FiHome,
+  FiChevronRight,
+  FiArrowLeft,
+  FiEdit,
+} from "react-icons/fi";
 import EntityTable from "./EntityTable";
 import EntityForm from "./EntityForm";
 import ErrorBoundary from "../Common/ErrorBoundary";
@@ -26,6 +32,16 @@ interface EntityCRUDProps {
   };
   /** Callback após criar/editar com sucesso */
   onSuccess?: (data: unknown) => void;
+  /** ID fixo da entidade (para modo view/edit sem tabela) */
+  entityId?: number | string;
+  /** Modo inicial quando entityId é fornecido */
+  initialMode?: "view" | "edit" | "create";
+  /** Esconde a tabela (útil para páginas de perfil) */
+  hideTable?: boolean;
+  /** Mostra botão "Editar" no modo view */
+  showEditButton?: boolean;
+  /** Esconde campos de array (relacionamentos 1:N) */
+  hideArrayFields?: boolean;
 }
 
 /**
@@ -53,11 +69,27 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
   apiEndpoint,
   customRenderers,
   onSuccess,
+  entityId: propEntityId,
+  initialMode = "view",
+  hideTable = false,
+  showEditButton = false,
+  hideArrayFields = false,
 }) => {
-  const [viewMode, setViewMode] = useState<ViewMode>("table");
+  // Determina o modo inicial baseado nas props
+  const getInitialMode = (): ViewMode => {
+    if (propEntityId) {
+      return initialMode; // Se tem ID, usa o initialMode (view ou edit)
+    }
+    if (hideTable) {
+      return "create"; // Se esconde tabela sem ID, cria novo
+    }
+    return "table"; // Padrão: mostra tabela
+  };
+
+  const [viewMode, setViewMode] = useState<ViewMode>(getInitialMode);
   const [selectedEntityId, setSelectedEntityId] = useState<
-    number | undefined
-  >();
+    number | string | undefined
+  >(propEntityId);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const { getEntityMetadata, isLoading: metadataLoading } = useMetadata();
@@ -115,11 +147,17 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
     setViewMode("create");
   };
 
-  // Handler para voltar à lista
+  // Handler para voltar à lista ou ao modo view
   const handleBackToTable = () => {
-    setSelectedEntityId(undefined);
-    setViewMode("table");
-    setRefreshKey((prev) => prev + 1); // Refresh da tabela
+    if (hideTable && propEntityId) {
+      // Se esconde tabela e tem ID fixo, volta para view
+      setViewMode("view");
+    } else {
+      // Senão, volta para tabela
+      setSelectedEntityId(undefined);
+      setViewMode("table");
+      setRefreshKey((prev) => prev + 1); // Refresh da tabela
+    }
   };
 
   // Handler de sucesso do formulário
@@ -130,7 +168,14 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
         : "Registro atualizado com sucesso!",
       "success"
     );
-    handleBackToTable();
+
+    if (hideTable && propEntityId) {
+      // Se esconde tabela e tem ID fixo, volta para view após salvar
+      setViewMode("view");
+    } else {
+      handleBackToTable();
+    }
+
     onSuccess?.(data);
   };
 
@@ -193,7 +238,15 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
             <FiPlus />
             <span>Criar Novo</span>
           </button>
-        ) : (
+        ) : mode === "view" && showEditButton ? (
+          <button
+            className="breadcrumb-action-btn btn-edit"
+            onClick={() => setViewMode("edit")}
+          >
+            <FiEdit />
+            <span>Editar</span>
+          </button>
+        ) : mode !== "view" ? (
           <button
             className="breadcrumb-action-btn btn-back"
             onClick={handleBackToTable}
@@ -201,13 +254,13 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
             <FiArrowLeft />
             <span>Voltar</span>
           </button>
-        )}
+        ) : null}
       </div>
     );
   };
 
   // Renderiza a tabela com filtros
-  if (viewMode === "table") {
+  if (viewMode === "table" && !hideTable) {
     return (
       <div className="entity-crud-container">
         <Breadcrumb mode={viewMode} />
@@ -261,7 +314,9 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
           onSuccess={handleFormSuccess}
           onCancel={handleBackToTable}
           readonly={isReadonly}
-          mode={viewMode}
+          mode={viewMode === "table" ? "view" : viewMode}
+          hideCancelButton={hideTable && isReadonly}
+          hideArrayFields={hideArrayFields}
         />
       </div>
     </div>

@@ -39,6 +39,10 @@ interface EntityFormProps {
   readonly?: boolean;
   /** Modo do formulário (create, edit, view) */
   mode?: "create" | "edit" | "view";
+  /** Esconde o botão cancelar/voltar */
+  hideCancelButton?: boolean;
+  /** Esconde campos de array (relacionamentos 1:N) */
+  hideArrayFields?: boolean;
 }
 
 /**
@@ -60,6 +64,8 @@ const EntityForm: React.FC<EntityFormProps> = ({
   initialValues = {},
   readonly = false,
   mode,
+  hideCancelButton = false,
+  hideArrayFields = false,
 }) => {
   const navigate = useNavigate();
   const { organizationId } = useOrganization();
@@ -203,6 +209,32 @@ const EntityForm: React.FC<EntityFormProps> = ({
             }"}`
           );
         }
+
+        // ✅ CORREÇÃO GENÉRICA: Converte TODOS os campos que são objetos com {id} para strings
+        // Isso evita erro "Objects are not valid as a React child"
+        Object.keys(data).forEach((key) => {
+          const value = data[key];
+          if (
+            value &&
+            typeof value === "object" &&
+            !Array.isArray(value) &&
+            "id" in value
+          ) {
+            // Se é um objeto com id, converte para string do ID ou do nome
+            const obj = value as { id: number | string; name?: string };
+            console.log(
+              `🔄 Convertendo campo "${key}" de objeto para valor primitivo:`,
+              obj
+            );
+            // Prioriza usar o nome se disponível, senão usa o ID
+            data[key] = obj.name || String(obj.id);
+            // Salva o ID em um campo separado se não existir
+            const idFieldName = key.endsWith("Id") ? key : `${key}Id`;
+            if (!data[idFieldName]) {
+              data[idFieldName] = obj.id;
+            }
+          }
+        });
 
         setFormData((prev) => ({ ...prev, ...data }));
       } catch (err) {
@@ -895,7 +927,16 @@ const EntityForm: React.FC<EntityFormProps> = ({
       (f) => f.type !== "array" && f.type !== "textarea"
     );
     const textareaFields = section.fields.filter((f) => f.type === "textarea");
-    const arrayFields = section.fields.filter((f) => f.type === "array");
+    const arrayFields = hideArrayFields
+      ? []
+      : section.fields.filter((f) => f.type === "array");
+
+    // 🚫 Se hideArrayFields está ativo e a seção só tem array fields, não renderiza
+    const onlyHasArrayFields =
+      regularFields.length === 0 && textareaFields.length === 0;
+    if (hideArrayFields && onlyHasArrayFields) {
+      return null; // Não renderiza seção de relacionamentos
+    }
 
     // No modo readonly, se a seção só tem array fields e todos estão vazios, não renderiza a seção
     if (readonly || formMode === "view") {
@@ -913,8 +954,6 @@ const EntityForm: React.FC<EntityFormProps> = ({
     }
 
     // 🎨 Oculta título de seções que só contêm campos array (relacionamentos 1:N)
-    const onlyHasArrayFields =
-      regularFields.length === 0 && textareaFields.length === 0;
     const finalTitle = onlyHasArrayFields ? "" : sectionTitle;
 
     return (
@@ -1025,21 +1064,23 @@ const EntityForm: React.FC<EntityFormProps> = ({
             </FormButton>
           )}
 
-          <FormButton
-            type="button"
-            variant="secondary"
-            icon={readonly ? <FiArrowLeft /> : <FiX />}
-            onClick={() => {
-              if (onCancel) {
-                onCancel();
-              } else {
-                navigate(-1);
-              }
-            }}
-            disabled={loading}
-          >
-            {readonly ? "Voltar" : metadata.cancelLabel || "Cancelar"}
-          </FormButton>
+          {!hideCancelButton && (
+            <FormButton
+              type="button"
+              variant="secondary"
+              icon={readonly ? <FiArrowLeft /> : <FiX />}
+              onClick={() => {
+                if (onCancel) {
+                  onCancel();
+                } else {
+                  navigate(-1);
+                }
+              }}
+              disabled={loading}
+            >
+              {readonly ? "Voltar" : metadata.cancelLabel || "Cancelar"}
+            </FormButton>
+          )}
         </FormActions>
       </div>
     </form>
