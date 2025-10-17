@@ -110,7 +110,7 @@ export default function Sidebar({
   const navigate = useNavigate();
   const location = useLocation();
   const userRole = getUserRole();
-  
+
   // Estado para controlar grupos expandidos
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(
     new Set(["Meus Dados"]) // "Meus Dados" expandido por padrão
@@ -124,7 +124,7 @@ export default function Sidebar({
 
   // Verifica se grupo tem pelo menos um item com permissão
   const groupHasVisibleItems = (group: MenuGroup): boolean => {
-    return group.items.some(item => hasPermission(item));
+    return group.items.some((item) => hasPermission(item));
   };
 
   // Toggle grupo expandido
@@ -133,7 +133,7 @@ export default function Sidebar({
       // Se sidebar está colapsado, expande ao clicar
       setCollapsed(false);
     }
-    
+
     setExpandedGroups((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(groupLabel)) {
@@ -167,9 +167,7 @@ export default function Sidebar({
         data-item={item.label}
       >
         {item.icon}
-        {!collapsed && (
-          <span className="sidebar-menu-label">{item.label}</span>
-        )}
+        {!collapsed && <span className="sidebar-menu-label">{item.label}</span>}
       </button>
     );
   };
@@ -235,7 +233,7 @@ export default function Sidebar({
               return renderMenuItem(item);
             }
           })}
-          
+
           {/* Botão Sair */}
           <button
             onClick={() => {

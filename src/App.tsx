@@ -1,7 +1,7 @@
 import "./App.css";
 import Header from "./components/Header/Header";
 import Footer from "./components/Footer/Footer";
-import Home from "./components/Home/Home";
+import LandingPage from "./components/LandingPage/LandingPage";
 import LoginRegisterPage from "./components/Auth/LoginRegisterPage";
 import ResetPasswordPage from "./components/Auth/ResetPasswordPage";
 import MyEventsPage from "./components/Events/MyEventsPage";
@@ -117,7 +117,7 @@ function App() {
               sidebarCollapsed={sidebarCollapsed}
             />
             <Routes>
-              <Route path="/" element={<Home />} />
+              <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<LoginRegisterPage />} />
               <Route path="/recuperar-senha" element={<ResetPasswordPage />} />
               <Route path="/eventos" element={<EventsCRUDPage />} />

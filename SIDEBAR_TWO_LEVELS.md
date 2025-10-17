@@ -3,6 +3,7 @@
 ## 📋 Resumo
 
 Refatoração completa do Sidebar com:
+
 - **Estrutura de dois níveis** (grupos + items)
 - **Grupos expansíveis/retráteis**
 - **Ordenação alfabética** automática
@@ -16,6 +17,7 @@ Refatoração completa do Sidebar com:
 ## 🎯 Nova Estrutura
 
 ### 📁 Grupo: Meus Dados (Expansível)
+
 ```
 Meus Dados 👤 [▼]
   ├── Dados Pessoais
@@ -25,6 +27,7 @@ Meus Dados 👤 [▼]
 ```
 
 ### 📄 Items de Primeiro Nível (Ordem Alfabética)
+
 ```
 Gerenciar Eventos (ORGANIZER/ADMIN)
 Gerenciar Inscrições (ORGANIZER/ADMIN)
@@ -39,18 +42,21 @@ Sair
 ## ✨ Funcionalidades Implementadas
 
 ### 1. **Grupos Expansíveis** ✅
+
 - Click no grupo → expande/retrai
 - Ícone chevron muda (▼ expandido / ▶ retraído)
 - Animação suave ao expandir
 - "Meus Dados" expandido por padrão
 
 ### 2. **Estado Ativo** ✅
+
 - Item ativo destacado em azul
 - Borda lateral azul
 - Texto em negrito
 - Funciona para items e sub-items
 
 ### 3. **Ordenação Alfabética** ✅
+
 ```typescript
 // Sub-items ordenados automaticamente
 items: [...].sort((a, b) => a.label.localeCompare(b.label, "pt-BR"))
@@ -64,14 +70,17 @@ menuStructure.sort((a, b) => {
 ```
 
 ### 4. **Permissões por Item** ✅
+
 ```typescript
-roles: ["ROLE_ORGANIZER", "ROLE_ADMIN"]
+roles: ["ROLE_ORGANIZER", "ROLE_ADMIN"];
 ```
+
 - Suporta múltiplas roles
 - Filtragem automática
 - Oculta items sem permissão
 
 ### 5. **Comportamento no Collapsed** ✅
+
 - Grupos mostram apenas ícone
 - Click no grupo quando collapsed → expande sidebar
 - Sub-items não aparecem no modo collapsed
@@ -81,6 +90,7 @@ roles: ["ROLE_ORGANIZER", "ROLE_ADMIN"]
 ## 🎨 Layout Visual
 
 ### Sidebar Expandido
+
 ```
 ┌──────────────────────────────┐
 │        [Logo MVT]            │
@@ -103,6 +113,7 @@ roles: ["ROLE_ORGANIZER", "ROLE_ADMIN"]
 ```
 
 ### Sidebar Colapsado
+
 ```
 ┌─────┐
 │ 🔷  │
@@ -123,22 +134,24 @@ roles: ["ROLE_ORGANIZER", "ROLE_ADMIN"]
 ## 🔧 Código - Interfaces
 
 ### MenuItem
+
 ```typescript
 interface MenuItem {
   label: string;
   icon: React.ReactNode;
   path: string;
-  roles?: string[];  // Opcional: restringe por role
+  roles?: string[]; // Opcional: restringe por role
 }
 ```
 
 ### MenuGroup
+
 ```typescript
 interface MenuGroup {
   label: string;
   icon: React.ReactNode;
   items: MenuItem[];
-  roles?: string[];  // Opcional: restringe grupo inteiro
+  roles?: string[]; // Opcional: restringe grupo inteiro
 }
 ```
 
@@ -147,6 +160,7 @@ interface MenuGroup {
 ## 📝 Como Adicionar Novo Item
 
 ### Item Simples (Primeiro Nível)
+
 ```typescript
 {
   label: "Meu Item",
@@ -157,6 +171,7 @@ interface MenuGroup {
 ```
 
 ### Item dentro de "Meus Dados"
+
 ```typescript
 // Dentro do grupo "Meus Dados"
 items: [
@@ -167,10 +182,11 @@ items: [
     path: "/novo-sub-item",
     roles: ["ROLE_USER"], // Opcional
   },
-].sort((a, b) => a.label.localeCompare(b.label, "pt-BR"))
+].sort((a, b) => a.label.localeCompare(b.label, "pt-BR"));
 ```
 
 ### Criar Novo Grupo
+
 ```typescript
 {
   label: "Meu Grupo",
@@ -195,6 +211,7 @@ items: [
 ## 🎯 Estados e Comportamentos
 
 ### 1. **Grupo Expandido/Retraído**
+
 ```typescript
 const [expandedGroups, setExpandedGroups] = useState<Set<string>>(
   new Set(["Meus Dados"]) // Expandido por padrão
@@ -202,12 +219,13 @@ const [expandedGroups, setExpandedGroups] = useState<Set<string>>(
 ```
 
 ### 2. **Toggle de Grupo**
+
 ```typescript
 const toggleGroup = (groupLabel: string) => {
   if (collapsed) {
     setCollapsed(false); // Expande sidebar se colapsado
   }
-  
+
   setExpandedGroups((prev) => {
     const newSet = new Set(prev);
     if (newSet.has(groupLabel)) {
@@ -221,6 +239,7 @@ const toggleGroup = (groupLabel: string) => {
 ```
 
 ### 3. **Verificação de Item Ativo**
+
 ```typescript
 const isActive = (path: string): boolean => {
   return location.pathname === path;
@@ -232,49 +251,65 @@ const isActive = (path: string): boolean => {
 ## 🎨 Estilos CSS Adicionados
 
 ### Grupos
+
 ```css
-.sidebar-menu-group { }          /* Container do grupo */
-.sidebar-group-header { }        /* Cabeçalho do grupo */
-.sidebar-group-chevron { }       /* Ícone ▼/▶ */
+.sidebar-menu-group {
+} /* Container do grupo */
+.sidebar-group-header {
+} /* Cabeçalho do grupo */
+.sidebar-group-chevron {
+} /* Ícone ▼/▶ */
 ```
 
 ### Sub-Items
+
 ```css
-.sidebar-sub-items { }           /* Container dos sub-items */
-.sidebar-sub-item { }            /* Item filho */
-.sidebar-sub-item:hover { }      /* Hover do sub-item */
-.sidebar-sub-item.active { }     /* Sub-item ativo */
+.sidebar-sub-items {
+} /* Container dos sub-items */
+.sidebar-sub-item {
+} /* Item filho */
+.sidebar-sub-item:hover {
+} /* Hover do sub-item */
+.sidebar-sub-item.active {
+} /* Sub-item ativo */
 ```
 
 ### Animações
+
 ```css
-@keyframes slideDown { }         /* Animação de expansão */
+@keyframes slideDown {
+} /* Animação de expansão */
 ```
 
 ### Item Ativo
+
 ```css
-.sidebar-menu-item.active { }    /* Item primeiro nível ativo */
-.sidebar-sub-item.active { }     /* Sub-item ativo */
+.sidebar-menu-item.active {
+} /* Item primeiro nível ativo */
+.sidebar-sub-item.active {
+} /* Sub-item ativo */
 ```
 
 ### Botão Sair
+
 ```css
-.sidebar-logout { }              /* Estilo especial em vermelho */
+.sidebar-logout {
+} /* Estilo especial em vermelho */
 ```
 
 ---
 
 ## 📊 Comparação: Antes vs Depois
 
-| Aspecto | Antes | Depois |
-|---------|-------|--------|
-| **Estrutura** | Lista plana | Grupos + Items |
-| **Níveis** | 1 nível | 2 níveis |
-| **Organização** | Manual | Alfabética automática |
-| **Expansão** | N/A | Grupos expansíveis |
-| **Estado Ativo** | ❌ | ✅ Destacado |
-| **Animações** | Básicas | Suaves e elegantes |
-| **Mobile** | ✅ | ✅ Mantido |
+| Aspecto          | Antes       | Depois                |
+| ---------------- | ----------- | --------------------- |
+| **Estrutura**    | Lista plana | Grupos + Items        |
+| **Níveis**       | 1 nível     | 2 níveis              |
+| **Organização**  | Manual      | Alfabética automática |
+| **Expansão**     | N/A         | Grupos expansíveis    |
+| **Estado Ativo** | ❌          | ✅ Destacado          |
+| **Animações**    | Básicas     | Suaves e elegantes    |
+| **Mobile**       | ✅          | ✅ Mantido            |
 
 ---
 
@@ -302,6 +337,7 @@ const isActive = (path: string): boolean => {
 ## 🎬 Animações e Transições
 
 ### Expansão de Grupo
+
 ```css
 .sidebar-sub-items {
   animation: slideDown 0.3s ease;
@@ -320,6 +356,7 @@ const isActive = (path: string): boolean => {
 ```
 
 ### Rotação do Chevron
+
 ```css
 .sidebar-group-chevron {
   transition: transform 0.3s ease;
@@ -327,6 +364,7 @@ const isActive = (path: string): boolean => {
 ```
 
 ### Hover nos Sub-Items
+
 ```css
 .sidebar-sub-item:hover {
   transform: translateX(6px);
@@ -341,10 +379,12 @@ const isActive = (path: string): boolean => {
 ### Para Usuário Final
 
 1. **Expandir/Retrair Grupo**
+
    - Click em "Meus Dados" → abre/fecha sub-items
    - Ícone muda: ▼ (aberto) / ▶ (fechado)
 
 2. **Navegar em Sub-Item**
+
    - Click no sub-item → navega para a rota
    - Sub-item ativo fica destacado
 
@@ -355,6 +395,7 @@ const isActive = (path: string): boolean => {
 ### Para Desenvolvedor
 
 **Adicionar novo sub-item em "Meus Dados":**
+
 ```typescript
 // Localizar o grupo "Meus Dados" em menuStructure
 items: [
@@ -364,10 +405,11 @@ items: [
     icon: <FiStar size={20} color="#0099ff" />,
     path: "/meu-novo-item",
   },
-].sort((a, b) => a.label.localeCompare(b.label, "pt-BR"))
+].sort((a, b) => a.label.localeCompare(b.label, "pt-BR"));
 ```
 
 **Criar novo grupo:**
+
 ```typescript
 {
   label: "Administração",
@@ -389,18 +431,21 @@ items: [
 ## 🎯 Ordem Final dos Items
 
 ### Grupo: Meus Dados (Sempre no topo)
+
 1. Dados Pessoais
 2. Meus Eventos (ORGANIZER/ADMIN)
 3. Minhas Inscrições
 4. Organização (ORGANIZER/ADMIN)
 
 ### Primeiro Nível (Ordem alfabética)
+
 1. Gerenciar Eventos (ORGANIZER/ADMIN)
 2. Gerenciar Inscrições (ORGANIZER/ADMIN)
 3. Gerenciar Organização (ORGANIZER/ADMIN)
 4. Inscrições (ORGANIZER/ADMIN)
 
 ### Fixos
+
 - Sair (sempre no final)
 
 ---
@@ -417,16 +462,19 @@ items: [
 ## 🔍 Debugging
 
 ### Ver grupos expandidos
+
 ```typescript
 console.log(expandedGroups); // Set { "Meus Dados" }
 ```
 
 ### Ver item ativo
+
 ```typescript
 console.log(location.pathname); // "/dados-pessoais"
 ```
 
 ### Ver role do usuário
+
 ```typescript
 console.log(getUserRole()); // "ROLE_ORGANIZER"
 ```
@@ -438,6 +486,7 @@ console.log(getUserRole()); // "ROLE_ORGANIZER"
 **Implementação Completa!** ✅
 
 Sidebar totalmente refatorado com:
+
 - ✅ 2 níveis (grupos + items)
 - ✅ Expansão/retração
 - ✅ Ordenação alfabética

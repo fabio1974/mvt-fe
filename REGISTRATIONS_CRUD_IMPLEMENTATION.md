@@ -9,12 +9,14 @@ Criada a página **"Gerenciar Inscrições"** com CRUD completo usando o compone
 ## 🎯 Funcionalidades Implementadas
 
 ### 1. **Item no Sidebar** ✅
+
 - **Label:** "Gerenciar Inscrições"
 - **Ícone:** `FiClipboard` (prancheta)
 - **Rota:** `/inscricoes`
 - **Permissões:** Apenas ROLE_ORGANIZER e ROLE_ADMIN
 
 ### 2. **Página CRUD Completa** ✅
+
 - **Componente:** `RegistrationsCRUDPage.tsx`
 - **Localização:** `/src/components/Registration/RegistrationsCRUDPage.tsx`
 - **Funcionalidades:**
@@ -27,6 +29,7 @@ Criada a página **"Gerenciar Inscrições"** com CRUD completo usando o compone
   - ✅ **SEM relacionamentos 1:N** (`hideArrayFields={true}`)
 
 ### 3. **Rota Configurada** ✅
+
 - **Path:** `/inscricoes`
 - **Elemento:** `<RegistrationsCRUDPage />`
 
@@ -37,6 +40,7 @@ Criada a página **"Gerenciar Inscrições"** com CRUD completo usando o compone
 ### ✅ Arquivo Criado
 
 1. **`/src/components/Registration/RegistrationsCRUDPage.tsx`**
+
    ```tsx
    import React from "react";
    import EntityCRUD from "../Generic/EntityCRUD";
@@ -45,7 +49,7 @@ Criada a página **"Gerenciar Inscrições"** com CRUD completo usando o compone
      return (
        <EntityCRUD
          entityName="registration"
-         hideArrayFields={true}  // ← Esconde relacionamentos 1:N
+         hideArrayFields={true} // ← Esconde relacionamentos 1:N
          pageTitle="Gerenciar Inscrições"
          pageDescription="Gerencie todas as inscrições da plataforma"
        />
@@ -58,6 +62,7 @@ Criada a página **"Gerenciar Inscrições"** com CRUD completo usando o compone
 ### ✅ Arquivos Modificados
 
 1. **`/src/components/Sidebar/Sidebar.tsx`**
+
    - Adicionado ícone `FiClipboard`
    - Adicionado item "Gerenciar Inscrições" no menu
    - Configurado filtro de permissões
@@ -101,11 +106,13 @@ Criada a página **"Gerenciar Inscrições"** com CRUD completo usando o compone
 ### `hideArrayFields={true}`
 
 **O que esconde:**
+
 - ❌ Lista de pagamentos (`payments`)
 - ❌ Lista de histórico de alterações
 - ❌ Qualquer outro relacionamento 1:N
 
 **O que mostra:**
+
 - ✅ Campos básicos da inscrição (ID, status, data)
 - ✅ Campos de relacionamento N:1 (usuário, evento)
 - ✅ Campos computados
@@ -132,37 +139,42 @@ Criada a página **"Gerenciar Inscrições"** com CRUD completo usando o compone
 
 ## 🎯 Comparação com Outras Páginas
 
-| Página | Rota | hideArrayFields | Mostra Tabela | Público |
-|--------|------|-----------------|---------------|---------|
-| **Gerenciar Inscrições** | `/inscricoes` | ✅ `true` | ✅ Sim | ORGANIZER/ADMIN |
-| Inscrições da Organização | `/organizacao/inscricoes` | ❌ `false` | ✅ Sim | ORGANIZER/ADMIN |
-| Minhas Inscrições | `/minhas-inscricoes` | ❌ `false` | ✅ Sim | Todos |
+| Página                    | Rota                      | hideArrayFields | Mostra Tabela | Público         |
+| ------------------------- | ------------------------- | --------------- | ------------- | --------------- |
+| **Gerenciar Inscrições**  | `/inscricoes`             | ✅ `true`       | ✅ Sim        | ORGANIZER/ADMIN |
+| Inscrições da Organização | `/organizacao/inscricoes` | ❌ `false`      | ✅ Sim        | ORGANIZER/ADMIN |
+| Minhas Inscrições         | `/minhas-inscricoes`      | ❌ `false`      | ✅ Sim        | Todos           |
 
 ---
 
 ## 🚀 Como Usar
 
 ### 1. Acesse o Sidebar
+
 - Faça login como ORGANIZER ou ADMIN
 - Clique em **"Gerenciar Inscrições"**
 
 ### 2. Navegar pela Tabela
+
 - **Visualizar:** Clique no ícone 👁️ para ver detalhes
 - **Editar:** Clique no ícone ✏️ para editar
 - **Excluir:** Clique no ícone 🗑️ para deletar
 - **Criar Novo:** Clique no botão azul no breadcrumb
 
 ### 3. Filtrar Inscrições
+
 - Use os campos de filtro
 - Selecione status, evento, usuário
 - Clique em "Filtrar"
 
 ### 4. Criar Nova Inscrição
+
 - Clique em "Criar Novo"
 - Preencha: Usuário, Evento, Status
 - Clique em "Salvar"
 
 ### 5. Editar Inscrição
+
 - Clique no ícone ✏️
 - Modifique os campos
 - Clique em "Salvar"
@@ -185,22 +197,23 @@ Criada a página **"Gerenciar Inscrições"** com CRUD completo usando o compone
 
 ## 🎨 Ícones Utilizados
 
-| Página | Ícone | Componente |
-|--------|-------|------------|
-| Meus eventos | `FiCalendar` | Calendário |
-| Gerenciar Eventos | `FiPlus` | Mais/Criar |
+| Página                   | Ícone             | Componente    |
+| ------------------------ | ----------------- | ------------- |
+| Meus eventos             | `FiCalendar`      | Calendário    |
+| Gerenciar Eventos        | `FiPlus`          | Mais/Criar    |
 | **Gerenciar Inscrições** | **`FiClipboard`** | **Prancheta** |
-| Inscrições (Org) | `FiUsers` | Usuários |
-| Gerenciar Organização | `FiBriefcase` | Maleta |
-| Organização | `FiSettings` | Engrenagem |
-| Minhas inscrições | `FiBookmark` | Marcador |
-| Dados pessoais | `FiUser` | Usuário |
+| Inscrições (Org)         | `FiUsers`         | Usuários      |
+| Gerenciar Organização    | `FiBriefcase`     | Maleta        |
+| Organização              | `FiSettings`      | Engrenagem    |
+| Minhas inscrições        | `FiBookmark`      | Marcador      |
+| Dados pessoais           | `FiUser`          | Usuário       |
 
 ---
 
 ## 📝 Próximos Passos (Opcional)
 
 1. **Customizar Renderizadores**
+
    ```tsx
    <EntityCRUD
      entityName="registration"
@@ -213,6 +226,7 @@ Criada a página **"Gerenciar Inscrições"** com CRUD completo usando o compone
    ```
 
 2. **Adicionar Filtros Customizados**
+
    - Filtro por período (data de inscrição)
    - Filtro por método de pagamento
    - Filtro por valor pago
