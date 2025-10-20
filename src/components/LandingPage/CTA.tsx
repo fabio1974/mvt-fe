@@ -76,7 +76,7 @@ const CTA = () => {
               color: "hsl(0, 0%, 100%)",
             }}
           >
-            Pronto para Entregas Ultra-Rápidas?
+            Pronto para Entregas com Propósito?
           </h2>
           <p
             style={{
@@ -87,8 +87,10 @@ const CTA = () => {
               lineHeight: 1.6,
             }}
           >
-            Junte-se a milhares de clientes satisfeitos que confiam no Zapi10
-            para entregas rápidas e seguras todos os dias.
+            Junte-se a uma plataforma que combina{" "}
+            <strong>velocidade, justiça social</strong> e
+            <strong> transparência</strong>. Cada entrega fortalece a economia
+            local e dignifica o trabalho dos motoboys.
           </p>
           <div
             style={{

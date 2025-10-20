@@ -12,6 +12,7 @@ import {
   FiClipboard,
   FiChevronDown,
   FiChevronRight,
+  FiTruck,
 } from "react-icons/fi";
 import "./Sidebar.css";
 
@@ -84,6 +85,12 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
     icon: <FiUsers size={22} color="#0099ff" />,
     path: "/organizacao/inscricoes",
     roles: ["ROLE_ORGANIZER", "ROLE_ADMIN"],
+  },
+  {
+    label: "Parceiros Zapi10",
+    icon: <FiTruck size={22} color="#FFA500" />,
+    path: "/zapi10/adm",
+    roles: ["ROLE_ADMIN"],
   },
 ].sort((a, b) => {
   // Mantém "Meus Dados" no topo, resto em ordem alfabética

@@ -1,5 +1,6 @@
 import Hero from "./Hero";
 import Benefits from "./Benefits";
+import Impact from "./Impact";
 import HowItWorks from "./HowItWorks";
 import CTA from "./CTA";
 import Footer from "./Footer";
@@ -45,6 +46,7 @@ const LandingPage = () => {
       >
         <Hero />
         <Benefits />
+        <Impact />
         <HowItWorks />
         <CTA />
         <Footer />

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "../ui/card";
-import { Zap, Shield, MapPin, Clock } from "lucide-react";
+import { Zap, Shield, MapPin, Clock, Building2 } from "lucide-react";
 
 const benefits = [
   {
@@ -26,6 +26,12 @@ const benefits = [
     title: "Disponível 24/7",
     description:
       "Estamos sempre prontos para atender. Entregas a qualquer hora, qualquer dia.",
+  },
+  {
+    icon: Building2,
+    title: "Parceria com Prefeituras",
+    description:
+      "Trabalho formal e reconhecido pelo poder público, com formalização via MEI e INSS.",
   },
 ];
 

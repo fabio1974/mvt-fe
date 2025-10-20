@@ -12,6 +12,7 @@ import OrganizationPage from "./components/Organization/OrganizationPage";
 import OrganizationCRUDPage from "./components/Organization/OrganizationCRUDPage";
 import OrganizationRegistrationsPage from "./components/Organization/OrganizationRegistrationsPage";
 import RegistrationsCRUDPage from "./components/Registration/RegistrationsCRUDPage";
+import Zapi10ADMCRUDPage from "./components/Zapi10/Zapi10ADMCRUDPage";
 import AdminEventsPage from "./components/Admin/AdminEventsPage";
 import PaymentSuccessPage from "./components/Payment/PaymentSuccessPage";
 import PaymentCancelPage from "./components/Payment/PaymentCancelPage";
@@ -128,6 +129,7 @@ function App() {
                 element={<EventRegistrationPage />}
               />
               <Route path="/inscricoes" element={<RegistrationsCRUDPage />} />
+              <Route path="/zapi10/adm" element={<Zapi10ADMCRUDPage />} />
               <Route path="/organizacao" element={<OrganizationPage />} />
               <Route
                 path="/organizacao/gerenciar"
