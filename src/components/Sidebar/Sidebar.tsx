@@ -1,18 +1,15 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import React, { useState } from "react";
 import { getUserRole } from "../../utils/auth";
+import LOGO_PATH from "../../config/logo";
 import {
-  FiCalendar,
   FiPlus,
   FiSettings,
-  FiBookmark,
   FiUser,
-  FiUsers,
   FiBriefcase,
-  FiClipboard,
   FiChevronDown,
   FiChevronRight,
-  FiTruck,
+  FiLogOut,
 } from "react-icons/fi";
 import "./Sidebar.css";
 
@@ -39,23 +36,12 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
     items: [
       {
         label: "Dados Pessoais",
-        icon: <FiUser size={20} color="#0099ff" />,
+        icon: <FiUser size={20} color="#60a5fa" />,
         path: "/dados-pessoais",
       },
       {
-        label: "Meus Eventos",
-        icon: <FiCalendar size={20} color="#0099ff" />,
-        path: "/meus-eventos",
-        roles: ["ROLE_ORGANIZER", "ROLE_ADMIN"],
-      },
-      {
-        label: "Minhas Inscrições",
-        icon: <FiBookmark size={20} color="#0099ff" />,
-        path: "/minhas-inscricoes",
-      },
-      {
         label: "Organização",
-        icon: <FiSettings size={20} color="#0099ff" />,
+        icon: <FiSettings size={20} color="#60a5fa" />,
         path: "/organizacao",
         roles: ["ROLE_ORGANIZER", "ROLE_ADMIN"],
       },
@@ -64,32 +50,14 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
   // Itens de primeiro nível (ordem alfabética)
   {
     label: "Gerenciar Eventos",
-    icon: <FiPlus size={22} color="#0099ff" />,
+    icon: <FiPlus size={22} color="#60a5fa" />,
     path: "/eventos",
     roles: ["ROLE_ORGANIZER", "ROLE_ADMIN"],
   },
   {
-    label: "Gerenciar Inscrições",
-    icon: <FiClipboard size={22} color="#0099ff" />,
-    path: "/inscricoes",
-    roles: ["ROLE_ORGANIZER", "ROLE_ADMIN"],
-  },
-  {
-    label: "Gerenciar Organização",
-    icon: <FiBriefcase size={22} color="#0099ff" />,
+    label: "Grupos",
+    icon: <FiBriefcase size={22} color="#60a5fa" />,
     path: "/organizacao/gerenciar",
-    roles: ["ROLE_ADMIN"],
-  },
-  {
-    label: "Inscrições",
-    icon: <FiUsers size={22} color="#0099ff" />,
-    path: "/organizacao/inscricoes",
-    roles: ["ROLE_ORGANIZER", "ROLE_ADMIN"],
-  },
-  {
-    label: "Parceiros Zapi10",
-    icon: <FiTruck size={22} color="#FFA500" />,
-    path: "/zapi10/adm",
     roles: ["ROLE_ADMIN"],
   },
 ].sort((a, b) => {
@@ -120,7 +88,7 @@ export default function Sidebar({
 
   // Estado para controlar grupos expandidos
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(
-    new Set(["Meus Dados"]) // "Meus Dados" expandido por padrão
+    new Set() // Todos os grupos collapsed por padrão
   );
 
   // Verifica se item tem permissão
@@ -228,7 +196,7 @@ export default function Sidebar({
         }`}
       >
         <div className="sidebar-header">
-          <img src="/vite.svg" alt="Logo" className="sidebar-logo" />
+          <img src={LOGO_PATH} alt="Logo" className="sidebar-logo" />
         </div>
         <nav className="sidebar-nav">
           {menuStructure.map((item) => {
@@ -241,7 +209,10 @@ export default function Sidebar({
             }
           })}
 
-          {/* Botão Sair */}
+          {/* Separador antes do logout */}
+          <div className="sidebar-menu-separator"></div>
+
+          {/* Botão Sair - último item do menu */}
           <button
             onClick={() => {
               localStorage.removeItem("authToken");
@@ -250,28 +221,7 @@ export default function Sidebar({
             }}
             className="sidebar-menu-item sidebar-logout"
           >
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M16 17l-5-5 5-5"
-                stroke="#0099ff"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M19 12H9"
-                stroke="#0099ff"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <FiLogOut size={22} color="#dc2626" />
             {!collapsed && <span className="sidebar-menu-label">Sair</span>}
           </button>
         </nav>

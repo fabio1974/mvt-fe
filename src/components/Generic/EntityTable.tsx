@@ -48,6 +48,7 @@ interface EntityTableProps {
     [fieldName: string]: (value: any, row: any) => React.ReactNode;
   };
   hideHeader?: boolean; // Opcional - esconde o header quando usado dentro do EntityCRUD
+  initialFilters?: Record<string, string>; // Filtros iniciais a serem aplicados
 }
 
 const EntityTable: React.FC<EntityTableProps> = ({
@@ -59,6 +60,7 @@ const EntityTable: React.FC<EntityTableProps> = ({
   showActions = true,
   customRenderers = {},
   hideHeader = false,
+  initialFilters = {},
 }) => {
   const {
     getEntityMetadata,
@@ -73,8 +75,9 @@ const EntityTable: React.FC<EntityTableProps> = ({
   const [totalPages, setTotalPages] = useState(1);
   const [totalElements, setTotalElements] = useState(0);
   const [itemsPerPage, setItemsPerPage] = useState(5);
-  const [filters, setFilters] = useState<Record<string, string>>({});
-  const filtersRef = useRef<Record<string, string>>({});
+  const [filters, setFilters] =
+    useState<Record<string, string>>(initialFilters);
+  const filtersRef = useRef<Record<string, string>>(initialFilters);
   const debounceRef = useRef<number | null>(null);
 
   // Carrega metadata do contexto
@@ -234,6 +237,22 @@ const EntityTable: React.FC<EntityTableProps> = ({
   };
 
   const formatValue = (value: any, field: FieldMetadata): string => {
+    // 🔍 Debug: log de TODOS os campos sendo formatados
+    console.log(`🔍 [formatValue] ${field.name}:`, {
+      value,
+      type: field.type,
+      valueType: typeof value,
+      isNull: value === null,
+      isUndefined: value === undefined,
+    });
+
+    // Para campos boolean, trata undefined/null como false
+    if (field.type?.toLowerCase() === "boolean") {
+      if (value === null || value === undefined) {
+        return "Não";
+      }
+    }
+
     if (value === null || value === undefined) return "-";
 
     // Se o valor é um objeto (relacionamento), tenta extrair o campo apropriado
@@ -260,32 +279,37 @@ const EntityTable: React.FC<EntityTableProps> = ({
 
     if (!field.type) return String(value);
 
+    // ✅ PRIORIDADE 1: Se o campo tem options (enum/select), traduz SEMPRE
+    // Independente do tipo declarado, se tem options, é um enum/select
+    if (field.options && field.options.length > 0) {
+      const option = field.options.find((opt) => opt.value === String(value));
+      if (option) {
+        return option.label;
+      }
+      // Se não encontrou a opção, retorna o valor original
+      return String(value);
+    }
+
+    // PRIORIDADE 2: Formatação por tipo
     switch (field.type.toLowerCase()) {
       case "enum":
       case "select":
-        // Traduz ENUM/SELECT usando as options do metadata (já carregado do backend)
-        if (field.options && field.options.length > 0) {
-          const option = field.options.find(
-            (opt) => opt.value === String(value)
-          );
-          if (option) {
-            console.log(
-              `🔄 Traduzindo ${field.name}: "${value}" → "${option.label}"`
-            );
-            return option.label;
-          }
-        }
-        console.log(
-          `⚠️ Sem tradução para ${field.name}: "${value}" (options:`,
-          field.options,
-          ")"
-        );
+        // Já tratado acima com options
         return String(value);
       case "date":
         return new Date(value).toLocaleDateString("pt-BR");
       case "datetime":
         return new Date(value).toLocaleString("pt-BR");
       case "boolean":
+        // Converte string para boolean se necessário
+        if (typeof value === "string") {
+          const lowerValue = value.toLowerCase();
+          return lowerValue === "true" ||
+            lowerValue === "1" ||
+            lowerValue === "sim"
+            ? "Sim"
+            : "Não";
+        }
         return value ? "Sim" : "Não";
       case "double":
         return typeof value === "number" ? value.toFixed(2) : String(value);

@@ -18,10 +18,10 @@ export const FormContainer: React.FC<FormContainerProps> = ({
     <div className={`form-container ${className}`}>
       {title && (
         <div className="form-header">
-          <h3>
+          <div className="form-title">
             {icon && <span className="form-icon">{icon}</span>}
             {title}
-          </h3>
+          </div>
         </div>
       )}
       <div className="form-content">{children}</div>

@@ -48,7 +48,7 @@ export default function PaymentSuccessPage() {
 
   const handleContinue = () => {
     if (registrationId) {
-      navigate(`/meus-eventos`);
+      navigate(`/eventos`);
     } else {
       navigate("/");
     }

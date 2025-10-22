@@ -73,11 +73,12 @@ const Hero = () => {
       color: "#60a5fa",
     },
     title: {
-      fontSize: isMobile ? "3rem" : "4.5rem",
+      fontSize: isMobile ? "2.5rem" : "3.5rem",
       fontWeight: "bold",
       marginBottom: "1.5rem",
       lineHeight: 1.2,
       color: "#ffffff",
+      opacity: 0.95,
     },
     titleSpan: {
       background:

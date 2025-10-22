@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUserName, getUserRole } from "../../utils/auth";
+import LOGO_PATH from "../../config/logo";
 import "./Header.css";
 
 interface HeaderProps {
@@ -32,6 +33,7 @@ export default function Header({
   const headerClasses = [
     "serra-header",
     "modern",
+    isLoggedIn ? "theme-light" : "theme-dark",
     sidebarVisible && !isMobile ? "with-sidebar" : "",
     sidebarCollapsed && !isMobile ? "sidebar-collapsed" : "",
   ]
@@ -51,7 +53,7 @@ export default function Header({
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            style={{ color: "#0099ff" }}
+            style={{ color: "#60a5fa" }}
           >
             <circle
               cx="12"
@@ -80,7 +82,7 @@ export default function Header({
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            style={{ color: "#0099ff" }}
+            style={{ color: "#60a5fa" }}
           >
             <circle cx="12" cy="4" r="2" fill="currentColor" />
             <path
@@ -100,7 +102,7 @@ export default function Header({
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            style={{ color: "#0099ff" }}
+            style={{ color: "#60a5fa" }}
           >
             <circle
               cx="12"
@@ -135,24 +137,26 @@ export default function Header({
               justifyContent: "center",
               width: "40px",
               height: "40px",
-              background: sidebarVisible ? "#f0f8ff" : "#fff",
-              border: "1px solid #e9ecef",
+              background: sidebarVisible
+                ? "rgba(59, 130, 246, 0.2)"
+                : "rgba(59, 130, 246, 0.1)",
+              border: "1px solid rgba(59, 130, 246, 0.3)",
               borderRadius: "8px",
               cursor: "pointer",
               marginRight: "16px",
               transition: "all 0.2s ease",
-              boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
+              boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
             }}
             onMouseEnter={(e) => {
               if (!sidebarVisible) {
-                e.currentTarget.style.background = "#f8f9fa";
-                e.currentTarget.style.borderColor = "#0099ff";
+                e.currentTarget.style.background = "rgba(59, 130, 246, 0.15)";
+                e.currentTarget.style.borderColor = "#3b82f6";
               }
             }}
             onMouseLeave={(e) => {
               if (!sidebarVisible) {
-                e.currentTarget.style.background = "#fff";
-                e.currentTarget.style.borderColor = "#e9ecef";
+                e.currentTarget.style.background = "rgba(59, 130, 246, 0.1)";
+                e.currentTarget.style.borderColor = "rgba(59, 130, 246, 0.3)";
               }
             }}
           >
@@ -168,7 +172,7 @@ export default function Header({
                 y="6"
                 width="18"
                 height="2"
-                fill={sidebarVisible ? "#0099ff" : "#6b7280"}
+                fill={sidebarVisible ? "#3b82f6" : "#60a5fa"}
                 rx="1"
               />
               <rect
@@ -176,7 +180,7 @@ export default function Header({
                 y="11"
                 width="18"
                 height="2"
-                fill={sidebarVisible ? "#0099ff" : "#6b7280"}
+                fill={sidebarVisible ? "#3b82f6" : "#60a5fa"}
                 rx="1"
               />
               <rect
@@ -184,7 +188,7 @@ export default function Header({
                 y="16"
                 width="18"
                 height="2"
-                fill={sidebarVisible ? "#0099ff" : "#6b7280"}
+                fill={sidebarVisible ? "#3b82f6" : "#60a5fa"}
                 rx="1"
               />
             </svg>
@@ -192,12 +196,18 @@ export default function Header({
         )}
 
         <a href="/" className="logo modern-brand">
-          <div className="brand-logo-wrapper">
-            <img src="/vite.svg" alt="Corridas da Serra" />
+          {/* Logo PNG fica oculto quando o usuário está logado */}
+          <div
+            className={`brand-logo-wrapper ${isLoggedIn ? "hidden-logo" : ""}`}
+          >
+            <img src={LOGO_PATH} alt="Zapi10" />
           </div>
-          <div className="brand-text-block">
-            <span className="brand-title">Corridas da Serra</span>
-            <span className="brand-sub">Eventos Esportivos</span>
+          <div
+            className="brand-text-block"
+            style={{ alignItems: "flex-start" }}
+          >
+            <span className="brand-title">Zapi10</span>
+            <span className="brand-sub">Mobilidade com propósito social</span>
           </div>
         </a>
         <nav className={`nav modern-nav ${menuOpen ? "open" : ""}`}>
@@ -237,9 +247,9 @@ export default function Header({
               alignItems: "center",
               gap: 8,
               padding: "8px 12px",
-              backgroundColor: "#f8f9fa",
+              backgroundColor: "rgba(59, 130, 246, 0.1)",
               borderRadius: 20,
-              border: "1px solid #e9ecef",
+              border: "1px solid rgba(59, 130, 246, 0.3)",
               marginLeft: "auto", // Empurra para a direita
               marginRight: "16px", // Espaço entre o usuário e o botão menu
             }}
@@ -250,7 +260,7 @@ export default function Header({
               style={{
                 fontSize: "0.9rem",
                 fontWeight: 500,
-                color: "#333",
+                color: "#e2e8f0",
               }}
             >
               {userName}
@@ -273,83 +283,93 @@ export default function Header({
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
           >
-            <circle cx="12" cy="5" r="2" fill="#0099ff" />
-            <circle cx="12" cy="12" r="2" fill="#0099ff" />
-            <circle cx="12" cy="19" r="2" fill="#0099ff" />
+            <circle cx="12" cy="5" r="2" fill="#60a5fa" />
+            <circle cx="12" cy="12" r="2" fill="#60a5fa" />
+            <circle cx="12" cy="19" r="2" fill="#60a5fa" />
           </svg>
         </button>
       </div>
       {menuOpen && (
-        <div className="mobile-menu modern-mobile">
-          {isLoggedIn ? (
-            <button
-              className="btn logout-btn"
-              onClick={() => {
-                localStorage.removeItem("authToken");
-                localStorage.removeItem("organizationId");
-                setMenuOpen(false);
-                navigate("/");
-                window.location.reload();
-              }}
-            >
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                style={{ marginRight: "8px" }}
-              >
-                <path
-                  d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <polyline
-                  points="16 17 21 12 16 7"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <line
-                  x1="21"
-                  y1="12"
-                  x2="9"
-                  y2="12"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              Sair
-            </button>
-          ) : (
-            <>
-              <a href="/eventos" onClick={() => setMenuOpen(false)}>
-                Eventos
-              </a>
-              <a href="/contato" onClick={() => setMenuOpen(false)}>
-                Contato
-              </a>
+        <>
+          {/* Overlay de fundo escuro */}
+          <div
+            className="mobile-menu-overlay"
+            onClick={() => setMenuOpen(false)}
+          ></div>
+
+          <div
+            className={`mobile-menu modern-mobile ${menuOpen ? "open" : ""}`}
+          >
+            {isLoggedIn ? (
               <button
-                className="btn header-ghost"
+                className="btn logout-btn"
                 onClick={() => {
+                  localStorage.removeItem("authToken");
+                  localStorage.removeItem("organizationId");
                   setMenuOpen(false);
-                  navigate("/login");
+                  navigate("/");
+                  window.location.reload();
                 }}
               >
-                Entrar
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  style={{ marginRight: "8px" }}
+                >
+                  <path
+                    d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <polyline
+                    points="16 17 21 12 16 7"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <line
+                    x1="21"
+                    y1="12"
+                    x2="9"
+                    y2="12"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                Sair
               </button>
-              <a href="/login" className="btn header-cta mobile">
-                Inscrever-se
-              </a>
-            </>
-          )}
-        </div>
+            ) : (
+              <>
+                <a href="/eventos" onClick={() => setMenuOpen(false)}>
+                  Eventos
+                </a>
+                <a href="/contato" onClick={() => setMenuOpen(false)}>
+                  Contato
+                </a>
+                <button
+                  className="btn header-ghost"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    navigate("/login");
+                  }}
+                >
+                  Entrar
+                </button>
+                <a href="/login" className="btn header-cta mobile">
+                  Inscrever-se
+                </a>
+              </>
+            )}
+          </div>
+        </>
       )}
     </header>
   );

@@ -70,25 +70,6 @@ const EntityForm: React.FC<EntityFormProps> = ({
   const navigate = useNavigate();
   const { organizationId } = useOrganization();
 
-  // 🔍 Log do metadata completo para debug
-  console.log("🔍 [EntityForm] Metadata recebido:", {
-    endpoint: metadata.endpoint,
-    entityName: metadata.entityName,
-    sectionsCount: metadata.sections.length,
-    sections: metadata.sections.map((s) => ({
-      id: s.id,
-      title: s.title,
-      fieldsCount: s.fields.length,
-      fields: s.fields.map((f) => ({
-        name: f.name,
-        type: f.type,
-        label: f.label,
-        computed: f.computed,
-        computedDependencies: f.computedDependencies,
-      })),
-    })),
-  });
-
   // Determina o modo automaticamente se não foi passado
   const formMode = mode || (entityId ? (readonly ? "view" : "edit") : "create");
 
@@ -558,7 +539,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
               placeholder={field.placeholder}
               value={stringValue}
               onChange={(e) => handleChange(field.name, e.target.value)}
-              disabled={field.disabled || loading || readonly}
+              disabled={field.disabled || field.readonly || loading || readonly}
               required={field.required}
             />
           </FormField>
@@ -579,7 +560,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
               max={field.validation?.max}
               value={stringValue}
               onChange={(e) => handleChange(field.name, e.target.value)}
-              disabled={field.disabled || loading || readonly}
+              disabled={field.disabled || field.readonly || loading || readonly}
               required={field.required}
             />
           </FormField>
@@ -597,14 +578,17 @@ const EntityForm: React.FC<EntityFormProps> = ({
               placeholder={field.placeholder}
               value={stringValue}
               onChange={(e) => handleChange(field.name, e.target.value)}
-              disabled={field.disabled || loading || readonly}
+              disabled={field.disabled || field.readonly || loading || readonly}
               required={field.required}
             />
           </FormField>
         );
         break;
 
-      case "select":
+      case "select": {
+        const isSelectDisabled =
+          field.disabled || field.readonly || loading || readonly;
+
         fieldContent = (
           <FormField
             label={field.label}
@@ -614,7 +598,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
             <FormSelect
               value={stringValue}
               onChange={(e) => handleChange(field.name, e.target.value)}
-              disabled={field.disabled || loading || readonly}
+              disabled={isSelectDisabled}
               required={field.required}
             >
               <option value="">Selecione...</option>
@@ -630,6 +614,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
           </FormField>
         );
         break;
+      }
 
       case "date": {
         // Detecta automaticamente se deve mostrar hora/minuto
@@ -653,8 +638,8 @@ const EntityForm: React.FC<EntityFormProps> = ({
               showTimeSelect={shouldShowTime}
               dateFormat={dateFormat}
               placeholder={field.placeholder}
-              disabled={field.disabled || loading || readonly}
-              readOnly={readonly}
+              disabled={field.disabled || field.readonly || loading || readonly}
+              readOnly={readonly || field.readonly}
             />
           </FormField>
         );
@@ -664,7 +649,12 @@ const EntityForm: React.FC<EntityFormProps> = ({
       case "boolean":
         fieldContent = (
           <div
-            style={{ display: "flex", alignItems: "center", minHeight: "40px" }}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              minHeight: "40px",
+              paddingTop: "18px", // Alinha verticalmente com os outros campos que têm label acima
+            }}
           >
             <label
               style={{
@@ -679,12 +669,14 @@ const EntityForm: React.FC<EntityFormProps> = ({
                 type="checkbox"
                 checked={!!value}
                 onChange={(e) => handleChange(field.name, e.target.checked)}
-                disabled={field.disabled || loading || readonly}
+                disabled={
+                  field.disabled || field.readonly || loading || readonly
+                }
                 style={{
                   width: "18px",
                   height: "18px",
                   cursor:
-                    field.disabled || loading || readonly
+                    field.disabled || field.readonly || loading || readonly
                       ? "not-allowed"
                       : "pointer",
                 }}
@@ -732,8 +724,10 @@ const EntityForm: React.FC<EntityFormProps> = ({
                   }));
                 }}
                 placeholder={field.placeholder || "Digite o nome da cidade"}
-                disabled={field.disabled || loading || readonly}
-                readOnly={readonly}
+                disabled={
+                  field.disabled || field.readonly || loading || readonly
+                }
+                readOnly={readonly || field.readonly}
               />
             </FormField>
 
@@ -791,8 +785,10 @@ const EntityForm: React.FC<EntityFormProps> = ({
                     }));
                   }}
                   placeholder={field.placeholder || "Digite o nome da cidade"}
-                  disabled={field.disabled || loading || readonly}
-                  readOnly={readonly}
+                  disabled={
+                    field.disabled || field.readonly || loading || readonly
+                  }
+                  readOnly={readonly || field.readonly}
                 />
               </FormField>
 
@@ -828,7 +824,9 @@ const EntityForm: React.FC<EntityFormProps> = ({
                 placeholder={field.placeholder}
                 value={stringValue}
                 onChange={(e) => handleChange(field.name, e.target.value)}
-                disabled={field.disabled || loading || readonly}
+                disabled={
+                  field.disabled || field.readonly || loading || readonly
+                }
                 required={field.required}
               />
             </FormField>
@@ -1051,7 +1049,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
       )}
 
       {/* Botões de ação */}
-      <div style={{ marginBottom: "40px" }}>
+      <div style={{ marginBottom: "0px" }}>
         <FormActions>
           {!readonly && (
             <FormButton

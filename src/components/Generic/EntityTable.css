@@ -13,14 +13,14 @@
 }
 
 .entity-table-header h1 {
-  font-size: 2.5rem;
-  font-weight: 800;
+  font-size: 1.75rem;
+  font-weight: 700;
   color: #1f2937;
   margin: 0 0 8px 0;
 }
 
 .entity-table-header p {
-  font-size: 1.1rem;
+  font-size: 0.95rem;
   color: #6b7280;
   margin: 0;
 }
@@ -66,6 +66,7 @@
   border-radius: 16px;
   box-shadow: none;
   overflow: visible;
+  margin-top: 40px;
   margin-bottom: 32px;
 }
 
@@ -126,8 +127,8 @@
   border-right: 1px solid #e5e7eb;
 }
 
-.entity-table th:last-child {
-  border-right: none;
+.entity-table th:first-child {
+  padding-left: 1rem;
 }
 
 .entity-table td {
@@ -137,6 +138,14 @@
   font-size: 0.875rem;
   color: #374151;
   text-align: center;
+}
+
+.entity-table td:first-child {
+  padding-left: 1rem;
+}
+
+.entity-table td:last-child {
+  border-right: none;
 }
 
 .entity-table td:last-child {
@@ -318,7 +327,7 @@
   }
 
   .entity-table-header h1 {
-    font-size: 2rem;
+    font-size: 1.5rem;
   }
 
   .table-footer {

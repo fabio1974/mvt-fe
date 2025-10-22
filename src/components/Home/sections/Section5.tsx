@@ -38,7 +38,7 @@ export default function Section5() {
             margin: "0 auto 40px auto",
           }}
         >
-          Receba diretamente na Corridas da Serra, sem complicação.
+          Receba diretamente na Zapi10, sem complicação.
         </p>
         <div
           style={{

@@ -352,7 +352,7 @@ export default function CreateEventForm() {
       }
 
       setTimeout(() => {
-        navigate("/meus-eventos");
+        navigate("/eventos");
       }, 2000);
     } catch (err) {
       console.error("Erro ao salvar evento:", err);

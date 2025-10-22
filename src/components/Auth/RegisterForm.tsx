@@ -130,11 +130,10 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
   return (
     <form
       style={{
-        maxWidth: 800,
-        margin: "0 auto",
+        width: "100%",
         display: "flex",
         flexDirection: "column",
-        gap: 12,
+        gap: 16,
       }}
       onSubmit={handleSubmit(onSubmit)}
     >
@@ -177,7 +176,7 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
       <FormField label="E-mail" required error={errors.username?.message}>
         <FormInput
           type="email"
-          placeholder="Digite seu e-mail"
+          placeholder="admin@test.com"
           {...register("username", {
             required: "E-mail é obrigatório",
             pattern: {
@@ -193,7 +192,7 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
         <FormField label="Senha" required error={errors.password?.message}>
           <FormInput
             type="password"
-            placeholder="Digite sua senha"
+            placeholder="••••••"
             {...register("password", {
               required: "Senha é obrigatória",
               minLength: {
@@ -211,7 +210,7 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
         >
           <FormInput
             type="password"
-            placeholder="Confirme sua senha"
+            placeholder="••••••"
             {...register("confirmPassword", {
               required: "Confirmação de senha é obrigatória",
               validate: (value) =>
@@ -230,38 +229,27 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
         />
       </FormField>
 
-      <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>
+      <div style={{ marginTop: 8 }}>
         <FormButton
           type="submit"
           variant="primary"
           disabled={isSubmitting}
           style={{
             width: "100%",
-            background: "linear-gradient(90deg, #0099ff, #006dc7)",
+            background: "linear-gradient(90deg, #5b4cfa, #4c9aff)",
             color: "#fff",
             padding: "14px 0",
-            borderRadius: "14px",
+            borderRadius: "10px",
             fontWeight: 600,
             fontSize: "1rem",
             border: "none",
             cursor: isSubmitting ? "not-allowed" : "pointer",
-            boxShadow: "0 8px 22px -6px rgba(0,153,255,0.5)",
-            transition: "transform 0.25s ease, box-shadow 0.25s ease",
+            transition: "all 0.3s ease",
+            boxShadow: "0 4px 12px rgba(91, 76, 250, 0.3)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-          }}
-          onMouseEnter={(e) => {
-            if (!isSubmitting) {
-              e.currentTarget.style.transform = "translateY(-3px)";
-              e.currentTarget.style.boxShadow =
-                "0 12px 26px -6px rgba(0,153,255,0.55)";
-            }
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = "translateY(0)";
-            e.currentTarget.style.boxShadow =
-              "0 8px 22px -6px rgba(0,153,255,0.5)";
+            textAlign: "center",
           }}
         >
           {isSubmitting ? "Enviando..." : "Cadastrar"}
@@ -270,14 +258,30 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
 
       {error && (
         <div
-          style={{ color: "#e74c3c", textAlign: "center", fontSize: "0.9rem" }}
+          style={{
+            color: "#ef4444",
+            textAlign: "center",
+            fontSize: "0.9rem",
+            padding: 12,
+            background: "#fef2f2",
+            borderRadius: 8,
+            border: "1px solid #fecaca",
+          }}
         >
           {error}
         </div>
       )}
       {success && (
         <div
-          style={{ color: "#0099ff", textAlign: "center", fontSize: "0.9rem" }}
+          style={{
+            color: "#10b981",
+            textAlign: "center",
+            fontSize: "0.9rem",
+            padding: 12,
+            background: "#f0fdf4",
+            borderRadius: 8,
+            border: "1px solid #bbf7d0",
+          }}
         >
           {success}
         </div>

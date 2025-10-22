@@ -38,7 +38,7 @@ export default function Section8() {
             margin: "0 auto 40px auto",
           }}
         >
-          Veja a experiência de organizadores e atletas com a Corridas da Serra.
+          Veja a experiência de organizadores e atletas com a Zapi10.
         </p>
         <div
           style={{

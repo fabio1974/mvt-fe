@@ -90,10 +90,10 @@ export default function LoginForm() {
   return (
     <form
       style={{
-        maxWidth: 400,
-        margin: "0 auto",
+        width: "100%",
         display: "flex",
         flexDirection: "column",
+        gap: 16,
       }}
       onSubmit={handleSubmit(onSubmit)}
     >
@@ -125,38 +125,27 @@ export default function LoginForm() {
         />
       </FormField>
 
-      <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>
+      <div style={{ marginTop: 8 }}>
         <FormButton
           type="submit"
           variant="primary"
           disabled={isSubmitting}
           style={{
             width: "100%",
-            background: "linear-gradient(90deg, #0099ff, #006dc7)",
+            background: "linear-gradient(90deg, #5b4cfa, #4c9aff)",
             color: "#fff",
             padding: "14px 0",
-            borderRadius: "14px",
+            borderRadius: "10px",
             fontWeight: 600,
             fontSize: "1rem",
             border: "none",
             cursor: isSubmitting ? "not-allowed" : "pointer",
-            boxShadow: "0 8px 22px -6px rgba(0,153,255,0.5)",
-            transition: "transform 0.25s ease, box-shadow 0.25s ease",
+            transition: "all 0.3s ease",
+            boxShadow: "0 4px 12px rgba(91, 76, 250, 0.3)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-          }}
-          onMouseEnter={(e) => {
-            if (!isSubmitting) {
-              e.currentTarget.style.transform = "translateY(-3px)";
-              e.currentTarget.style.boxShadow =
-                "0 12px 26px -6px rgba(0,153,255,0.55)";
-            }
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = "translateY(0)";
-            e.currentTarget.style.boxShadow =
-              "0 8px 22px -6px rgba(0,153,255,0.5)";
+            textAlign: "center",
           }}
         >
           {isSubmitting ? "Enviando..." : "Entrar"}
@@ -165,30 +154,46 @@ export default function LoginForm() {
 
       {error && (
         <div
-          style={{ color: "#e74c3c", textAlign: "center", fontSize: "0.9rem" }}
+          style={{
+            color: "#ef4444",
+            textAlign: "center",
+            fontSize: "0.9rem",
+            padding: 12,
+            background: "#fef2f2",
+            borderRadius: 8,
+            border: "1px solid #fecaca",
+          }}
         >
           {error}
         </div>
       )}
       {success && (
         <div
-          style={{ color: "#0099ff", textAlign: "center", fontSize: "0.9rem" }}
+          style={{
+            color: "#10b981",
+            textAlign: "center",
+            fontSize: "0.9rem",
+            padding: 12,
+            background: "#f0fdf4",
+            borderRadius: 8,
+            border: "1px solid #bbf7d0",
+          }}
         >
           {success}
         </div>
       )}
 
-      <div style={{ textAlign: "center", marginTop: 8, fontSize: "0.9rem" }}>
+      <div style={{ textAlign: "center", marginTop: 12, fontSize: "0.9rem", color: "#666" }}>
         Esqueceu sua senha?{" "}
         <a
           href="/recuperar-senha"
           style={{
-            color: "#0099ff",
+            color: "#5b4cfa",
             textDecoration: "none",
             fontWeight: 600,
           }}
         >
-          Clique aqui.
+          Clique aqui
         </a>
       </div>
     </form>

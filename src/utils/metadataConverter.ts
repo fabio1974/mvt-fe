@@ -107,6 +107,7 @@ function convertFieldToFormField(field: FieldMetadata): FormFieldMetadata | null
     type: mappedType,
     width: field.width, // Largura no grid de 12 colunas
     required: field.required || false,
+    readonly: field.readonly || false, // ← CORREÇÃO: Copia readonly do backend
     placeholder: field.placeholder || `Digite ${field.label.toLowerCase()}`,
     format: field.format || undefined, // Formato de exibição (ex: "dd/MM/yyyy HH:mm")
     relationship: field.relationship, // Mantém informação de relacionamento

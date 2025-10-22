@@ -16,6 +16,7 @@ export interface FieldMetadata {
   format?: string | null;
   // Campos para formulários
   required?: boolean;
+  readonly?: boolean;
   placeholder?: string;
   defaultValue?: unknown;
   min?: number;
@@ -195,6 +196,8 @@ export interface FormFieldMetadata {
   };
   /** Se o campo está desabilitado */
   disabled?: boolean;
+  /** Se o campo é somente leitura (visualmente disabled, mas valor é enviado no submit) */
+  readonly?: boolean;
   /** Texto de ajuda */
   helpText?: string;
   /** Condição para exibir o campo (expressão) */

@@ -3,7 +3,7 @@ import Benefits from "./Benefits";
 import Impact from "./Impact";
 import HowItWorks from "./HowItWorks";
 import CTA from "./CTA";
-import Footer from "./Footer";
+import LandingFooter from "./LandingFooter";
 
 const LandingPage = () => {
   return (
@@ -49,7 +49,7 @@ const LandingPage = () => {
         <Impact />
         <HowItWorks />
         <CTA />
-        <Footer />
+        <LandingFooter />
       </div>
     </>
   );

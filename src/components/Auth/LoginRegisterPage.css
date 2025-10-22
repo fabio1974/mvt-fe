@@ -1,19 +1,175 @@
+/* Layout Principal - Design 50/50 */
 .login-register-layout {
-  display: flex;
-  min-height: auto;
-  background: #fafafa;
-  padding: 32px 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: calc(90vh - 80px);
+  background: #f5f5f5;
+  font-family: 'Inter', system-ui, sans-serif;
 }
 
-@media (max-width: 700px) {
+/* Painel de Informações (Lado Esquerdo) */
+.info-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 20px 60px;
+  background: white;
+}
+
+.info-panel h2 {
+  font-weight: 700;
+  font-size: 2.5rem;
+  margin-bottom: 16px;
+  color: #1a1a1a;
+  line-height: 1.2;
+}
+
+.info-panel-subtitle {
+  color: #666;
+  font-size: 1rem;
+  margin-bottom: 40px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.info-panel ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.info-panel li {
+  margin-bottom: 16px;
+  display: flex;
+  align-items: flex-start;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+  font-size: 1rem;
+  color: #333;
+  line-height: 1.6;
+}
+
+.info-panel li span:first-child {
+  color: #5b4cfa;
+  font-size: 20px;
+  margin-right: 12px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+/* Painel de Autenticação (Lado Direito) */
+.auth-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 20px 60px;
+  background: #f9f9f9;
+}
+
+.auth-panel h2 {
+  font-weight: 700;
+  font-size: 1.75rem;
+  margin-bottom: 24px;
+  text-align: left;
+  color: #1a1a1a;
+}
+
+.auth-tabs {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 32px;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.auth-tab {
+  border: none;
+  background: none;
+  padding: 12px 0;
+  margin-right: 32px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #999;
+  transition: all 0.3s ease;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  font-family: 'Inter', system-ui, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.auth-tab:hover {
+  color: #5b4cfa;
+}
+
+.auth-tab.active {
+  font-weight: 600;
+  color: #5b4cfa;
+  border-bottom-color: #5b4cfa;
+}
+
+/* Responsivo */
+@media (max-width: 1024px) {
   .login-register-layout {
-    flex-direction: column;
-    align-items: stretch;
-    padding: 16px 0;
+    grid-template-columns: 1fr;
   }
-  .login-register-layout > div {
-    width: 100% !important;
-    max-width: 100% !important;
-    padding: 16px 8px !important;
+  
+  .info-panel {
+    padding: 60px 40px;
+  }
+  
+  .auth-panel {
+    padding: 60px 40px;
+  }
+}
+
+@media (max-width: 768px) {
+  .login-register-layout {
+    min-height: auto;
+  }
+  
+  .info-panel {
+    padding: 40px 24px;
+  }
+  
+  .auth-panel {
+    padding: 40px 24px;
+  }
+  
+  .info-panel h2 {
+    font-size: 2rem;
+  }
+  
+  .auth-panel h2 {
+    font-size: 1.5rem;
+  }
+  
+  .auth-tab {
+    margin-right: 24px;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .info-panel,
+  .auth-panel {
+    padding: 32px 20px;
+  }
+  
+  .info-panel h2 {
+    font-size: 1.75rem;
+  }
+  
+  .info-panel li {
+    font-size: 0.9rem;
+  }
+  
+  .auth-tab {
+    margin-right: 16px;
+    font-size: 0.85rem;
+    padding: 10px 0;
   }
 }

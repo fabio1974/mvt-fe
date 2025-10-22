@@ -42,6 +42,10 @@ interface EntityCRUDProps {
   showEditButton?: boolean;
   /** Esconde campos de array (relacionamentos 1:N) */
   hideArrayFields?: boolean;
+  /** Filtros iniciais a serem aplicados na tabela */
+  initialFilters?: Record<string, string>;
+  /** Função para transformar dados antes de enviar ao backend */
+  transformData?: (data: Record<string, unknown>) => Record<string, unknown>;
 }
 
 /**
@@ -74,6 +78,8 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
   hideTable = false,
   showEditButton = false,
   hideArrayFields = false,
+  initialFilters,
+  transformData,
 }) => {
   // Determina o modo inicial baseado nas props
   const getInitialMode = (): ViewMode => {
@@ -276,6 +282,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
             showActions={true}
             customRenderers={customRenderers}
             hideHeader={true}
+            initialFilters={initialFilters}
           />
         </ErrorBoundary>
       </div>

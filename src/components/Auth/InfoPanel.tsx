@@ -1,61 +1,50 @@
 export default function InfoPanel() {
   return (
-    <div
-      style={{
-        flex: 1,
-        padding: "24px 32px",
-        background: "#fafafa",
+    <div className="info-panel">
+      <h2>
+        Bem-vindo ao Zapi10,{" "}
+        <span style={{ 
+          background: "linear-gradient(90deg, #5b4cfa, #4c9aff)", 
+          WebkitBackgroundClip: "text", 
+          backgroundClip: "text", 
+          color: "transparent" 
+        }}>
+          entregas e mototáxi
+        </span>
+      </h2>
+      <div className="info-panel-subtitle">
+        Com sua conta Zapi10, você encontra:
+      </div>
+      <ul>
+        <li>
+          <span>✓</span>
+          <span>Taxas justas e transparentes</span>
+        </li>
+        <li>
+          <span>✓</span>
+          <span>Histórico completo de suas entregas</span>
+        </li>
+        <li>
+          <span>✓</span>
+          <span>Gestão de dados e pagamentos</span>
+        </li>
+      </ul>
+      <div style={{ 
+        marginTop: 40, 
+        padding: "16px 20px", 
+        background: "#f0f0f0", 
+        borderRadius: 8,
         display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <div style={{ maxWidth: 420, width: "100%" }}>
-        <h2
-          style={{
-            fontWeight: 600,
-            fontSize: "1.3rem",
-            marginBottom: 16,
-            textAlign: "center",
-          }}
-        >
-          Faça login na sua conta para comprar com mais agilidade
-        </h2>
-        <div
-          style={{
-            color: "#555",
-            fontSize: "1rem",
-            marginBottom: 16,
-            textAlign: "center",
-          }}
-        >
-          Na sua conta da Corridas da Serra, você encontra:
+        alignItems: "flex-start",
+        gap: 12
+      }}>
+        <span style={{ fontSize: "1.25rem" }}>🏍️</span>
+        <div>
+          <strong style={{ color: "#333", fontSize: "0.9rem" }}>Dica:</strong>
+          <p style={{ margin: "4px 0 0", color: "#666", fontSize: "0.875rem", lineHeight: 1.5 }}>
+            Mantenha seus dados atualizados para receber mais oportunidades de entregas!
+          </p>
         </div>
-        <ul style={{ listStyle: "none", padding: "0 0 0 24px", margin: 0 }}>
-          <li
-            style={{ marginBottom: 12, display: "flex", alignItems: "center" }}
-          >
-            <span style={{ color: "#ff9900", fontSize: 22, marginRight: 8 }}>
-              ✔
-            </span>
-            Seus eventos favoritos salvos
-          </li>
-          <li
-            style={{ marginBottom: 12, display: "flex", alignItems: "center" }}
-          >
-            <span style={{ color: "#ff9900", fontSize: 22, marginRight: 8 }}>
-              ✔
-            </span>
-            Informações dos últimos eventos
-          </li>
-          <li style={{ display: "flex", alignItems: "center" }}>
-            <span style={{ color: "#ff9900", fontSize: 22, marginRight: 8 }}>
-              ✔
-            </span>
-            Dados salvos para compras futuras
-          </li>
-        </ul>
       </div>
     </div>
   );
