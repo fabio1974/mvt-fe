@@ -10,6 +10,12 @@ interface ResetPasswordFormData {
   confirmPassword: string;
 }
 
+interface ResetPasswordFormData {
+  username: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
 export default function ResetPasswordForm() {
   const {
     register,
@@ -91,19 +97,12 @@ export default function ResetPasswordForm() {
   };
 
   return (
-    <div
-      style={{
-        maxWidth: 400,
-        margin: "0 auto",
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
+    <div>
       <p
         style={{
           textAlign: "center",
           color: "#666",
-          marginBottom: 12,
+          marginBottom: 24,
           fontSize: "0.9rem",
         }}
       >
@@ -115,7 +114,7 @@ export default function ResetPasswordForm() {
         style={{
           display: "flex",
           flexDirection: "column",
-          gap: 12,
+          gap: 16,
         }}
       >
         <FormField label="E-mail" required error={errors.username?.message}>
@@ -209,7 +208,7 @@ export default function ResetPasswordForm() {
 
       {error && (
         <div
-          style={{ color: "#e74c3c", textAlign: "center", fontSize: "0.9rem" }}
+          style={{ color: "#e74c3c", textAlign: "center", fontSize: "0.9rem", marginTop: 12 }}
         >
           {error}
         </div>
@@ -217,7 +216,7 @@ export default function ResetPasswordForm() {
 
       {success && (
         <div
-          style={{ color: "#0099ff", textAlign: "center", fontSize: "0.9rem" }}
+          style={{ color: "#0099ff", textAlign: "center", fontSize: "0.9rem", marginTop: 12 }}
         >
           {success}
         </div>

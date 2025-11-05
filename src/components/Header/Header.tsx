@@ -211,7 +211,6 @@ export default function Header({
           </div>
         </a>
         <nav className={`nav modern-nav ${menuOpen ? "open" : ""}`}>
-          <a href="/eventos">Eventos</a>
           <a href="/contato">Contato</a>
         </nav>
         <div
@@ -348,9 +347,6 @@ export default function Header({
               </button>
             ) : (
               <>
-                <a href="/eventos" onClick={() => setMenuOpen(false)}>
-                  Eventos
-                </a>
                 <a href="/contato" onClick={() => setMenuOpen(false)}>
                   Contato
                 </a>

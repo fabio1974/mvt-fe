@@ -3,13 +3,15 @@ import React, { useState } from "react";
 import { getUserRole } from "../../utils/auth";
 import LOGO_PATH from "../../config/logo";
 import {
-  FiPlus,
   FiSettings,
   FiUser,
   FiBriefcase,
   FiChevronDown,
   FiChevronRight,
   FiLogOut,
+  FiTruck,
+  FiShoppingBag,
+  FiPackage,
 } from "react-icons/fi";
 import "./Sidebar.css";
 
@@ -49,15 +51,27 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
   },
   // Itens de primeiro nível (ordem alfabética)
   {
-    label: "Gerenciar Eventos",
-    icon: <FiPlus size={22} color="#60a5fa" />,
-    path: "/eventos",
-    roles: ["ROLE_ORGANIZER", "ROLE_ADMIN"],
+    label: "Entregas",
+    icon: <FiPackage size={22} color="#60a5fa" />,
+    path: "/deliveries",
+    roles: ["ROLE_ADMIN"],
+  },
+  {
+    label: "Estabelecimentos",
+    icon: <FiShoppingBag size={22} color="#60a5fa" />,
+    path: "/estabelecimentos",
+    roles: ["ROLE_ADMIN"],
   },
   {
     label: "Grupos",
     icon: <FiBriefcase size={22} color="#60a5fa" />,
     path: "/organizacao/gerenciar",
+    roles: ["ROLE_ADMIN"],
+  },
+  {
+    label: "Motoboy",
+    icon: <FiTruck size={22} color="#60a5fa" />,
+    path: "/motoboy",
     roles: ["ROLE_ADMIN"],
   },
 ].sort((a, b) => {

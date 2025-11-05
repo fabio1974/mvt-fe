@@ -606,8 +606,6 @@ const EntityForm: React.FC<EntityFormProps> = ({
                 disabled={field.disabled || field.readonly || loading || readonly}
                 required={field.required}
                 label={field.label}
-                fieldName={field.name}
-                onCoordinatesChange={(lat, lng) => handleAddressCoordinatesChange(field.name, lat, lng)}
               />
             </FormField>
           );
@@ -709,8 +707,6 @@ const EntityForm: React.FC<EntityFormProps> = ({
                 placeholder={field.placeholder}
                 disabled={field.disabled || field.readonly || loading || readonly}
                 required={field.required}
-                fieldName={field.name}
-                onCoordinatesChange={(lat, lng) => handleAddressCoordinatesChange(field.name, lat, lng)}
                 label={field.label}
               />
             </FormField>

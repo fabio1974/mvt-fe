@@ -4,12 +4,11 @@ import Footer from "./components/Footer/Footer";
 import LandingPage from "./components/LandingPage/LandingPage";
 import LoginRegisterPage from "./components/Auth/LoginRegisterPage";
 import ResetPasswordPage from "./components/Auth/ResetPasswordPage";
-import EventDetailPage from "./components/Events/EventDetailPage";
-import EventRegistrationPage from "./components/Events/EventRegistrationPage";
-import EventsCRUDPage from "./components/Events/EventsCRUDPage";
 import OrganizationPage from "./components/Organization/OrganizationPage";
 import OrganizationCRUDPage from "./components/Organization/OrganizationCRUDPage";
-import AdminEventsPage from "./components/Admin/AdminEventsPage";
+import CourierCRUDPage from "./components/Courier/CourierCRUDPage";
+import ClientCRUDPage from "./components/Client/ClientCRUDPage";
+import DeliveryCRUDPage from "./components/Delivery/DeliveryCRUDPage";
 import PaymentSuccessPage from "./components/Payment/PaymentSuccessPage";
 import PaymentCancelPage from "./components/Payment/PaymentCancelPage";
 import PersonalDataPage from "./components/User/PersonalDataPage";
@@ -116,19 +115,15 @@ function App() {
               <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<LoginRegisterPage />} />
               <Route path="/recuperar-senha" element={<ResetPasswordPage />} />
-              <Route path="/eventos" element={<EventsCRUDPage />} />
-              <Route path="/evento/:slug" element={<EventDetailPage />} />
-              <Route
-                path="/evento/:slug/inscricao"
-                element={<EventRegistrationPage />}
-              />
               <Route path="/organizacao" element={<OrganizationPage />} />
               <Route
                 path="/organizacao/gerenciar"
                 element={<OrganizationCRUDPage />}
               />
+              <Route path="/estabelecimentos" element={<ClientCRUDPage />} />
+              <Route path="/motoboy" element={<CourierCRUDPage />} />
+              <Route path="/deliveries" element={<DeliveryCRUDPage />} />
               <Route path="/dados-pessoais" element={<PersonalDataPage />} />
-              <Route path="/admin/eventos" element={<AdminEventsPage />} />
               <Route path="/payment/success" element={<PaymentSuccessPage />} />
               <Route path="/payment/cancel" element={<PaymentCancelPage />} />
             </Routes>

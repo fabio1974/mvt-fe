@@ -1,19 +1,54 @@
-/* Layout Principal - Design 50/50 */
+/* Layout Principal - Divisão de cores 50/50 com painéis centralizados */
 .login-register-layout {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  min-height: calc(90vh - 80px);
-  background: #f5f5f5;
+  grid-template-columns: 50% 50%;
+  min-height: calc(95vh - 155px); /* 100vh - (header 81px + footer 54px) */
   font-family: 'Inter', system-ui, sans-serif;
+  position: relative;
 }
 
-/* Painel de Informações (Lado Esquerdo) */
+/* Fundo branco no lado esquerdo - só dentro do container */
+.login-register-layout::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  background: white;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Fundo cinza no lado direito - só dentro do container */
+.login-register-layout::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  background: #f9f9f9;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Painel de Informações (35% centralizado no lado esquerdo) */
 .info-panel {
+  grid-column: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 20px 60px;
-  background: white;
+  align-items: center;
+  padding: 40px;
+  position: relative;
+  z-index: 1;
+  min-height: calc(100vh - 135px); /* Mesma altura do container pai */
+}
+
+.info-panel > * {
+  width: 70%;
+  max-width: 500px;
 }
 
 .info-panel h2 {
@@ -58,13 +93,22 @@
   flex-shrink: 0;
 }
 
-/* Painel de Autenticação (Lado Direito) */
+/* Painel de Autenticação (35% centralizado no lado direito) */
 .auth-panel {
+  grid-column: 2;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 20px 60px;
-  background: #f9f9f9;
+  align-items: center;
+  padding: 40px;
+  position: relative;
+  z-index: 1;
+  min-height: calc(100vh - 135px); /* Mesma altura do container pai */
+}
+
+.auth-panel > * {
+  width: 70%;
+  max-width: 500px;
 }
 
 .auth-panel h2 {
@@ -116,27 +160,51 @@
   .login-register-layout {
     grid-template-columns: 1fr;
   }
-  
-  .info-panel {
-    padding: 60px 40px;
-  }
-  
-  .auth-panel {
-    padding: 60px 40px;
+}
+
+/* Tablets - Mantém divisão 50/50 */
+@media (max-width: 1024px) {
+  .info-panel > *,
+  .auth-panel > * {
+    width: 85%;
   }
 }
 
+/* Mobile - Layout empilhado (coluna única) */
 @media (max-width: 768px) {
   .login-register-layout {
-    min-height: auto;
+    grid-template-columns: 1fr;
+    min-height: calc(100vh - 111px); /* 100vh - (header 57px + footer 54px) em mobile */
+  }
+  
+  .login-register-layout::before,
+  .login-register-layout::after {
+    display: none;
   }
   
   .info-panel {
-    padding: 40px 24px;
+    grid-column: 1;
+    background: white;
+    align-items: stretch;
+    min-height: auto; /* Remove min-height em mobile para evitar scroll */
   }
   
   .auth-panel {
+    grid-column: 1;
+    background: #f9f9f9;
+    align-items: stretch;
+    min-height: auto; /* Remove min-height em mobile para evitar scroll */
+  }
+  
+  .info-panel,
+  .auth-panel {
     padding: 40px 24px;
+  }
+  
+  .info-panel > *,
+  .auth-panel > * {
+    width: 100%;
+    max-width: none;
   }
   
   .info-panel h2 {
@@ -153,7 +221,12 @@
   }
 }
 
+/* Mobile pequeno - Reduz ainda mais os espaçamentos */
 @media (max-width: 480px) {
+  .login-register-layout {
+    min-height: calc(100vh - 100px); /* 100vh - (header 57px + footer 43px) */
+  }
+  
   .info-panel,
   .auth-panel {
     padding: 32px 20px;

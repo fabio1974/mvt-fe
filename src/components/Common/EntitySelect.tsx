@@ -7,6 +7,7 @@ interface EntitySelectProps {
   config: EntityFilterConfig;
   value: string;
   onChange: (value: string) => void;
+  disabled?: boolean;
 }
 
 interface EntityOption {
@@ -34,6 +35,7 @@ const EntitySelect: React.FC<EntitySelectProps> = ({
   config,
   value,
   onChange,
+  disabled = false,
 }) => {
   const [options, setOptions] = useState<EntityOption[]>([]);
   const [loading, setLoading] = useState(false);
@@ -96,7 +98,7 @@ const EntitySelect: React.FC<EntitySelectProps> = ({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        disabled={loading}
+        disabled={loading || disabled}
         className="form-select"
       >
         <option value="">

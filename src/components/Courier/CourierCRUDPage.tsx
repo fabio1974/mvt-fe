@@ -1,7 +1,8 @@
+import React from "react";
 import EntityCRUD from "../Generic/EntityCRUD";
 
 /**
- * Página de CRUD completo para Eventos
+ * Página de CRUD completo para Motoboys
  *
  * Usa o componente genérico EntityCRUD que integra:
  * - EntityFilters (com botão "Criar Novo")
@@ -11,14 +12,16 @@ import EntityCRUD from "../Generic/EntityCRUD";
  * Toda a configuração vem do metadata do backend carregado
  * no início da aplicação pelo MetadataContext.
  */
-const EventsCRUDPage: React.FC = () => {
+const CourierCRUDPage: React.FC = () => {
   return (
     <EntityCRUD
-      entityName="event"
-      pageTitle="Eventos"
-      pageDescription="Gerencie todos os eventos da plataforma"
+      entityName="user"
+      hideArrayFields={false}
+      pageTitle="Motoboys"
+      pageDescription="Gerencie os motoboys da plataforma"
+      initialFilters={{ role: "COURIER" }}
     />
   );
 };
 
-export default EventsCRUDPage;
+export default CourierCRUDPage;

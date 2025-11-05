@@ -17,9 +17,11 @@ export default function Footer({
   };
 
   const handleLinkLeave = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    e.currentTarget.style.color = isDark ? "hsl(0, 0%, 70%)" : "hsl(220, 20%, 40%)";
+    e.currentTarget.style.color = isDark
+      ? "hsl(0, 0%, 70%)"
+      : "hsl(220, 20%, 40%)";
   };
-  
+
   return (
     <footer
       className="serra-footer compact"
@@ -27,7 +29,9 @@ export default function Footer({
         left: isLoggedIn ? `${sidebarWidth}px` : 0,
         width: isLoggedIn ? `calc(100% - ${sidebarWidth}px)` : "100%",
         background: isDark ? "hsl(220, 20%, 15%)" : "hsl(220, 20%, 96%)",
-        borderTop: isDark ? "1px solid hsl(220, 15%, 25%)" : "1px solid rgba(59, 130, 246, 0.15)",
+        borderTop: isDark
+          ? "1px solid hsl(220, 15%, 25%)"
+          : "1px solid rgba(59, 130, 246, 0.15)",
       }}
     >
       <div className="compact-content">

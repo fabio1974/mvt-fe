@@ -183,7 +183,14 @@ export default function LoginForm() {
         </div>
       )}
 
-      <div style={{ textAlign: "center", marginTop: 12, fontSize: "0.9rem", color: "#666" }}>
+      <div
+        style={{
+          textAlign: "center",
+          marginTop: 12,
+          fontSize: "0.9rem",
+          color: "#666",
+        }}
+      >
         Esqueceu sua senha?{" "}
         <a
           href="/recuperar-senha"

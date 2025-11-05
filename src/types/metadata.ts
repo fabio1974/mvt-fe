@@ -128,6 +128,7 @@ export type FormFieldType =
   | 'boolean'
   | 'entity'
   | 'city'
+  | 'address'
   | 'array';
 
 /**

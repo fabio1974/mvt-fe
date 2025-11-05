@@ -125,12 +125,6 @@ button:focus-visible {
   }
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-}
-
 /* Utility Classes for Landing Page */
 @layer utilities {
   .animate-fade-up {

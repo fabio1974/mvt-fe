@@ -8,6 +8,7 @@ interface EntityTypeaheadProps {
   config: EntityFilterConfig;
   value: string;
   onChange: (value: string) => void;
+  disabled?: boolean;
 }
 
 interface EntityOption {
@@ -26,6 +27,7 @@ const EntityTypeahead: React.FC<EntityTypeaheadProps> = ({
   config,
   value,
   onChange,
+  disabled = false,
 }) => {
   const [options, setOptions] = useState<EntityOption[]>([]);
   const [loading, setLoading] = useState(false);
@@ -40,16 +42,29 @@ const EntityTypeahead: React.FC<EntityTypeaheadProps> = ({
   const wrapperRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Calcula posição do dropdown quando ele é aberto
+  // Atualiza posição do dropdown quando mostra ou quando scroll/resize
   useEffect(() => {
-    if (showDropdown && inputRef.current) {
-      const rect = inputRef.current.getBoundingClientRect();
-      setDropdownPosition({
-        top: rect.bottom + window.scrollY,
-        left: rect.left + window.scrollX,
-        width: rect.width,
-      });
+    const updatePosition = () => {
+      if (showDropdown && inputRef.current) {
+        const rect = inputRef.current.getBoundingClientRect();
+        setDropdownPosition({
+          top: rect.bottom + 4, // 4px de margem
+          left: rect.left,
+          width: rect.width,
+        });
+      }
+    };
+
+    if (showDropdown) {
+      updatePosition();
+      window.addEventListener("scroll", updatePosition, true);
+      window.addEventListener("resize", updatePosition);
     }
+
+    return () => {
+      window.removeEventListener("scroll", updatePosition, true);
+      window.removeEventListener("resize", updatePosition);
+    };
   }, [showDropdown]);
 
   // Fecha dropdown ao clicar fora
@@ -154,6 +169,7 @@ const EntityTypeahead: React.FC<EntityTypeaheadProps> = ({
   };
 
   const handleClear = () => {
+    if (disabled) return; // Não permite limpar se disabled
     onChange("");
     setSelectedLabel("");
     setSearchTerm("");
@@ -175,12 +191,14 @@ const EntityTypeahead: React.FC<EntityTypeaheadProps> = ({
               handleClear();
             }
           }}
-          onFocus={() => setShowDropdown(true)}
+          onFocus={() => !disabled && setShowDropdown(true)}
           className="form-input"
+          disabled={disabled}
+          readOnly={disabled}
         />
 
         {/* Botão de limpar */}
-        {(value || searchTerm) && (
+        {(value || searchTerm) && !disabled && (
           <button
             type="button"
             onClick={handleClear}
@@ -192,34 +210,38 @@ const EntityTypeahead: React.FC<EntityTypeaheadProps> = ({
         )}
 
         {/* Dropdown de opções */}
-        {showDropdown && searchTerm.length >= 2 && dropdownPosition && (
-          <div
-            className="entity-typeahead-dropdown"
-            style={{
-              top: `${dropdownPosition.top}px`,
-              left: `${dropdownPosition.left}px`,
-              width: `${dropdownPosition.width}px`,
-            }}
-          >
-            {loading ? (
-              <div className="entity-typeahead-message">Carregando...</div>
-            ) : options.length === 0 ? (
-              <div className="entity-typeahead-message">
-                Nenhum resultado encontrado
-              </div>
-            ) : (
-              options.map((option) => (
-                <div
-                  key={option[config.valueField] as string}
-                  onClick={() => handleSelect(option)}
-                  className="entity-typeahead-item"
-                >
-                  {String(option[config.labelField] || "Sem nome")}
+        {!disabled &&
+          showDropdown &&
+          searchTerm.length >= 2 &&
+          dropdownPosition && (
+            <div
+              className="entity-typeahead-dropdown"
+              style={{
+                position: "fixed",
+                top: `${dropdownPosition.top}px`,
+                left: `${dropdownPosition.left}px`,
+                width: `${dropdownPosition.width}px`,
+              }}
+            >
+              {loading ? (
+                <div className="entity-typeahead-message">Carregando...</div>
+              ) : options.length === 0 ? (
+                <div className="entity-typeahead-message">
+                  Nenhum resultado encontrado
                 </div>
-              ))
-            )}
-          </div>
-        )}
+              ) : (
+                options.map((option) => (
+                  <div
+                    key={option[config.valueField] as string}
+                    onClick={() => handleSelect(option)}
+                    className="entity-typeahead-item"
+                  >
+                    {String(option[config.labelField] || "Sem nome")}
+                  </div>
+                ))
+              )}
+            </div>
+          )}
       </div>
     </div>
   );

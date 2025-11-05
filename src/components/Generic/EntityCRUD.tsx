@@ -80,6 +80,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
   hideArrayFields = false,
   initialFilters,
   transformData,
+  pageTitle,
 }) => {
   // Determina o modo inicial baseado nas props
   const getInitialMode = (): ViewMode => {
@@ -228,7 +229,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
           </div>
           <FiChevronRight className="breadcrumb-separator" />
           <div className="breadcrumb-item">
-            <span>{metadata.label || entityName}</span>
+            <span>{pageTitle || metadata.label || entityName}</span>
           </div>
           <FiChevronRight className="breadcrumb-separator" />
           <div className="breadcrumb-item breadcrumb-current">

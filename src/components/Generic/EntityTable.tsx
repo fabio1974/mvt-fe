@@ -4,6 +4,7 @@ import { api } from "../../services/api";
 import { useMetadata } from "../../hooks/useMetadata";
 import type { EntityMetadata, FieldMetadata } from "../../types/metadata";
 import EntityFilters from "./EntityFilters";
+import { applyAutoMask } from "../../utils/masks";
 import "./EntityTable.css";
 
 interface Pageable {
@@ -290,7 +291,13 @@ const EntityTable: React.FC<EntityTableProps> = ({
       return String(value);
     }
 
-    // PRIORIDADE 2: Formatação por tipo
+    // PRIORIDADE 2: Aplica máscaras para CPF, telefone, CEP, CNPJ
+    const maskedValue = applyAutoMask(String(value), field.name);
+    if (maskedValue !== String(value)) {
+      return maskedValue;
+    }
+
+    // PRIORIDADE 3: Formatação por tipo
     switch (field.type.toLowerCase()) {
       case "enum":
       case "select":

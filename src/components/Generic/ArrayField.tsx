@@ -6,13 +6,19 @@ import {
   FiChevronDown,
   FiChevronUp,
 } from "react-icons/fi";
-import type { ArrayFieldConfig } from "../../types/metadata";
+import type { ArrayFieldConfig, FormFieldMetadata } from "../../types/metadata";
 import {
   FormField,
   FormInput,
   FormSelect,
   FormTextarea,
+  FormDatePicker,
 } from "../Common/FormComponents";
+import { MaskedInput } from "../Common/MaskedInput";
+import { getAutoMask } from "../../utils/masks";
+import EntitySelect from "../Common/EntitySelect";
+import EntityTypeahead from "../Common/EntityTypeahead";
+import { CityTypeahead } from "../Common/CityTypeahead";
 import { executeComputedField } from "../../utils/computedFields";
 import "./ArrayField.css";
 
@@ -30,7 +36,7 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
   onChange,
   disabled = false,
 }) => {
-  const { itemType, fields = [], minItems = 0, maxItems = 100 } = config;
+  const { fields = [], minItems = 0, maxItems = 100 } = config;
 
   // 🔄 Converte plural em singular (Categorias → Categoria)
   const pluralToSingular = (plural: string): string => {
@@ -91,22 +97,24 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
 
     let hasChanges = false;
     const newValue = value.map((item, index) => {
-      if (typeof item !== "object" || item === null) return item;
+      if (!item || typeof item !== "object") return item;
 
-      const itemObj = item as Record<string, unknown>;
-      const updatedItem = { ...itemObj };
+      const itemData = item as Record<string, unknown>;
+      const updatedItem = { ...itemData };
 
       computedFields.forEach((field) => {
-        if (!field.computed) return;
+        if (!field.computed || !field.computedDependencies) return;
 
-        const computedValue = executeComputedField(field.computed, itemObj);
+        const result = executeComputedField(field.computed, updatedItem);
 
-        if (computedValue !== null && computedValue !== itemObj[field.name]) {
-          console.log(
-            `🧮 [ArrayField] Item ${index}: ${field.name} = "${computedValue}"`
-          );
-          updatedItem[field.name] = computedValue;
+        // Só atualiza se o valor calculado for diferente do atual
+        if (result !== null && result !== updatedItem[field.name]) {
+          updatedItem[field.name] = result;
           hasChanges = true;
+          console.log(
+            `🧮 [ArrayField] Item ${index}: Campo ${field.name} atualizado para:`,
+            result
+          );
         }
       });
 
@@ -118,487 +126,719 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
     }
   }, [value, fields, onChange]);
 
-  const createEmptyItem = (): Record<string, unknown> => {
-    if (itemType === "object") {
-      return fields.reduce((acc, field) => {
-        acc[field.name] = field.defaultValue || "";
-        return acc;
-      }, {} as Record<string, unknown>);
-    }
-    return {};
-  };
-
-  const handleStartAdd = () => {
-    if (value.length >= maxItems) {
-      return;
-    }
-
-    // Cria novo item vazio
-    const newItem = createEmptyItem();
-
-    // Adiciona ao array
-    const newValue = [...value, newItem];
-    onChange(newValue);
-
-    // Abre o novo item automaticamente
-    setTimeout(() => {
-      setCollapsedItems((prev) => ({ ...prev, [newValue.length - 1]: false }));
-    }, 0);
-  };
-
-  const handleRemove = (index: number) => {
-    if (value.length === 0) return;
-
-    const newValue = [...value];
-    newValue.splice(index, 1);
-    onChange(newValue);
-
-    // Limpa o estado de collapse do item removido e ajusta os índices
-    setCollapsedItems((prev) => {
-      const newCollapsed: Record<number, boolean> = {};
-      Object.keys(prev).forEach((key) => {
-        const idx = Number(key);
-        if (idx < index) {
-          newCollapsed[idx] = prev[idx];
-        } else if (idx > index) {
-          newCollapsed[idx - 1] = prev[idx];
-        }
-      });
-      return newCollapsed;
-    });
-  };
-
+  // ✅ CORREÇÃO CRÍTICA: handleFieldChange usa o array principal `value`
+  // ao invés da variável incorreta `value` do parâmetro
   const handleFieldChange = (
-    index: number,
+    itemIndex: number,
     fieldName: string,
     fieldValue: unknown
   ) => {
-    const newValue = [...value];
-    const item = { ...(newValue[index] as Record<string, unknown>) };
-    item[fieldName] = fieldValue;
-    newValue[index] = item;
-    onChange(newValue);
+    console.log(
+      `🔧 [ArrayField] handleFieldChange: item ${itemIndex}, field ${fieldName}, value:`,
+      fieldValue
+    );
+
+    // ✅ USA O ARRAY PRINCIPAL: `value` (prop do componente)
+    // NÃO usa `value` do parâmetro (que é o valor do campo individual)
+    const newArray = [...value];
+    const currentItem = (newArray[itemIndex] as Record<string, unknown>) || {};
+
+    // Atualiza o campo específico
+    newArray[itemIndex] = {
+      ...currentItem,
+      [fieldName]: fieldValue,
+    };
+
+    console.log(
+      `🔧 [ArrayField] Array atualizado:`,
+      newArray.map((item, idx) => `Item ${idx}: ${JSON.stringify(item)}`)
+    );
+
+    onChange(newArray);
   };
 
-  const toggleCollapse = (index: number) => {
-    setCollapsedItems((prev) => ({ ...prev, [index]: !prev[index] }));
-  };
+  // Adiciona um novo item
+  const addItem = () => {
+    if (value.length >= maxItems) return;
 
-  // Renderiza um card de item (colapsado ou expandido)
-  const renderItemCard = (item: unknown, index: number) => {
-    const itemObj = item as Record<string, unknown>;
-    const label = itemLabel.replace("{index}", String(index + 1));
-    const isItemCollapsed = collapsedItems[index] !== false; // Por padrão, colapsado
+    const newItem: Record<string, unknown> = {};
 
-    // 🏷️ Extrai o nome singular do metadata para usar como descrição
-    const singularName = pluralToSingular(config.label || "Item");
-
-    // 🎯 Pega o valor do campo para exibir como label
-    // Prioridade: 1) labelField do config, 2) campo "name", 3) primeiro campo não-id
-    let labelFieldValue: unknown = null;
-
-    if (config.labelField && itemObj[config.labelField]) {
-      labelFieldValue = itemObj[config.labelField];
-    } else if (itemObj["name"]) {
-      labelFieldValue = itemObj["name"];
-    } else {
-      // Pega o primeiro campo que não seja id, event, eventId, etc
-      const displayField = Object.keys(itemObj).find(
-        (key) =>
-          !["id", "event", "eventId", "createdAt", "updatedAt"].includes(key) &&
-          itemObj[key] != null
-      );
-      if (displayField) {
-        labelFieldValue = itemObj[displayField];
+    // Inicializa campos com valores padrão
+    fields.forEach((field) => {
+      if (field.defaultValue !== undefined) {
+        newItem[field.name] = field.defaultValue;
+      } else if (field.type === "boolean") {
+        newItem[field.name] = false;
+      } else if (field.type === "array") {
+        newItem[field.name] = [];
+      } else {
+        newItem[field.name] = "";
       }
-    }
-
-    console.log("🏷️ ArrayField renderItemCard:", {
-      index,
-      "config.labelField": config.labelField,
-      "itemObj keys": Object.keys(itemObj),
-      labelFieldValue,
-      "itemObj.name": itemObj["name"],
     });
 
-    return (
-      <div
-        key={index}
-        style={{
-          border: "1px solid #e5e7eb",
-          borderRadius: "8px",
-          marginBottom: "12px",
-          backgroundColor: "#fff",
-          boxShadow: isItemCollapsed
-            ? "none"
-            : "0 4px 6px rgba(59, 130, 246, 0.1)",
-        }}
-      >
-        {/* Header */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            padding: "12px 16px",
-            borderBottom: !isItemCollapsed ? "1px solid #e5e7eb" : "none",
-            backgroundColor: "#fff",
-            borderRadius: isItemCollapsed ? "8px" : "8px 8px 0 0",
-            cursor: "pointer",
-          }}
-          onClick={() => toggleCollapse(index)}
-        >
+    console.log("➕ [ArrayField] Adicionando item:", newItem);
+    onChange([...value, newItem]);
+  };
+
+  // Remove um item
+  const removeItem = (index: number) => {
+    const newArray = value.filter((_, i) => i !== index);
+    console.log(`🗑️ [ArrayField] Removendo item ${index}`);
+    onChange(newArray);
+
+    // Remove estado de collapse do item removido
+    setCollapsedItems((prev) => {
+      const newState = { ...prev };
+      delete newState[index];
+      return newState;
+    });
+  };
+
+  // Toggle collapse de um item
+  const toggleCollapse = (index: number) => {
+    setCollapsedItems((prev) => ({
+      ...prev,
+      [index]: !prev[index],
+    }));
+  };
+
+  // Renderiza um campo dentro de um item do array
+  const renderItemField = (
+    field: FormFieldMetadata,
+    itemValue: Record<string, unknown>,
+    itemIndex: number
+  ) => {
+    // Oculta campos marcados como não visíveis
+    if (field.visible === false) {
+      return null;
+    }
+
+    const fieldValue = itemValue[field.name];
+
+    // ✅ CORREÇÃO: Para campos entity, extrai o ID se o valor for um objeto
+    let stringValue: string;
+    if (
+      field.type === "entity" &&
+      fieldValue &&
+      typeof fieldValue === "object"
+    ) {
+      // Se é um objeto, extrai o ID
+      const entityObj = fieldValue as Record<string, unknown>;
+      stringValue = String(entityObj.id || "");
+
+      console.log(
+        `🔧 [ArrayField] Campo entity "${field.name}" - Objeto detectado:`,
+        {
+          objeto: fieldValue,
+          idExtraido: stringValue,
+        }
+      );
+    } else {
+      stringValue = String(fieldValue || "");
+    }
+
+    // 🧮 Campos computados são sempre readonly
+    if (field.computed) {
+      return (
+        <FormField label={field.label} required={field.required}>
+          <FormInput
+            type="text"
+            placeholder={field.placeholder}
+            value={stringValue}
+            onChange={() => {}} // No-op, field is computed
+            disabled={true}
+            required={field.required}
+            className="bg-gray-100 cursor-not-allowed highlighted-computed-field"
+          />
+        </FormField>
+      );
+    }
+
+    switch (field.type) {
+      case "text":
+      case "email":
+      case "password": {
+        // 📱 Detecta automaticamente se precisa de máscara (CPF, telefone, etc)
+        const autoMask = field.type === "text" ? getAutoMask(field.name) : null;
+
+        return (
+          <FormField label={field.label} required={field.required}>
+            {autoMask ? (
+              <MaskedInput
+                mask={autoMask}
+                value={stringValue}
+                onChange={(e) =>
+                  handleFieldChange(itemIndex, field.name, e.target.value)
+                }
+                placeholder={field.placeholder}
+                disabled={field.disabled || disabled}
+                required={field.required}
+              />
+            ) : (
+              <FormInput
+                type={field.type}
+                placeholder={field.placeholder}
+                value={stringValue}
+                onChange={(e) =>
+                  handleFieldChange(itemIndex, field.name, e.target.value)
+                }
+                disabled={field.disabled || disabled}
+                required={field.required}
+              />
+            )}
+          </FormField>
+        );
+      }
+
+      case "number":
+        return (
+          <FormField label={field.label} required={field.required}>
+            <FormInput
+              type="number"
+              placeholder={field.placeholder}
+              min={field.validation?.min}
+              max={field.validation?.max}
+              value={stringValue}
+              onChange={(e) =>
+                handleFieldChange(
+                  itemIndex,
+                  field.name,
+                  field.type === "number"
+                    ? Number(e.target.value)
+                    : e.target.value
+                )
+              }
+              disabled={field.disabled || disabled}
+              required={field.required}
+            />
+          </FormField>
+        );
+
+      case "textarea":
+        return (
+          <FormField label={field.label} required={field.required}>
+            <FormTextarea
+              placeholder={field.placeholder}
+              value={stringValue}
+              onChange={(e) =>
+                handleFieldChange(itemIndex, field.name, e.target.value)
+              }
+              disabled={field.disabled || disabled}
+              required={field.required}
+            />
+          </FormField>
+        );
+
+      case "select":
+        return (
+          <FormField label={field.label} required={field.required}>
+            <FormSelect
+              value={stringValue}
+              onChange={(e) =>
+                handleFieldChange(itemIndex, field.name, e.target.value)
+              }
+              disabled={field.disabled || disabled}
+              required={field.required}
+            >
+              <option value="">Selecione...</option>
+              {field.options
+                ?.slice()
+                .sort((a, b) => a.label.localeCompare(b.label, "pt-BR"))
+                .map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+            </FormSelect>
+          </FormField>
+        );
+
+      case "date": {
+        // 🎂 Detecta se é campo de data de nascimento
+        const isBirthDate =
+          field.name === "dateOfBirth" ||
+          field.name === "birthDate" ||
+          field.name === "dataNascimento" ||
+          field.label?.toLowerCase().includes("nascimento") ||
+          field.label?.toLowerCase().includes("birth");
+
+        // Detecta automaticamente se deve mostrar hora/minuto
+        const shouldShowTime =
+          field.format?.includes("HH") || field.format?.includes("mm") || false;
+        const dateFormat =
+          field.format || (shouldShowTime ? "dd/MM/yyyy HH:mm" : "dd/MM/yyyy");
+
+        return (
+          <FormField label={field.label} required={field.required}>
+            <FormDatePicker
+              selected={fieldValue ? new Date(String(fieldValue)) : null}
+              onChange={(date) =>
+                handleFieldChange(
+                  itemIndex,
+                  field.name,
+                  date?.toISOString() || ""
+                )
+              }
+              showTimeSelect={shouldShowTime}
+              dateFormat={dateFormat}
+              placeholder={field.placeholder}
+              disabled={field.disabled || disabled}
+              // ✅ Para datas de nascimento: ativa seletores e limita até hoje
+              showYearDropdown={isBirthDate}
+              showMonthDropdown={isBirthDate}
+              scrollableYearDropdown={isBirthDate}
+              yearDropdownItemNumber={isBirthDate ? 120 : 10}
+              maxDate={isBirthDate ? new Date() : undefined}
+            />
+          </FormField>
+        );
+      }
+
+      case "boolean":
+        return (
           <div
             style={{
               display: "flex",
               alignItems: "center",
-              gap: "8px",
-              flex: 1,
+              minHeight: "40px",
+              paddingTop: "18px",
             }}
           >
-            <FiMenu size={14} color="#9ca3af" />
-            <div style={{ display: "flex", flexDirection: "column" }}>
-              <strong style={{ color: "#374151", fontSize: "14px" }}>
-                {label}
-              </strong>
-              {isItemCollapsed && (
-                <span
-                  style={{
-                    fontSize: "12px",
-                    color: "#9ca3af",
-                    marginTop: "2px",
-                  }}
-                >
-                  {singularName as string}
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* Label do item quando colapsado */}
-          {isItemCollapsed && labelFieldValue != null && (
-            <div
-              style={{
-                fontSize: "14px",
-                color: "#1e40af",
-                marginRight: "12px",
-                flex: 1,
-                fontWeight: "600",
-                padding: "6px 12px",
-                backgroundColor: "#dbeafe",
-                borderRadius: "6px",
-                border: "1px solid #3b82f6",
-              }}
-            >
-              {typeof labelFieldValue === "object"
-                ? JSON.stringify(labelFieldValue)
-                : String(labelFieldValue)}
-            </div>
-          )}
-
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            {/* Botão remover - escondido no modo readonly */}
-            {!disabled && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleRemove(index);
-                }}
-                disabled={value.length === 0}
-                style={{
-                  padding: "6px 12px",
-                  backgroundColor: value.length === 0 ? "#fef2f2" : "#fee2e2",
-                  border: "1px solid #fca5a5",
-                  borderRadius: "6px",
-                  color: "#dc2626",
-                  cursor: value.length === 0 ? "not-allowed" : "pointer",
-                  opacity: value.length === 0 ? 0.5 : 1,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "4px",
-                  fontSize: "13px",
-                }}
-                title="Remover"
-              >
-                <FiTrash2 size={14} />
-                Remover
-              </button>
-            )}
-
-            {/* Ícone de expandir/recolher */}
-            <div
+            <label
               style={{
                 display: "flex",
                 alignItems: "center",
-                color: "#6b7280",
+                gap: "8px",
+                cursor: "pointer",
+                userSelect: "none",
               }}
             >
-              {isItemCollapsed ? (
-                <FiChevronDown size={20} />
-              ) : (
-                <FiChevronUp size={20} />
-              )}
+              <input
+                type="checkbox"
+                checked={!!fieldValue}
+                onChange={(e) =>
+                  handleFieldChange(itemIndex, field.name, e.target.checked)
+                }
+                disabled={field.disabled || disabled}
+                style={{
+                  width: "18px",
+                  height: "18px",
+                  cursor:
+                    field.disabled || disabled ? "not-allowed" : "pointer",
+                }}
+              />
+              <span style={{ fontSize: "14px", color: "#374151" }}>
+                {field.label}
+              </span>
+            </label>
+          </div>
+        );
+
+      case "city":
+        return (
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "2fr 100px",
+              gap: "1rem",
+              alignItems: "end",
+            }}
+          >
+            <FormField label={field.label} required={field.required}>
+              <CityTypeahead
+                value={stringValue}
+                onCitySelect={(city) => {
+                  // Salva o ID da cidade
+                  const cityIdField = field.name.endsWith("Id")
+                    ? field.name
+                    : `${field.name}Id`;
+                  handleFieldChange(itemIndex, cityIdField, String(city.id));
+                  // Salva o nome da cidade para exibição
+                  handleFieldChange(itemIndex, field.name, city.name);
+                }}
+                placeholder={field.placeholder || "Digite o nome da cidade"}
+                disabled={field.disabled || disabled}
+              />
+            </FormField>
+
+            <FormField label="Estado" required={false}>
+              <FormInput
+                type="text"
+                value="" // Estado seria carregado do backend
+                readOnly
+                disabled
+                placeholder="--"
+                style={{
+                  backgroundColor: "#f3f4f6",
+                  cursor: "not-allowed",
+                  textAlign: "center",
+                }}
+              />
+            </FormField>
+          </div>
+        );
+
+      case "entity": {
+        // ✅ FALLBACK: Se não tiver entityConfig mas tiver relationship, cria automaticamente
+        let entityConfig = field.entityConfig;
+        if (!entityConfig && field.relationship) {
+          entityConfig = {
+            entityName: field.relationship.targetEntity,
+            endpoint: field.relationship.targetEndpoint,
+            labelField: field.relationship.labelField || "name",
+            valueField: "id",
+            renderAs: "typeahead" as const,
+          };
+
+          console.log(
+            `🔧 [ArrayField] Fallback entityConfig criado para campo ${field.name}:`,
+            entityConfig
+          );
+        }
+
+        if (!entityConfig) {
+          console.warn(
+            `[ArrayField] Campo ${field.name} é do tipo 'entity' mas falta entityConfig e relationship`
+          );
+          return (
+            <FormField label={field.label} required={field.required}>
+              <FormInput
+                type="text"
+                value="Campo entity sem configuração"
+                disabled
+                style={{ backgroundColor: "#fee2e2", color: "#991b1b" }}
+              />
+            </FormField>
+          );
+        }
+
+        // Detecta se é um campo de cidade
+        const isCityField =
+          field.name === "city" ||
+          field.name === "cityId" ||
+          entityConfig.entityName === "city";
+
+        if (isCityField) {
+          return (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "2fr 100px",
+                gap: "1rem",
+                alignItems: "end",
+              }}
+            >
+              <FormField label={field.label} required={field.required}>
+                <CityTypeahead
+                  value={stringValue}
+                  onCitySelect={(city) => {
+                    handleFieldChange(itemIndex, "cityId", String(city.id));
+                    handleFieldChange(itemIndex, "city", city.name);
+                  }}
+                  placeholder={field.placeholder || "Digite o nome da cidade"}
+                  disabled={field.disabled || disabled}
+                />
+              </FormField>
+
+              <FormField label="Estado" required={false}>
+                <FormInput
+                  type="text"
+                  value=""
+                  readOnly
+                  disabled
+                  placeholder="--"
+                  style={{
+                    backgroundColor: "#f3f4f6",
+                    cursor: "not-allowed",
+                    textAlign: "center",
+                  }}
+                />
+              </FormField>
             </div>
-          </div>
-        </div>
+          );
+        } else {
+          // Componente genérico de entidade
+          const renderAs = entityConfig.renderAs || "select";
+          const EntityComponent =
+            renderAs === "typeahead" || renderAs === "autocomplete"
+              ? EntityTypeahead
+              : EntitySelect;
 
-        {/* Conteúdo expandido */}
-        {!isItemCollapsed && (
-          <div style={{ padding: "20px" }}>
-            {/* Separa campos normais dos textareas */}
-            {(() => {
-              const regularFields = fields.filter((f) => f.type !== "textarea");
-              const textareaFields = fields.filter(
-                (f) => f.type === "textarea"
-              );
+          return (
+            <FormField label={field.label} required={field.required}>
+              <EntityComponent
+                config={entityConfig}
+                value={stringValue}
+                onChange={(newValue) =>
+                  handleFieldChange(itemIndex, field.name, newValue)
+                }
+                disabled={field.disabled || disabled}
+              />
+            </FormField>
+          );
+        }
+      }
 
-              return (
-                <>
-                  {/* Grid para campos normais */}
-                  {regularFields.length > 0 && (
-                    <div
-                      data-component="array-field-grid"
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns:
-                          "repeat(auto-fit, minmax(200px, 1fr))",
-                        gap: "16px",
-                        marginBottom:
-                          textareaFields.length > 0 ? "16px" : "16px",
-                      }}
-                    >
-                      {regularFields.map((field) => (
-                        <FormField
-                          key={field.name}
-                          label={field.label}
-                          required={field.required}
-                        >
-                          {/* 🧮 Campos computados são readonly */}
-                          {field.computed ? (
-                            <FormInput
-                              type="text"
-                              value={String(itemObj[field.name] || "")}
-                              onChange={() => {}} // No-op
-                              disabled={true}
-                              required={field.required}
-                              className="bg-gray-100 cursor-not-allowed"
-                            />
-                          ) : field.type === "select" ? (
-                            <FormSelect
-                              value={String(itemObj[field.name] || "")}
-                              onChange={(e) =>
-                                handleFieldChange(
-                                  index,
-                                  field.name,
-                                  e.target.value
-                                )
-                              }
-                              disabled={disabled}
-                              required={field.required}
-                            >
-                              <option value="">Selecione...</option>
-                              {field.options
-                                ?.slice()
-                                .sort((a, b) =>
-                                  a.label.localeCompare(b.label, "pt-BR")
-                                )
-                                .map((opt) => (
-                                  <option key={opt.value} value={opt.value}>
-                                    {opt.label}
-                                  </option>
-                                ))}
-                            </FormSelect>
-                          ) : (
-                            <FormInput
-                              type={
-                                field.type === "number" ? "number" : field.type
-                              }
-                              value={String(itemObj[field.name] || "")}
-                              onChange={(e) =>
-                                handleFieldChange(
-                                  index,
-                                  field.name,
-                                  field.type === "number"
-                                    ? Number(e.target.value)
-                                    : e.target.value
-                                )
-                              }
-                              placeholder={field.placeholder}
-                              disabled={disabled}
-                              required={field.required}
-                              min={field.validation?.min}
-                              max={field.validation?.max}
-                            />
-                          )}
-                        </FormField>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Grid para textareas (largura dupla) */}
-                  {textareaFields.length > 0 && (
-                    <div
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns:
-                          "repeat(auto-fit, minmax(200px, 1fr))",
-                        gap: "16px",
-                        marginBottom: "16px",
-                      }}
-                    >
-                      {textareaFields.map((field) => (
-                        <div key={field.name} className="form-field-wide">
-                          <FormField
-                            label={field.label}
-                            required={field.required}
-                          >
-                            <FormTextarea
-                              value={String(itemObj[field.name] || "")}
-                              onChange={(e) =>
-                                handleFieldChange(
-                                  index,
-                                  field.name,
-                                  e.target.value
-                                )
-                              }
-                              placeholder={field.placeholder}
-                              disabled={disabled}
-                              required={field.required}
-                            />
-                          </FormField>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </>
-              );
-            })()}
-          </div>
-        )}
-      </div>
-    );
+      default:
+        return (
+          <FormField label={field.label} required={field.required}>
+            <FormInput
+              type="text"
+              placeholder={field.placeholder}
+              value={stringValue}
+              onChange={(e) =>
+                handleFieldChange(itemIndex, field.name, e.target.value)
+              }
+              disabled={field.disabled || disabled}
+              required={field.required}
+            />
+          </FormField>
+        );
+    }
   };
 
+  // Gera label inteligente para cada item
+  const getItemLabel = (index: number, item: Record<string, unknown>) => {
+    const baseLabel = itemLabel.replace("{index}", String(index + 1));
+
+    // Se tiver labelField definido, tenta usar o valor do campo
+    if (config.labelField && item[config.labelField]) {
+      const labelValue = String(item[config.labelField]);
+      return `${baseLabel}: ${labelValue}`;
+    }
+
+    // Se não, usa apenas o label base
+    return baseLabel;
+  };
+
+  // Se não há campos configurados, renderiza mensagem
+  if (!fields || fields.length === 0) {
+    return (
+      <div
+        style={{
+          padding: "20px",
+          backgroundColor: "#f9fafb",
+          border: "1px solid #e5e7eb",
+          borderRadius: "8px",
+          textAlign: "center",
+          color: "#6b7280",
+        }}
+      >
+        <p>Nenhum campo configurado para este array.</p>
+      </div>
+    );
+  }
+
   return (
-    <div>
-      {/* Header com contador e botão adicionar */}
+    <div style={{ marginBottom: "16px" }}>
+      {/* Header do ArrayField */}
       <div
         style={{
           display: "flex",
-          alignItems: "center",
           justifyContent: "space-between",
-          marginBottom: value.length === 0 && disabled ? "0" : "16px",
-          padding: "12px 16px",
-          backgroundColor: "#f8fafc",
-          borderRadius: "8px",
-          border: "1px solid #e2e8f0",
+          alignItems: "center",
+          marginBottom: "12px",
         }}
       >
-        <div>
-          <p style={{ margin: 0, fontSize: "13px", color: "#64748b" }}>
-            {value.length}{" "}
-            {value.length === 1 ? "item adicionado" : "itens adicionados"}
-            {minItems > 0 && ` (mínimo: ${minItems})`}
-          </p>
-        </div>
+        <h3
+          style={{
+            margin: "0",
+            fontSize: "16px",
+            fontWeight: "600",
+            color: "#374151",
+          }}
+        >
+          {config.label || "Lista"}
+        </h3>
 
-        {/* Botão adicionar no header - escondido no modo readonly */}
-        {!disabled && (
+        {!disabled && value.length < maxItems && (
           <button
             type="button"
-            onClick={handleStartAdd}
-            disabled={value.length >= maxItems}
+            onClick={addItem}
             style={{
-              padding: "10px 20px",
-              backgroundColor: value.length >= maxItems ? "#e2e8f0" : "#3b82f6",
-              border: "none",
-              borderRadius: "6px",
-              color: "#fff",
-              cursor: value.length >= maxItems ? "not-allowed" : "pointer",
               display: "flex",
               alignItems: "center",
-              gap: "8px",
+              gap: "6px",
+              padding: "8px 12px",
+              backgroundColor: "#3b82f6",
+              color: "white",
+              border: "none",
+              borderRadius: "6px",
               fontSize: "14px",
-              fontWeight: 500,
-              opacity: value.length >= maxItems ? 0.5 : 1,
+              cursor: "pointer",
+              transition: "background-color 0.2s",
             }}
-            title={
-              value.length >= maxItems
-                ? `Máximo de ${maxItems} itens atingido`
-                : addLabel
+            onMouseOver={(e) =>
+              (e.currentTarget.style.backgroundColor = "#2563eb")
+            }
+            onMouseOut={(e) =>
+              (e.currentTarget.style.backgroundColor = "#3b82f6")
             }
           >
-            <FiPlus size={16} />
+            <FiPlus size={14} />
             {addLabel}
           </button>
         )}
       </div>
 
       {/* Lista de itens */}
-      {value.length > 0 && (
-        <div style={{ marginBottom: "12px" }}>
-          {value.map((item, index) => renderItemCard(item, index))}
-        </div>
-      )}
-
-      {/* Mensagem de lista vazia - escondida no modo readonly */}
-      {value.length === 0 && !disabled && (
+      {value.length === 0 ? (
         <div
           style={{
-            padding: "24px",
+            padding: "40px 20px",
             backgroundColor: "#f9fafb",
             border: "2px dashed #d1d5db",
             borderRadius: "8px",
             textAlign: "center",
             color: "#6b7280",
-            fontSize: "14px",
-            marginBottom: "12px",
           }}
         >
-          <p
-            style={{ margin: "0 0 12px 0", fontSize: "15px", fontWeight: 500 }}
-          >
-            Nenhum item adicionado
+          <p style={{ margin: "0", fontSize: "14px" }}>
+            Nenhum item adicionado ainda.
           </p>
-          <p style={{ margin: 0, fontSize: "13px" }}>
-            Clique em "{addLabel}" acima para adicionar o primeiro item
-          </p>
+          {!disabled && (
+            <p style={{ margin: "8px 0 0 0", fontSize: "12px" }}>
+              Clique em "{addLabel}" para adicionar o primeiro item.
+            </p>
+          )}
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          {value.map((item, index) => {
+            const itemData = (item as Record<string, unknown>) || {};
+            const isCollapsed = collapsedItems[index] || false;
+
+            return (
+              <div
+                key={index}
+                style={{
+                  border: "1px solid #e5e7eb",
+                  borderRadius: "8px",
+                  backgroundColor: "#ffffff",
+                  overflow: "hidden",
+                }}
+              >
+                {/* Header do item */}
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: "12px 16px",
+                    backgroundColor: "#f9fafb",
+                    borderBottom: isCollapsed ? "none" : "1px solid #e5e7eb",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      flex: 1,
+                    }}
+                  >
+                    {/* Drag handle */}
+                    <FiMenu
+                      size={14}
+                      style={{ color: "#9ca3af", cursor: "grab" }}
+                    />
+
+                    {/* Label do item */}
+                    <h4
+                      style={{
+                        margin: "0",
+                        fontSize: "14px",
+                        fontWeight: "500",
+                        color: "#374151",
+                        flex: 1,
+                      }}
+                    >
+                      {getItemLabel(index, itemData)}
+                    </h4>
+                  </div>
+
+                  {/* Botões de ação */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "4px",
+                    }}
+                  >
+                    {/* Collapse/Expand */}
+                    <button
+                      type="button"
+                      onClick={() => toggleCollapse(index)}
+                      style={{
+                        padding: "4px",
+                        backgroundColor: "transparent",
+                        border: "none",
+                        cursor: "pointer",
+                        color: "#6b7280",
+                        display: "flex",
+                        alignItems: "center",
+                      }}
+                      title={isCollapsed ? "Expandir" : "Recolher"}
+                    >
+                      {isCollapsed ? (
+                        <FiChevronDown size={16} />
+                      ) : (
+                        <FiChevronUp size={16} />
+                      )}
+                    </button>
+
+                    {/* Remover item */}
+                    {!disabled && value.length > minItems && (
+                      <button
+                        type="button"
+                        onClick={() => removeItem(index)}
+                        style={{
+                          padding: "4px",
+                          backgroundColor: "transparent",
+                          border: "none",
+                          cursor: "pointer",
+                          color: "#ef4444",
+                          display: "flex",
+                          alignItems: "center",
+                        }}
+                        title="Remover item"
+                      >
+                        <FiTrash2 size={16} />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Conteúdo do item */}
+                {!isCollapsed && (
+                  <div style={{ padding: "16px" }}>
+                    <div className="array-field-grid">
+                      {fields.map((field) => (
+                        <div key={field.name}>
+                          {renderItemField(field, itemData, index)}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 
-      {/* Validações - escondidas no modo readonly */}
-      {!disabled && minItems > 0 && value.length < minItems && (
+      {/* Informações de limite */}
+      {(minItems > 0 || maxItems < 100) && (
         <div
           style={{
             marginTop: "8px",
-            padding: "8px 12px",
-            backgroundColor: "#fef2f2",
-            border: "1px solid #fca5a5",
-            borderRadius: "6px",
-            fontSize: "13px",
-            color: "#dc2626",
+            fontSize: "12px",
+            color: "#6b7280",
+            textAlign: "right",
           }}
         >
-          ⚠️ Mínimo de {minItems}{" "}
-          {minItems === 1 ? "item obrigatório" : "itens obrigatórios"}
-        </div>
-      )}
-
-      {!disabled && maxItems && value.length >= maxItems && (
-        <div
-          style={{
-            marginTop: "8px",
-            padding: "8px 12px",
-            backgroundColor: "#f0f9ff",
-            border: "1px solid #bfdbfe",
-            borderRadius: "6px",
-            fontSize: "13px",
-            color: "#1e40af",
-          }}
-        >
-          ℹ️ Máximo de {maxItems}{" "}
-          {maxItems === 1 ? "item atingido" : "itens atingido"}
+          {value.length} / {maxItems} itens
+          {minItems > 0 && ` (mínimo: ${minItems})`}
         </div>
       )}
     </div>
