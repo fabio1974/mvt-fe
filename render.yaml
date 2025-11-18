@@ -1,0 +1,23 @@
+services:
+  # Frontend Web Service
+  - type: web
+    name: mvt-fe
+    runtime: docker
+    repo: https://github.com/fabio1974/mvt-fe
+    branch: main
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: VITE_API_URL
+        value: https://mvt-events-api.onrender.com/api
+      - key: VITE_STRIPE_PUBLIC_KEY
+        sync: false # Será configurado manualmente no dashboard
+      - key: VITE_GOOGLE_MAPS_API_KEY
+        sync: false # Será configurado manualmente no dashboard
+      - key: VITE_DEBUG_MODE
+        value: false
+      - key: VITE_ENVIRONMENT
+        value: production
+    # Auto-deploy quando houver push no GitHub
+    autoDeploy: true
+    # Health check path
+    healthCheckPath: /

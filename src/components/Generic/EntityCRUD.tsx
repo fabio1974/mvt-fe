@@ -79,7 +79,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
   showEditButton = false,
   hideArrayFields = false,
   initialFilters,
-  transformData,
+  // transformData, // Unused parameter
   pageTitle,
 }) => {
   // Determina o modo inicial baseado nas props

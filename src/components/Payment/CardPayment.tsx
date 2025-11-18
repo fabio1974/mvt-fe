@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import { paymentService } from "../../services/payment";
-import { FiCreditCard, FiLock, FiAlertCircle } from "react-icons/fi";
+import { FiCreditCard, FiAlertCircle } from "react-icons/fi";
 
 interface CardPaymentProps {
   registrationId: number;

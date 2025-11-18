@@ -44,6 +44,10 @@ describe("Auth Flow Integration Tests", () => {
       // Mock da resposta de registro bem-sucedido
       vi.mocked(api.post).mockResolvedValueOnce({
         data: { message: "Usuário registrado com sucesso!" },
+        status: 200,
+        statusText: "OK",
+        headers: {},
+        config: {} as any,
       });
 
       // Preencher formulário de registro

@@ -26,7 +26,7 @@ export const AddressFieldWithMap: React.FC<AddressFieldWithMapProps> = ({
   disabled = false,
   required = false,
   label = "Endereço",
-  fieldName,
+  // fieldName, // Unused parameter
   onCoordinatesChange,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
