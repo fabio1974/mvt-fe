@@ -6,12 +6,13 @@ class MetadataService {
   private isLoaded = false;
 
   /**
-   * Carrega todos os metadados do backend
+   * Carrega todos os metadados do backend via /api/metadata
    */
   async loadMetadata(): Promise<void> {
     if (this.isLoaded) return;
 
     try {
+      console.log('🔄 MetadataService: Requesting /api/metadata endpoint...');
       const response = await api.get<MetadataResponse>('/api/metadata');
       const metadata = response.data;
 
