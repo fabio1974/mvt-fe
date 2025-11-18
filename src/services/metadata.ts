@@ -12,7 +12,7 @@ class MetadataService {
     if (this.isLoaded) return;
 
     try {
-      const response = await api.get<MetadataResponse>('/metadata');
+      const response = await api.get<MetadataResponse>('/api/metadata');
       const metadata = response.data;
 
       // Armazena no cache

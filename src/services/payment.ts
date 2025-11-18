@@ -73,13 +73,13 @@ export interface RefundResponse {
 export const paymentService = {
   // Buscar métodos de pagamento disponíveis
   async getPaymentMethods(): Promise<Record<string, { name: string; supported: boolean }>> {
-    const response = await api.get('/payments/methods');
+    const response = await api.get('/api/payments/methods');
     return response.data as Record<string, { name: string; supported: boolean }>;
   },
 
   // Calcular taxa do pagamento
   async calculateFee(amount: number, paymentMethod: string): Promise<FeeCalculation> {
-    const response = await api.get(`/payments/calculate-fee`, {
+    const response = await api.get(`/api/payments/calculate-fee`, {
       params: { amount, paymentMethod }
     });
     return response.data as FeeCalculation;
@@ -87,25 +87,25 @@ export const paymentService = {
 
   // Criar pagamento
   async createPayment(paymentData: PaymentRequest): Promise<PaymentResponse> {
-    const response = await api.post('/payments/create', paymentData);
+    const response = await api.post('/api/payments/create', paymentData);
     return response.data as PaymentResponse;
   },
 
   // Confirmar pagamento
   async confirmPayment(paymentId: string, confirmationData?: Record<string, unknown>): Promise<PaymentResponse> {
-    const response = await api.post(`/payments/${paymentId}/confirm`, confirmationData);
+    const response = await api.post(`/api/payments/${paymentId}/confirm`, confirmationData);
     return response.data as PaymentResponse;
   },
 
   // Verificar status do pagamento
   async getPaymentStatus(paymentId: string): Promise<PaymentResponse> {
-    const response = await api.get(`/payments/${paymentId}/status`);
+    const response = await api.get(`/api/payments/${paymentId}/status`);
     return response.data as PaymentResponse;
   },
 
   // Solicitar reembolso
   async requestRefund(paymentId: string, amount?: number, reason?: string): Promise<RefundResponse> {
-    const response = await api.post(`/payments/${paymentId}/refund`, {
+    const response = await api.post(`/api/payments/${paymentId}/refund`, {
       amount,
       reason
     });
