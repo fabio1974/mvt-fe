@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # Script para gerar informações de versão
 
 COMMIT_HASH=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
