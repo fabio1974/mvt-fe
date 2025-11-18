@@ -1,4 +1,5 @@
 import "./Footer.css";
+import { VERSION, COMMIT_HASH } from "../../version";
 
 interface FooterProps {
   isLoggedIn?: boolean;
@@ -39,6 +40,10 @@ export default function Footer({
           className="compact-copyright"
           style={{ color: isDark ? "hsl(0, 0%, 70%)" : "hsl(220, 20%, 40%)" }}
         >
+          <span title={`Build: ${COMMIT_HASH}`} style={{ cursor: 'help' }}>
+            v{VERSION}
+          </span>
+          {' • '}
           © 2025 Zapi10. Todos os direitos reservados.
         </p>
         <div className="compact-links">
