@@ -6,14 +6,9 @@ console.log("VITE_API_URL:", import.meta.env.VITE_API_URL);
 // Helper para normalizar URLs e evitar duplicação de /api
 const normalizeUrl = (url: string): string => {
   const original = url;
-  // Remove todas as ocorrências de /api do início da URL
-  // Isso corrige tanto /api/organizations quanto /api/api/organizations
-  let normalized = url;
-  while (normalized.startsWith('/api/') || normalized.startsWith('/api')) {
-    normalized = normalized.replace(/^\/api\/?/, '/');
-  }
-  // Se sobrou apenas '/', mantém assim
-  normalized = normalized || '/';
+  // Remove APENAS duplicações de /api/api → /api
+  // Mas mantém um único /api quando necessário
+  let normalized = url.replace(/^\/api\/api(\/|$)/, '/api$1');
   
   // Log apenas se houve normalização (debug)
   if (original !== normalized) {

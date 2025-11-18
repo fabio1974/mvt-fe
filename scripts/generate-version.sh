@@ -1,7 +1,16 @@
 #!/bin/sh
 # Script para gerar informações de versão
 
-COMMIT_HASH=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+# Tenta pegar o commit hash de diferentes fontes:
+# 1. Variável RENDER_GIT_COMMIT (Render.com)
+# 2. git rev-parse (local ou CI)
+# 3. "unknown" como fallback
+if [ -n "$RENDER_GIT_COMMIT" ]; then
+  COMMIT_HASH="${RENDER_GIT_COMMIT:0:7}"
+else
+  COMMIT_HASH=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+fi
+
 BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 VERSION=$(node -p "require('./package.json').version")
 
