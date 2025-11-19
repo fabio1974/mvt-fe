@@ -46,7 +46,7 @@ export default function Header({
       case "ROLE_ADMIN":
         return "Admin";
       case "ROLE_ORGANIZER":
-        return "Organizador";
+        return "Gerente";
       case "ROLE_COURIER":
       case "ROLE_MOTOBOY":
         return "Motoboy";
