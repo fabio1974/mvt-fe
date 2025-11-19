@@ -40,6 +40,23 @@ export default function Header({
     .filter(Boolean)
     .join(" ");
 
+  // Função para traduzir o role do usuário
+  const getRoleTranslation = (role: string | null): string => {
+    switch (role) {
+      case "ROLE_ADMIN":
+        return "Admin";
+      case "ROLE_ORGANIZER":
+        return "Organizador";
+      case "ROLE_COURIER":
+      case "ROLE_MOTOBOY":
+        return "Motoboy";
+      case "ROLE_USER":
+        return "Cliente";
+      default:
+        return "Usuário";
+    }
+  };
+
   // Função para retornar ícone baseado no tipo de usuário
   const getUserIcon = (role: string | null) => {
     switch (role) {
@@ -264,19 +281,34 @@ export default function Header({
               {getUserIcon(userRole)}
             </div>
             
-            {/* Nome do usuário */}
-            <span
-              style={{
-                fontSize: "0.95rem",
-                fontWeight: 600,
-                color: "#ffffff",
-                letterSpacing: "0.01em",
-                whiteSpace: "nowrap",
-                textShadow: "0 1px 2px rgba(0, 0, 0, 0.1)",
-              }}
-            >
-              {userName}
-            </span>
+            {/* Nome e tipo do usuário */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <span
+                style={{
+                  fontSize: "0.95rem",
+                  fontWeight: 600,
+                  color: "#ffffff",
+                  letterSpacing: "0.01em",
+                  whiteSpace: "nowrap",
+                  textShadow: "0 1px 2px rgba(0, 0, 0, 0.1)",
+                  lineHeight: 1.2,
+                }}
+              >
+                {userName}
+              </span>
+              <span
+                style={{
+                  fontSize: "0.75rem",
+                  fontWeight: 400,
+                  color: "rgba(255, 255, 255, 0.8)",
+                  letterSpacing: "0.02em",
+                  whiteSpace: "nowrap",
+                  lineHeight: 1,
+                }}
+              >
+                {getRoleTranslation(userRole)}
+              </span>
+            </div>
           </div>
         )}
 
