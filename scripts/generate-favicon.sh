@@ -1,10 +1,10 @@
 #!/bin/bash
-# Script para gerar favicon a partir do logo.png
+# Script para gerar favicon e ícones a partir do new_icon_cropped.png
 
-LOGO_PATH="src/assets/logo.png"
+LOGO_PATH="src/assets/new_icon_cropped.png"
 OUTPUT_DIR="public"
 
-echo "🎨 Gerando favicon a partir do logo..."
+echo "🎨 Gerando favicons e ícones a partir do new_icon_cropped.png..."
 
 # Verifica se o logo existe
 if [ ! -f "$LOGO_PATH" ]; then

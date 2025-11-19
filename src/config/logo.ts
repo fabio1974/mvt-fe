@@ -5,7 +5,7 @@
  * O logo é usado em: Header, Sidebar e Footer
  */
 
-import logo from '../assets/logo.png';
+import logo from '../assets/new_icon_cropped.png';
 
 export const LOGO_PATH = logo;
 

@@ -1,0 +1,17 @@
+{
+  "name": "Zapi10 - Mobilidade com propósito social",
+  "short_name": "Zapi10",
+  "description": "Plataforma de mobilidade com propósito social. Conectando pessoas através de entregas rápidas e seguras.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
