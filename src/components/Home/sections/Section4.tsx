@@ -253,7 +253,7 @@ export default function Section4() {
         setError("");
 
         // Buscar eventos públicos usando o endpoint específico
-        const response = await api.get("/events/public");
+        const response = await api.get("/api/events/public");
 
         const eventsData = response.data as Event[];
 

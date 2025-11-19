@@ -137,7 +137,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
         // ✅ CORREÇÃO: Se backend retornar cityId mas não city, busca o nome da cidade
         if (data.cityId && !data.city) {
           try {
-            const cityResponse = await api.get(`/cities/${data.cityId}`);
+            const cityResponse = await api.get(`/api/cities/${data.cityId}`);
             const cityData = cityResponse.data as {
               name: string;
               stateCode?: string;

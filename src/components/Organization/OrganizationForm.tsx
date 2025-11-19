@@ -56,7 +56,7 @@ export default function OrganizationForm({
       if (orgId) {
         try {
           const response = await api.get<OrganizationResponse>(
-            `/organizations/${orgId}`
+            `/api/organizations/${orgId}`
           );
           const org = response.data;
 
@@ -83,7 +83,7 @@ export default function OrganizationForm({
       if (userId) {
         try {
           const response = await api.get<OrganizationResponse>(
-            `/organizations/user/${userId}`
+            `/api/organizations/user/${userId}`
           );
           const org = response.data;
 
@@ -143,7 +143,7 @@ export default function OrganizationForm({
     try {
       if (organizationId) {
         // Atualizar organização existente
-        await api.put(`/organizations/${organizationId}`, {
+        await api.put(`/api/organizations/${organizationId}`, {
           name,
           slug,
           contactEmail,
@@ -167,7 +167,7 @@ export default function OrganizationForm({
         }
 
         const response = await api.post<OrganizationResponse>(
-          "/organizations",
+          "/api/organizations",
           {
             name,
             slug,

@@ -48,12 +48,12 @@ export default function Header({
         // Ícone de usuário para organizadores e admins
         return (
           <svg
-            width="18"
-            height="18"
+            width="20"
+            height="20"
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            style={{ color: "#60a5fa" }}
+            style={{ color: "#ffffff" }}
           >
             <circle
               cx="12"
@@ -77,12 +77,12 @@ export default function Header({
         // Ícone de atleta (pessoa correndo)
         return (
           <svg
-            width="18"
-            height="18"
+            width="20"
+            height="20"
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            style={{ color: "#60a5fa" }}
+            style={{ color: "#ffffff" }}
           >
             <circle cx="12" cy="4" r="2" fill="currentColor" />
             <path
@@ -97,12 +97,12 @@ export default function Header({
         // Ícone padrão
         return (
           <svg
-            width="18"
-            height="18"
+            width="20"
+            height="20"
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            style={{ color: "#60a5fa" }}
+            style={{ color: "#ffffff" }}
           >
             <circle
               cx="12"
@@ -230,11 +230,6 @@ export default function Header({
                 Entrar
               </button>
             )}
-            {!isLoggedIn && (
-              <a href="/login" className="btn header-cta">
-                Inscrever-se
-              </a>
-            )}
           </div>
         </div>
 
@@ -244,49 +239,66 @@ export default function Header({
             style={{
               display: "flex",
               alignItems: "center",
-              gap: 8,
-              padding: "8px 12px",
-              backgroundColor: "rgba(59, 130, 246, 0.1)",
-              borderRadius: 20,
-              border: "1px solid rgba(59, 130, 246, 0.3)",
+              gap: 10,
+              padding: "10px 16px",
+              backgroundColor: "#3b82f6",
+              borderRadius: 24,
+              border: "1px solid #2563eb",
               marginLeft: "auto", // Empurra para a direita
               marginRight: "16px", // Espaço entre o usuário e o botão menu
+              boxShadow: "0 2px 8px rgba(59, 130, 246, 0.3)",
+              cursor: "pointer",
+              transition: "all 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "#2563eb";
+              e.currentTarget.style.boxShadow = "0 4px 12px rgba(59, 130, 246, 0.4)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "#3b82f6";
+              e.currentTarget.style.boxShadow = "0 2px 8px rgba(59, 130, 246, 0.3)";
             }}
           >
-            {/* Ícone de usuário */}
+            {/* Ícone baseado no tipo de usuário */}
+            <div style={{ display: "flex", alignItems: "center" }}>
+              {getUserIcon(userRole)}
+            </div>
+            
             {/* Nome do usuário */}
             <span
               style={{
-                fontSize: "0.9rem",
-                fontWeight: 500,
-                color: "#e2e8f0",
+                fontSize: "0.95rem",
+                fontWeight: 600,
+                color: "#ffffff",
+                letterSpacing: "0.01em",
+                whiteSpace: "nowrap",
+                textShadow: "0 1px 2px rgba(0, 0, 0, 0.1)",
               }}
             >
               {userName}
             </span>
-
-            {/* Ícone baseado no tipo de usuário */}
-            {getUserIcon(userRole)}
           </div>
         )}
 
-        <button
-          className={`menu-toggle modern ${menuOpen ? "open" : ""}`}
-          onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="Abrir menu"
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
+        {isMobile && (
+          <button
+            className={`menu-toggle modern ${menuOpen ? "open" : ""}`}
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Abrir menu"
           >
-            <circle cx="12" cy="5" r="2" fill="#60a5fa" />
-            <circle cx="12" cy="12" r="2" fill="#60a5fa" />
-            <circle cx="12" cy="19" r="2" fill="#60a5fa" />
-          </svg>
-        </button>
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <circle cx="12" cy="5" r="2" fill="#60a5fa" />
+              <circle cx="12" cy="12" r="2" fill="#60a5fa" />
+              <circle cx="12" cy="19" r="2" fill="#60a5fa" />
+            </svg>
+          </button>
+        )}
       </div>
       {menuOpen && (
         <>
@@ -359,9 +371,6 @@ export default function Header({
                 >
                   Entrar
                 </button>
-                <a href="/login" className="btn header-cta mobile">
-                  Inscrever-se
-                </a>
               </>
             )}
           </div>

@@ -114,7 +114,7 @@ const ExampleEventsListPage: React.FC = () => {
 
     try {
       console.log("🔄 Enviando requisição de exclusão...");
-      await api.delete(`/events/${eventId}`);
+      await api.delete(`/api/events/${eventId}`);
 
       showToast("✅ Evento excluído com sucesso!", "success");
       console.log("✅ Evento excluído com sucesso");
