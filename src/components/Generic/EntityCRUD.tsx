@@ -46,6 +46,10 @@ interface EntityCRUDProps {
   initialFilters?: Record<string, string>;
   /** Função para transformar dados antes de enviar ao backend */
   transformData?: (data: Record<string, unknown>) => Record<string, unknown>;
+  /** Valores padrão para o formulário de criação */
+  defaultValues?: Record<string, unknown>;
+  /** Campos a serem escondidos na tabela */
+  hideFields?: string[];
 }
 
 /**
@@ -79,6 +83,8 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
   showEditButton = false,
   hideArrayFields = false,
   initialFilters,
+  defaultValues,
+  hideFields,
   // transformData, // Unused parameter
   pageTitle,
 }) => {
@@ -284,6 +290,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
             customRenderers={customRenderers}
             hideHeader={true}
             initialFilters={initialFilters}
+            hideFields={hideFields}
           />
         </ErrorBoundary>
       </div>
@@ -325,6 +332,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
           mode={viewMode === "table" ? "view" : viewMode}
           hideCancelButton={hideTable && isReadonly}
           hideArrayFields={hideArrayFields}
+          initialValues={viewMode === "create" ? defaultValues : undefined}
         />
       </div>
     </div>

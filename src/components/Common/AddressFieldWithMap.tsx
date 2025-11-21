@@ -14,6 +14,9 @@ interface AddressFieldWithMapProps {
   label?: string;
   fieldName?: string; // Nome do campo (ex: "fromAddress", "toAddress")
   onCoordinatesChange?: (latitude: number, longitude: number) => void; // Callback para atualizar lat/lng
+  onAddressDataChange?: (addressData: AddressData) => void; // Callback para receber todos os dados do endereço
+  initialLatitude?: number; // Latitude inicial para o mapa
+  initialLongitude?: number; // Longitude inicial para o mapa
 }
 
 /**
@@ -28,12 +31,15 @@ export const AddressFieldWithMap: React.FC<AddressFieldWithMapProps> = ({
   label = "Endereço",
   // fieldName, // Unused parameter
   onCoordinatesChange,
+  onAddressDataChange,
+  initialLatitude,
+  initialLongitude,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [addressData, setAddressData] = useState<AddressData>({
     address: value || "",
-    latitude: 0,
-    longitude: 0,
+    latitude: initialLatitude || 0,
+    longitude: initialLongitude || 0,
     city: "",
     state: "",
     zipCode: "",
@@ -58,6 +64,11 @@ export const AddressFieldWithMap: React.FC<AddressFieldWithMapProps> = ({
     // 🗺️ Atualiza os campos de latitude e longitude relacionados
     if (onCoordinatesChange && selectedAddress.latitude && selectedAddress.longitude) {
       onCoordinatesChange(selectedAddress.latitude, selectedAddress.longitude);
+    }
+    
+    // 🏙️ Notifica sobre todos os dados do endereço (incluindo cidade)
+    if (onAddressDataChange) {
+      onAddressDataChange(selectedAddress);
     }
     
     setIsModalOpen(false);

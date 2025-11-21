@@ -5,10 +5,11 @@ console.log("VITE_API_URL:", import.meta.env.VITE_API_URL);
 
 // Helper para normalizar URLs e evitar duplicação de /api
 const normalizeUrl = (url: string): string => {
+  if (!url) return url;
+  
   const original = url;
-  // Remove APENAS duplicações de /api/api → /api
-  // Mas mantém um único /api quando necessário
-  let normalized = url.replace(/^\/api\/api(\/|$)/, '/api$1');
+  // Remove duplicações de /api/api → /api em qualquer lugar da URL
+  const normalized = url.replace(/\/api\/api(\/|$)/g, '/api$1');
   
   // Log apenas se houve normalização (debug)
   if (original !== normalized) {
@@ -26,9 +27,27 @@ export const api = axios.create({
 // Interceptor para normalizar URLs e evitar duplicação de /api
 api.interceptors.request.use(
   (config) => {
-    // Normaliza a URL para evitar /api/api
-    if (config.url) {
-      config.url = normalizeUrl(config.url);
+    // Constrói a URL completa para normalização
+    const baseURL = config.baseURL || '';
+    const url = config.url || '';
+    
+    // Se a URL é relativa, concatena com baseURL
+    let fullUrl = url;
+    if (url && !url.startsWith('http')) {
+      fullUrl = baseURL + url;
+    }
+    
+    // Normaliza a URL completa
+    const normalizedUrl = normalizeUrl(fullUrl);
+    
+    // Se a URL foi normalizada, atualiza o config
+    if (normalizedUrl !== fullUrl) {
+      // Remove o baseURL da URL normalizada para manter apenas o path relativo
+      if (normalizedUrl.startsWith(baseURL)) {
+        config.url = normalizedUrl.substring(baseURL.length);
+      } else {
+        config.url = normalizedUrl;
+      }
     }
     
     // Adiciona token de autorização

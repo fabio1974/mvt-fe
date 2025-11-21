@@ -50,6 +50,9 @@ interface EntityTableProps {
   };
   hideHeader?: boolean; // Opcional - esconde o header quando usado dentro do EntityCRUD
   initialFilters?: Record<string, string>; // Filtros iniciais a serem aplicados
+  noWrapper?: boolean; // Opcional - remove o container entity-table-page
+  hideFilters?: boolean; // Opcional - esconde apenas os filtros (mantém header)
+  hideFields?: string[]; // Opcional - array de nomes de campos a serem escondidos
 }
 
 const EntityTable: React.FC<EntityTableProps> = ({
@@ -62,6 +65,9 @@ const EntityTable: React.FC<EntityTableProps> = ({
   customRenderers = {},
   hideHeader = false,
   initialFilters = {},
+  noWrapper = false,
+  hideFilters = false,
+  hideFields = [],
 }) => {
   const {
     getEntityMetadata,
@@ -200,6 +206,11 @@ const EntityTable: React.FC<EntityTableProps> = ({
       fetchData(filters);
     }
   }, [metadata, currentPage, itemsPerPage, fetchData, filters]);
+
+  // Reseta para página 1 quando os filtros mudarem
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters]);
 
   const handleFilterChange = useCallback(
     (field: string, value: string) => {
@@ -369,10 +380,20 @@ const EntityTable: React.FC<EntityTableProps> = ({
     );
   }
 
-  const visibleFields = fieldsSource.filter((f) => f.visible) || [];
+  const visibleFields = (fieldsSource.filter((f) => f.visible) || [])
+    .filter((f) => !hideFields.includes(f.name));
 
-  return (
-    <div className="entity-table-page">
+  // Determina se deve mostrar coluna ID (todas entidades exceto 'user')
+  const showIdColumn = entityName.toLowerCase() !== "user";
+
+  // Função para formatar ID com zeros à esquerda (8 dígitos)
+  const formatId = (id: number | string): string => {
+    const idStr = String(id);
+    return idStr.padStart(8, '0');
+  };
+
+  const tableContent = (
+    <>
       {!hideHeader && (
         <div className="entity-table-header">
           <h1>{metadata.label || entityName}</h1>
@@ -383,7 +404,7 @@ const EntityTable: React.FC<EntityTableProps> = ({
         </div>
       )}
 
-      {metadata.filters && metadata.filters.length > 0 && (
+      {!hideFilters && metadata.filters && metadata.filters.length > 0 && (
         <EntityFilters
           filters={metadata.filters}
           values={filters}
@@ -405,6 +426,11 @@ const EntityTable: React.FC<EntityTableProps> = ({
             <table className="entity-table">
               <thead>
                 <tr>
+                  {showIdColumn && (
+                    <th style={{ textAlign: "center", width: "100px" }}>
+                      Número
+                    </th>
+                  )}
                   {visibleFields.map((field) => (
                     <th
                       key={field.name}
@@ -422,7 +448,11 @@ const EntityTable: React.FC<EntityTableProps> = ({
                 {!data || data.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={visibleFields.length + (showActions ? 1 : 0)}
+                      colSpan={
+                        (showIdColumn ? 1 : 0) +
+                        visibleFields.length +
+                        (showActions ? 1 : 0)
+                      }
                       className="no-data"
                     >
                       Nenhum registro encontrado
@@ -431,6 +461,11 @@ const EntityTable: React.FC<EntityTableProps> = ({
                 ) : (
                   data.map((row, index) => (
                     <tr key={row?.id ?? index}>
+                      {showIdColumn && (
+                        <td style={{ textAlign: "center", fontFamily: "monospace", fontWeight: "600", color: "#6b7280" }}>
+                          {formatId(row?.id)}
+                        </td>
+                      )}
                       {visibleFields.map((field) => {
                         const value = getFieldValue(row, field);
                         const customRenderer = customRenderers?.[field.name];
@@ -560,8 +595,16 @@ const EntityTable: React.FC<EntityTableProps> = ({
           </div>
         </div>
       )}
-    </div>
+    </>
   );
+
+  // Se noWrapper=true, retorna apenas o conteúdo sem o container entity-table-page
+  if (noWrapper) {
+    return tableContent;
+  }
+
+  // Caso contrário, envolve no container padrão
+  return <div className="entity-table-page">{tableContent}</div>;
 };
 
 export default EntityTable;

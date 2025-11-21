@@ -99,6 +99,12 @@ export function isAdmin(): boolean {
   return role === 'ROLE_ADMIN';
 }
 
+// Função para verificar se o usuário é cliente
+export function isClient(): boolean {
+  const role = getUserRole();
+  return role === 'ROLE_CLIENT' || role === 'CLIENT';
+}
+
 // Função para obter dados adicionais do usuário para inscrição
 export function getUserAdditionalData() {
   const token = localStorage.getItem('authToken');
@@ -113,4 +119,47 @@ export function getUserAdditionalData() {
     cpf: decoded?.cpf || null,
     phone: decoded?.phone || null,
   };
+}
+
+// Função para obter as coordenadas do usuário (latitude/longitude)
+export function getUserCoordinates(): { latitude: number; longitude: number } | null {
+  const token = localStorage.getItem('authToken');
+  if (!token) return null;
+  
+  const decoded = decodeJWT(token);
+  const latitude = decoded?.latitude;
+  const longitude = decoded?.longitude;
+  
+  if (latitude !== undefined && longitude !== undefined) {
+    return { latitude, longitude };
+  }
+  
+  // Fallback para localStorage
+  const storedLat = localStorage.getItem('latitude');
+  const storedLng = localStorage.getItem('longitude');
+  
+  if (storedLat && storedLng) {
+    return {
+      latitude: parseFloat(storedLat),
+      longitude: parseFloat(storedLng)
+    };
+  }
+  
+  return null;
+}
+
+// Função para obter o endereço completo do usuário
+export function getUserAddress(): string | null {
+  const token = localStorage.getItem('authToken');
+  if (!token) return null;
+  
+  const decoded = decodeJWT(token);
+  const address = decoded?.address;
+  
+  if (address) {
+    return address;
+  }
+  
+  // Fallback para localStorage
+  return localStorage.getItem('userAddress');
 }

@@ -108,20 +108,56 @@ const EntityForm: React.FC<EntityFormProps> = ({
       }
     });
 
-    return { ...defaultValues, ...initialValues };
+    // Normaliza initialValues: se algum valor é um objeto {id, label}, extrai apenas o id
+    const normalizedInitialValues: Record<string, unknown> = {};
+    Object.entries(initialValues).forEach(([key, val]) => {
+      if (val && typeof val === "object" && "id" in val) {
+        normalizedInitialValues[key] = (val as { id: string | number }).id;
+      } else {
+        normalizedInitialValues[key] = val;
+      }
+    });
+
+    return { ...defaultValues, ...normalizedInitialValues };
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(false);
+  const [initialValuesApplied, setInitialValuesApplied] = useState(false);
 
   // Estado para armazenar os estados das cidades selecionadas (para exibição readonly)
   const [cityStates, setCityStates] = useState<Record<string, string>>({});
 
   // REMOVIDO: useEffect que resetava formData toda vez
 
+  // 🔄 Atualiza formData quando initialValues mudarem (ex: valores assíncronos de defaultValues)
+  // ⚠️ Usa flag para evitar loops infinitos
+  useEffect(() => {
+    if (!entityId && !initialValuesApplied && Object.keys(initialValues).length > 0) {
+      // Normaliza initialValues: se algum valor é um objeto {id, label}, extrai apenas o id
+      const normalizedValues: Record<string, unknown> = {};
+      Object.entries(initialValues).forEach(([key, val]) => {
+        if (val && typeof val === "object" && "id" in val) {
+          normalizedValues[key] = (val as { id: string | number }).id;
+        } else {
+          normalizedValues[key] = val;
+        }
+      });
+      
+      // Atualiza apenas os campos que vieram em initialValues, preservando os existentes
+      setFormData((prev) => ({
+        ...prev,
+        ...normalizedValues,
+      }));
+      
+      setInitialValuesApplied(true);
+    }
+  }, [initialValues, entityId, initialValuesApplied]);
+
   // Limpa erros quando o formulário é montado ou quando muda de entidade
   useEffect(() => {
     setErrors({});
+    setInitialValuesApplied(false); // Reset flag quando muda de entidade
   }, [entityId, metadata.endpoint]);
 
   // Carrega dados da entidade se estiver editando
@@ -469,7 +505,12 @@ const EntityForm: React.FC<EntityFormProps> = ({
   // Renderiza um campo baseado no tipo
   const renderField = (field: FormFieldMetadata) => {
     // Oculta campos marcados como não visíveis
-    if (field.visible === false) {
+    // ⚠️ EXCEÇÃO: Mostra campos de coordenadas (latitude/longitude) se tiverem valor no formData
+    const isCoordinateField = field.name.toLowerCase().includes('latitude') || 
+                              field.name.toLowerCase().includes('longitude');
+    const hasValue = formData[field.name] !== undefined && formData[field.name] !== null && formData[field.name] !== '';
+    
+    if (field.visible === false && !(isCoordinateField && hasValue)) {
       return null;
     }
 
@@ -535,6 +576,46 @@ const EntityForm: React.FC<EntityFormProps> = ({
       }
     };
 
+    // 🏙️ Busca cidade no banco de dados e atualiza campo city
+    const handleAddressDataChange = async (addressData: { city: string; state: string }) => {
+      // Verifica se existe um campo "city" ou similar no formulário
+      const cityFields = ['city', 'cityId', 'cidade'];
+      
+      for (const cityField of cityFields) {
+        const fieldExists = metadata.sections.some(s => s.fields.some(f => f.name === cityField));
+        
+        if (fieldExists) {
+          try {
+            // Busca a cidade no banco de dados pelo nome
+            console.log(`🏙️ Buscando cidade: ${addressData.city} - ${addressData.state}`);
+            
+            const response = await api.get<{ content: Array<{ id: string | number; name: string }> }>('/cities', {
+              params: {
+                search: addressData.city,
+                state: addressData.state,
+                limit: 1
+              }
+            });
+            
+            if (response.data && response.data.content && response.data.content.length > 0) {
+              const cityFromDB = response.data.content[0];
+              console.log(`🏙️ Cidade encontrada no banco:`, cityFromDB);
+              
+              // Atualiza o campo city com o ID da cidade do banco
+              handleChange(cityField, cityFromDB.id);
+              console.log(`🏙️ Campo ${cityField} atualizado com ID: ${cityFromDB.id}`);
+            } else {
+              console.warn(`⚠️ Cidade "${addressData.city} - ${addressData.state}" não encontrada no banco de dados`);
+              showToast(`Cidade "${addressData.city}" não encontrada no banco de dados`, 'warning');
+            }
+          } catch (error) {
+            console.error('❌ Erro ao buscar cidade no banco:', error);
+          }
+          break;
+        }
+      }
+    };
+
     // Oculta campos de organização quando auto-preenchidos (modo criar)
     // ⚠️ EXCEÇÃO: ADMIN sempre vê o campo organization para poder escolher a organização
     if (
@@ -551,7 +632,13 @@ const EntityForm: React.FC<EntityFormProps> = ({
 
     // Para campos array, garantir que o valor padrão seja array vazio
     const defaultValue = field.type === "array" ? [] : "";
-    const value = formData[field.name] ?? defaultValue;
+    let value = formData[field.name] ?? defaultValue;
+    
+    // Se o valor é um objeto (ex: {id: "...", label: "..."}), extrai o id
+    // Isso acontece quando passamos defaultValues com objetos para EntityTypeahead
+    if (value && typeof value === "object" && "id" in value) {
+      value = (value as { id: string | number }).id;
+    }
 
     const error = errors[field.name];
     const stringValue = String(value || "");
@@ -593,6 +680,20 @@ const EntityForm: React.FC<EntityFormProps> = ({
       case "password": {
         // �️ Se é campo de endereço, renderiza com Google Maps
         if (field.type === "text" && isAddressField(field.name)) {
+          // Tenta encontrar campos de latitude/longitude correspondentes
+          let initialLat: number | undefined;
+          let initialLng: number | undefined;
+          
+          // Padrões comuns: originAddress -> originLatitude/originLongitude
+          const fieldBaseName = field.name.replace(/Address$/i, '');
+          const latFieldName = `${fieldBaseName}Latitude`;
+          const lngFieldName = `${fieldBaseName}Longitude`;
+          
+          if (formData[latFieldName] !== undefined && formData[lngFieldName] !== undefined) {
+            initialLat = Number(formData[latFieldName]);
+            initialLng = Number(formData[lngFieldName]);
+          }
+          
           fieldContent = (
             <FormField
               label={field.label}
@@ -608,6 +709,9 @@ const EntityForm: React.FC<EntityFormProps> = ({
                 label={field.label}
                 fieldName={field.name}
                 onCoordinatesChange={(lat, lng) => handleAddressCoordinatesChange(field.name, lat, lng)}
+                onAddressDataChange={handleAddressDataChange}
+                initialLatitude={initialLat}
+                initialLongitude={initialLng}
               />
             </FormField>
           );
@@ -689,6 +793,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
               label={field.label}
               fieldName={field.name}
               onCoordinatesChange={(lat, lng) => handleAddressCoordinatesChange(field.name, lat, lng)}
+              onAddressDataChange={handleAddressDataChange}
             />
           </FormField>
         );
@@ -711,6 +816,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
                 required={field.required}
                 fieldName={field.name}
                 onCoordinatesChange={(lat, lng) => handleAddressCoordinatesChange(field.name, lat, lng)}
+                onAddressDataChange={handleAddressDataChange}
                 label={field.label}
               />
             </FormField>

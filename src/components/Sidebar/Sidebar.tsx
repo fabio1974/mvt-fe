@@ -12,6 +12,7 @@ import {
   FiTruck,
   FiShoppingBag,
   FiPackage,
+  FiDollarSign,
 } from "react-icons/fi";
 import "./Sidebar.css";
 
@@ -54,7 +55,7 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
     label: "Entregas",
     icon: <FiPackage size={22} color="#60a5fa" />,
     path: "/deliveries",
-    roles: ["ROLE_ADMIN"],
+    roles: ["ROLE_ADMIN", "ROLE_CLIENT", "CLIENT"],
   },
   {
     label: "Estabelecimentos",
@@ -73,6 +74,12 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
     icon: <FiTruck size={22} color="#60a5fa" />,
     path: "/motoboy",
     roles: ["ROLE_ADMIN"],
+  },
+  {
+    label: "Pagamento Diário",
+    icon: <FiDollarSign size={22} color="#10b981" />,
+    path: "/pagamento-diario",
+    roles: ["ROLE_CLIENT", "CLIENT"],
   },
 ].sort((a, b) => {
   // Mantém "Meus Dados" no topo, resto em ordem alfabética

@@ -52,6 +52,9 @@ export default function Header({
         return "Motoboy";
       case "ROLE_USER":
         return "Cliente";
+      case "ROLE_CLIENT":
+      case "CLIENT":
+        return "Cliente";
       default:
         return "Usuário";
     }

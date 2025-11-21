@@ -6,6 +6,9 @@ const METADATA_STORAGE_KEY = 'app_metadata_cache';
 const METADATA_VERSION_KEY = 'app_metadata_version';
 const METADATA_CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 horas em ms
 
+// Detecta se está em desenvolvimento
+const isDevelopment = import.meta.env.DEV || import.meta.env.MODE === 'development';
+
 interface CachedMetadata {
   data: MetadataResponse;
   timestamp: number;
@@ -18,12 +21,28 @@ class MetadataService {
 
   /**
    * Carrega todos os metadados do backend via /api/metadata
-   * Usa cache do localStorage se disponível e válido
+   * Em desenvolvimento: sempre busca do backend (sem cache)
+   * Em produção: usa cache do localStorage se disponível e válido
    */
   async loadMetadata(): Promise<void> {
     if (this.isLoaded) return;
 
     try {
+      // Em desenvolvimento, sempre busca do backend (ignora cache)
+      if (isDevelopment) {
+        console.log('🔄 [DEV MODE] MetadataService: Sempre carregando do backend (cache desabilitado)...');
+        const response = await api.get<MetadataResponse>('/api/metadata');
+        const metadata = response.data;
+
+        // Armazena no cache em memória (mas não no localStorage)
+        this.populateCache(metadata);
+
+        this.isLoaded = true;
+        console.log('✅ [DEV MODE] Metadata carregada do backend (sem cache)');
+        return;
+      }
+
+      // Em produção, usa o comportamento com cache
       // Tentar carregar do localStorage primeiro
       const cachedMetadata = this.loadFromLocalStorage();
       
@@ -57,13 +76,15 @@ class MetadataService {
     } catch (error) {
       console.error('❌ Error loading metadata:', error);
       
-      // Se falhar, tenta usar cache mesmo que expirado
-      const cachedMetadata = this.loadFromLocalStorage(true);
-      if (cachedMetadata) {
-        console.log('⚠️ Usando cache expirado como fallback');
-        this.populateCache(cachedMetadata);
-        this.isLoaded = true;
-        return;
+      // Se falhar, tenta usar cache mesmo que expirado (apenas em produção)
+      if (!isDevelopment) {
+        const cachedMetadata = this.loadFromLocalStorage(true);
+        if (cachedMetadata) {
+          console.log('⚠️ Usando cache expirado como fallback');
+          this.populateCache(cachedMetadata);
+          this.isLoaded = true;
+          return;
+        }
       }
       
       throw error;

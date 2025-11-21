@@ -23,12 +23,56 @@ export default function LoginForm() {
     setError("");
     setSuccess("");
     try {
-      const response = await api.post<{ token: string }>("/auth/login", {
+      const response = await api.post<{
+        token: string;
+        user?: {
+          userId?: string;
+          username?: string;
+          name?: string;
+          role?: string;
+          organizationId?: string;
+          organizationName?: string;
+          latitude?: number;
+          longitude?: number;
+          address?: string;
+        };
+      }>("/auth/login", {
         username: data.username,
         password: data.password,
       });
       if (response.data && response.data.token) {
         localStorage.setItem("authToken", response.data.token);
+        
+        // Salva informações adicionais do usuário
+        if (response.data.user) {
+          if (response.data.user.userId) {
+            localStorage.setItem("userId", response.data.user.userId);
+          }
+          if (response.data.user.name) {
+            localStorage.setItem("userName", response.data.user.name);
+          }
+          if (response.data.user.username) {
+            localStorage.setItem("userEmail", response.data.user.username);
+          }
+          if (response.data.user.role) {
+            localStorage.setItem("userRole", response.data.user.role);
+          }
+          if (response.data.user.organizationId) {
+            localStorage.setItem("organizationId", response.data.user.organizationId);
+          }
+          // 🗺️ Salva coordenadas do endereço do usuário (latitude/longitude)
+          if (response.data.user.latitude !== undefined) {
+            localStorage.setItem("latitude", String(response.data.user.latitude));
+          }
+          if (response.data.user.longitude !== undefined) {
+            localStorage.setItem("longitude", String(response.data.user.longitude));
+          }
+          // 📍 Salva endereço completo do usuário
+          if (response.data.user.address) {
+            localStorage.setItem("userAddress", response.data.user.address);
+          }
+        }
+        
         setSuccess("Login realizado com sucesso!");
         setTimeout(() => {
           navigate("/");
@@ -45,7 +89,7 @@ export default function LoginForm() {
         const response = (
           err as {
             response?: {
-              data?: {
+              data?: string | {
                 fieldErrors?: Record<string, string>;
                 message?: string;
                 error?: string;
@@ -55,21 +99,42 @@ export default function LoginForm() {
         ).response;
 
         if (response?.data) {
-          const { fieldErrors, message, error } = response.data;
+          // Se data é uma string (texto plano)
+          if (typeof response.data === 'string') {
+            if (response.data.toLowerCase().includes("invalid username or password")) {
+              errorMessage = "Usuário ou senha incorretos";
+            } else {
+              errorMessage = response.data;
+            }
+          }
+          // Se data é um objeto
+          else {
+            const { fieldErrors, message, error } = response.data;
 
-          // Prioridade 1: fieldErrors - erros específicos de cada campo
-          if (fieldErrors && Object.keys(fieldErrors).length > 0) {
-            errorMessage = Object.entries(fieldErrors)
-              .map(([field, msg]) => `${field}: ${msg}`)
-              .join("; ");
-          }
-          // Prioridade 2: message - mensagem geral
-          else if (message) {
-            errorMessage = message;
-          }
-          // Prioridade 3: error
-          else if (error) {
-            errorMessage = error;
+            // Prioridade 1: fieldErrors - erros específicos de cada campo
+            if (fieldErrors && Object.keys(fieldErrors).length > 0) {
+              errorMessage = Object.entries(fieldErrors)
+                .map(([field, msg]) => `${field}: ${msg}`)
+                .join("; ");
+            }
+            // Prioridade 2: message - mensagem geral
+            else if (message) {
+              // Traduz mensagens específicas do backend
+              if (message.toLowerCase().includes("invalid username or password")) {
+                errorMessage = "Usuário ou senha incorretos";
+              } else {
+                errorMessage = message;
+              }
+            }
+            // Prioridade 3: error
+            else if (error) {
+              // Traduz mensagens específicas do backend
+              if (error.toLowerCase().includes("invalid username or password")) {
+                errorMessage = "Usuário ou senha incorretos";
+              } else {
+                errorMessage = error;
+              }
+            }
           }
         }
       }
@@ -97,15 +162,28 @@ export default function LoginForm() {
       }}
       onSubmit={handleSubmit(onSubmit)}
     >
-      <FormField label="E-mail" required error={errors.username?.message}>
+      <FormField label="Email ou CPF" required error={errors.username?.message}>
         <FormInput
-          type="email"
-          placeholder="Digite seu e-mail"
+          type="text"
+          placeholder="Digite seu email ou CPF"
           {...register("username", {
-            required: "E-mail é obrigatório",
-            pattern: {
-              value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-              message: "E-mail inválido",
+            required: "Email ou CPF é obrigatório",
+            validate: (value) => {
+              // Remove espaços em branco
+              const cleanValue = value.trim();
+              
+              // Verifica se é email
+              const isEmail = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(cleanValue);
+              
+              // Verifica se é CPF (11 dígitos, com ou sem formatação)
+              const cpfDigits = cleanValue.replace(/\D/g, '');
+              const isCPF = cpfDigits.length === 11 && /^\d{11}$/.test(cpfDigits);
+              
+              if (!isEmail && !isCPF) {
+                return "Email ou CPF inválido";
+              }
+              
+              return true;
             },
           })}
         />
