@@ -31,6 +31,11 @@ jobs:
           context: .
           push: true
           tags: ghcr.io/fabio1974/mvt-fe:latest
+          build-args: |
+            VITE_API_URL=https://mvt-events-api.onrender.com/api
+            VITE_GOOGLE_MAPS_API_KEY=${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}
+            VITE_DEBUG_MODE=false
+            VITE_ENVIRONMENT=production
 
   update-render:
     needs: build-and-push
