@@ -58,6 +58,12 @@ export const AddressMapPicker: React.FC<AddressMapPickerProps> = ({
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // 🐛 Debug: Log da API key (apenas para verificação)
+  React.useEffect(() => {
+    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    console.log("🗺️ Google Maps API Key:", apiKey ? `${apiKey.substring(0, 10)}...` : "❌ NÃO ENCONTRADA");
+  }, []);
+
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "",
     libraries,
@@ -256,7 +262,17 @@ export const AddressMapPicker: React.FC<AddressMapPickerProps> = ({
           disableDefaultUI: false,
           zoomControl: true,
           streetViewControl: false,
-          mapTypeControl: false,
+          mapTypeControl: true,
+          mapTypeControlOptions: {
+            style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+            position: google.maps.ControlPosition.TOP_RIGHT,
+            mapTypeIds: [
+              google.maps.MapTypeId.ROADMAP,
+              google.maps.MapTypeId.SATELLITE,
+              google.maps.MapTypeId.HYBRID,
+              google.maps.MapTypeId.TERRAIN,
+            ],
+          },
           fullscreenControl: true,
         }}
       >
