@@ -12,7 +12,7 @@ services:
       - key: VITE_STRIPE_PUBLIC_KEY
         sync: false # Será configurado manualmente no dashboard
       - key: VITE_GOOGLE_MAPS_API_KEY
-        sync: false # Será configurado manualmente no dashboard
+        value: AIzaSyBpJ-PEX_eQunOFbDXKLC3Xr3q69xoROmU
       - key: VITE_DEBUG_MODE
         value: false
       - key: VITE_ENVIRONMENT
