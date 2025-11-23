@@ -6,7 +6,6 @@ export default function AuthTabs() {
   const [activeTab, setActiveTab] = useState<"login" | "register">("login");
   return (
     <div className="auth-panel">
-      <h2>Acessar conta na Zapi10</h2>
       <div className="auth-tabs">
         <button
           className={`auth-tab ${activeTab === "login" ? "active" : ""}`}

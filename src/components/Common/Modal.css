@@ -94,7 +94,7 @@
 }
 
 .modal-body {
-  padding: 24px;
+  padding: 10px;
   overflow-y: auto;
   flex: 1;
 }
@@ -125,6 +125,6 @@
   }
 
   .modal-body {
-    padding: 20px;
+    padding: 10px;
   }
 }

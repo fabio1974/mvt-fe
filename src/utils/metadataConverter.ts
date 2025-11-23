@@ -99,7 +99,19 @@ function convertFieldToFormField(field: FieldMetadata): FormFieldMetadata | null
 
   // Se o campo tem options, é um select (enum)
   const hasOptions = field.options && field.options.length > 0;
-  const mappedType = hasOptions ? 'select' : mapFieldType(field.type);
+  
+  // ✅ Detecta relacionamentos MANY_TO_ONE (ex: delivery.courier -> user)
+  // Backend envia como type: "string" mas com relationship.type = "MANY_TO_ONE"
+  const isManyToOneRelationship = 
+    field.relationship && 
+    field.relationship.type === 'MANY_TO_ONE';
+  
+  // Se é MANY_TO_ONE, força o tipo para 'entity'
+  const mappedType = hasOptions 
+    ? 'select' 
+    : isManyToOneRelationship 
+      ? 'entity' 
+      : mapFieldType(field.type);
 
   const formField: FormFieldMetadata = {
     name: field.name,
@@ -134,6 +146,19 @@ function convertFieldToFormField(field: FieldMetadata): FormFieldMetadata | null
   // Adiciona opções para enums/selects
   if (hasOptions) {
     formField.options = field.options;
+  }
+
+  // ✅ Adiciona entityConfig para campos do tipo 'entity'
+  if (mappedType === 'entity' && field.relationship) {
+    const relationship = field.relationship as any;
+    formField.entityConfig = {
+      entityName: relationship.targetEntity || field.name,
+      endpoint: relationship.targetEndpoint || `/api/${relationship.targetEntity || field.name}s`,
+      labelField: relationship.labelField || 'name',
+      valueField: 'id',
+      renderAs: 'typeahead' as const, // Usa typeahead por padrão para melhor UX
+    };
+    console.log(`✅ [metadataConverter] EntityConfig criado para campo: ${field.name}`, formField.entityConfig);
   }
 
   // 🧮 Adiciona campos computados
@@ -201,10 +226,26 @@ export function convertEntityMetadataToFormMetadata(
         return;
       }
       
+      // Log detalhado para campos do tipo 'entity'
+      if (field.type === 'entity') {
+        console.log(`🔍 [convertEntityMetadataToFormMetadata] Campo entity encontrado:`, {
+          name: field.name,
+          label: field.label,
+          type: field.type,
+          visible: field.visible,
+          readonly: field.readonly,
+          required: field.required,
+          relationship: field.relationship
+        });
+      }
+      
       // Campos normais (não nested)
       const formField = convertFieldToFormField(field);
       if (formField) {
+        console.log(`✅ [convertEntityMetadataToFormMetadata] Campo "${field.name}" adicionado aos basicFields`);
         basicFields.push(formField);
+      } else {
+        console.warn(`⚠️ [convertEntityMetadataToFormMetadata] Campo "${field.name}" retornou NULL do conversor!`);
       }
     }
   });

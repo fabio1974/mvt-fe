@@ -153,7 +153,7 @@ export default function OrganizationForm({
           logoUrl,
         });
 
-        setSuccess("Organização atualizada com sucesso!");
+        setSuccess("Grupo atualizado com sucesso!");
         // Após salvar, volta para modo visualização
         setIsEditMode(false);
       } else {
@@ -187,7 +187,7 @@ export default function OrganizationForm({
           localStorage.setItem("organizationId", newOrgId.toString());
         }
 
-        setSuccess("Organização cadastrada com sucesso!");
+        setSuccess("Grupo cadastrado com sucesso!");
         // Após cadastrar, desabilita campos e muda para modo visualização
         setIsEditMode(false);
       }
@@ -196,8 +196,8 @@ export default function OrganizationForm({
 
       // Extrair mensagem de erro do backend
       let errorMessage = organizationId
-        ? "Erro ao atualizar organização."
-        : "Erro ao cadastrar organização.";
+        ? "Erro ao atualizar grupo."
+        : "Erro ao cadastrar grupo.";
 
       if (err && typeof err === "object" && "response" in err) {
         const response = (

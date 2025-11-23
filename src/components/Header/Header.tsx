@@ -230,9 +230,6 @@ export default function Header({
             <span className="brand-sub">Mobilidade com propósito social</span>
           </div>
         </a>
-        <nav className={`nav modern-nav ${menuOpen ? "open" : ""}`}>
-          <a href="/contato">Contato</a>
-        </nav>
         <div
           style={{
             display: "flex",
@@ -394,9 +391,6 @@ export default function Header({
               </button>
             ) : (
               <>
-                <a href="/contato" onClick={() => setMenuOpen(false)}>
-                  Contato
-                </a>
                 <button
                   className="btn header-ghost"
                   onClick={() => {

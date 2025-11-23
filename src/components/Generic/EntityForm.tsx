@@ -27,7 +27,7 @@ import { getAutoMask, unmaskFormData } from "../../utils/masks";
 import { ArrayField } from "./ArrayField";
 import { CityTypeahead } from "../Common/CityTypeahead";
 import { AddressFieldWithMap } from "../Common/AddressFieldWithMap";
-import { FiSave, FiX, FiAlertCircle, FiArrowLeft } from "react-icons/fi";
+import { FiSave, FiX, FiAlertCircle } from "react-icons/fi";
 import "../../highlighted-computed-field.css";
 
 interface EntityFormProps {
@@ -49,6 +49,10 @@ interface EntityFormProps {
   hideCancelButton?: boolean;
   /** Esconde campos de array (relacionamentos 1:N) */
   hideArrayFields?: boolean;
+  /** Lista de nomes de campos que devem ficar readonly */
+  readonlyFields?: string[];
+  /** Lista de nomes de campos que devem ficar escondidos (hidden) */
+  hiddenFields?: string[];
 }
 
 /**
@@ -72,6 +76,8 @@ const EntityForm: React.FC<EntityFormProps> = ({
   mode,
   hideCancelButton = false,
   hideArrayFields = false,
+  readonlyFields = [],
+  hiddenFields = [],
 }) => {
   const navigate = useNavigate();
   const { organizationId } = useOrganization();
@@ -105,6 +111,9 @@ const EntityForm: React.FC<EntityFormProps> = ({
         defaultValues[field.name] = field.defaultValue;
       } else if (field.type === "array") {
         defaultValues[field.name] = [];
+      } else if (field.type === "boolean") {
+        // ✅ Campos boolean sempre têm valor padrão false (nunca undefined/null)
+        defaultValues[field.name] = false;
       }
     });
 
@@ -144,6 +153,14 @@ const EntityForm: React.FC<EntityFormProps> = ({
         }
       });
       
+      // 🚚 Para delivery: se toAddress não estiver preenchido, copia fromAddress
+      // Isso garante que o endereço de destino seja igual ao de origem (do usuário logado)
+      if (metadata.entityName === 'delivery' && normalizedValues.fromAddress && !normalizedValues.toAddress) {
+        normalizedValues.toAddress = normalizedValues.fromAddress;
+        normalizedValues.toLatitude = normalizedValues.fromLatitude;
+        normalizedValues.toLongitude = normalizedValues.fromLongitude;
+      }
+      
       // Atualiza apenas os campos que vieram em initialValues, preservando os existentes
       setFormData((prev) => ({
         ...prev,
@@ -152,7 +169,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
       
       setInitialValuesApplied(true);
     }
-  }, [initialValues, entityId, initialValuesApplied]);
+  }, [initialValues, entityId, initialValuesApplied, metadata.entityName]);
 
   // Limpa erros quando o formulário é montado ou quando muda de entidade
   useEffect(() => {
@@ -222,8 +239,14 @@ const EntityForm: React.FC<EntityFormProps> = ({
           );
         }
 
-        // ✅ CORREÇÃO GENÉRICA: Converte TODOS os campos que são objetos com {id} para strings
-        // Isso evita erro "Objects are not valid as a React child"
+        // ✅ CORREÇÃO GENÉRICA: Converte campos que são objetos com {id} para formato adequado
+        // Mas PRESERVA objetos completos para campos do tipo entity com renderAs="typeahead"
+        
+        // Obter todos os campos do metadata
+        const allFieldsInMetadata =
+          metadata.originalFields ||
+          metadata.sections.flatMap((section) => section.fields);
+        
         Object.keys(data).forEach((key) => {
           const value = data[key];
           if (
@@ -232,14 +255,31 @@ const EntityForm: React.FC<EntityFormProps> = ({
             !Array.isArray(value) &&
             "id" in value
           ) {
-            // Se é um objeto com id, converte para string do ID ou do nome
+            // Verifica se é um campo entity com typeahead no metadata
+            const field = allFieldsInMetadata.find((f: any) => f.name === key);
+            const isTypeaheadField =
+              field &&
+              field.type === "entity" &&
+              field.entityConfig?.renderAs === "typeahead";
+
             const obj = value as { id: number | string; name?: string };
-            console.log(
-              `🔄 Convertendo campo "${key}" de objeto para valor primitivo:`,
-              obj
-            );
-            // Prioriza usar o nome se disponível, senão usa o ID
-            data[key] = obj.name || String(obj.id);
+
+            if (isTypeaheadField) {
+              // Para typeahead, MANTÉM o objeto completo {id, name}
+              console.log(
+                `🔄 Preservando objeto para typeahead "${key}":`,
+                obj
+              );
+              data[key] = obj; // Mantém objeto
+            } else {
+              // Para outros campos, converte para ID (valor primitivo)
+              console.log(
+                `🔄 Convertendo campo "${key}" de objeto para ID:`,
+                obj.id
+              );
+              data[key] = String(obj.id); // USA O ID, NÃO O NOME!
+            }
+
             // Salva o ID em um campo separado se não existir
             const idFieldName = key.endsWith("Id") ? key : `${key}Id`;
             if (!data[idFieldName]) {
@@ -298,6 +338,109 @@ const EntityForm: React.FC<EntityFormProps> = ({
     metadata.sections,
   ]);
 
+  // 🗺️ Calcula distância automaticamente quando origem e destino são definidos
+  useEffect(() => {
+    // Lista todos os campos de coordenadas disponíveis no formData
+    const coordFields = Object.keys(formData).filter(k => 
+      k.toLowerCase().includes('latitude') || 
+      k.toLowerCase().includes('longitude')
+    );
+
+    // Busca dinamicamente os campos de latitude/longitude de origem e destino
+    // Suporta padrões: from*, origin*, pickup*, source*
+    const fromLatFields = coordFields.filter(k => 
+      (k.toLowerCase().includes('from') || 
+       k.toLowerCase().includes('origin') || 
+       k.toLowerCase().includes('pickup') ||
+       k.toLowerCase().includes('source')) &&
+      k.toLowerCase().includes('lat')
+    );
+    
+    const fromLngFields = coordFields.filter(k => 
+      (k.toLowerCase().includes('from') || 
+       k.toLowerCase().includes('origin') || 
+       k.toLowerCase().includes('pickup') ||
+       k.toLowerCase().includes('source')) &&
+      (k.toLowerCase().includes('lng') || k.toLowerCase().includes('long'))
+    );
+    
+    // Suporta padrões: to*, dest*, delivery*, target*
+    const toLatFields = coordFields.filter(k => 
+      (k.toLowerCase().includes('to') || 
+       k.toLowerCase().includes('dest') || 
+       k.toLowerCase().includes('delivery') ||
+       k.toLowerCase().includes('target')) &&
+      k.toLowerCase().includes('lat')
+    );
+    
+    const toLngFields = coordFields.filter(k => 
+      (k.toLowerCase().includes('to') || 
+       k.toLowerCase().includes('dest') || 
+       k.toLowerCase().includes('delivery') ||
+       k.toLowerCase().includes('target')) &&
+      (k.toLowerCase().includes('lng') || k.toLowerCase().includes('long'))
+    );
+
+    const fromLat = fromLatFields.length > 0 ? formData[fromLatFields[0]] : null;
+    const fromLng = fromLngFields.length > 0 ? formData[fromLngFields[0]] : null;
+    const toLat = toLatFields.length > 0 ? formData[toLatFields[0]] : null;
+    const toLng = toLngFields.length > 0 ? formData[toLngFields[0]] : null;
+
+    // Verifica se todos os campos de coordenadas estão preenchidos
+    if (!fromLat || !fromLng || !toLat || !toLng) {
+      return;
+    }
+
+    // Verifica se tem campo de distância no metadata
+    const allFields = metadata.sections.flatMap((section) => section.fields);
+    const distanceField = allFields.find(
+      (field) => 
+        field.name === "distance" || 
+        field.name === "distancia" || 
+        field.name === "distanceKm" ||
+        field.name === "distanceInKm"
+    );
+
+    if (!distanceField) {
+      return;
+    }
+
+    const calculateDistance = () => {
+      try {
+        // Usa a fórmula de Haversine para calcular distância em linha reta
+        // Se quiser distância por estrada, precisa usar Distance Matrix API
+        const R = 6371; // Raio da Terra em km
+        const dLat = ((Number(toLat) - Number(fromLat)) * Math.PI) / 180;
+        const dLon = ((Number(toLng) - Number(fromLng)) * Math.PI) / 180;
+        const a =
+          Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+          Math.cos((Number(fromLat) * Math.PI) / 180) *
+            Math.cos((Number(toLat) * Math.PI) / 180) *
+            Math.sin(dLon / 2) *
+            Math.sin(dLon / 2);
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const distance = R * c; // Distância em km
+
+        // Atualiza o campo distance no formData
+        setFormData((prev) => ({
+          ...prev,
+          [distanceField.name]: Number(distance.toFixed(2)),
+        }));
+      } catch (error) {
+        console.error("❌ Erro ao calcular distância:", error);
+      }
+    };
+
+    calculateDistance();
+  }, [
+    // Observa mudanças em qualquer campo do formData que contenha coordenadas
+    ...Object.keys(formData).filter(k => 
+      k.toLowerCase().includes('latitude') || 
+      k.toLowerCase().includes('longitude')
+    ).map(k => formData[k]),
+    metadata.sections,
+  ]);
+
   // Atualiza valor de um campo
   const handleChange = (fieldName: string, value: unknown) => {
     setFormData((prev) => {
@@ -320,6 +463,11 @@ const EntityForm: React.FC<EntityFormProps> = ({
     field: FormFieldMetadata,
     value: unknown
   ): string | null => {
+    // ✅ Campos boolean nunca são obrigatórios (false é um valor válido)
+    if (field.type === "boolean") {
+      return null;
+    }
+
     // Campo obrigatório
     if (field.required && (!value || value === "")) {
       return `${field.label} é obrigatório`;
@@ -385,10 +533,26 @@ const EntityForm: React.FC<EntityFormProps> = ({
       section.fields.forEach((field) => {
         const error = validateField(field, formData[field.name]);
         if (error) {
+          console.error(`❌ Validação falhou para campo "${field.name}":`, {
+            error,
+            value: formData[field.name],
+            field: {
+              name: field.name,
+              type: field.type,
+              required: field.required,
+              validation: field.validation
+            }
+          });
           newErrors[field.name] = error;
         }
       });
     });
+
+    if (Object.keys(newErrors).length > 0) {
+      console.error(`❌ Total de ${Object.keys(newErrors).length} erro(s) de validação:`, newErrors);
+    } else {
+      console.log("✅ Validação do formulário passou!");
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -403,6 +567,45 @@ const EntityForm: React.FC<EntityFormProps> = ({
       return;
     }
 
+    // ⚠️ Validação específica para Delivery: não permitir distância zero ou muito pequena
+    if (metadata.endpoint === '/api/deliveries') {
+      // Busca dinamicamente o campo de distância (pode ser "distance", "distanceKm", etc)
+      const allFields = metadata.sections.flatMap((section) => section.fields);
+      const distanceField = allFields.find(
+        (field) => 
+          field.name === "distance" || 
+          field.name === "distancia" || 
+          field.name === "distanceKm" ||
+          field.name === "distanceInKm"
+      );
+      
+      const distanceFieldName = distanceField?.name || "distance";
+      const distance = formData[distanceFieldName];
+      const distanceNumber = Number(distance);
+      
+      console.log('🔍 Validação de distância:', {
+        distanceFieldName,
+        distance,
+        distanceNumber,
+        tipo: typeof distance,
+        isZero: distanceNumber === 0,
+        isTooSmall: distanceNumber < 0.1,
+        isNaN: isNaN(distanceNumber),
+        formDataKeys: Object.keys(formData).filter(k => k.toLowerCase().includes('dist'))
+      });
+      
+      // ✅ Valida se a distância é zero ou muito pequena (< 100 metros / 0.1 km)
+      // Isso captura casos onde origem e destino são praticamente o mesmo local
+      if (distance !== undefined && distance !== null && !isNaN(distanceNumber) && distanceNumber < 0.1) {
+        showToast("Não é possível criar uma entrega com origem e destino no mesmo local. Por favor, selecione um endereço de destino diferente.", "error");
+        setErrors({
+          ...errors,
+          [distanceFieldName]: "A distância mínima deve ser de pelo menos 100 metros"
+        });
+        return;
+      }
+    }
+
     try {
       setLoading(true);
 
@@ -413,12 +616,6 @@ const EntityForm: React.FC<EntityFormProps> = ({
       const allFields =
         metadata.originalFields ||
         metadata.sections.flatMap((section) => section.fields);
-
-      console.log("🔍 [EntityForm Submit] Processando payload:", {
-        hasOriginalFields: !!metadata.originalFields,
-        allFieldsCount: allFields.length,
-        formDataKeys: Object.keys(formData),
-      });
 
       // ✅ Converte campos de relacionamento para formato {id: number}
       // Backend espera: { organization: { id: 6 }, city: { id: 964 } }
@@ -458,8 +655,6 @@ const EntityForm: React.FC<EntityFormProps> = ({
 
       // ✅ Remove máscaras de CPF, CNPJ, telefone, CEP antes de enviar ao backend
       const unmaskedData = unmaskFormData(finalData);
-
-      console.log("📤 [EntityForm Submit] Payload final:", unmaskedData);
 
       const method = entityId ? "put" : "post";
       const url = entityId
@@ -561,7 +756,6 @@ const EntityForm: React.FC<EntityFormProps> = ({
       for (const latField of latitudeFields) {
         if (Object.prototype.hasOwnProperty.call(formData, latField) || metadata.sections.some(s => s.fields.some(f => f.name === latField))) {
           handleChange(latField, latitude);
-          console.log(`🗺️ Atualizando ${latField} = ${latitude}`);
           break;
         }
       }
@@ -570,13 +764,10 @@ const EntityForm: React.FC<EntityFormProps> = ({
       for (const lngField of longitudeFields) {
         if (Object.prototype.hasOwnProperty.call(formData, lngField) || metadata.sections.some(s => s.fields.some(f => f.name === lngField))) {
           handleChange(lngField, longitude);
-          console.log(`🗺️ Atualizando ${lngField} = ${longitude}`);
           break;
         }
       }
-    };
-
-    // 🏙️ Busca cidade no banco de dados e atualiza campo city
+    };    // 🏙️ Busca cidade no banco de dados e atualiza campo city
     const handleAddressDataChange = async (addressData: { city: string; state: string }) => {
       // Verifica se existe um campo "city" ou similar no formulário
       const cityFields = ['city', 'cityId', 'cidade'];
@@ -643,6 +834,19 @@ const EntityForm: React.FC<EntityFormProps> = ({
     const error = errors[field.name];
     const stringValue = String(value || "");
 
+    // 🔒 Verifica se o campo deve ser readonly (por configuração prop ou regra de negócio)
+    const isFieldReadonly = readonlyFields.includes(field.name) || 
+                            field.name === 'role' || // Campo "role" sempre readonly
+                            field.name === 'perfil';  // Campo "perfil" sempre readonly (se houver)
+    
+    // 🙈 Verifica se o campo deve ficar escondido (hidden)
+    const isFieldHidden = hiddenFields.includes(field.name);
+    
+    // Se o campo está hidden, não renderiza mas mantém o valor no formData
+    if (isFieldHidden) {
+      return null;
+    }
+
     // Verifica condição showIf
     if (field.showIf) {
       try {
@@ -663,7 +867,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
         <FormField label={field.label} required={field.required} error={error}>
           <FormInput
             type="text"
-            placeholder={field.placeholder}
+            placeholder=""
             value={stringValue}
             onChange={() => {}} // No-op, field is computed
             disabled={true}
@@ -678,21 +882,9 @@ const EntityForm: React.FC<EntityFormProps> = ({
       case "text":
       case "email":
       case "password": {
-        // �️ Se é campo de endereço, renderiza com Google Maps
+        // 🗺️ Se é campo de endereço, renderiza com Google Maps
         if (field.type === "text" && isAddressField(field.name)) {
-          // Tenta encontrar campos de latitude/longitude correspondentes
-          let initialLat: number | undefined;
-          let initialLng: number | undefined;
-          
-          // Padrões comuns: originAddress -> originLatitude/originLongitude
-          const fieldBaseName = field.name.replace(/Address$/i, '');
-          const latFieldName = `${fieldBaseName}Latitude`;
-          const lngFieldName = `${fieldBaseName}Longitude`;
-          
-          if (formData[latFieldName] !== undefined && formData[lngFieldName] !== undefined) {
-            initialLat = Number(formData[latFieldName]);
-            initialLng = Number(formData[lngFieldName]);
-          }
+          const { lat: initialLat, lng: initialLng } = getInitialCoordinates(field.name);
           
           fieldContent = (
             <FormField
@@ -703,8 +895,8 @@ const EntityForm: React.FC<EntityFormProps> = ({
               <AddressFieldWithMap
                 value={stringValue}
                 onChange={(value) => handleChange(field.name, value)}
-                placeholder={field.placeholder}
-                disabled={field.disabled || field.readonly || loading || readonly}
+                placeholder={readonly || field.readonly || isFieldReadonly ? "" : field.placeholder}
+                disabled={field.disabled || field.readonly || isFieldReadonly || loading || readonly}
                 required={field.required}
                 label={field.label}
                 fieldName={field.name}
@@ -732,9 +924,9 @@ const EntityForm: React.FC<EntityFormProps> = ({
                 mask={autoMask}
                 value={stringValue}
                 onChange={(e) => handleChange(field.name, e.target.value)}
-                placeholder={field.placeholder}
+                placeholder={readonly || field.readonly || isFieldReadonly ? "" : field.placeholder}
                 disabled={
-                  field.disabled || field.readonly || loading || readonly
+                  field.disabled || field.readonly || isFieldReadonly || loading || readonly
                 }
                 required={field.required}
                 readOnly={readonly || field.readonly}
@@ -742,11 +934,11 @@ const EntityForm: React.FC<EntityFormProps> = ({
             ) : (
               <FormInput
                 type={field.type}
-                placeholder={field.placeholder}
+                placeholder={readonly || field.readonly || isFieldReadonly ? "" : field.placeholder}
                 value={stringValue}
                 onChange={(e) => handleChange(field.name, e.target.value)}
                 disabled={
-                  field.disabled || field.readonly || loading || readonly
+                  field.disabled || field.readonly || isFieldReadonly || loading || readonly
                 }
                 required={field.required}
               />
@@ -765,12 +957,12 @@ const EntityForm: React.FC<EntityFormProps> = ({
           >
             <FormInput
               type="number"
-              placeholder={field.placeholder}
+              placeholder={readonly || field.readonly || isFieldReadonly ? "" : field.placeholder}
               min={field.validation?.min}
               max={field.validation?.max}
               value={stringValue}
               onChange={(e) => handleChange(field.name, e.target.value)}
-              disabled={field.disabled || field.readonly || loading || readonly}
+              disabled={field.disabled || field.readonly || isFieldReadonly || loading || readonly}
               required={field.required}
             />
           </FormField>
@@ -778,30 +970,9 @@ const EntityForm: React.FC<EntityFormProps> = ({
         break;
 
       case "address":
-        fieldContent = (
-          <FormField
-            label={field.label}
-            required={field.required}
-            error={error}
-          >
-            <AddressFieldWithMap
-              value={stringValue}
-              onChange={(value) => handleChange(field.name, value)}
-              placeholder={field.placeholder}
-              disabled={field.disabled || field.readonly || loading || readonly}
-              required={field.required}
-              label={field.label}
-              fieldName={field.name}
-              onCoordinatesChange={(lat, lng) => handleAddressCoordinatesChange(field.name, lat, lng)}
-              onAddressDataChange={handleAddressDataChange}
-            />
-          </FormField>
-        );
-        break;
-
-      case "textarea":
-        // 🗺️ Se é campo de endereço, renderiza com Google Maps
-        if (isAddressField(field.name)) {
+        {
+          const { lat: initialLat, lng: initialLng } = getInitialCoordinates(field.name);
+          
           fieldContent = (
             <FormField
               label={field.label}
@@ -811,13 +982,43 @@ const EntityForm: React.FC<EntityFormProps> = ({
               <AddressFieldWithMap
                 value={stringValue}
                 onChange={(value) => handleChange(field.name, value)}
-                placeholder={field.placeholder}
-                disabled={field.disabled || field.readonly || loading || readonly}
+                placeholder={readonly ? "" : field.placeholder}
+                disabled={field.disabled || field.readonly || isFieldReadonly || loading || readonly}
+                required={field.required}
+                label={field.label}
+                fieldName={field.name}
+                onCoordinatesChange={(lat, lng) => handleAddressCoordinatesChange(field.name, lat, lng)}
+                onAddressDataChange={handleAddressDataChange}
+                initialLatitude={initialLat}
+                initialLongitude={initialLng}
+              />
+            </FormField>
+          );
+        }
+        break;
+
+      case "textarea":
+        // 🗺️ Se é campo de endereço, renderiza com Google Maps
+        if (isAddressField(field.name)) {
+          const { lat: initialLat, lng: initialLng } = getInitialCoordinates(field.name);
+          
+          fieldContent = (
+            <FormField
+              label={field.label}
+              required={field.required}
+              error={error}
+            >
+              <AddressFieldWithMap
+                value={stringValue}
+                onChange={(value) => handleChange(field.name, value)}
+                placeholder={readonly || field.readonly || isFieldReadonly ? "" : field.placeholder}
+                disabled={field.disabled || field.readonly || isFieldReadonly || loading || readonly}
                 required={field.required}
                 fieldName={field.name}
                 onCoordinatesChange={(lat, lng) => handleAddressCoordinatesChange(field.name, lat, lng)}
                 onAddressDataChange={handleAddressDataChange}
-                label={field.label}
+                initialLatitude={initialLat}
+                initialLongitude={initialLng}
               />
             </FormField>
           );
@@ -831,10 +1032,10 @@ const EntityForm: React.FC<EntityFormProps> = ({
             error={error}
           >
             <FormTextarea
-              placeholder={field.placeholder}
+              placeholder={readonly || field.readonly || isFieldReadonly ? "" : field.placeholder}
               value={stringValue}
               onChange={(e) => handleChange(field.name, e.target.value)}
-              disabled={field.disabled || field.readonly || loading || readonly}
+              disabled={field.disabled || field.readonly || isFieldReadonly || loading || readonly}
               required={field.required}
             />
           </FormField>
@@ -881,12 +1082,27 @@ const EntityForm: React.FC<EntityFormProps> = ({
           field.label?.toLowerCase().includes("nascimento") ||
           field.label?.toLowerCase().includes("birth");
 
-        // Detecta automaticamente se deve mostrar hora/minuto
-        // Baseado no formato recebido do backend (ex: "dd/MM/yyyy HH:mm" = com hora)
-        const shouldShowTime =
-          field.format?.includes("HH") || field.format?.includes("mm") || false;
-        const dateFormat =
-          field.format || (shouldShowTime ? "dd/MM/yyyy HH:mm" : "dd/MM/yyyy");
+        // 🕐 Detecta automaticamente se deve mostrar hora/minuto
+        // Métodos de detecção (em ordem de prioridade):
+        // 1. Campo 'dataType' no metadata (datetime vs date) - usado pelo backend
+        // 2. Campo 'javaType' no metadata (LocalDateTime vs LocalDate)
+        // 3. Formato especificado (field.format) contém HH ou mm
+        // 4. Nome do campo contém 'time', 'datetime', 'hora', 'At' (ex: createdAt, scheduledPickupAt)
+        // 5. Padrão: apenas data (LocalDate)
+        
+        const dataType = (field as any).dataType?.toLowerCase() || "";
+        const hasTimeInDataType = dataType === "datetime" || dataType === "timestamp";
+        const javaType = (field as any).javaType || "";
+        const hasTimeInJavaType = javaType.includes("LocalDateTime") || javaType.includes("Timestamp") || javaType.includes("ZonedDateTime");
+        const hasTimeInFormat = field.format?.includes("HH") || field.format?.includes("mm") || field.format?.includes("hh");
+        const hasTimeInName = field.name.toLowerCase().includes("time") || 
+                             field.name.toLowerCase().includes("datetime") || 
+                             field.name.toLowerCase().includes("hora") ||
+                             field.name.endsWith("At"); // Detecta padrão createdAt, updatedAt, scheduledPickupAt, etc
+        
+        const shouldShowTime = hasTimeInDataType || hasTimeInJavaType || hasTimeInFormat || hasTimeInName;
+        
+        const dateFormat = field.format || (shouldShowTime ? "dd/MM/yyyy HH:mm" : "dd/MM/yyyy");
 
         fieldContent = (
           <FormField
@@ -901,8 +1117,8 @@ const EntityForm: React.FC<EntityFormProps> = ({
               }
               showTimeSelect={shouldShowTime}
               dateFormat={dateFormat}
-              placeholder={field.placeholder}
-              disabled={field.disabled || field.readonly || loading || readonly}
+              placeholder={readonly || field.readonly || isFieldReadonly ? "" : field.placeholder}
+              disabled={field.disabled || field.readonly || isFieldReadonly || loading || readonly}
               readOnly={readonly || field.readonly}
               // ✅ Para datas de nascimento: ativa seletores e limita até hoje
               showYearDropdown={isBirthDate}
@@ -993,9 +1209,9 @@ const EntityForm: React.FC<EntityFormProps> = ({
                     [field.name]: city.stateCode || city.state || "",
                   }));
                 }}
-                placeholder={field.placeholder || "Digite o nome da cidade"}
+                placeholder={readonly || field.readonly || isFieldReadonly ? "" : (field.placeholder || "Digite o nome da cidade")}
                 disabled={
-                  field.disabled || field.readonly || loading || readonly
+                  field.disabled || field.readonly || isFieldReadonly || loading || readonly
                 }
                 readOnly={readonly || field.readonly}
               />
@@ -1007,7 +1223,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
                 value={cityStates[field.name] || ""}
                 readOnly
                 disabled
-                placeholder="--"
+                placeholder=""
                 style={{
                   backgroundColor: "#f3f4f6",
                   cursor: "not-allowed",
@@ -1079,9 +1295,9 @@ const EntityForm: React.FC<EntityFormProps> = ({
                         [field.name]: city.stateCode || city.state || "",
                       }));
                     }}
-                    placeholder={field.placeholder || "Digite o nome da cidade"}
+                    placeholder={readonly || field.readonly || isFieldReadonly ? "" : (field.placeholder || "Digite o nome da cidade")}
                     disabled={
-                      field.disabled || field.readonly || loading || readonly
+                      field.disabled || field.readonly || isFieldReadonly || loading || readonly
                     }
                     readOnly={readonly || field.readonly}
                   />
@@ -1093,7 +1309,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
                     value={cityStates[field.name] || ""}
                     readOnly
                     disabled
-                    placeholder="--"
+                    placeholder=""
                     style={{
                       backgroundColor: "#f3f4f6",
                       cursor: "not-allowed",
@@ -1121,6 +1337,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
                   config={entityConfig}
                   value={stringValue}
                   onChange={(value) => handleChange(field.name, value)}
+                  disabled={field.disabled || field.readonly || isFieldReadonly || loading || readonly}
                 />
               </FormField>
             );
@@ -1141,6 +1358,44 @@ const EntityForm: React.FC<EntityFormProps> = ({
 
     // Retorna o conteúdo do campo diretamente (wrapper é feito no renderSection)
     return fieldContent;
+  };
+
+  // 🔍 Função auxiliar para verificar se um campo deve ser renderizado (não está hidden e passa no showIf)
+  const shouldRenderField = (field: FormFieldMetadata): boolean => {
+    // Verifica se está em hiddenFields
+    if (hiddenFields.includes(field.name)) {
+      return false;
+    }
+
+    // Verifica condição showIf
+    if (field.showIf) {
+      try {
+        const shouldShow = new Function("data", `return ${field.showIf}`)(
+          formData
+        );
+        return shouldShow;
+      } catch (e) {
+        console.warn(`Erro ao avaliar showIf: ${field.showIf}`, e);
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  // 📍 Função auxiliar para obter coordenadas iniciais baseadas no nome do campo de endereço
+  const getInitialCoordinates = (fieldName: string): { lat?: number; lng?: number } => {
+    const fieldBaseName = fieldName.replace(/Address$/i, '').replace(/Endereco$/i, '').replace(/Endereço$/i, '');
+    const latFieldName = `${fieldBaseName}Latitude`;
+    const lngFieldName = `${fieldBaseName}Longitude`;
+    
+    if (formData[latFieldName] !== undefined && formData[lngFieldName] !== undefined) {
+      return {
+        lat: Number(formData[latFieldName]),
+        lng: Number(formData[lngFieldName])
+      };
+    }
+    return { lat: undefined, lng: undefined };
   };
 
   // Renderiza uma seção
@@ -1213,7 +1468,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
                   : "0",
             }}
           >
-            {regularFields.map((field) => (
+            {regularFields.filter(shouldRenderField).map((field) => (
               <div key={field.name}>{renderField(field)}</div>
             ))}
           </div>
@@ -1229,7 +1484,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
               marginBottom: arrayFields.length > 0 ? "16px" : "0",
             }}
           >
-            {textareaFields.map((field) => (
+            {textareaFields.filter(shouldRenderField).map((field) => (
               <div key={field.name} className="form-field-wide">
                 {renderField(field)}
               </div>
@@ -1362,10 +1617,10 @@ const EntityForm: React.FC<EntityFormProps> = ({
         </div>
       )}
 
-      {/* Botões de ação */}
-      <div style={{ marginBottom: "0px" }}>
-        <FormActions>
-          {!readonly && (
+      {/* Botões de ação - Não renderiza no modo view (readonly) */}
+      {!readonly && formMode !== "view" && (
+        <div style={{ marginBottom: "0px" }}>
+          <FormActions>
             <FormButton
               type="submit"
               variant="primary"
@@ -1374,27 +1629,27 @@ const EntityForm: React.FC<EntityFormProps> = ({
             >
               {loading ? "Salvando..." : metadata.submitLabel || "Salvar"}
             </FormButton>
-          )}
 
-          {!hideCancelButton && (
-            <FormButton
-              type="button"
-              variant="secondary"
-              icon={readonly ? <FiArrowLeft /> : <FiX />}
-              onClick={() => {
-                if (onCancel) {
-                  onCancel();
-                } else {
-                  navigate(-1);
-                }
-              }}
-              disabled={loading}
-            >
-              {readonly ? "Voltar" : metadata.cancelLabel || "Cancelar"}
-            </FormButton>
-          )}
-        </FormActions>
-      </div>
+            {!hideCancelButton && (
+              <FormButton
+                type="button"
+                variant="secondary"
+                icon={<FiX />}
+                onClick={() => {
+                  if (onCancel) {
+                    onCancel();
+                  } else {
+                    navigate(-1);
+                  }
+                }}
+                disabled={loading}
+              >
+                {metadata.cancelLabel || "Cancelar"}
+              </FormButton>
+            )}
+          </FormActions>
+        </div>
+      )}
     </form>
   );
 };

@@ -30,6 +30,8 @@ interface EntityCRUDProps {
   customRenderers?: {
     [fieldName: string]: (value: unknown, row: unknown) => React.ReactNode;
   };
+  /** Ações customizadas adicionais na coluna de ações */
+  customActions?: (row: any) => React.ReactNode;
   /** Callback após criar/editar com sucesso */
   onSuccess?: (data: unknown) => void;
   /** ID fixo da entidade (para modo view/edit sem tabela) */
@@ -50,6 +52,14 @@ interface EntityCRUDProps {
   defaultValues?: Record<string, unknown>;
   /** Campos a serem escondidos na tabela */
   hideFields?: string[];
+  /** Campos que devem ficar readonly no formulário */
+  readonlyFields?: string[];
+  /** Campos que devem ficar escondidos (hidden) no formulário */
+  hiddenFields?: string[];
+  /** Componente customizado para renderizar antes do formulário (ex: mapa de rota) */
+  beforeFormComponent?: (entityId: number | string | undefined, viewMode: ViewMode) => React.ReactNode;
+  /** Componente customizado para renderizar depois do formulário (ex: mapa de rota) */
+  afterFormComponent?: (entityId: number | string | undefined, viewMode: ViewMode) => React.ReactNode;
 }
 
 /**
@@ -76,6 +86,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
   entityName,
   apiEndpoint,
   customRenderers,
+  customActions,
   onSuccess,
   entityId: propEntityId,
   initialMode = "view",
@@ -85,6 +96,10 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
   initialFilters,
   defaultValues,
   hideFields,
+  readonlyFields,
+  hiddenFields,
+  beforeFormComponent,
+  afterFormComponent,
   // transformData, // Unused parameter
   pageTitle,
 }) => {
@@ -252,14 +267,36 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
             <span>Criar Novo</span>
           </button>
         ) : mode === "view" && showEditButton ? (
+          // Modo view com botão editar: mostra ambos os botões
+          <div style={{ display: "flex", gap: "0.5rem" }}>
+            <button
+              className="breadcrumb-action-btn btn-edit"
+              onClick={() => setViewMode("edit")}
+            >
+              <FiEdit />
+              <span>Editar</span>
+            </button>
+            {!hideTable && (
+              <button
+                className="breadcrumb-action-btn btn-back"
+                onClick={handleBackToTable}
+              >
+                <FiArrowLeft />
+                <span>Voltar</span>
+              </button>
+            )}
+          </div>
+        ) : mode === "view" && !hideTable ? (
+          // Modo view sem botão editar: mostra apenas botão voltar
           <button
-            className="breadcrumb-action-btn btn-edit"
-            onClick={() => setViewMode("edit")}
+            className="breadcrumb-action-btn btn-back"
+            onClick={handleBackToTable}
           >
-            <FiEdit />
-            <span>Editar</span>
+            <FiArrowLeft />
+            <span>Voltar</span>
           </button>
-        ) : mode !== "view" ? (
+        ) : mode !== "view" && !hideTable ? (
+          // Modos create/edit: mostra botão voltar
           <button
             className="breadcrumb-action-btn btn-back"
             onClick={handleBackToTable}
@@ -288,6 +325,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
             onDelete={handleDelete}
             showActions={true}
             customRenderers={customRenderers}
+            customActions={customActions}
             hideHeader={true}
             initialFilters={initialFilters}
             hideFields={hideFields}
@@ -322,7 +360,14 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
     <div className="entity-crud-container">
       <Breadcrumb mode={viewMode} />
 
-      <div className="entity-crud-form-wrapper">
+      {/* Renderiza componente customizado antes do formulário (ex: mapa de rota) */}
+      {beforeFormComponent && (
+        <div className="entity-crud-before-form">
+          {beforeFormComponent(selectedEntityId, viewMode)}
+        </div>
+      )}
+
+      <div className="entity-crud-form-wrapper" style={{ marginBottom: "4rem" }}>
         <EntityForm
           metadata={formMetadata}
           entityId={selectedEntityId}
@@ -333,7 +378,16 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
           hideCancelButton={hideTable && isReadonly}
           hideArrayFields={hideArrayFields}
           initialValues={viewMode === "create" ? defaultValues : undefined}
+          readonlyFields={readonlyFields}
+          hiddenFields={hiddenFields}
         />
+
+        {/* Renderiza componente customizado depois do formulário (ex: mapa de rota) */}
+        {afterFormComponent && (
+          <div className="entity-crud-after-form">
+            {afterFormComponent(selectedEntityId, viewMode)}
+          </div>
+        )}
       </div>
     </div>
   );

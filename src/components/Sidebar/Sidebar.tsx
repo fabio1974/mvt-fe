@@ -13,6 +13,7 @@ import {
   FiShoppingBag,
   FiPackage,
   FiDollarSign,
+  FiMapPin,
 } from "react-icons/fi";
 import "./Sidebar.css";
 
@@ -32,30 +33,31 @@ interface MenuGroup {
 
 // Itens de menu organizados por grupos
 const menuStructure: (MenuItem | MenuGroup)[] = [
-  // Grupo: Meus Dados
+  // Dados Pessoais - primeiro item do menu
   {
-    label: "Meus Dados",
+    label: "Dados Pessoais",
     icon: <FiUser size={22} color="#0099ff" />,
-    items: [
-      {
-        label: "Dados Pessoais",
-        icon: <FiUser size={20} color="#60a5fa" />,
-        path: "/dados-pessoais",
-      },
-      {
-        label: "Organização",
-        icon: <FiSettings size={20} color="#60a5fa" />,
-        path: "/organizacao",
-        roles: ["ROLE_ORGANIZER", "ROLE_ADMIN"],
-      },
-    ].sort((a, b) => a.label.localeCompare(b.label, "pt-BR")),
+    path: "/dados-pessoais",
+  },
+  // Grupo - promovido para menu principal
+  {
+    label: "Grupo",
+    icon: <FiSettings size={22} color="#60a5fa" />,
+    path: "/organizacao",
+    roles: ["ROLE_ORGANIZER", "ROLE_ADMIN"],
   },
   // Itens de primeiro nível (ordem alfabética)
+  {
+    label: "Configurações",
+    icon: <FiSettings size={22} color="#8b5cf6" />,
+    path: "/configuracoes",
+    roles: ["ROLE_ADMIN"],
+  },
   {
     label: "Entregas",
     icon: <FiPackage size={22} color="#60a5fa" />,
     path: "/deliveries",
-    roles: ["ROLE_ADMIN", "ROLE_CLIENT", "CLIENT"],
+    roles: ["ROLE_ADMIN", "ROLE_ORGANIZER", "ROLE_CLIENT", "CLIENT"],
   },
   {
     label: "Estabelecimentos",
@@ -81,10 +83,23 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
     path: "/pagamento-diario",
     roles: ["ROLE_CLIENT", "CLIENT"],
   },
+  {
+    label: "Balanço Financeiro",
+    icon: <FiDollarSign size={22} color="#10b981" />,
+    path: "/balanco-financeiro",
+    roles: ["ROLE_ORGANIZER", "ORGANIZER"],
+  },
+  {
+    label: "Zonas Especiais",
+    icon: <FiMapPin size={22} color="#ef4444" />,
+    path: "/zonas-especiais",
+    roles: ["ROLE_ADMIN"],
+  },
 ].sort((a, b) => {
-  // Mantém "Meus Dados" no topo, resto em ordem alfabética
-  if ("items" in a && a.label === "Meus Dados") return -1;
-  if ("items" in b && b.label === "Meus Dados") return 1;
+  // "Dados Pessoais" sempre em primeiro
+  if ("path" in a && a.label === "Dados Pessoais") return -1;
+  if ("path" in b && b.label === "Dados Pessoais") return 1;
+  // Resto em ordem alfabética
   return a.label.localeCompare(b.label, "pt-BR");
 });
 

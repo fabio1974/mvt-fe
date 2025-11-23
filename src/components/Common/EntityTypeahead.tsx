@@ -6,7 +6,7 @@ import "./EntityComponents.css";
 
 interface EntityTypeaheadProps {
   config: EntityFilterConfig;
-  value: string;
+  value: string | { id: string | number; name?: string; label?: string };
   onChange: (value: string) => void;
   disabled?: boolean;
 }
@@ -140,23 +140,53 @@ const EntityTypeahead: React.FC<EntityTypeaheadProps> = ({
 
     const fetchSelectedItem = async () => {
       try {
+        // 🔧 ROBUSTEZ: Se value é objeto, extrai o ID e usa o name se disponível
+        let valueId: string | number;
+        let hasLabel = false;
+        
+        if (typeof value === "object" && value !== null && "id" in value) {
+          const valueObj = value as { id: string | number; name?: string; label?: string };
+          valueId = valueObj.id;
+          
+          // Se já tem o name/label no objeto, usa diretamente (não faz fetch)
+          if (valueObj.name || valueObj.label) {
+            const label = String(valueObj.name || valueObj.label);
+            console.log(`✅ EntityTypeahead: Usando label do objeto para ${config.entityName} (ID: ${valueId}):`, label);
+            setSelectedLabel(label);
+            setSearchTerm(label);
+            hasLabel = true;
+          }
+        } else {
+          // value é string (ID)
+          valueId = value as string | number;
+        }
+        
+        // Se já tem label, não precisa fazer fetch
+        if (hasLabel) {
+          return;
+        }
+
         let endpoint = config.endpoint;
         // Garante que o endpoint começa com /
         if (!endpoint.startsWith("/")) {
           endpoint = `/${endpoint}`;
         }
 
-        const response = await api.get(`${endpoint}/${value}`);
+        console.log(`🔍 EntityTypeahead: Buscando ${config.entityName} com ID:`, valueId);
+        const response = await api.get(`${endpoint}/${valueId}`);
         const item = response.data as EntityOption;
         const label = String(item[config.labelField] || "");
         setSelectedLabel(label);
+        setSearchTerm(label);
       } catch (err) {
-        console.error("Erro ao carregar item selecionado:", err);
+        console.error(`❌ EntityTypeahead: Erro ao carregar ${config.entityName}:`, err);
+        setSelectedLabel("");
+        setSearchTerm("");
       }
     };
 
     fetchSelectedItem();
-  }, [value, config.endpoint, config.labelField]);
+  }, [value, config.endpoint, config.labelField, config.entityName]);
 
   const handleSelect = (option: EntityOption) => {
     const newValue = String(option[config.valueField]);
@@ -182,7 +212,7 @@ const EntityTypeahead: React.FC<EntityTypeaheadProps> = ({
         <input
           ref={inputRef}
           type="text"
-          placeholder={config.searchPlaceholder || "Digite para buscar..."}
+          placeholder={disabled ? "" : (config.searchPlaceholder || "Digite para buscar...")}
           value={selectedLabel || searchTerm}
           onChange={(e) => {
             setSearchTerm(e.target.value);

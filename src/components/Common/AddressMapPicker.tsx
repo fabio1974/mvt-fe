@@ -26,7 +26,9 @@ const libraries: ("places" | "geometry")[] = ["places", "geometry"];
 
 const mapContainerStyle = {
   width: "100%",
-  height: "400px",
+  height: "60vh", // Responsivo: 60% da altura da viewport
+  minHeight: "400px", // Mínimo de 400px em telas pequenas
+  maxHeight: "700px", // Máximo de 700px em telas grandes
   borderRadius: "8px",
 };
 
@@ -55,8 +57,10 @@ export const AddressMapPicker: React.FC<AddressMapPickerProps> = ({
       ? { lat: value.latitude, lng: value.longitude }
       : defaultCenter
   );
+  const [isLocating, setIsLocating] = useState(false); // Estado para loading do botão
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const mapRef = useRef<google.maps.Map | null>(null);
 
   // 🐛 Debug: Log da API key (apenas para verificação)
   React.useEffect(() => {
@@ -69,7 +73,16 @@ export const AddressMapPicker: React.FC<AddressMapPickerProps> = ({
     libraries,
   });
 
-  // 📍 Obtém localização do usuário do navegador
+  // �️ Atualiza o centro do mapa quando as coordenadas do value mudarem
+  React.useEffect(() => {
+    if (value.latitude && value.longitude) {
+      const newCenter = { lat: value.latitude, lng: value.longitude };
+      setMapCenter(newCenter);
+      console.log("📍 Centralizando mapa nas coordenadas existentes:", newCenter);
+    }
+  }, [value.latitude, value.longitude]);
+
+  // �📍 Obtém localização do usuário do navegador
   React.useEffect(() => {
     // Se já tem endereço setado, não precisa buscar localização
     if (value.latitude && value.longitude) {
@@ -179,7 +192,9 @@ export const AddressMapPicker: React.FC<AddressMapPickerProps> = ({
   );
 
   // Inicializa autocomplete quando mapa carrega
-  const onMapLoad = useCallback(() => {
+  const onMapLoad = useCallback((map: google.maps.Map) => {
+    mapRef.current = map; // Salva referência do mapa
+    
     if (!inputRef.current || !isLoaded) return;
 
     const autocomplete = new google.maps.places.Autocomplete(inputRef.current, {
@@ -202,6 +217,38 @@ export const AddressMapPicker: React.FC<AddressMapPickerProps> = ({
     autocompleteRef.current = autocomplete;
   }, [isLoaded, reverseGeocode]);
 
+  // 📍 Função para centralizar no local atual do navegador
+  const centerOnCurrentLocation = useCallback(() => {
+    if (!("geolocation" in navigator)) {
+      alert("Geolocalização não suportada pelo navegador");
+      return;
+    }
+
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const userPos = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude,
+        };
+        setMapCenter(userPos);
+        reverseGeocode(userPos.lat, userPos.lng);
+        console.log("📍 Centralizado na localização atual:", userPos);
+        setIsLocating(false);
+      },
+      (error) => {
+        console.error("❌ Erro ao obter localização:", error.message);
+        alert("Não foi possível obter sua localização. Verifique as permissões do navegador.");
+        setIsLocating(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      }
+    );
+  }, [reverseGeocode]);
+
   // Busca ao pressionar Enter
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && searchInput) {
@@ -222,11 +269,6 @@ export const AddressMapPicker: React.FC<AddressMapPickerProps> = ({
 
   return (
     <div className="address-map-picker">
-      <label className="form-label">
-        {label}
-        {required && <span className="form-required">*</span>}
-      </label>
-
       {/* Input de busca com autocomplete */}
       <div className="address-search-container">
         <input
@@ -239,29 +281,46 @@ export const AddressMapPicker: React.FC<AddressMapPickerProps> = ({
           onKeyPress={handleKeyPress}
           disabled={disabled}
         />
-        {!disabled && (
-          <button
-            type="button"
-            className="address-search-button"
-            onClick={() => geocodeAddress(searchInput)}
-            title="Buscar endereço"
-          >
-            🔍
-          </button>
-        )}
+        <div style={{ display: "flex", gap: "8px" }}>
+          {!disabled && (
+            <>
+              <button
+                type="button"
+                className="address-search-button"
+                onClick={() => geocodeAddress(searchInput)}
+                title="Buscar endereço"
+              >
+                🔍
+              </button>
+              <button
+                type="button"
+                className="address-search-button"
+                onClick={centerOnCurrentLocation}
+                title="Centralizar na minha localização"
+                disabled={isLocating}
+                style={{
+                  backgroundColor: isLocating ? "#ccc" : undefined,
+                  cursor: isLocating ? "wait" : "pointer",
+                }}
+              >
+                {isLocating ? "⏳" : "📍"}
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Mapa */}
       <GoogleMap
         mapContainerStyle={mapContainerStyle}
         center={mapCenter}
-        zoom={15}
+        zoom={17}
         onClick={handleMapClick}
         onLoad={onMapLoad}
         options={{
           disableDefaultUI: false,
           zoomControl: true,
-          streetViewControl: false,
+          streetViewControl: true,
           mapTypeControl: true,
           mapTypeControlOptions: {
             style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
@@ -283,19 +342,24 @@ export const AddressMapPicker: React.FC<AddressMapPickerProps> = ({
 
       {/* Informações do endereço */}
       {value.latitude && value.longitude && (
-        <div className="address-info">
+        <div className="address-info" style={{ 
+          display: "flex", 
+          gap: "16px", 
+          flexWrap: "wrap", 
+          alignItems: "center",
+          fontSize: "0.9em"
+        }}>
           <div className="address-info-row">
-            <strong>📍 Coordenadas:</strong> {value.latitude.toFixed(6)},{" "}
-            {value.longitude.toFixed(6)}
+            <strong>📍</strong> {value.latitude.toFixed(6)}, {value.longitude.toFixed(6)}
           </div>
           {value.city && (
             <div className="address-info-row">
-              <strong>🏙️ Cidade:</strong> {value.city} - {value.state}
+              <strong>🏙️</strong> {value.city} - {value.state}
             </div>
           )}
           {value.zipCode && (
             <div className="address-info-row">
-              <strong>📮 CEP:</strong> {value.zipCode}
+              <strong>📮</strong> {value.zipCode}
             </div>
           )}
         </div>

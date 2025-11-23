@@ -45,14 +45,26 @@ export const AddressFieldWithMap: React.FC<AddressFieldWithMapProps> = ({
     zipCode: "",
   });
 
-  const handleOpenMap = () => {
-    // Se já tem endereço, tenta usar ele no mapa
-    if (value) {
+  // 🔄 Atualiza addressData quando as props iniciais mudarem
+  React.useEffect(() => {
+    if (initialLatitude !== undefined && initialLongitude !== undefined) {
       setAddressData((prev) => ({
         ...prev,
-        address: value,
+        address: value || prev.address,
+        latitude: initialLatitude,
+        longitude: initialLongitude,
       }));
     }
+  }, [initialLatitude, initialLongitude, value]);
+
+  const handleOpenMap = () => {
+    // 📍 Garante que o modal abre com as coordenadas atuais
+    setAddressData((prev) => ({
+      ...prev,
+      address: value || prev.address,
+      latitude: initialLatitude || prev.latitude,
+      longitude: initialLongitude || prev.longitude,
+    }));
     setIsModalOpen(true);
   };
 
@@ -81,7 +93,7 @@ export const AddressFieldWithMap: React.FC<AddressFieldWithMapProps> = ({
           type="text"
           value={value || ""}
           onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder || "Digite o endereço"}
+          placeholder={disabled ? "" : (placeholder || "Digite o endereço")}
           disabled={disabled}
           required={required}
           className="address-input"

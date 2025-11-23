@@ -151,6 +151,16 @@
   background: #1d4ed8;
 }
 
+/* Container para conteúdo antes do formulário (ex: mapa de rota) */
+.entity-crud-before-form {
+  margin-bottom: 1.5rem;
+}
+
+/* Container para conteúdo depois do formulário (ex: mapa de rota) */
+.entity-crud-after-form {
+  margin-top: 2rem;
+}
+
 .entity-crud-form-wrapper {
   background: white;
   border-radius: 12px;

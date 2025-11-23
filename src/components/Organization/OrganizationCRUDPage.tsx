@@ -17,8 +17,8 @@ const OrganizationCRUDPage: React.FC = () => {
     <EntityCRUD
       entityName="organization"
       hideArrayFields={false}
-      pageTitle="Organização"
-      pageDescription="Gerencie a organização da plataforma"
+      pageTitle="Grupo"
+      pageDescription="Gerencie o grupo da plataforma"
     />
   );
 };

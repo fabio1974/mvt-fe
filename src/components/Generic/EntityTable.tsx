@@ -48,6 +48,7 @@ interface EntityTableProps {
   customRenderers?: {
     [fieldName: string]: (value: any, row: any) => React.ReactNode;
   };
+  customActions?: (row: any) => React.ReactNode; // Ações customizadas adicionais
   hideHeader?: boolean; // Opcional - esconde o header quando usado dentro do EntityCRUD
   initialFilters?: Record<string, string>; // Filtros iniciais a serem aplicados
   noWrapper?: boolean; // Opcional - remove o container entity-table-page
@@ -63,6 +64,7 @@ const EntityTable: React.FC<EntityTableProps> = ({
   onDelete,
   showActions = true,
   customRenderers = {},
+  customActions,
   hideHeader = false,
   initialFilters = {},
   noWrapper = false,
@@ -406,7 +408,7 @@ const EntityTable: React.FC<EntityTableProps> = ({
 
       {!hideFilters && metadata.filters && metadata.filters.length > 0 && (
         <EntityFilters
-          filters={metadata.filters}
+          filters={metadata.filters.filter((f) => !hideFields.includes(f.field))}
           values={filters}
           onChange={handleFilterChange}
           onClear={clearFilters}
@@ -511,6 +513,7 @@ const EntityTable: React.FC<EntityTableProps> = ({
                                 <FiTrash2 />
                               </button>
                             )}
+                            {customActions && customActions(row)}
                           </div>
                         </td>
                       )}

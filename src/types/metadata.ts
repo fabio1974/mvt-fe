@@ -1,6 +1,6 @@
 // Tipos para o sistema de metadata do backend
 
-export type FieldType = 'string' | 'integer' | 'long' | 'double' | 'boolean' | 'date' | 'datetime' | 'enum' | 'select' | 'nested' | 'actions';
+export type FieldType = 'string' | 'integer' | 'long' | 'double' | 'boolean' | 'date' | 'datetime' | 'enum' | 'select' | 'nested' | 'entity' | 'actions';
 export type Alignment = 'left' | 'center' | 'right';
 export type FilterType = 'text' | 'select' | 'date' | 'number' | 'boolean' | 'entity';
 

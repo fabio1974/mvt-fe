@@ -86,6 +86,14 @@ const DailyPaymentPage: React.FC = () => {
           <FiChevronRight className="breadcrumb-separator" />
           <div className="breadcrumb-item">
             <span>Pagamento Diário</span>
+            <span style={{ 
+              marginLeft: "8px", 
+              fontSize: "0.9em", 
+              color: "#ffffff",
+              fontWeight: "normal" 
+            }}>
+              (Entregas concluídas pendentes de pagamento)
+            </span>
           </div>
         </div>
       </div>
