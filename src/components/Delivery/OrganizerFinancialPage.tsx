@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { api } from "../../services/api";
 import { showToast } from "../../utils/toast";
-import { FiDollarSign, FiHome, FiChevronRight, FiCheckCircle, FiClock } from "react-icons/fi";
+import { FiDollarSign, FiHome, FiChevronRight, FiCheckCircle, FiClock, FiTrendingUp } from "react-icons/fi";
 import EntityTable from "../Generic/EntityTable";
 import { getUserId, getUserRole } from "../../utils/auth";
 import "../Generic/EntityCRUD.css";
@@ -17,6 +17,8 @@ const OrganizerFinancialPage: React.FC = () => {
   const [totalPaid, setTotalPaid] = useState(0);
   const [totalPending, setTotalPending] = useState(0);
   const [deliveryCount, setDeliveryCount] = useState(0);
+  const [organizerPercentage, setOrganizerPercentage] = useState(0);
+  const [totalShippingFeesGross, setTotalShippingFeesGross] = useState(0); // Total bruto (sem porcentagem)
 
   const userId = getUserId();
   const userRole = getUserRole();
@@ -26,12 +28,55 @@ const OrganizerFinancialPage: React.FC = () => {
   };
 
   useEffect(() => {
-    loadFinancialSummary();
+    const loadData = async () => {
+      const percentage = await loadSiteConfiguration(); // Espera carregar a config primeiro e pega o valor
+      await loadFinancialSummary(percentage); // Passa a porcentagem diretamente
+    };
+    loadData();
   }, [userId]);
 
-  const loadFinancialSummary = async () => {
+  const loadSiteConfiguration = async () => {
+    try {
+      console.log("⚙️ Carregando configuração do site...");
+
+      // Busca a configuração ativa
+      const response = await api.get<{ content: any[] }>("/api/site-configuration", {
+        params: {
+          isActive: true,
+          size: 1,
+        },
+      });
+
+      console.log("⚙️ Resposta da API site-configuration:", response.data);
+
+      const configs = response.data.content || [];
+      console.log("⚙️ Configs encontradas:", configs);
+
+      if (configs.length > 0) {
+        const activeConfig = configs[0];
+        console.log("⚙️ Config ativa completa:", activeConfig);
+        
+        const percentage = activeConfig.organizerPercentage || 0;
+        setOrganizerPercentage(percentage);
+        console.log(`⚙️ Configuração carregada - Porcentagem do organizer: ${percentage}%`);
+        return percentage; // Retorna para usar no cálculo
+      } else {
+        console.warn("⚠️ Nenhuma configuração ativa encontrada, usando 0%");
+        setOrganizerPercentage(0);
+        return 0;
+      }
+    } catch (error) {
+      console.error("❌ Erro ao carregar configuração do site:", error);
+      showToast("Erro ao carregar configurações", "error");
+      setOrganizerPercentage(0);
+      return 0;
+    }
+  };
+
+  const loadFinancialSummary = async (percentage: number) => {
     try {
       console.log("💰 Carregando resumo financeiro do organizer:", userId);
+      console.log("💰 Usando porcentagem:", percentage, "%");
 
       // Busca todas as entregas completadas do organizer
       const response = await api.get<{ content: any[] }>("/api/deliveries", {
@@ -44,6 +89,8 @@ const OrganizerFinancialPage: React.FC = () => {
 
       const deliveries = response.data.content || [];
       setDeliveryCount(deliveries.length);
+
+      console.log("💰 Entregas encontradas:", deliveries.length);
 
       // Calcula os totais
       let shippingTotal = 0;
@@ -59,13 +106,23 @@ const OrganizerFinancialPage: React.FC = () => {
         }
       });
 
-      const pendingTotal = shippingTotal - paidTotal;
+      console.log("💰 Total bruto dos fretes:", shippingTotal);
+      console.log("💰 Aplicando porcentagem:", percentage, "%");
 
-      setTotalShippingFees(shippingTotal);
+      // Total que o organizer tem direito (baseado na porcentagem configurada)
+      const organizerTotal = shippingTotal * (percentage / 100);
+      
+      console.log("💰 Total calculado para organizer:", organizerTotal);
+      
+      // Pendente = o que o organizer tem direito - o que já foi pago
+      const pendingTotal = organizerTotal - paidTotal;
+
+      setTotalShippingFeesGross(shippingTotal); // Total bruto (sem porcentagem)
+      setTotalShippingFees(organizerTotal); // Total do organizer (com porcentagem)
       setTotalPaid(paidTotal);
       setTotalPending(pendingTotal);
 
-      console.log(`💰 Resumo: ${deliveries.length} entregas | Total: R$ ${shippingTotal.toFixed(2)} | Pago: R$ ${paidTotal.toFixed(2)} | Pendente: R$ ${pendingTotal.toFixed(2)}`);
+      console.log(`💰 Resumo FINAL: ${deliveries.length} entregas | Porcentagem: ${percentage}% | Total do Organizer: R$ ${organizerTotal.toFixed(2)} | Pago: R$ ${paidTotal.toFixed(2)} | Pendente: R$ ${pendingTotal.toFixed(2)}`);
     } catch (error) {
       console.error("❌ Erro ao carregar resumo financeiro:", error);
       showToast("Erro ao carregar resumo financeiro", "error");
@@ -152,16 +209,30 @@ const OrganizerFinancialPage: React.FC = () => {
           
           {deliveryCount > 0 ? (
             <div className="financial-summary-grid">
-              {/* Card 1: Total em Fretes */}
+              {/* Card 0: Total de Fretes (sem porcentagem) */}
+              <div className="financial-card total-card">
+                <div className="card-icon-wrapper">
+                  <FiTrendingUp size={32} className="card-icon" />
+                </div>
+                <div className="card-content">
+                  <p className="card-label">Total de Fretes</p>
+                  <p className="card-value">{formatCurrency(totalShippingFeesGross)}</p>
+                  <p className="card-subtitle">
+                    {deliveryCount} {deliveryCount === 1 ? "entrega completada" : "entregas completadas"}
+                  </p>
+                </div>
+              </div>
+
+              {/* Card 1: Sua Comissão Total */}
               <div className="financial-card total-card">
                 <div className="card-icon-wrapper">
                   <FiDollarSign size={32} className="card-icon" />
                 </div>
                 <div className="card-content">
-                  <p className="card-label">Total em Fretes</p>
+                  <p className="card-label">Sua Comissão Total</p>
                   <p className="card-value">{formatCurrency(totalShippingFees)}</p>
                   <p className="card-subtitle">
-                    {deliveryCount} {deliveryCount === 1 ? "entrega completada" : "entregas completadas"}
+                    {organizerPercentage}% dos fretes
                   </p>
                 </div>
               </div>

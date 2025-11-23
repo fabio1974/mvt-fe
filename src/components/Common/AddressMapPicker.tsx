@@ -45,9 +45,9 @@ const defaultCenter = {
 export const AddressMapPicker: React.FC<AddressMapPickerProps> = ({
   value,
   onChange,
-  label,
+  // label, // TODO: Implementar label se necessário
   disabled = false,
-  required = false,
+  // required = false, // TODO: Implementar validação required se necessário
   onAddressSelect,
   showConfirmButton = false,
 }) => {
