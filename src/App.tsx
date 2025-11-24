@@ -4,8 +4,8 @@ import Footer from "./components/Footer/Footer";
 import LandingPage from "./components/LandingPage/LandingPage";
 import LoginRegisterPage from "./components/Auth/LoginRegisterPage";
 import ResetPasswordPage from "./components/Auth/ResetPasswordPage";
-import OrganizationPage from "./components/Organization/OrganizationPage";
 import OrganizationCRUDPage from "./components/Organization/OrganizationCRUDPage";
+import OrganizerOrganizationPage from "./components/Organization/OrganizerOrganizationPage";
 import CourierCRUDPage from "./components/Courier/CourierCRUDPage";
 import ClientCRUDPage from "./components/Client/ClientCRUDPage";
 import DeliveryCRUDPage from "./components/Delivery/DeliveryCRUDPage";
@@ -119,7 +119,7 @@ function App() {
               <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<LoginRegisterPage />} />
               <Route path="/recuperar-senha" element={<ResetPasswordPage />} />
-              <Route path="/organizacao" element={<OrganizationPage />} />
+              <Route path="/organizacao" element={<OrganizerOrganizationPage />} />
               <Route
                 path="/organizacao/gerenciar"
                 element={<OrganizationCRUDPage />}

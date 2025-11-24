@@ -20,6 +20,7 @@ import EntitySelect from "../Common/EntitySelect";
 import EntityTypeahead from "../Common/EntityTypeahead";
 import { CityTypeahead } from "../Common/CityTypeahead";
 import { executeComputedField } from "../../utils/computedFields";
+import { translateLabel } from "../../utils/labelTranslations";
 import "./ArrayField.css";
 
 interface ArrayFieldProps {
@@ -49,8 +50,11 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
 
   // 🏷️ Gera labels inteligentes baseados no field.label do backend
   const generateSmartLabels = () => {
-    // Backend manda field.label = "Categorias" (plural)
-    const pluralLabel = config.label || "Items";
+    // Backend manda field.label = "Categorias" (plural) ou "Client Contracts"
+    const rawLabel = config.label || "Items";
+    
+    // Aplica tradução customizada se existir
+    const pluralLabel = translateLabel(rawLabel);
 
     // Converte para singular: "Categorias" → "Categoria"
     const singularName = pluralToSingular(pluralLabel);
@@ -72,6 +76,14 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
   };
 
   const { itemLabel, addLabel } = generateSmartLabels();
+
+  // 🚫 Remove placeholder se campo for readonly
+  const getPlaceholder = (field: FormFieldMetadata): string | undefined => {
+    if (field.readonly || disabled) {
+      return undefined; // Não mostra placeholder em campos readonly
+    }
+    return field.placeholder;
+  };
 
   // Cada item controla seu próprio estado de collapse
   const [collapsedItems, setCollapsedItems] = useState<Record<number, boolean>>(
@@ -270,14 +282,14 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
                 onChange={(e) =>
                   handleFieldChange(itemIndex, field.name, e.target.value)
                 }
-                placeholder={field.placeholder}
+                placeholder={getPlaceholder(field)}
                 disabled={field.disabled || disabled}
                 required={field.required}
               />
             ) : (
               <FormInput
                 type={field.type}
-                placeholder={field.placeholder}
+                placeholder={getPlaceholder(field)}
                 value={stringValue}
                 onChange={(e) =>
                   handleFieldChange(itemIndex, field.name, e.target.value)
@@ -295,7 +307,7 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
           <FormField label={field.label} required={field.required}>
             <FormInput
               type="number"
-              placeholder={field.placeholder}
+              placeholder={getPlaceholder(field)}
               min={field.validation?.min}
               max={field.validation?.max}
               value={stringValue}
@@ -318,7 +330,7 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
         return (
           <FormField label={field.label} required={field.required}>
             <FormTextarea
-              placeholder={field.placeholder}
+              placeholder={getPlaceholder(field)}
               value={stringValue}
               onChange={(e) =>
                 handleFieldChange(itemIndex, field.name, e.target.value)
@@ -370,26 +382,26 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
 
         return (
           <FormField label={field.label} required={field.required}>
-            <FormDatePicker
-              selected={fieldValue ? new Date(String(fieldValue)) : null}
-              onChange={(date) =>
-                handleFieldChange(
-                  itemIndex,
-                  field.name,
-                  date?.toISOString() || ""
-                )
-              }
-              showTimeSelect={shouldShowTime}
-              dateFormat={dateFormat}
-              placeholder={field.placeholder}
-              disabled={field.disabled || disabled}
-              // ✅ Para datas de nascimento: ativa seletores e limita até hoje
-              showYearDropdown={isBirthDate}
-              showMonthDropdown={isBirthDate}
-              scrollableYearDropdown={isBirthDate}
-              yearDropdownItemNumber={isBirthDate ? 120 : 10}
-              maxDate={isBirthDate ? new Date() : undefined}
-            />
+              <FormDatePicker
+                selected={fieldValue ? new Date(String(fieldValue)) : null}
+                onChange={(date) =>
+                  handleFieldChange(
+                    itemIndex,
+                    field.name,
+                    date?.toISOString() || ""
+                  )
+                }
+                showTimeSelect={shouldShowTime}
+                dateFormat={dateFormat}
+                placeholder={getPlaceholder(field)}
+                disabled={field.disabled || disabled}
+                // ✅ Para datas de nascimento: ativa seletores e limita até hoje
+                showYearDropdown={isBirthDate}
+                showMonthDropdown={isBirthDate}
+                scrollableYearDropdown={isBirthDate}
+                yearDropdownItemNumber={isBirthDate ? 120 : 10}
+                maxDate={isBirthDate ? new Date() : undefined}
+              />
           </FormField>
         );
       }
@@ -456,7 +468,7 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
                   // Salva o nome da cidade para exibição
                   handleFieldChange(itemIndex, field.name, city.name);
                 }}
-                placeholder={field.placeholder || "Digite o nome da cidade"}
+                placeholder={getPlaceholder(field) || "Digite o nome da cidade"}
                 disabled={field.disabled || disabled}
               />
             </FormField>
@@ -467,7 +479,7 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
                 value="" // Estado seria carregado do backend
                 readOnly
                 disabled
-                placeholder="--"
+                placeholder={getPlaceholder(field) || "--"}
                 style={{
                   backgroundColor: "#f3f4f6",
                   cursor: "not-allowed",
@@ -535,7 +547,7 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
                     handleFieldChange(itemIndex, "cityId", String(city.id));
                     handleFieldChange(itemIndex, "city", city.name);
                   }}
-                  placeholder={field.placeholder || "Digite o nome da cidade"}
+                  placeholder={getPlaceholder(field) || "Digite o nome da cidade"}
                   disabled={field.disabled || disabled}
                 />
               </FormField>
@@ -567,13 +579,13 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
           return (
             <FormField label={field.label} required={field.required}>
               <EntityComponent
-                config={entityConfig}
-                value={stringValue}
-                onChange={(newValue) =>
-                  handleFieldChange(itemIndex, field.name, newValue)
-                }
-                disabled={field.disabled || disabled}
-              />
+                  config={entityConfig}
+                  value={stringValue}
+                  onChange={(newValue) =>
+                    handleFieldChange(itemIndex, field.name, newValue)
+                  }
+                  disabled={field.disabled || disabled}
+                />
             </FormField>
           );
         }
@@ -631,27 +643,10 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
 
   return (
     <div style={{ marginBottom: "16px" }}>
-      {/* Header do ArrayField */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "12px",
-        }}
-      >
-        <h3
-          style={{
-            margin: "0",
-            fontSize: "16px",
-            fontWeight: "600",
-            color: "#374151",
-          }}
-        >
-          {config.label || "Lista"}
-        </h3>
-
-        {!disabled && value.length < maxItems && (
+      {/* Removido: Header do ArrayField - apenas mostra os itens e botão adicionar inline */}
+      
+      {!disabled && value.length < maxItems && (
+        <div style={{ marginBottom: "12px" }}>
           <button
             type="button"
             onClick={addItem}
@@ -678,8 +673,8 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
             <FiPlus size={14} />
             {addLabel}
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Lista de itens */}
       {value.length === 0 ? (

@@ -60,6 +60,12 @@ interface EntityCRUDProps {
   beforeFormComponent?: (entityId: number | string | undefined, viewMode: ViewMode) => React.ReactNode;
   /** Componente customizado para renderizar depois do formulário (ex: mapa de rota) */
   afterFormComponent?: (entityId: number | string | undefined, viewMode: ViewMode) => React.ReactNode;
+  /** Esconde os filtros da tabela */
+  hideFilters?: boolean;
+  /** Desabilita a operação de criar */
+  disableCreate?: boolean;
+  /** Desabilita a operação de deletar */
+  disableDelete?: boolean;
 }
 
 /**
@@ -100,6 +106,9 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
   hiddenFields,
   beforeFormComponent,
   afterFormComponent,
+  hideFilters = false,
+  disableCreate = false,
+  disableDelete = false,
   // transformData, // Unused parameter
   pageTitle,
 }) => {
@@ -258,7 +267,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
           </div>
         </div>
 
-        {mode === "table" ? (
+        {mode === "table" && !disableCreate ? (
           <button
             className="breadcrumb-action-btn btn-create"
             onClick={handleCreate}
@@ -322,13 +331,14 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
             apiEndpoint={apiEndpoint}
             onView={handleView}
             onEdit={handleEdit}
-            onDelete={handleDelete}
+            onDelete={disableDelete ? undefined : handleDelete}
             showActions={true}
             customRenderers={customRenderers}
             customActions={customActions}
             hideHeader={true}
             initialFilters={initialFilters}
             hideFields={hideFields}
+            hideFilters={hideFilters}
           />
         </ErrorBoundary>
       </div>

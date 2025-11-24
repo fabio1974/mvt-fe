@@ -2,7 +2,7 @@ import React from "react";
 import EntityCRUD from "../Generic/EntityCRUD";
 
 /**
- * Página de CRUD para Estabelecimentos (Clientes)
+ * Página de CRUD para Clientes
  * Filtra usuários com role = CLIENT
  */
 const ClientCRUDPage: React.FC = () => {
@@ -10,8 +10,10 @@ const ClientCRUDPage: React.FC = () => {
     <EntityCRUD
       entityName="user"
       hideArrayFields={false}
-      pageTitle="Estabelecimentos"
-      pageDescription="Gerencie os estabelecimentos cadastrados na plataforma"
+      hideFields={["employmentContracts", "employmentContract"]} // Esconde na tabela
+      hiddenFields={["employmentContracts", "employmentContract"]} // Esconde no formulário
+      pageTitle="Clientes"
+      pageDescription="Gerencie os clientes cadastrados na plataforma"
       initialFilters={{ role: "CLIENT" }}
     />
   );

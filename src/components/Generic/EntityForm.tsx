@@ -1423,7 +1423,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
     const textareaFields = section.fields.filter((f) => f.type === "textarea");
     const arrayFields = hideArrayFields
       ? []
-      : section.fields.filter((f) => f.type === "array");
+      : section.fields.filter((f) => f.type === "array" && !hiddenFields.includes(f.name)); // Filtra também por hiddenFields
 
     // 🚫 Se hideArrayFields está ativo e a seção só tem array fields, não renderiza
     const onlyHasArrayFields =
@@ -1502,7 +1502,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
   const renderArrayFieldContainers = (section: FormSectionMetadata) => {
     const arrayFields = hideArrayFields
       ? []
-      : section.fields.filter((f) => f.type === "array");
+      : section.fields.filter((f) => f.type === "array" && !hiddenFields.includes(f.name)); // Filtra também por hiddenFields
 
     return arrayFields.map((field) => {
       const value = formData[field.name] ?? [];

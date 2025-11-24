@@ -42,6 +42,9 @@ export const FormDatePicker: React.FC<FormDatePickerProps> = ({
   disabled = false,
   readOnly = false,
 }) => {
+  // 🔥 Não mostra placeholder quando disabled ou readOnly
+  const effectivePlaceholder = (disabled || readOnly) ? undefined : placeholder;
+
   return (
     <DatePicker
       selected={selected}
@@ -50,7 +53,7 @@ export const FormDatePicker: React.FC<FormDatePickerProps> = ({
       timeFormat="HH:mm"
       timeIntervals={15}
       dateFormat={dateFormat}
-      placeholderText={placeholder}
+      placeholderText={effectivePlaceholder}
       locale="pt-BR"
       minDate={minDate}
       maxDate={maxDate}

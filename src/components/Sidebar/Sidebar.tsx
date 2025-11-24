@@ -39,12 +39,12 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
     icon: <FiUser size={22} color="#0099ff" />,
     path: "/dados-pessoais",
   },
-  // Grupo - promovido para menu principal
+  // Grupo - promovido para menu principal (apenas ORGANIZER)
   {
     label: "Grupo",
     icon: <FiSettings size={22} color="#60a5fa" />,
     path: "/organizacao",
-    roles: ["ROLE_ORGANIZER", "ROLE_ADMIN"],
+    roles: ["ROLE_ORGANIZER"],
   },
   // Itens de primeiro nível (ordem alfabética)
   {
@@ -60,7 +60,7 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
     roles: ["ROLE_ADMIN", "ROLE_ORGANIZER", "ROLE_CLIENT", "CLIENT"],
   },
   {
-    label: "Estabelecimentos",
+    label: "Clientes",
     icon: <FiShoppingBag size={22} color="#60a5fa" />,
     path: "/estabelecimentos",
     roles: ["ROLE_ADMIN"],

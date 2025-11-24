@@ -17,6 +17,8 @@ const CourierCRUDPage: React.FC = () => {
     <EntityCRUD
       entityName="user"
       hideArrayFields={false}
+      hideFields={["clientContracts", "clientContract"]} // Esconde na tabela
+      hiddenFields={["clientContracts", "clientContract"]} // Esconde no formulário
       pageTitle="Motoboys"
       pageDescription="Gerencie os motoboys da plataforma"
       initialFilters={{ role: "COURIER" }}

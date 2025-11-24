@@ -29,7 +29,7 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormData>({
     defaultValues: {
-      role: "USER",
+      role: "COURIER",
     },
   });
   const [error, setError] = useState("");
@@ -61,7 +61,7 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
         username: data.username,
         cpf: cpfNumbers,
         password: data.password,
-        role: data.role || "USER",
+        role: data.role || "COURIER",
       });
       setSuccess("Usuário registrado com sucesso! Redirecionando...");
 
@@ -123,8 +123,8 @@ export default function RegisterForm({ onSuccess }: RegisterFormProps) {
   };
 
   const roleOptions = [
-    { value: "USER", label: "Atleta" },
-    { value: "ORGANIZER", label: "Organizador" },
+    { value: "COURIER", label: "Motoboy" },
+    { value: "ORGANIZER", label: "Gerente" },
   ];
 
   return (
