@@ -1,6 +1,52 @@
-# MVT-FE - Mountain Valley Trails Frontend
+# Zapi10 - Sistema de Gestão de Entregas
 
-Sistema de gestão de eventos esportivos de corrida de montanha.
+Sistema completo para gerenciamento de entregas com cálculo automático de preços, gestão de grupos de motoboys e contratos inteligentes.
+
+## 📖 Documentação para Apresentação
+
+**Acesso rápido à documentação completa:**
+
+### 📊 Documentos Principais
+
+1. **[📄 APRESENTACAO.md](APRESENTACAO.md)** - Documentação técnica completa
+   - Visão geral do sistema
+   - Cálculo de preços detalhado
+   - Projeções financeiras (R$ 15k a R$ 46k/mês com 50 motoboys)
+   - Gestão de grupos e contratos
+   - Zonas especiais
+
+2. **[🎬 SLIDES_APRESENTACAO.md](SLIDES_APRESENTACAO.md)** - 32 slides prontos
+   - Apresentação estruturada
+   - Exemplos práticos
+   - Projeções financeiras visuais
+   - Comparativos
+
+3. **[📋 CHEAT_SHEET_APRESENTACAO.md](CHEAT_SHEET_APRESENTACAO.md)** - Cola do apresentador
+   - Números-chave memorizados
+   - Frases prontas
+   - Pontos obrigatórios
+
+4. **[🎯 ROTEIRO_DEMO.md](ROTEIRO_DEMO.md)** - Roteiro de demonstração
+   - Script de 5 minutos
+   - Passo a passo da demo
+   - O que dizer em cada etapa
+
+5. **[❓ FAQ_APRESENTACAO.md](FAQ_APRESENTACAO.md)** - 42 Perguntas & Respostas
+   - Respostas preparadas
+   - Objeções e contra-argumentos
+   - Projeções financeiras
+
+### 💰 Projeções Financeiras - Grupo com 50 Motoboys
+
+| Cenário | Entregas/Dia | Receita/Mês |
+|---------|--------------|-------------|
+| 😟 Pessimista | 12 | **R$ 5.070** |
+| 😊 Normal | 20 | **R$ 9.750** |
+| 🚀 Otimista | 28 | **R$ 15.470** |
+
+*Comissão: Motoboy 95% / Grupo 5%*
+
+---
 
 ## 🚀 Tecnologias
 
@@ -8,17 +54,16 @@ Sistema de gestão de eventos esportivos de corrida de montanha.
 - **Vite** - Build tool
 - **TailwindCSS** - Estilização
 - **React Router** - Navegação
-- **Stripe** - Pagamentos
+- **Google Maps API** - Geolocalização
 
-## 📚 Documentação
+## 📚 Documentação Técnica
 
-Toda a documentação do projeto está organizada na pasta **[`/docs`](docs/README.md)**:
+Documentação técnica do desenvolvimento está em **[`/docs`](docs/README.md)**:
 
-- **[Guia Rápido](docs/guides/QUICK_START_GUIDE.md)** - Como começar
-- **[Arquitetura](docs/guides/ARCHITECTURE.md)** - Visão geral do projeto
-- **[Frontend](docs/frontend/)** - Componentes e guias frontend
-- **[Backend](docs/backend/)** - Especificações e exemplos backend
-- **[⚠️ Correções Necessárias](docs/backend/BACKEND_FIXES_NEEDED.md)** - Lista de issues críticas
+- **[Guia Rápido](docs/guides/QUICK_START_GUIDE.md)**
+- **[Arquitetura](docs/guides/ARCHITECTURE.md)**
+- **[Frontend](docs/frontend/)**
+- **[Backend](docs/backend/)**
 
 ## 🏃 Início Rápido
 
