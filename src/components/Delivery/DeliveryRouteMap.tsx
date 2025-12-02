@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { GoogleMap, LoadScript, Marker, Polyline } from "@react-google-maps/api";
+import { GoogleMap, LoadScript, Marker, DirectionsRenderer } from "@react-google-maps/api";
 import motoIcon from "../../assets/moto.png";
 
 interface DeliveryRouteMapProps {
@@ -74,7 +74,8 @@ const DeliveryRouteMap: React.FC<DeliveryRouteMapProps> = ({
   });
 
   const [map, setMap] = useState<google.maps.Map | null>(null);
-  const [pathOptions, setPathOptions] = useState<any>(null);
+  const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
+  const [routeInfo, setRouteInfo] = useState<{ distance: string; duration: string } | null>(null);
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
   console.log("🗺️ DeliveryRouteMap - API Key:", apiKey ? "✅ Presente" : "❌ Ausente");
@@ -85,78 +86,66 @@ const DeliveryRouteMap: React.FC<DeliveryRouteMapProps> = ({
     lng: (fromLongitude + toLongitude) / 2,
   };
 
-  // Ajusta o zoom e bounds quando o mapa carregar
+  // Busca a rota usando Directions API quando o mapa carregar
   useEffect(() => {
     console.log("🗺️ DeliveryRouteMap - useEffect executado. Map:", map ? "✅ Presente" : "❌ null");
     
     if (!map) return;
 
-    console.log("🗺️ DeliveryRouteMap - Configurando bounds e pathOptions");
+    console.log("🗺️ DeliveryRouteMap - Buscando rota com Directions API");
     console.log("🗺️ DeliveryRouteMap - Verificando google:", typeof google !== 'undefined' ? "✅ Definido" : "❌ Não definido");
 
     try {
-      const bounds = new google.maps.LatLngBounds();
-      bounds.extend({ lat: fromLatitude, lng: fromLongitude });
-      bounds.extend({ lat: toLatitude, lng: toLongitude });
+      const directionsService = new google.maps.DirectionsService();
       
-      // Se tem posição do motoboy, inclui no bounds
-      if (deliveryManGpsLatitude && deliveryManGpsLongitude) {
-        bounds.extend({ lat: deliveryManGpsLatitude, lng: deliveryManGpsLongitude });
-      }
+      const origin = { lat: fromLatitude, lng: fromLongitude };
+      const destination = { lat: toLatitude, lng: toLongitude };
 
-      // Ajusta o mapa para mostrar todos os pontos com padding
-      map.fitBounds(bounds, {
-        top: 80,
-        bottom: 80,
-        left: 80,
-        right: 80,
-      });
+      directionsService.route(
+        {
+          origin,
+          destination,
+          travelMode: google.maps.TravelMode.DRIVING,
+          optimizeWaypoints: true,
+        },
+        (result, status) => {
+          if (status === google.maps.DirectionsStatus.OK && result) {
+            console.log("🗺️ DeliveryRouteMap - Rota calculada com sucesso");
+            setDirections(result);
+            
+            // Extrai informações da rota
+            const route = result.routes[0];
+            if (route && route.legs[0]) {
+              const leg = route.legs[0];
+              setRouteInfo({
+                distance: leg.distance?.text || "",
+                duration: leg.duration?.text || "",
+              });
+              console.log("🗺️ DeliveryRouteMap - Distância:", leg.distance?.text);
+              console.log("🗺️ DeliveryRouteMap - Tempo:", leg.duration?.text);
+            }
 
-      console.log("🗺️ DeliveryRouteMap - Bounds configurado com sucesso");
+            // Ajusta o zoom para mostrar a rota completa
+            const bounds = new google.maps.LatLngBounds();
+            bounds.extend(origin);
+            bounds.extend(destination);
+            
+            // Se tem posição do motoboy, inclui no bounds
+            if (deliveryManGpsLatitude && deliveryManGpsLongitude) {
+              bounds.extend({ lat: deliveryManGpsLatitude, lng: deliveryManGpsLongitude });
+            }
 
-      // Configura as opções da polyline com setas
-      console.log("🗺️ DeliveryRouteMap - Criando pathOptions com setas");
-      setPathOptions({
-        strokeColor: "#2563eb",
-        strokeOpacity: 0.8,
-        strokeWeight: 3,
-        icons: [
-          {
-            icon: {
-              path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-              scale: 4,
-              strokeColor: "#2563eb",
-              strokeWeight: 2,
-              fillColor: "#2563eb",
-              fillOpacity: 1,
-            },
-            offset: "25%",
-          },
-          {
-            icon: {
-              path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-              scale: 4,
-              strokeColor: "#2563eb",
-              strokeWeight: 2,
-              fillColor: "#2563eb",
-              fillOpacity: 1,
-            },
-            offset: "50%",
-          },
-          {
-            icon: {
-              path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-              scale: 4,
-              strokeColor: "#2563eb",
-              strokeWeight: 2,
-              fillColor: "#2563eb",
-              fillOpacity: 1,
-            },
-            offset: "75%",
-          },
-        ],
-      });
-      console.log("🗺️ DeliveryRouteMap - pathOptions criado com sucesso");
+            map.fitBounds(bounds, {
+              top: 80,
+              bottom: 80,
+              left: 80,
+              right: 80,
+            });
+          } else {
+            console.error("❌ DeliveryRouteMap - Erro ao calcular rota:", status);
+          }
+        }
+      );
     } catch (error) {
       console.error("❌ DeliveryRouteMap - Erro ao configurar mapa:", error);
     }
@@ -195,7 +184,6 @@ const DeliveryRouteMap: React.FC<DeliveryRouteMapProps> = ({
     : null;
 
   console.log("🗺️ DeliveryRouteMap - DeliveryMan Position:", deliveryManPosition);
-  console.log("🗺️ DeliveryRouteMap - pathOptions estado:", pathOptions ? "✅ Presente" : "❌ null");
 
   /**
    * Calcula a distância entre dois pontos usando a fórmula de Haversine
@@ -412,11 +400,32 @@ const DeliveryRouteMap: React.FC<DeliveryRouteMapProps> = ({
             />
           )}
 
-          {/* Linha conectando origem e destino com 3 setas */}
-          {pathOptions && (
-            <Polyline 
-              path={[origin, destination]} 
-              options={pathOptions}
+          {/* Renderiza a rota real seguindo as estradas */}
+          {directions && (
+            <DirectionsRenderer 
+              directions={directions}
+              options={{
+                suppressMarkers: true, // Não mostra marcadores padrão (já temos os customizados)
+                polylineOptions: {
+                  strokeColor: "#2563eb",
+                  strokeOpacity: 0.8,
+                  strokeWeight: 4,
+                  icons: typeof google !== 'undefined' ? [
+                    {
+                      icon: {
+                        path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                        scale: 3,
+                        strokeColor: "#2563eb",
+                        strokeWeight: 2,
+                        fillColor: "#2563eb",
+                        fillOpacity: 1,
+                      },
+                      offset: "25%",
+                      repeat: "25%",
+                    },
+                  ] : undefined,
+                },
+              }}
             />
           )}
         </GoogleMap>
@@ -471,7 +480,7 @@ const DeliveryRouteMap: React.FC<DeliveryRouteMapProps> = ({
         </div>
 
         {/* Linha 2: Distância, Motoboy e ETA */}
-        {(distance || deliveryManPosition || eta) && (
+        {(routeInfo || distance || deliveryManPosition || eta) && (
           <div
             style={{
               display: "flex",
@@ -482,12 +491,23 @@ const DeliveryRouteMap: React.FC<DeliveryRouteMapProps> = ({
               borderTop: "1px solid #e5e7eb",
             }}
           >
-            {/* Distância Total */}
-            {distance && (
+            {/* Distância da Rota (se calculada pela API) ou Distância Direta */}
+            {(routeInfo?.distance || distance) && (
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <span style={{ fontSize: "18px" }}>📏</span>
                 <span style={{ color: "#374151" }}>
-                  <strong>Distância Total:</strong> {distance.toFixed(2)} km
+                  <strong>Distância:</strong>{" "}
+                  {routeInfo?.distance || `${distance?.toFixed(2)} km`}
+                </span>
+              </div>
+            )}
+
+            {/* Tempo Estimado (da API) */}
+            {routeInfo?.duration && (
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <span style={{ fontSize: "18px" }}>⏱️</span>
+                <span style={{ color: "#374151" }}>
+                  <strong>Tempo Est.:</strong> {routeInfo.duration}
                 </span>
               </div>
             )}
