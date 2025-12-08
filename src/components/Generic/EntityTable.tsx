@@ -465,7 +465,10 @@ const EntityTable: React.FC<EntityTableProps> = ({
                     <tr key={row?.id ?? index}>
                       {showIdColumn && (
                         <td style={{ textAlign: "center", fontFamily: "monospace", fontWeight: "600", color: "#6b7280" }}>
-                          {formatId(row?.id)}
+                          {customRenderers?.['id'] 
+                            ? customRenderers['id'](row?.id, row)
+                            : formatId(row?.id)
+                          }
                         </td>
                       )}
                       {visibleFields.map((field) => {
