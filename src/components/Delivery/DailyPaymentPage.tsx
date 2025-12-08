@@ -105,7 +105,7 @@ const DailyPaymentPage: React.FC = () => {
     const displayHours = Math.floor(totalMinutes / 60);
     const displayMinutes = totalMinutes % 60;
     
-    return `\${displayHours}h \${displayMinutes}min`;
+    return `${displayHours}h ${displayMinutes}min`;
   };
 
   // Filtros para a tabela - entregas concluídas
