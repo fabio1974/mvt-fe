@@ -36,8 +36,8 @@ interface PaymentResponse {
 }
 
 const DailyPaymentPage: React.FC = () => {
-  const [deliveries, setDeliveries] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [, setDeliveries] = useState<any[]>([]);
+  const [, setLoading] = useState(false);
   const [payment, setPayment] = useState<PaymentResponse | null>(null);
 
   useEffect(() => {
@@ -101,10 +101,11 @@ const DailyPaymentPage: React.FC = () => {
     
     if (diff <= 0) return "Expirado";
     
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const totalMinutes = Math.floor(diff / (1000 * 60));
+    const displayHours = Math.floor(totalMinutes / 60);
+    const displayMinutes = totalMinutes % 60;
     
-    return `\${hours}h \${minutes}min`;
+    return `\${displayHours}h \${displayMinutes}min`;
   };
 
   // Filtros para a tabela - entregas concluídas
@@ -168,7 +169,7 @@ const DailyPaymentPage: React.FC = () => {
                 }) : "-"}
               </span>
             ),
-            payments: (value: any, row: any) => {
+            payments: (_value: any, row: any) => {
               // Busca o pagamento ativo (PENDING ou COMPLETED)
               const activePayment = row?.payments?.find((p: any) => 
                 p.status === 'PENDING' || p.status === 'COMPLETED'
