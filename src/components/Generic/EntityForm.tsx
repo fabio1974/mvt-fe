@@ -289,9 +289,20 @@ const EntityForm: React.FC<EntityFormProps> = ({
         });
 
         setFormData((prev) => ({ ...prev, ...data }));
-      } catch (err) {
+      } catch (err: any) {
         console.error("Erro ao carregar entidade:", err);
-        showToast("Erro ao carregar dados", "error");
+        
+        // Se for 404, significa que não existe registro ainda - não mostra erro
+        const is404 = err?.response?.status === 404;
+        const errorMessage = err?.response?.data?.message || err?.message || "";
+        
+        if (is404) {
+          console.log("⚠️ Registro não encontrado (404). Iniciando em modo criação.");
+          // Não mostra toast de erro - deixa o formulário vazio para criação
+        } else {
+          // Outros erros mostram toast
+          showToast(errorMessage || "Erro ao carregar dados", "error");
+        }
       } finally {
         setLoadingData(false);
       }
@@ -695,6 +706,18 @@ const EntityForm: React.FC<EntityFormProps> = ({
     } finally {
       setLoading(false);
     }
+  };
+
+  // 📱 Detecta automaticamente campos de telefone pelo nome (helper reutilizável)
+  const isPhoneFieldHelper = (fieldName: string): boolean => {
+    const lowerName = fieldName.toLowerCase();
+    const phoneKeywords = [
+      "phone", "telefone", "fone", "tel",
+      "celular", "cellphone", "cellular",
+      "móvel", "movel", "mobile",
+      "whatsapp", "whats", "zap"
+    ];
+    return phoneKeywords.some(keyword => lowerName.includes(keyword));
   };
 
   // Renderiza um campo baseado no tipo
@@ -1425,6 +1448,91 @@ const EntityForm: React.FC<EntityFormProps> = ({
       ? []
       : section.fields.filter((f) => f.type === "array" && !hiddenFields.includes(f.name)); // Filtra também por hiddenFields
 
+    // 📱 Agrupa campos relacionados para renderização em grid (DDD+Phone, Agencia+Digito, etc)
+    const processFieldsForRendering = (fields: FormFieldMetadata[]) => {
+      const processed: Array<
+        FormFieldMetadata | 
+        { type: 'ddd-phone-group', dddField: FormFieldMetadata, phoneField: FormFieldMetadata } |
+        { type: 'account-digit-group', mainField: FormFieldMetadata, digitField: FormFieldMetadata, groupType: 'agencia' | 'conta' }
+      > = [];
+      const skipIndices = new Set<number>();
+
+      fields.forEach((field, index) => {
+        if (skipIndices.has(index)) return;
+
+        const fieldNameLower = field.name.toLowerCase();
+
+        // Detecta se é campo DDD
+        const isDDD = fieldNameLower === 'ddd' || fieldNameLower.endsWith('ddd');
+
+        if (isDDD && index < fields.length - 1) {
+          // Procura o próximo campo phone
+          const nextField = fields[index + 1];
+          const isNextPhone = isPhoneFieldHelper(nextField.name);
+
+          if (isNextPhone) {
+            // Agrupa DDD + Phone
+            processed.push({
+              type: 'ddd-phone-group',
+              dddField: field,
+              phoneField: nextField
+            });
+            skipIndices.add(index + 1); // Pula o campo phone na próxima iteração
+            return;
+          }
+        }
+
+        // Detecta se é campo Agencia (sem o digito)
+        const isAgencia = fieldNameLower === 'agencia' || 
+                          (fieldNameLower.includes('agencia') && !fieldNameLower.includes('digit'));
+
+        if (isAgencia && index < fields.length - 1) {
+          const nextField = fields[index + 1];
+          const nextFieldNameLower = nextField.name.toLowerCase();
+          const isDigitoAgencia = nextFieldNameLower.includes('digit') && nextFieldNameLower.includes('agencia');
+
+          if (isDigitoAgencia) {
+            // Agrupa Agencia + DigitoAgencia
+            processed.push({
+              type: 'account-digit-group',
+              mainField: field,
+              digitField: nextField,
+              groupType: 'agencia'
+            });
+            skipIndices.add(index + 1);
+            return;
+          }
+        }
+
+        // Detecta se é campo Numero da Conta (sem o digito)
+        const isNumeroConta = (fieldNameLower.includes('numero') && fieldNameLower.includes('conta')) ||
+                              fieldNameLower === 'numerodaconta';
+
+        if (isNumeroConta && index < fields.length - 1) {
+          const nextField = fields[index + 1];
+          const nextFieldNameLower = nextField.name.toLowerCase();
+          const isDigitoConta = nextFieldNameLower.includes('digit') && nextFieldNameLower.includes('conta');
+
+          if (isDigitoConta) {
+            // Agrupa NumeroDaConta + DigitoDaConta
+            processed.push({
+              type: 'account-digit-group',
+              mainField: field,
+              digitField: nextField,
+              groupType: 'conta'
+            });
+            skipIndices.add(index + 1);
+            return;
+          }
+        }
+
+        // Campo normal
+        processed.push(field);
+      });
+
+      return processed;
+    };
+
     // 🚫 Se hideArrayFields está ativo e a seção só tem array fields, não renderiza
     const onlyHasArrayFields =
       regularFields.length === 0 && textareaFields.length === 0;
@@ -1468,9 +1576,132 @@ const EntityForm: React.FC<EntityFormProps> = ({
                   : "0",
             }}
           >
-            {regularFields.filter(shouldRenderField).map((field) => (
-              <div key={field.name}>{renderField(field)}</div>
-            ))}
+            {processFieldsForRendering(regularFields).filter((item) => {
+              if ('type' in item && item.type === 'ddd-phone-group') {
+                // Grupos sempre visíveis se pelo menos um campo deve ser renderizado
+                return shouldRenderField(item.dddField) || shouldRenderField(item.phoneField);
+              }
+              if ('type' in item && item.type === 'account-digit-group') {
+                return shouldRenderField(item.mainField) || shouldRenderField(item.digitField);
+              }
+              return shouldRenderField(item as FormFieldMetadata);
+            }).map((item, index) => {
+              // Renderiza grupo DDD + Phone
+              if ('type' in item && item.type === 'ddd-phone-group') {
+                const { dddField, phoneField } = item;
+                const dddValue = String(formData[dddField.name] ?? "");
+                const phoneValue = String(formData[phoneField.name] ?? "");
+                const dddError = errors[dddField.name];
+                const phoneError = errors[phoneField.name];
+
+                return (
+                  <div
+                    key={`ddd-phone-${index}`}
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "80px 1fr",
+                      gap: "0.75rem",
+                      alignItems: "end",
+                    }}
+                  >
+                    <FormField
+                      label={dddField.label}
+                      required={dddField.required}
+                      error={dddError}
+                    >
+                      <MaskedInput
+                        mask="(99)"
+                        value={dddValue}
+                        onChange={(e) => handleChange(dddField.name, e.target.value)}
+                        placeholder={readonly || dddField.readonly ? "" : (dddField.placeholder || "(__)")}
+                        disabled={dddField.disabled || dddField.readonly || loading || readonly}
+                        required={dddField.required}
+                        readOnly={readonly || dddField.readonly}
+                      />
+                    </FormField>
+
+                    <FormField
+                      label={phoneField.label}
+                      required={phoneField.required}
+                      error={phoneError}
+                    >
+                      <MaskedInput
+                        mask="99999-9999"
+                        value={phoneValue}
+                        onChange={(e) => handleChange(phoneField.name, e.target.value)}
+                        placeholder={readonly || phoneField.readonly ? "" : (phoneField.placeholder || "99999-9999")}
+                        disabled={phoneField.disabled || phoneField.readonly || loading || readonly}
+                        required={phoneField.required}
+                        readOnly={readonly || phoneField.readonly}
+                      />
+                    </FormField>
+                  </div>
+                );
+              }
+
+              // Renderiza grupo Agencia+Digito ou Conta+Digito
+              if ('type' in item && item.type === 'account-digit-group') {
+                const { mainField, digitField, groupType } = item;
+                const mainValue = String(formData[mainField.name] ?? "");
+                const digitValue = String(formData[digitField.name] ?? "");
+                const mainError = errors[mainField.name];
+                const digitError = errors[digitField.name];
+
+                return (
+                  <div
+                    key={`${groupType}-digit-${index}`}
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 60px",
+                      gap: "0.75rem",
+                      alignItems: "end",
+                    }}
+                  >
+                    <FormField
+                      label={mainField.label}
+                      required={mainField.required}
+                      error={mainError}
+                    >
+                      <FormInput
+                        type="text"
+                        value={mainValue}
+                        onChange={(e) => handleChange(mainField.name, e.target.value)}
+                        placeholder={readonly || mainField.readonly ? "" : mainField.placeholder}
+                        disabled={mainField.disabled || mainField.readonly || loading || readonly}
+                        required={mainField.required}
+                        readOnly={readonly || mainField.readonly}
+                      />
+                    </FormField>
+
+                    <FormField
+                      label={digitField.label}
+                      required={digitField.required}
+                      error={digitError}
+                    >
+                      <FormInput
+                        type="text"
+                        value={digitValue}
+                        onChange={(e) => {
+                          // Limita a 1 caractere
+                          const value = e.target.value.slice(0, 1);
+                          handleChange(digitField.name, value);
+                        }}
+                        placeholder={readonly || digitField.readonly ? "" : digitField.placeholder}
+                        disabled={digitField.disabled || digitField.readonly || loading || readonly}
+                        required={digitField.required}
+                        readOnly={readonly || digitField.readonly}
+                        maxLength={1}
+                        style={{ textAlign: 'center' }}
+                      />
+                    </FormField>
+                  </div>
+                );
+              }
+
+              // Renderiza campo normal
+              const field = item as FormFieldMetadata;
+              return <div key={field.name}>{renderField(field)}</div>;
+            })}
           </div>
         )}
 

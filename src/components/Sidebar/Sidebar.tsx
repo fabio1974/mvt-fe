@@ -14,6 +14,7 @@ import {
   FiPackage,
   FiDollarSign,
   FiMapPin,
+  FiCreditCard,
 } from "react-icons/fi";
 import "./Sidebar.css";
 
@@ -38,6 +39,16 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
     label: "Dados Pessoais",
     icon: <FiUser size={22} color="#0099ff" />,
     path: "/dados-pessoais",
+  },
+  {
+    label: "Dados Bancários",
+    icon: <FiCreditCard size={22} color="#0099ff" />,
+    path: "/dados-bancarios",
+  },
+  {
+    label: "Dados de Endereço",
+    icon: <FiMapPin size={22} color="#0099ff" />,
+    path: "/dados-endereco",
   },
   // Grupo - promovido para menu principal (apenas ORGANIZER)
   {

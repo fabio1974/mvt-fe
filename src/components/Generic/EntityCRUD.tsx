@@ -50,6 +50,8 @@ interface EntityCRUDProps {
   transformData?: (data: Record<string, unknown>) => Record<string, unknown>;
   /** Valores padrão para o formulário de criação */
   defaultValues?: Record<string, unknown>;
+  /** Valores iniciais para o formulário (view/edit) */
+  initialValues?: Record<string, unknown>;
   /** Campos a serem escondidos na tabela */
   hideFields?: string[];
   /** Campos que devem ficar readonly no formulário */
@@ -101,6 +103,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
   hideArrayFields = false,
   initialFilters,
   defaultValues,
+  initialValues,
   hideFields,
   readonlyFields,
   hiddenFields,
@@ -387,7 +390,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
           mode={viewMode === "table" ? "view" : viewMode}
           hideCancelButton={hideTable && isReadonly}
           hideArrayFields={hideArrayFields}
-          initialValues={viewMode === "create" ? defaultValues : undefined}
+          initialValues={viewMode === "create" ? defaultValues : initialValues}
           readonlyFields={readonlyFields}
           hiddenFields={hiddenFields}
         />
