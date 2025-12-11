@@ -16,6 +16,7 @@ import PaymentCancelPage from "./components/Payment/PaymentCancelPage";
 import PersonalDataPage from "./components/User/PersonalDataPage";
 import BankAccountPage from "./components/User/BankAccountPage";
 import AddressPage from "./components/User/AddressPage";
+import ConsolidatedPaymentProcessor from "./components/ConsolidatedPayment/ConsolidatedPaymentProcessor";
 import SiteConfigurationCRUDPage from "./components/SiteConfiguration/SiteConfigurationCRUDPage";
 import SpecialZonesMapPage from "./components/SpecialZones/SpecialZonesMapPage";
 import Sidebar from "./components/Sidebar/Sidebar";
@@ -134,6 +135,7 @@ function App() {
               <Route path="/dados-pessoais" element={<PersonalDataPage />} />
               <Route path="/dados-bancarios" element={<BankAccountPage />} />
               <Route path="/dados-endereco" element={<AddressPage />} />
+              <Route path="/processar-pagamentos" element={<ConsolidatedPaymentProcessor />} />
               <Route path="/configuracoes" element={<SiteConfigurationCRUDPage />} />
               <Route path="/zonas-especiais" element={<SpecialZonesMapPage />} />
               <Route path="/payment/success" element={<PaymentSuccessPage />} />

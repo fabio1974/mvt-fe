@@ -1,0 +1,262 @@
+.consolidated-payment-processor {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.processor-header {
+  margin-bottom: 2rem;
+}
+
+.processor-header h2 {
+  color: var(--text-primary);
+  font-size: 1.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.processor-header .description {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.processor-actions {
+  margin-bottom: 2rem;
+}
+
+.btn-process {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-process:hover:not(:disabled) {
+  background: var(--primary-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-process:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-process svg {
+  font-size: 1.25rem;
+}
+
+/* Task Status Container */
+.task-status-container {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.status-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.status-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+}
+
+.status-icon.queued {
+  color: #6c757d;
+}
+
+.status-icon.completed {
+  color: #28a745;
+}
+
+.status-icon.failed {
+  color: #dc3545;
+}
+
+.spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid var(--primary-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.status-info {
+  flex: 1;
+}
+
+.status-info h3 {
+  color: var(--text-primary);
+  font-size: 1.25rem;
+  margin: 0 0 0.5rem 0;
+}
+
+.status-message {
+  color: var(--text-secondary);
+  margin: 0 0 0.25rem 0;
+  font-size: 0.95rem;
+}
+
+.status-duration {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+/* Progress Bar */
+.progress-container {
+  margin-bottom: 1.5rem;
+}
+
+.progress-bar-wrapper {
+  background: #e9ecef;
+  border-radius: 8px;
+  height: 32px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-bar-fill {
+  background: linear-gradient(90deg, var(--primary-color), var(--primary-dark));
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: width 0.3s ease;
+  position: relative;
+}
+
+.progress-percentage {
+  color: white;
+  font-weight: 600;
+  font-size: 0.875rem;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* Statistics */
+.statistics {
+  margin-bottom: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #e9ecef;
+}
+
+.statistics h4 {
+  color: var(--text-primary);
+  font-size: 1rem;
+  margin: 0 0 1rem 0;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.stat-item {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.stat-label {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.stat-value {
+  color: var(--primary-color);
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+/* Errors */
+.errors-container {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  border-radius: 8px;
+}
+
+.errors-container h4 {
+  color: #856404;
+  font-size: 1rem;
+  margin: 0 0 0.75rem 0;
+}
+
+.error-list {
+  margin: 0;
+  padding-left: 1.5rem;
+  color: #856404;
+}
+
+.error-list li {
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+/* Task Details */
+.task-details {
+  padding-top: 1rem;
+  border-top: 1px solid #e9ecef;
+}
+
+.task-id {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.task-id code {
+  background: #f8f9fa;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.85rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .consolidated-payment-processor {
+    padding: 1rem;
+  }
+
+  .processor-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .status-header {
+    flex-direction: column;
+  }
+}

@@ -101,6 +101,12 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
     roles: ["ROLE_ORGANIZER", "ORGANIZER"],
   },
   {
+    label: "Processar Pagamentos",
+    icon: <FiDollarSign size={22} color="#8b5cf6" />,
+    path: "/processar-pagamentos",
+    roles: ["ROLE_ADMIN"],
+  },
+  {
     label: "Zonas Especiais",
     icon: <FiMapPin size={22} color="#ef4444" />,
     path: "/zonas-especiais",
