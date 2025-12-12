@@ -39,6 +39,14 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
 }) => {
   const { fields = [], minItems = 0, maxItems = 100 } = config;
 
+  // 🔍 Log quando value prop muda
+  useEffect(() => {
+    console.log(
+      `📥 [ArrayField] Recebido novo value prop:`,
+      value.map((item, idx) => `Item ${idx}: ${JSON.stringify(item)}`)
+    );
+  }, [value]);
+
   // 🔄 Converte plural em singular (Categorias → Categoria)
   const pluralToSingular = (plural: string): string => {
     // Remove 's' final para a maioria dos plurais portugueses
