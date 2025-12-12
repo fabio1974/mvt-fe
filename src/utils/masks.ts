@@ -41,9 +41,14 @@ export const getPhoneMask = (fieldName: string): string => {
  */
 const isCEPField = (fieldName: string): boolean => {
   const name = fieldName.toLowerCase();
+  // NÃO inclui "point", "reference", "referência" pois esses são campos de texto livre
   const cepKeywords = ["cep", "zipcode", "zip", "postalcode", "postal"];
+  const excludeKeywords = ["point", "reference", "referencia", "reference_point"];
   
-  return cepKeywords.some(keyword => name.includes(keyword));
+  const hasCepKeyword = cepKeywords.some(keyword => name.includes(keyword));
+  const isExcluded = excludeKeywords.some(keyword => name.includes(keyword));
+  
+  return hasCepKeyword && !isExcluded;
 };
 
 /**

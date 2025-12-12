@@ -15,6 +15,10 @@ export const LABEL_TRANSLATIONS: Record<string, string> = {
   // Plural forms
   "clientContracts": "Contratos de Serviço",
   "employmentContracts": "Contratos de Motoboy",
+  
+  // Address fields
+  "Addresses": "Endereços",
+  "Address": "Endereço",
 };
 
 /**

@@ -476,7 +476,7 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
             <FormField label="Estado" required={false}>
               <FormInput
                 type="text"
-                value="" // Estado seria carregado do backend
+                value={String(itemValue.state || itemValue.uf || "")}
                 readOnly
                 disabled
                 placeholder={getPlaceholder(field) || "--"}
@@ -555,7 +555,7 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
               <FormField label="Estado" required={false}>
                 <FormInput
                   type="text"
-                  value=""
+                  value={String(itemValue.state || itemValue.uf || "")}
                   readOnly
                   disabled
                   placeholder="--"
