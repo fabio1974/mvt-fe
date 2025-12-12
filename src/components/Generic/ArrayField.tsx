@@ -147,13 +147,20 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
   ) => {
     console.log(
       `🔧 [ArrayField] handleFieldChange: item ${itemIndex}, field ${fieldName}, value:`,
-      fieldValue
+      fieldValue,
+      "current array value:",
+      value
     );
 
     // ✅ USA O ARRAY PRINCIPAL: `value` (prop do componente)
     // NÃO usa `value` do parâmetro (que é o valor do campo individual)
     const newArray = [...value];
     const currentItem = (newArray[itemIndex] as Record<string, unknown>) || {};
+
+    console.log(
+      `🔧 [ArrayField] currentItem antes de atualizar:`,
+      currentItem
+    );
 
     // Atualiza o campo específico
     newArray[itemIndex] = {

@@ -322,12 +322,14 @@ const EntityForm: React.FC<EntityFormProps> = ({
     if (computedFields.length === 0) return;
 
     console.log(
-      "🧮 [EntityForm] Campos computados detectados:",
+      "🧮 [EntityForm] useEffect disparado - Campos computados detectados:",
       computedFields.map((f) => ({
         name: f.name,
         computed: f.computed,
         dependencies: f.computedDependencies,
-      }))
+      })),
+      "formData keys:",
+      Object.keys(formData)
     );
 
     // Para cada campo computado, verifica se alguma dependência mudou
@@ -338,6 +340,10 @@ const EntityForm: React.FC<EntityFormProps> = ({
 
       // Só atualiza se o valor calculado for diferente do atual
       if (result !== null && result !== formData[field.name]) {
+        console.log(
+          `🧮 [EntityForm] Atualizando campo computado ${field.name}:`,
+          result
+        );
         setFormData((prev) => ({
           ...prev,
           [field.name]: result,
