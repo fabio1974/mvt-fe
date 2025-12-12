@@ -675,16 +675,6 @@ const EntityForm: React.FC<EntityFormProps> = ({
         }
       });
 
-      // ✅ Remove qualquer campo que NÃO esteja no metadata do formulário
-      // Isso evita enviar campos que foram carregados da API mas não estão no form
-      const validFieldNames = new Set(allFields.map(f => f.name));
-      Object.keys(unmaskedData).forEach((key) => {
-        if (!validFieldNames.has(key)) {
-          delete unmaskedData[key];
-          console.log(`🧹 Removendo campo não definido no metadata: ${key}`);
-        }
-      });
-
       const method = entityId ? "put" : "post";
       const url = entityId
         ? `${metadata.endpoint}/${entityId}`
