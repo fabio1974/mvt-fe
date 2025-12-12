@@ -5,6 +5,7 @@ import { showToast } from "../../utils/toast";
 import { useOrganization } from "../../hooks/useOrganization";
 import { isAdmin } from "../../utils/auth";
 import { executeComputedField } from "../../utils/computedFields";
+import { translateLabel } from "../../utils/labelTranslations";
 import type {
   FormMetadata,
   FormFieldMetadata,
@@ -1711,7 +1712,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
       return (
         <FormContainer
           key={`array-${field.name}`}
-          title={field.arrayConfig?.label || field.label}
+          title={translateLabel(field.arrayConfig?.label || field.label)}
         >
           <ArrayField
             config={{
