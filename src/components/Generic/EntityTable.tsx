@@ -5,6 +5,7 @@ import { useMetadata } from "../../hooks/useMetadata";
 import type { EntityMetadata, FieldMetadata } from "../../types/metadata";
 import EntityFilters from "./EntityFilters";
 import { applyAutoMask } from "../../utils/masks";
+import { translateLabel } from "../../utils/labelTranslations";
 import "./EntityTable.css";
 
 interface Pageable {
@@ -438,7 +439,7 @@ const EntityTable: React.FC<EntityTableProps> = ({
                       key={field.name}
                       style={{ textAlign: getAlignment(field.align) }}
                     >
-                      {field.label}
+                      {translateLabel(field.label)}
                     </th>
                   ))}
                   {showActions && (

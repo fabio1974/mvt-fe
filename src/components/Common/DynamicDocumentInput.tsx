@@ -1,8 +1,7 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import IMask from "imask";
 
-interface MaskedInputProps {
-  mask: string;
+interface DynamicDocumentInputProps {
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   placeholder?: string;
@@ -12,48 +11,50 @@ interface MaskedInputProps {
   readOnly?: boolean;
 }
 
-export const MaskedInput: React.FC<MaskedInputProps> = ({
-  mask,
+/**
+ * Input com máscara dinâmica para CPF/CNPJ
+ * - CPF: 11 dígitos → 999.999.999-99
+ * - CNPJ: 14 dígitos → 99.999.999/9999-99
+ * Detecta automaticamente baseado na quantidade de dígitos
+ */
+export const DynamicDocumentInput: React.FC<DynamicDocumentInputProps> = ({
   value,
   onChange,
-  placeholder,
+  placeholder = "CPF ou CNPJ",
   disabled = false,
   required = false,
   className = "",
   readOnly = false,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const maskRef = useRef<any>(null);
-
-  const getIMaskPattern = (maskPattern: string): string => {
-    return maskPattern.replace(/9/g, "0");
-  };
+  const [currentMask, setCurrentMask] = useState<string>("999.999.999-99");
 
   useEffect(() => {
     if (!inputRef.current) return;
 
-    // Usa a máscara que foi passada como prop
-    // Não faz mais detecção automática aqui
-    const maskPattern = mask;
+    // Conta apenas dígitos para decidir a máscara
+    const digitsOnly = (value || "").replace(/\D/g, "");
+    const newMask = digitsOnly.length > 11 ? "99.999.999/9999-99" : "999.999.999-99";
 
+    if (newMask !== currentMask) {
+      setCurrentMask(newMask);
+    }
+
+    // Cria ou atualiza o IMask
     if (maskRef.current) {
       maskRef.current.updateOptions({
-        mask: getIMaskPattern(maskPattern),
+        mask: newMask.replace(/9/g, "0"),
       });
       maskRef.current.value = value;
     } else {
       maskRef.current = IMask(inputRef.current, {
-        mask: getIMaskPattern(maskPattern),
+        mask: newMask.replace(/9/g, "0"),
         lazy: false,
       });
-
-      // ⚠️ NÃO usamos on("accept") aqui!
-      // O onChange nativo do input é suficiente
-
       maskRef.current.value = value;
     }
-  }, [mask, value]);
+  }, [value, currentMask]);
 
   useEffect(() => {
     return () => {
@@ -73,19 +74,12 @@ export const MaskedInput: React.FC<MaskedInputProps> = ({
       required={required}
       className={`form-input ${className}`}
       onChange={(e) => {
-        // ✅ onChange é disparado pelo input nativo
-        // IMask já atualizou inputRef.current.value automaticamente
-        if (maskRef.current) {
-          const event = {
-            target: {
-              value: maskRef.current.value,
-              name: inputRef.current?.name || "",
-            },
-          } as React.ChangeEvent<HTMLInputElement>;
-          onChange(event);
-        } else {
-          onChange(e);
-        }
+        // Atualiza o valor no formData
+        onChange(e);
+      }}
+      onBlur={(e) => {
+        // Garante que onChange seja disparado no blur também
+        onChange(e as any);
       }}
     />
   );

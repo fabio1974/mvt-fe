@@ -43,7 +43,7 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
   useEffect(() => {
     console.log(
       `📥 [ArrayField] Recebido novo value prop:`,
-      value.map((item, idx) => `Item ${idx}: ${JSON.stringify(item)}`)
+      value.length > 0 ? `${value.length} items` : "vazio"
     );
   }, [value]);
 
@@ -155,10 +155,14 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
   ) => {
     console.log(
       `🔧 [ArrayField] handleFieldChange: item ${itemIndex}, field ${fieldName}, value:`,
-      fieldValue,
-      "current array value:",
-      value
+      fieldValue
     );
+    console.log(`🔧 [ArrayField] RECEBIDO NA FUNÇÃO:`, {
+      fieldName,
+      fieldValue,
+      valueArrayLength: Array.isArray(value) ? value.length : "NOT ARRAY",
+      valueArrayContent: value,
+    });
 
     // ✅ USA O ARRAY PRINCIPAL: `value` (prop do componente)
     // NÃO usa `value` do parâmetro (que é o valor do campo individual)

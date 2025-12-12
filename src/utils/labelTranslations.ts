@@ -19,6 +19,16 @@ export const LABEL_TRANSLATIONS: Record<string, string> = {
   // Address fields
   "Addresses": "Endereços",
   "Address": "Endereço",
+
+  // Document
+  "document_number": "CPF/CNPJ",
+  "documentNumber": "CPF/CNPJ",
+  "Document Number": "CPF/CNPJ",
+
+  // CPF only labels (antigos) -> exibir como CPF/CNPJ
+  "CPF": "CPF/CNPJ",
+  "cpf": "CPF/CNPJ",
+  "Cpf": "CPF/CNPJ",
 };
 
 /**

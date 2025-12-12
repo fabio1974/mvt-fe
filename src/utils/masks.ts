@@ -64,6 +64,11 @@ export const getAutoMask = (fieldName: string): string | null => {
   if (name.includes("cnpj")) {
     return "99.999.999/9999-99";
   }
+
+  // Campo "document" aceita CPF OU CNPJ dinamicamente
+  if (name.includes("document")) {
+    return "cpf-cnpj-dynamic"; // Máscara especial detectada no componente
+  }
   
   if (isPhoneField(fieldName)) {
     return getPhoneMask(fieldName); // Usa celular por padrão, fixo se explícito
@@ -270,6 +275,7 @@ export const shouldUnmask = (fieldName: string): boolean => {
   return (
     name.includes("cpf") ||
     name.includes("cnpj") ||
+    name.includes("document") ||
     isCEPField(fieldName) ||
     isPhoneField(fieldName)
   );
@@ -307,7 +313,27 @@ export const unmaskFormData = (data: Record<string, unknown>): Record<string, un
     
     // Se é string e o campo deve ser desmascardo
     if (typeof value === "string" && shouldUnmask(key)) {
-      unmasked[key] = unmaskValue(value);
+      const numbersOnly = unmaskValue(value);
+      // 🚫 Garantir tamanho correto por tipo conhecido
+      if (key.toLowerCase().includes("cpf") && !key.toLowerCase().includes("cnpj")) {
+        // CPF tem exatamente 11 dígitos
+        unmasked[key] = numbersOnly.substring(0, 11);
+      } else if (key.toLowerCase().includes("cnpj")) {
+        // CNPJ tem exatamente 14 dígitos
+        unmasked[key] = numbersOnly.substring(0, 14);
+      } else if (key.toLowerCase().includes("document")) {
+        // DocumentNumber: detecta automaticamente CPF (11) ou CNPJ (14)
+        unmasked[key] = numbersOnly.length > 11 
+          ? numbersOnly.substring(0, 14) 
+          : numbersOnly.substring(0, 11);
+      } else if (isCEPField(key)) {
+        unmasked[key] = numbersOnly.substring(0, 8);
+      } else if (isPhoneField(key)) {
+        // Telefone brasileiro: 10 (fixo) ou 11 (celular) — não corta além de 11
+        unmasked[key] = numbersOnly.substring(0, 11);
+      } else {
+        unmasked[key] = numbersOnly;
+      }
     } else {
       unmasked[key] = value;
     }

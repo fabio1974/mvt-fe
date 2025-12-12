@@ -24,7 +24,8 @@ import {
   FormDatePicker,
 } from "../Common/FormComponents";
 import { MaskedInput } from "../Common/MaskedInput";
-import { getAutoMask, unmaskFormData } from "../../utils/masks";
+import { DynamicDocumentInput } from "../Common/DynamicDocumentInput";
+import { getAutoMask, unmaskFormData, isValidCPF, isValidCNPJ } from "../../utils/masks";
 import { ArrayField } from "./ArrayField";
 import { CityTypeahead } from "../Common/CityTypeahead";
 import { AddressFieldWithMap } from "../Common/AddressFieldWithMap";
@@ -356,10 +357,39 @@ const EntityForm: React.FC<EntityFormProps> = ({
     metadata.sections,
   ]);
 
+  const isDocumentField = (fieldName: string): boolean => {
+    const name = fieldName.toLowerCase();
+    return name.includes("document");
+  };
+
+  const sanitizeDocumentValue = (value: unknown): string => {
+    const digitsOnly = String(value ?? "").replace(/\D/g, "");
+    // Permite CPF (11) ou CNPJ (14) — corta acima de 14
+    return digitsOnly.substring(0, 14);
+  };
+
   // Atualiza valor de um campo
   const handleChange = (fieldName: string, value: unknown) => {
+    if (fieldName === "addresses" && Array.isArray(value)) {
+      console.log(`🔄 [EntityForm] handleChange ADDRESSES:`, {
+        numItems: value.length,
+        items: value.map((item, idx) => ({
+          idx,
+          data: item,
+        })),
+      });
+    }
+
+    const normalizedValue =
+      isDocumentField(fieldName) && typeof value === "string"
+        ? sanitizeDocumentValue(value)
+        : value;
+
     setFormData((prev) => {
-      const newData = { ...prev, [fieldName]: value };
+      const newData = { ...prev, [fieldName]: normalizedValue };
+      if (fieldName === "addresses") {
+        console.log(`✅ [EntityForm] setFormData com addresses:`, newData.addresses);
+      }
       return newData;
     });
 
@@ -401,6 +431,23 @@ const EntityForm: React.FC<EntityFormProps> = ({
       return `${field.label} é obrigatório`;
     }
 
+    // Validação específica para Documento (CPF/CNPJ)
+    if (isDocumentField(field.name) && value) {
+      const digits = sanitizeDocumentValue(value);
+
+      if (digits.length !== 11 && digits.length !== 14) {
+        return "CPF/CNPJ deve ter 11 ou 14 dígitos";
+      }
+
+      if (digits.length === 11 && !isValidCPF(digits)) {
+        return "CPF inválido";
+      }
+
+      if (digits.length === 14 && !isValidCNPJ(digits)) {
+        return "CNPJ inválido";
+      }
+    }
+
     // Validações customizadas
     if (field.validation && value) {
       const { min, max, minLength, maxLength, pattern, message } =
@@ -438,15 +485,24 @@ const EntityForm: React.FC<EntityFormProps> = ({
         isTextField &&
         maxLength !== undefined
       ) {
-        // Para campos com máscara (DDD, telefone), contar apenas dígitos
-        const valueLength = hasPhoneMask(field.name)
-          ? countDigits(String(value))
-          : String(value).length;
+        // ⚠️ Campos de documento (CPF/CNPJ) têm validação específica — pular validação genérica de maxLength
+        if (isDocumentField(field.name)) {
+          // Skip: validação específica já foi feita acima
+        } else {
+          // Para campos com máscara (DDD, telefone, CEP), contar apenas dígitos
+          const hasFieldMask = hasPhoneMask(field.name) || 
+                              field.name.toLowerCase().includes("cep") ||
+                              field.name.toLowerCase().includes("zipcode");
+          
+          const valueLength = hasFieldMask
+            ? countDigits(String(value))
+            : String(value).length;
 
-        if (valueLength > maxLength) {
-          return (
-            message || `${field.label} deve ter no máximo ${maxLength} caracteres`
-          );
+          if (valueLength > maxLength) {
+            return (
+              message || `${field.label} deve ter no máximo ${maxLength} caracteres`
+            );
+          }
         }
       }
 
@@ -589,6 +645,33 @@ const EntityForm: React.FC<EntityFormProps> = ({
 
       // ✅ Remove máscaras de CPF, CNPJ, telefone, CEP antes de enviar ao backend
       const unmaskedData = unmaskFormData(finalData);
+
+      console.log("📋 [DEBUG] Dados antes de unmask:", finalData);
+      console.log("📋 [DEBUG] Dados após unmask:", unmaskedData);
+
+      // 🚫 Remove campos que não pertencem à entidade atual (whitelist pelos metadados)
+      // Isto evita enviar campos como "address", "city", "country" quando não existem no metadata da entidade
+      const allowedFieldNames = new Set(
+        (metadata.originalFields || metadata.sections.flatMap((s) => s.fields)).map((f) => f.name)
+      );
+
+      console.log("📋 [DEBUG] Campos permitidos no metadata:", Array.from(allowedFieldNames));
+
+      Object.keys(unmaskedData).forEach((key) => {
+        // Mantém sempre "id" e campos de relacionamento conhecidos (arrays de contratos/endereços)
+        const keepAlways = 
+          key === "id" || 
+          key === "addresses" || 
+          key === "clientContracts" || 
+          key === "employmentContracts";
+        
+        if (!keepAlways && !allowedFieldNames.has(key)) {
+          delete unmaskedData[key];
+          console.log(`🚫 Removendo campo fora do metadata: ${key}`);
+        }
+      });
+
+      console.log("📋 [DEBUG] Dados finais após whitelist:", unmaskedData);
 
       // 🚫 Remove campos "transferred" (campos de outras entidades que não devem ser enviados)
       allFields.forEach((field) => {
@@ -818,7 +901,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
     // 🧮 Campos computados são sempre readonly
     if (field.computed) {
       return (
-        <FormField label={field.label} required={field.required} error={error}>
+        <FormField label={translateLabel(field.label)} required={field.required} error={error}>
           <FormInput
             type="text"
             placeholder=""
@@ -842,7 +925,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
           
           fieldContent = (
             <FormField
-              label={field.label}
+              label={translateLabel(field.label)}
               required={field.required}
               error={error}
             >
@@ -852,7 +935,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
                 placeholder={readonly || field.readonly || isFieldReadonly ? "" : field.placeholder}
                 disabled={field.disabled || field.readonly || isFieldReadonly || loading || readonly}
                 required={field.required}
-                label={field.label}
+                label={translateLabel(field.label)}
                 fieldName={field.name}
                 onCoordinatesChange={(lat, lng) => handleAddressCoordinatesChange(field.name, lat, lng)}
                 onAddressDataChange={handleAddressDataChange}
@@ -869,11 +952,22 @@ const EntityForm: React.FC<EntityFormProps> = ({
 
         fieldContent = (
           <FormField
-            label={field.label}
+            label={translateLabel(field.label)}
             required={field.required}
             error={error}
           >
-            {autoMask ? (
+            {autoMask === "cpf-cnpj-dynamic" ? (
+              <DynamicDocumentInput
+                value={stringValue}
+                onChange={(e) => handleChange(field.name, e.target.value)}
+                placeholder={readonly || field.readonly || isFieldReadonly ? "" : field.placeholder}
+                disabled={
+                  field.disabled || field.readonly || isFieldReadonly || loading || readonly
+                }
+                required={field.required}
+                readOnly={readonly || field.readonly}
+              />
+            ) : autoMask ? (
               <MaskedInput
                 mask={autoMask}
                 value={stringValue}
@@ -905,7 +999,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
       case "number":
         fieldContent = (
           <FormField
-            label={field.label}
+            label={translateLabel(field.label)}
             required={field.required}
             error={error}
           >
@@ -929,7 +1023,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
           
           fieldContent = (
             <FormField
-              label={field.label}
+              label={translateLabel(field.label)}
               required={field.required}
               error={error}
             >
@@ -939,7 +1033,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
                 placeholder={readonly ? "" : field.placeholder}
                 disabled={field.disabled || field.readonly || isFieldReadonly || loading || readonly}
                 required={field.required}
-                label={field.label}
+                label={translateLabel(field.label)}
                 fieldName={field.name}
                 onCoordinatesChange={(lat, lng) => handleAddressCoordinatesChange(field.name, lat, lng)}
                 onAddressDataChange={handleAddressDataChange}
@@ -958,7 +1052,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
           
           fieldContent = (
             <FormField
-              label={field.label}
+              label={translateLabel(field.label)}
               required={field.required}
               error={error}
             >
@@ -981,7 +1075,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
 
         fieldContent = (
           <FormField
-            label={field.label}
+            label={translateLabel(field.label)}
             required={field.required}
             error={error}
           >
@@ -1002,7 +1096,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
 
         fieldContent = (
           <FormField
-            label={field.label}
+            label={translateLabel(field.label)}
             required={field.required}
             error={error}
           >
@@ -1060,7 +1154,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
 
         fieldContent = (
           <FormField
-            label={field.label}
+            label={translateLabel(field.label)}
             required={field.required}
             error={error}
           >
@@ -1122,7 +1216,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
                 }}
               />
               <span style={{ fontSize: "14px", color: "#374151" }}>
-                {field.label}
+                {translateLabel(field.label)}
               </span>
             </label>
           </div>
@@ -1140,7 +1234,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
             }}
           >
             <FormField
-              label={field.label}
+              label={translateLabel(field.label)}
               required={field.required}
               error={error}
             >
@@ -1229,7 +1323,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
                 }}
               >
                 <FormField
-                  label={field.label}
+                  label={translateLabel(field.label)}
                   required={field.required}
                   error={error}
                 >
@@ -1283,7 +1377,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
 
             fieldContent = (
               <FormField
-                label={field.label}
+                label={translateLabel(field.label)}
                 required={field.required}
                 error={error}
               >
@@ -1667,7 +1761,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
       : section.fields.filter((f) => f.type === "array" && !hiddenFields.includes(f.name)); // Filtra também por hiddenFields
 
     return arrayFields.map((field) => {
-      const value = formData[field.name] ?? [];
+      const value = (formData[field.name] as unknown[]) ?? [];
 
       // Só renderiza se tiver dados ou não estiver no modo view
       if (readonly || formMode === "view") {
