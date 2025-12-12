@@ -169,6 +169,19 @@ const ConsolidatedPaymentProcessor: React.FC = () => {
           className="btn-process"
           onClick={handleStartProcessing}
           disabled={isProcessing}
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "0.5rem",
+            padding: "0.875rem 1.5rem",
+            backgroundColor: "#6d28d9", // Fallback roxo caso variáveis CSS não estejam disponíveis
+            color: "#ffffff",
+            border: "none",
+            borderRadius: 8,
+            fontSize: "1rem",
+            fontWeight: 500,
+            cursor: isProcessing ? "not-allowed" : "pointer",
+          }}
         >
           <FiPlay />
           {isProcessing ? "Processando..." : "Iniciar Processamento"}

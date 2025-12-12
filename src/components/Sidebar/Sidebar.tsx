@@ -95,6 +95,12 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
     roles: ["ROLE_CLIENT", "CLIENT"],
   },
   {
+    label: "Pagamentos",
+    icon: <FiDollarSign size={22} color="#06b6d4" />,
+    path: "/pagamentos",
+    roles: ["ROLE_ADMIN", "ROLE_ORGANIZER", "ROLE_COURIER"],
+  },
+  {
     label: "Balanço Financeiro",
     icon: <FiDollarSign size={22} color="#10b981" />,
     path: "/balanco-financeiro",

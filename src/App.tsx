@@ -13,6 +13,7 @@ import DailyPaymentPage from "./components/Delivery/DailyPaymentPage";
 import OrganizerFinancialPage from "./components/Delivery/OrganizerFinancialPage";
 import PaymentSuccessPage from "./components/Payment/PaymentSuccessPage";
 import PaymentCancelPage from "./components/Payment/PaymentCancelPage";
+import PaymentCRUDPage from "./components/Payment/PaymentCRUDPage";
 import PersonalDataPage from "./components/User/PersonalDataPage";
 import BankAccountPage from "./components/User/BankAccountPage";
 import AddressPage from "./components/User/AddressPage";
@@ -131,6 +132,7 @@ function App() {
               <Route path="/motoboy" element={<CourierCRUDPage />} />
               <Route path="/deliveries" element={<DeliveryCRUDPage />} />
               <Route path="/pagamento-diario" element={<DailyPaymentPage />} />
+              <Route path="/pagamentos" element={<PaymentCRUDPage />} />
               <Route path="/balanco-financeiro" element={<OrganizerFinancialPage />} />
               <Route path="/dados-pessoais" element={<PersonalDataPage />} />
               <Route path="/dados-bancarios" element={<BankAccountPage />} />
