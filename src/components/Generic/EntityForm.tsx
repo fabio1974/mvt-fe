@@ -469,6 +469,19 @@ const EntityForm: React.FC<EntityFormProps> = ({
     }
   };
 
+  // Conta apenas dígitos em uma string (ignora caracteres de máscara)
+  const countDigits = (value: string): number => {
+    return (value || "").replace(/\D/g, "").length;
+  };
+
+  // Detecta se um campo tem máscara aplicada
+  const hasPhoneMask = (fieldName: string): boolean => {
+    const keywords = ["ddd", "telefone", "celular", "phone"];
+    return keywords.some((keyword) =>
+      fieldName.toLowerCase().includes(keyword)
+    );
+  };
+
   // Valida um campo
   const validateField = (
     field: FormFieldMetadata,
@@ -519,12 +532,18 @@ const EntityForm: React.FC<EntityFormProps> = ({
 
       if (
         isTextField &&
-        maxLength !== undefined &&
-        String(value).length > maxLength
+        maxLength !== undefined
       ) {
-        return (
-          message || `${field.label} deve ter no máximo ${maxLength} caracteres`
-        );
+        // Para campos com máscara (DDD, telefone), contar apenas dígitos
+        const valueLength = hasPhoneMask(field.name)
+          ? countDigits(String(value))
+          : String(value).length;
+
+        if (valueLength > maxLength) {
+          return (
+            message || `${field.label} deve ter no máximo ${maxLength} caracteres`
+          );
+        }
       }
 
       // Validação de padrão (pattern) - apenas para campos de texto
