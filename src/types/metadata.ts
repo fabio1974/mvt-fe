@@ -199,6 +199,8 @@ export interface FormFieldMetadata {
   disabled?: boolean;
   /** Se o campo é somente leitura (visualmente disabled, mas valor é enviado no submit) */
   readonly?: boolean;
+  /** Se o campo é transferido de outra entidade (não deve ser enviado no payload) */
+  transferred?: boolean;
   /** Texto de ajuda */
   helpText?: string;
   /** Condição para exibir o campo (expressão) */

@@ -667,6 +667,14 @@ const EntityForm: React.FC<EntityFormProps> = ({
       // ✅ Remove máscaras de CPF, CNPJ, telefone, CEP antes de enviar ao backend
       const unmaskedData = unmaskFormData(finalData);
 
+      // 🚫 Remove campos "transferred" (campos de outras entidades que não devem ser enviados)
+      allFields.forEach((field) => {
+        if (field.transferred) {
+          delete unmaskedData[field.name];
+          console.log(`🚫 Excluindo campo transferred: ${field.name}`);
+        }
+      });
+
       const method = entityId ? "put" : "post";
       const url = entityId
         ? `${metadata.endpoint}/${entityId}`
