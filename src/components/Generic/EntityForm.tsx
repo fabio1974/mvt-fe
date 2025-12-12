@@ -351,8 +351,8 @@ const EntityForm: React.FC<EntityFormProps> = ({
       }
     });
   }, [
-    // Observa mudanças no formData
-    formData,
+    // ⚠️ REMOVER FORMDATA: não observar mudanças em formData para evitar loops
+    // Este effect é apenas para inicializar campos computados
     metadata.sections,
   ]);
 
