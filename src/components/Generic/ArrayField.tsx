@@ -136,7 +136,7 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
     if (hasChanges) {
       onChange(newValue);
     }
-  }, [value, fields, onChange]);
+  }, [fields, onChange]); // ✅ REMOVIDO: value da dependência para evitar loops infinitos
 
   // ✅ CORREÇÃO CRÍTICA: handleFieldChange usa o array principal `value`
   // ao invés da variável incorreta `value` do parâmetro
