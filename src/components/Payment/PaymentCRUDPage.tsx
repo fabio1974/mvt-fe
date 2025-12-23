@@ -30,7 +30,6 @@ const PaymentCRUDPage: React.FC = () => {
       pageTitle="Pagamentos"
       pageDescription="Visualize e gerencie os pagamentos da plataforma"
       disableCreate={true}
-      disableDelete={true}
       hideArrayFields={true}
     />
   );

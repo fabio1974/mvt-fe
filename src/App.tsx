@@ -8,6 +8,7 @@ import OrganizationCRUDPage from "./components/Organization/OrganizationCRUDPage
 import OrganizerOrganizationPage from "./components/Organization/OrganizerOrganizationPage";
 import CourierCRUDPage from "./components/Courier/CourierCRUDPage";
 import ClientCRUDPage from "./components/Client/ClientCRUDPage";
+import ManagerCRUDPage from "./components/Manager/ManagerCRUDPage";
 import DeliveryCRUDPage from "./components/Delivery/DeliveryCRUDPage";
 import DailyPaymentPage from "./components/Delivery/DailyPaymentPage";
 import OrganizerFinancialPage from "./components/Delivery/OrganizerFinancialPage";
@@ -16,6 +17,7 @@ import PaymentCancelPage from "./components/Payment/PaymentCancelPage";
 import PaymentCRUDPage from "./components/Payment/PaymentCRUDPage";
 import PersonalDataPage from "./components/User/PersonalDataPage";
 import BankAccountPage from "./components/User/BankAccountPage";
+import BankAccountCRUDPage from "./components/BankAccount/BankAccountCRUDPage";
 import AddressPage from "./components/User/AddressPage";
 import ConsolidatedPaymentProcessor from "./components/ConsolidatedPayment/ConsolidatedPaymentProcessor";
 import SiteConfigurationCRUDPage from "./components/SiteConfiguration/SiteConfigurationCRUDPage";
@@ -129,6 +131,7 @@ function App() {
                 element={<OrganizationCRUDPage />}
               />
               <Route path="/estabelecimentos" element={<ClientCRUDPage />} />
+              <Route path="/gerentes" element={<ManagerCRUDPage />} />
               <Route path="/motoboy" element={<CourierCRUDPage />} />
               <Route path="/deliveries" element={<DeliveryCRUDPage />} />
               <Route path="/pagamento-diario" element={<DailyPaymentPage />} />
@@ -136,6 +139,7 @@ function App() {
               <Route path="/balanco-financeiro" element={<OrganizerFinancialPage />} />
               <Route path="/dados-pessoais" element={<PersonalDataPage />} />
               <Route path="/dados-bancarios" element={<BankAccountPage />} />
+              <Route path="/contas-bancarias" element={<BankAccountCRUDPage />} />
               <Route path="/dados-endereco" element={<AddressPage />} />
               <Route path="/processar-pagamentos" element={<ConsolidatedPaymentProcessor />} />
               <Route path="/configuracoes" element={<SiteConfigurationCRUDPage />} />

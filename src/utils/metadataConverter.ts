@@ -51,17 +51,17 @@ function convertFieldToFormField(field: FieldMetadata): FormFieldMetadata | null
       const relatedFields: FormFieldMetadata[] = field.relationship.fields
         ? field.relationship.fields
             .filter(f => {
-              console.log(`🔍 [Nested Field Check] ${f.name} - visible: ${f.visible} (inside ${field.name})`);
+              // console.log(`🔍 [Nested Field Check] ${f.name} - visible: ${f.visible} (inside ${field.name})`);
               
               // Ignora campos na lista de sempre ocultos
               if (alwaysHiddenInNested.includes(f.name)) {
-                console.log(`🚫 [convertFieldToFormField] Auto-hiding field: ${f.name} (in alwaysHiddenInNested list)`);
+                // console.log(`🚫 [convertFieldToFormField] Auto-hiding field: ${f.name} (in alwaysHiddenInNested list)`);
                 return false;
               }
               
               // Ignora campos com visible === false (explicitamente false, não null ou undefined)
               if (f.visible === false) {
-                console.log(`❌ [convertFieldToFormField] Skipping hidden nested field: ${f.name} (inside ${field.name})`);
+                // console.log(`❌ [convertFieldToFormField] Skipping hidden nested field: ${f.name} (inside ${field.name})`);
                 return false;
               }
               return true;
@@ -158,18 +158,18 @@ function convertFieldToFormField(field: FieldMetadata): FormFieldMetadata | null
       valueField: 'id',
       renderAs: 'typeahead' as const, // Usa typeahead por padrão para melhor UX
     };
-    console.log(`✅ [metadataConverter] EntityConfig criado para campo: ${field.name}`, formField.entityConfig);
+    // console.log(`✅ [metadataConverter] EntityConfig criado para campo: ${field.name}`, formField.entityConfig);
   }
 
   // 🧮 Adiciona campos computados
   if (field.computed) {
     formField.computed = field.computed;
-    console.log(`✅ [metadataConverter] Campo computado detectado: ${field.name} -> função: ${field.computed}`);
+    // console.log(`✅ [metadataConverter] Campo computado detectado: ${field.name} -> função: ${field.computed}`);
   }
   
   if (field.computedDependencies && field.computedDependencies.length > 0) {
     formField.computedDependencies = field.computedDependencies;
-    console.log(`✅ [metadataConverter] Dependências: ${field.name} -> [${field.computedDependencies.join(', ')}]`);
+    // console.log(`✅ [metadataConverter] Dependências: ${field.name} -> [${field.computedDependencies.join(', ')}]`);
   }
 
   return formField;
@@ -194,18 +194,18 @@ export function convertEntityMetadataToFormMetadata(
     ? entityMetadata.formFields
     : (entityMetadata.fields || []);
 
-  console.log('[convertEntityMetadataToFormMetadata] Using source fields:', {
-    hasFormFields: !!(entityMetadata.formFields && entityMetadata.formFields.length > 0),
-    sourceFieldsCount: sourceFields.length,
-    sourceFields: sourceFields.map(f => ({
-      name: f.name,
-      type: f.type,
-      hasRelationship: !!f.relationship,
-      hasOptions: !!(f.options && f.options.length > 0),
-      computed: f.computed,
-      computedDependencies: f.computedDependencies
-    }))
-  });
+  // console.log('[convertEntityMetadataToFormMetadata] Using source fields:', {
+  //   hasFormFields: !!(entityMetadata.formFields && entityMetadata.formFields.length > 0),
+  //   sourceFieldsCount: sourceFields.length,
+  //   sourceFields: sourceFields.map(f => ({
+  //     name: f.name,
+  //     type: f.type,
+  //     hasRelationship: !!f.relationship,
+  //     hasOptions: !!(f.options && f.options.length > 0),
+  //     computed: f.computed,
+  //     computedDependencies: f.computedDependencies
+  //   }))
+  // });
 
   // Separa campos básicos dos relacionamentos
   const basicFields: FormFieldMetadata[] = [];
@@ -222,21 +222,21 @@ export function convertEntityMetadataToFormMetadata(
     } else if (field.type !== 'nested') {
       // Para campos normais (não nested), ignora campos marcados como não visíveis
       if (field.visible === false) {
-        console.log(`[convertEntityMetadataToFormMetadata] Skipping hidden field: ${field.name}`);
+        // console.log(`[convertEntityMetadataToFormMetadata] Skipping hidden field: ${field.name}`);
         return;
       }
       
       // Log detalhado para campos do tipo 'entity'
       if (field.type === 'entity') {
-        console.log(`🔍 [convertEntityMetadataToFormMetadata] Campo entity encontrado:`, {
-          name: field.name,
-          label: field.label,
-          type: field.type,
-          visible: field.visible,
-          readonly: field.readonly,
-          required: field.required,
-          relationship: field.relationship
-        });
+        // console.log(`🔍 [convertEntityMetadataToFormMetadata] Campo entity encontrado:`, {
+        //   name: field.name,
+        //   label: field.label,
+        //   type: field.type,
+        //   visible: field.visible,
+        //   readonly: field.readonly,
+        //   required: field.required,
+        //   relationship: field.relationship
+        // });
       }
       
       // Campos normais (não nested)
@@ -255,17 +255,17 @@ export function convertEntityMetadataToFormMetadata(
     .map(field => convertFieldToFormField(field))
     .filter((field): field is FormFieldMetadata => field !== null);
 
-  console.log('[convertEntityMetadataToFormMetadata] Processed fields:', {
-    basicFieldsCount: basicFields.length,
-    relationshipFieldsCount: relationshipFields.length,
-    basicFields: basicFields.map(f => ({
-      name: f.name,
-      type: f.type,
-      computed: f.computed,
-      computedDependencies: f.computedDependencies
-    })),
-    relationshipFields: relationshipFields.map(f => f.name)
-  });
+  // console.log('[convertEntityMetadataToFormMetadata] Processed fields:', {
+  //   basicFieldsCount: basicFields.length,
+  //   relationshipFieldsCount: relationshipFields.length,
+  //   basicFields: basicFields.map(f => ({
+  //     name: f.name,
+  //     type: f.type,
+  //     computed: f.computed,
+  //     computedDependencies: f.computedDependencies
+  //   })),
+  //   relationshipFields: relationshipFields.map(f => f.name)
+  // });
 
   // Organiza em seções
   const sections: FormSectionMetadata[] = [];

@@ -4,10 +4,12 @@ import BankAccountModal from "../BankAccount/BankAccountModal";
 import { FiCreditCard } from "react-icons/fi";
 
 /**
- * Página de CRUD para Clientes
- * Filtra usuários com role = CLIENT
+ * Página de CRUD completo para Gerentes (ORGANIZER)
+ *
+ * Filtra usuários com role = ORGANIZER
+ * Adiciona ação customizada para gerenciar conta bancária do gerente
  */
-const ClientCRUDPage: React.FC = () => {
+const ManagerCRUDPage: React.FC = () => {
   const [bankAccountModalOpen, setBankAccountModalOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 
@@ -52,11 +54,11 @@ const ClientCRUDPage: React.FC = () => {
       <EntityCRUD
         entityName="user"
         hideArrayFields={false}
-        hideFields={["employmentContracts", "employmentContract"]} // Esconde na tabela
-        hiddenFields={["employmentContracts", "employmentContract"]} // Esconde no formulário
-        pageTitle="Clientes"
-        pageDescription="Gerencie os clientes cadastrados na plataforma"
-        initialFilters={{ role: "CLIENT" }}
+        hideFields={["clientContracts", "employmentContracts"]}
+        hiddenFields={["clientContracts", "employmentContracts"]}
+        pageTitle="Gerentes"
+        pageDescription="Gerencie os gerentes (organizadores) cadastrados na plataforma"
+        initialFilters={{ role: "ORGANIZER" }}
         customActions={customActions}
       />
 
@@ -72,4 +74,4 @@ const ClientCRUDPage: React.FC = () => {
   );
 };
 
-export default ClientCRUDPage;
+export default ManagerCRUDPage;

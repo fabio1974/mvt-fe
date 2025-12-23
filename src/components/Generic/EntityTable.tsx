@@ -179,8 +179,6 @@ const EntityTable: React.FC<EntityTableProps> = ({
           }, {} as Record<string, string>),
         });
 
-        console.log("🔍 Fazendo requisição para:", `${endpoint}?${params}`);
-        console.log("📊 Filtros aplicados:", filterValues);
         const response = await api.get(`${endpoint}?${params}`);
         const responseData = response.data as any[] | EntityResponse<any>;
 
@@ -493,7 +491,10 @@ const EntityTable: React.FC<EntityTableProps> = ({
                             {onView && (
                               <button
                                 className="btn-action btn-view"
-                                onClick={() => onView(row.id)}
+                                onClick={() => {
+                                  const id = row.id || row.paymentId || row.ID;
+                                  if (id) onView(id);
+                                }}
                                 title="Visualizar"
                               >
                                 <FiEye />
@@ -502,7 +503,10 @@ const EntityTable: React.FC<EntityTableProps> = ({
                             {onEdit && (
                               <button
                                 className="btn-action btn-edit"
-                                onClick={() => onEdit(row.id)}
+                                onClick={() => {
+                                  const id = row.id || row.paymentId || row.ID;
+                                  if (id) onEdit(id);
+                                }}
                                 title="Editar"
                               >
                                 <FiEdit />
@@ -511,7 +515,20 @@ const EntityTable: React.FC<EntityTableProps> = ({
                             {onDelete && (
                               <button
                                 className="btn-action btn-delete"
-                                onClick={() => onDelete(row.id)}
+                                onClick={() => {
+                                  // Tenta diferentes propriedades de ID
+                                  const id = row.id || row.paymentId || row.ID;
+                                  console.log("🔍 [DELETE] Row data:", row);
+                                  console.log("🔍 [DELETE] Row.id:", id);
+                                  console.log("🔍 [DELETE] All keys:", Object.keys(row));
+                                  
+                                  if (!id) {
+                                    console.error("❌ ID não encontrado na row!");
+                                    return;
+                                  }
+                                  
+                                  onDelete(id);
+                                }}
                                 title="Excluir"
                               >
                                 <FiTrash2 />

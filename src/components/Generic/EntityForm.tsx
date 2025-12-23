@@ -119,17 +119,11 @@ const EntityForm: React.FC<EntityFormProps> = ({
       }
     });
 
-    // Normaliza initialValues: se algum valor é um objeto {id, label}, extrai apenas o id
-    const normalizedInitialValues: Record<string, unknown> = {};
-    Object.entries(initialValues).forEach(([key, val]) => {
-      if (val && typeof val === "object" && "id" in val) {
-        normalizedInitialValues[key] = (val as { id: string | number }).id;
-      } else {
-        normalizedInitialValues[key] = val;
-      }
-    });
-
-    return { ...defaultValues, ...normalizedInitialValues };
+    // Aplica initialValues sem normalização, preservando objetos de entidade
+    const result = { ...defaultValues, ...initialValues };
+    console.log("🔍 [INIT] initialValues:", initialValues);
+    console.log("🔍 [INIT] formData inicial (com user):", result.user);
+    return result;
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
@@ -145,29 +139,24 @@ const EntityForm: React.FC<EntityFormProps> = ({
   // ⚠️ Usa flag para evitar loops infinitos
   useEffect(() => {
     if (!entityId && !initialValuesApplied && Object.keys(initialValues).length > 0) {
-      // Normaliza initialValues: se algum valor é um objeto {id, label}, extrai apenas o id
-      const normalizedValues: Record<string, unknown> = {};
-      Object.entries(initialValues).forEach(([key, val]) => {
-        if (val && typeof val === "object" && "id" in val) {
-          normalizedValues[key] = (val as { id: string | number }).id;
-        } else {
-          normalizedValues[key] = val;
-        }
-      });
+      console.log("🔍 [USEEFFECT] Aplicando initialValues sem normalização:", initialValues);
       
       // 🚚 Para delivery: se toAddress não estiver preenchido, copia fromAddress
       // Isso garante que o endereço de destino seja igual ao de origem (do usuário logado)
-      if (metadata.entityName === 'delivery' && normalizedValues.fromAddress && !normalizedValues.toAddress) {
-        normalizedValues.toAddress = normalizedValues.fromAddress;
-        normalizedValues.toLatitude = normalizedValues.fromLatitude;
-        normalizedValues.toLongitude = normalizedValues.fromLongitude;
+      const valuesToApply = {...initialValues};
+      if (metadata.entityName === 'delivery' && valuesToApply.fromAddress && !valuesToApply.toAddress) {
+        valuesToApply.toAddress = valuesToApply.fromAddress;
+        valuesToApply.toLatitude = valuesToApply.fromLatitude;
+        valuesToApply.toLongitude = valuesToApply.fromLongitude;
       }
       
       // Atualiza apenas os campos que vieram em initialValues, preservando os existentes
       setFormData((prev) => ({
         ...prev,
-        ...normalizedValues,
+        ...valuesToApply,
       }));
+      
+      console.log("🔍 [USEEFFECT] formData após aplicar initialValues:", valuesToApply);
       
       setInitialValuesApplied(true);
     }
@@ -257,29 +246,27 @@ const EntityForm: React.FC<EntityFormProps> = ({
             !Array.isArray(value) &&
             "id" in value
           ) {
-            // Verifica se é um campo entity com typeahead no metadata
+            // Verifica se é um campo entity no metadata
             const field = allFieldsInMetadata.find((f: any) => f.name === key);
-            const isTypeaheadField =
-              field &&
-              field.type === "entity" &&
-              field.entityConfig?.renderAs === "typeahead";
+            const isEntityField = field && field.type === "entity";
 
             const obj = value as { id: number | string; name?: string };
 
-            if (isTypeaheadField) {
-              // Para typeahead, MANTÉM o objeto completo {id, name}
+            if (isEntityField) {
+              // Para campos entity, SEMPRE MANTÉM o objeto completo {id, name}
+              // Backend espera esse formato para relacionamentos
               console.log(
-                `🔄 Preservando objeto para typeahead "${key}":`,
+                `🔄 Preservando objeto entity "${key}":`,
                 obj
               );
               data[key] = obj; // Mantém objeto
             } else {
               // Para outros campos, converte para ID (valor primitivo)
               console.log(
-                `🔄 Convertendo campo "${key}" de objeto para ID:`,
+                `🔄 Convertendo campo não-entity "${key}" de objeto para ID:`,
                 obj.id
               );
-              data[key] = String(obj.id); // USA O ID, NÃO O NOME!
+              data[key] = String(obj.id);
             }
 
             // Salva o ID em um campo separado se não existir
@@ -390,6 +377,27 @@ const EntityForm: React.FC<EntityFormProps> = ({
       if (fieldName === "addresses") {
         console.log(`✅ [EntityForm] setFormData com addresses:`, newData.addresses);
       }
+
+      // 🏦 Auto-preenche bankName quando bankCode muda (para entidade bankAccount)
+      if (metadata.entityName === "bankAccount" && fieldName === "bankCode") {
+        // Busca o campo bankCode no metadata para pegar as options
+        const bankCodeField = metadata.sections
+          .flatMap((s) => s.fields)
+          .find((f) => f.name === "bankCode");
+
+        if (bankCodeField?.options) {
+          const selectedBank = bankCodeField.options.find(
+            (opt) => opt.value === value
+          );
+          if (selectedBank) {
+            // Extrai apenas o nome do banco, removendo o código e " - " do início
+            // Exemplo: "033 - Banco Santander" → "Banco Santander"
+            const bankNameOnly = selectedBank.label.replace(/^\d+\s*-\s*/, "");
+            newData.bankName = bankNameOnly;
+          }
+        }
+      }
+
       return newData;
     });
 
@@ -602,6 +610,9 @@ const EntityForm: React.FC<EntityFormProps> = ({
       // Prepara o payload para envio
       const finalData = { ...formData };
 
+      console.log("🔍 [SUBMIT] formData original:", formData);
+      console.log("🔍 [SUBMIT] formData.user:", formData.user, typeof formData.user);
+
       // Obtém todos os campos (incluindo não visíveis)
       const allFields =
         metadata.originalFields ||
@@ -646,9 +657,6 @@ const EntityForm: React.FC<EntityFormProps> = ({
       // ✅ Remove máscaras de CPF, CNPJ, telefone, CEP antes de enviar ao backend
       const unmaskedData = unmaskFormData(finalData);
 
-      console.log("📋 [DEBUG] Dados antes de unmask:", finalData);
-      console.log("📋 [DEBUG] Dados após unmask:", unmaskedData);
-
       // 🚫 Remove campos que não pertencem à entidade atual (whitelist pelos metadados)
       // Isto evita enviar campos como "address", "city", "country" quando não existem no metadata da entidade
       const allowedFieldNames = new Set(
@@ -681,7 +689,9 @@ const EntityForm: React.FC<EntityFormProps> = ({
         }
       });
 
-      const method = entityId ? "put" : "post";
+      // Determina método HTTP e URL baseado em entityId ou mode
+      const isEdit = entityId || mode === "edit";
+      const method = isEdit ? "put" : "post";
       const url = entityId
         ? `${metadata.endpoint}/${entityId}`
         : metadata.endpoint;
@@ -689,7 +699,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
       const response = await api[method](url, unmaskedData);
 
       showToast(
-        entityId ? "Atualizado com sucesso!" : "Criado com sucesso!",
+        isEdit ? "Atualizado com sucesso!" : "Criado com sucesso!",
         "success"
       );
 
@@ -877,7 +887,9 @@ const EntityForm: React.FC<EntityFormProps> = ({
                             field.name === 'perfil';  // Campo "perfil" sempre readonly (se houver)
     
     // 🙈 Verifica se o campo deve ficar escondido (hidden)
-    const isFieldHidden = hiddenFields.includes(field.name);
+    // 🏦 bankName sempre hidden em bankAccount (auto-preenchido pelo bankCode)
+    const isFieldHidden = hiddenFields.includes(field.name) ||
+                          (metadata.entityName === "bankAccount" && field.name === "bankName");
     
     // Se o campo está hidden, não renderiza mas mantém o valor no formData
     if (isFieldHidden) {

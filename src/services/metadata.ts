@@ -30,7 +30,6 @@ class MetadataService {
     try {
       // Em desenvolvimento, sempre busca do backend (ignora cache)
       if (isDevelopment) {
-        console.log('🔄 [DEV MODE] MetadataService: Sempre carregando do backend (cache desabilitado)...');
         const response = await api.get<MetadataResponse>('/api/metadata');
         const metadata = response.data;
 
@@ -38,7 +37,6 @@ class MetadataService {
         this.populateCache(metadata);
 
         this.isLoaded = true;
-        console.log('✅ [DEV MODE] Metadata carregada do backend (sem cache)');
         return;
       }
 
@@ -47,21 +45,18 @@ class MetadataService {
       const cachedMetadata = this.loadFromLocalStorage();
       
       if (cachedMetadata) {
-        console.log('✅ Metadata carregada do cache local (localStorage)');
         this.populateCache(cachedMetadata);
         this.isLoaded = true;
         
         // Verifica se o cache é antigo (> 24h) e atualiza em background
         const cacheAge = Date.now() - this.getCacheTimestamp();
         if (cacheAge > METADATA_CACHE_DURATION) {
-          console.log('⏰ Cache antigo, atualizando em background...');
           this.refreshMetadataInBackground();
         }
         return;
       }
 
       // Se não tem cache, carrega do backend
-      console.log('🔄 MetadataService: Requesting /api/metadata endpoint...');
       const response = await api.get<MetadataResponse>('/api/metadata');
       const metadata = response.data;
 
@@ -72,7 +67,6 @@ class MetadataService {
       this.populateCache(metadata);
 
       this.isLoaded = true;
-      console.log('✅ Metadata carregada do backend e salva no cache');
     } catch (error) {
       console.error('❌ Error loading metadata:', error);
       
@@ -80,7 +74,6 @@ class MetadataService {
       if (!isDevelopment) {
         const cachedMetadata = this.loadFromLocalStorage(true);
         if (cachedMetadata) {
-          console.log('⚠️ Usando cache expirado como fallback');
           this.populateCache(cachedMetadata);
           this.isLoaded = true;
           return;
@@ -101,8 +94,6 @@ class MetadataService {
       
       this.saveToLocalStorage(metadata);
       this.populateCache(metadata);
-      
-      console.log('✅ Metadata atualizada em background');
     } catch (error) {
       console.warn('⚠️ Falha ao atualizar metadata em background:', error);
     }
@@ -130,7 +121,6 @@ class MetadataService {
       
       // Verifica se a versão mudou (invalida cache)
       if (parsedCache.version !== VERSION) {
-        console.log(`🔄 Versão mudou (${parsedCache.version} → ${VERSION}), invalidando cache`);
         return null;
       }
       
@@ -139,7 +129,6 @@ class MetadataService {
       const cacheAge = now - parsedCache.timestamp;
       
       if (!ignoreExpiration && cacheAge > METADATA_CACHE_DURATION) {
-        console.log('⏰ Cache expirado (idade: ' + Math.round(cacheAge / 1000 / 60) + ' minutos)');
         return null;
       }
 
@@ -166,8 +155,6 @@ class MetadataService {
 
       localStorage.setItem(METADATA_STORAGE_KEY, JSON.stringify(cacheData));
       localStorage.setItem(METADATA_VERSION_KEY, cacheData.version);
-      
-      console.log(`💾 Metadata salva no localStorage (versão ${VERSION})`);
     } catch (error) {
       console.error('❌ Erro ao salvar cache no localStorage:', error);
       // Se falhar (ex: quota exceeded), apenas loga mas não quebra
@@ -213,7 +200,6 @@ class MetadataService {
     // Remove do localStorage também
     localStorage.removeItem(METADATA_STORAGE_KEY);
     localStorage.removeItem(METADATA_VERSION_KEY);
-    console.log('🗑️ Cache de metadata limpo (memória + localStorage)');
   }
 
   /**

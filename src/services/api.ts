@@ -1,8 +1,6 @@
 import axios from "axios";
 import { showToast } from "../utils/toast";
 
-console.log("VITE_API_URL:", import.meta.env.VITE_API_URL);
-
 // Helper para normalizar URLs e evitar duplicação de /api
 const normalizeUrl = (url: string): string => {
   if (!url) return url;
@@ -10,11 +8,6 @@ const normalizeUrl = (url: string): string => {
   const original = url;
   // Remove duplicações de /api/api → /api em qualquer lugar da URL
   const normalized = url.replace(/\/api\/api(\/|$)/g, '/api$1');
-  
-  // Log apenas se houve normalização (debug)
-  if (original !== normalized) {
-    console.log(`[URL Normalizada] ${original} → ${normalized}`);
-  }
   
   return normalized;
 };

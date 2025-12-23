@@ -15,7 +15,9 @@ import {
   FiDollarSign,
   FiMapPin,
   FiCreditCard,
+  FiUsers,
 } from "react-icons/fi";
+import { BsBank } from "react-icons/bs";
 import "./Sidebar.css";
 
 interface MenuItem {
@@ -65,28 +67,48 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
     roles: ["ROLE_ADMIN"],
   },
   {
+    label: "Contas Bancárias",
+    icon: <BsBank size={22} color="#10b981" />,
+    path: "/contas-bancarias",
+    roles: ["ROLE_ADMIN"],
+  },
+  {
     label: "Entregas",
     icon: <FiPackage size={22} color="#60a5fa" />,
     path: "/deliveries",
     roles: ["ROLE_ADMIN", "ROLE_ORGANIZER", "ROLE_CLIENT", "CLIENT"],
   },
+  // Grupo Pessoas (apenas ADMIN)
   {
-    label: "Clientes",
-    icon: <FiShoppingBag size={22} color="#60a5fa" />,
-    path: "/estabelecimentos",
+    label: "Pessoas",
+    icon: <FiUsers size={22} color="#60a5fa" />,
     roles: ["ROLE_ADMIN"],
-  },
-  {
-    label: "Grupos",
-    icon: <FiBriefcase size={22} color="#60a5fa" />,
-    path: "/organizacao/gerenciar",
-    roles: ["ROLE_ADMIN"],
-  },
-  {
-    label: "Motoboy",
-    icon: <FiTruck size={22} color="#60a5fa" />,
-    path: "/motoboy",
-    roles: ["ROLE_ADMIN"],
+    items: [
+      {
+        label: "Clientes",
+        icon: <FiShoppingBag size={22} color="#60a5fa" />,
+        path: "/estabelecimentos",
+        roles: ["ROLE_ADMIN"],
+      },
+      {
+        label: "Gerentes",
+        icon: <FiUsers size={22} color="#8b5cf6" />,
+        path: "/gerentes",
+        roles: ["ROLE_ADMIN"],
+      },
+      {
+        label: "Grupos",
+        icon: <FiBriefcase size={22} color="#60a5fa" />,
+        path: "/organizacao/gerenciar",
+        roles: ["ROLE_ADMIN"],
+      },
+      {
+        label: "Motoboy",
+        icon: <FiTruck size={22} color="#60a5fa" />,
+        path: "/motoboy",
+        roles: ["ROLE_ADMIN"],
+      },
+    ],
   },
   {
     label: "Pagamento Diário",

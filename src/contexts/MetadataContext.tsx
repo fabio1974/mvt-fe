@@ -33,23 +33,9 @@ export const MetadataProvider: React.FC<MetadataProviderProps> = ({
     setError(null);
 
     try {
-      console.log("🔄 Carregando metadata do backend...");
       await metadataService.loadMetadata();
       const loadedMetadata = metadataService.getAllMetadata();
       setMetadata(loadedMetadata);
-      console.log(
-        "✅ Metadata carregada com sucesso:",
-        loadedMetadata.size,
-        "entidades"
-      );
-      console.log(
-        "📋 Entidades disponíveis:",
-        Array.from(loadedMetadata.keys())
-      );
-      // Log detalhado de cada entidade
-      loadedMetadata.forEach((meta, name) => {
-        console.log(`  - ${name}:`, meta);
-      });
     } catch (err) {
       const errorMessage = "Erro ao carregar metadata do sistema";
       setError(errorMessage);
