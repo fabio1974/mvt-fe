@@ -172,15 +172,12 @@ const SpecialZonesMapPage = () => {
 
   // Atualizar posição da zona ao arrastar o marcador
   const handleMarkerDragEnd = useCallback(async (zoneId: string, newLat: number, newLng: number) => {
-    console.log('🔵 handleMarkerDragEnd chamado:', { zoneId, newLat, newLng });
     
     const zone = zones.find(z => z.id === zoneId);
     if (!zone) {
       console.error('❌ Zona não encontrada:', zoneId);
       return;
     }
-
-    console.log('🟢 Zona encontrada:', zone);
     setLoading(true);
     
     try {
@@ -188,10 +185,7 @@ const SpecialZonesMapPage = () => {
       const geocoder = new google.maps.Geocoder();
       const location = { lat: newLat, lng: newLng };
       
-      console.log('🔍 Iniciando geocoding para:', location);
-      
       geocoder.geocode({ location }, async (results, status) => {
-        console.log('📍 Geocoding resultado:', { status, results });
         
         try {
           if (status === 'OK' && results?.[0]) {
@@ -202,10 +196,7 @@ const SpecialZonesMapPage = () => {
               longitude: newLng,
               address: newAddress
             };
-            
-            console.log('💾 Salvando zona com endereço:', updated);
             await api.put(`/api/special-zones/${zone.id}`, updated);
-            console.log('✅ Zona salva com sucesso');
             
             // Usar forma funcional para garantir estado atualizado
             setZones(prevZones => prevZones.map(z => z.id === zoneId ? updated : z));
@@ -223,10 +214,7 @@ const SpecialZonesMapPage = () => {
               latitude: newLat, 
               longitude: newLng
             };
-            
-            console.log('💾 Salvando zona sem endereço:', updated);
             await api.put(`/api/special-zones/${zone.id}`, updated);
-            console.log('✅ Zona salva sem endereço');
             
             // Usar forma funcional para garantir estado atualizado
             setZones(prevZones => prevZones.map(z => z.id === zoneId ? updated : z));
@@ -260,10 +248,7 @@ const SpecialZonesMapPage = () => {
           latitude: newLat, 
           longitude: newLng
         };
-        
-        console.log('💾 Salvando zona (fallback sem geocoding):', updated);
         await api.put(`/api/special-zones/${zone.id}`, updated);
-        console.log('✅ Zona salva (fallback)');
         
         // Usar forma funcional para garantir estado atualizado
         setZones(prevZones => prevZones.map(z => z.id === zoneId ? updated : z));
@@ -382,11 +367,9 @@ const SpecialZonesMapPage = () => {
             draggable: true,
           }}
           onLoad={(circle) => {
-            console.log('🔵 Circle onLoad:', zone.id);
             
             // Adicionar listener para drag usando API nativa do Google Maps
             google.maps.event.addListener(circle, 'dragstart', () => {
-              console.log('🟡 Drag START (nativo):', zone.id);
               if (zone.id) {
                 setEditingZoneId(zone.id);
               }
@@ -407,13 +390,11 @@ const SpecialZonesMapPage = () => {
             });
             
             google.maps.event.addListener(circle, 'dragend', () => {
-              console.log('🎯 Drag END (nativo):', zone.id);
               if (zone.id) {
                 const center = circle.getCenter();
                 if (center) {
                   const newLat = center.lat();
                   const newLng = center.lng();
-                  console.log('📌 Novas coordenadas:', { newLat, newLng });
                   handleMarkerDragEnd(zone.id, newLat, newLng);
                   setEditingZoneId(null);
                 }

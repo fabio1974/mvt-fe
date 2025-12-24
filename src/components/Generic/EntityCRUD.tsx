@@ -68,6 +68,10 @@ interface EntityCRUDProps {
   disableCreate?: boolean;
   /** Desabilita a operação de deletar */
   disableDelete?: boolean;
+  /** Desabilita a operação de visualizar */
+  disableView?: boolean;
+  /** Desabilita a operação de editar */
+  disableEdit?: boolean;
 }
 
 /**
@@ -112,6 +116,8 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
   hideFilters = false,
   disableCreate = false,
   disableDelete = false,
+  disableView = false,
+  disableEdit = false,
   // transformData, // Unused parameter
   pageTitle,
 }) => {
@@ -332,8 +338,8 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
             key={refreshKey}
             entityName={entityName}
             apiEndpoint={apiEndpoint}
-            onView={handleView}
-            onEdit={handleEdit}
+            onView={disableView ? undefined : handleView}
+            onEdit={disableEdit ? undefined : handleEdit}
             onDelete={disableDelete ? undefined : handleDelete}
             showActions={true}
             customRenderers={customRenderers}

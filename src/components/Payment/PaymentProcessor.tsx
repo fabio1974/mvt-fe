@@ -20,9 +20,6 @@ export default function PaymentProcessor({
   onPaymentSuccess,
   onPaymentCancel,
 }: PaymentProcessorProps) {
-  console.log("=== PAYMENT PROCESSOR RENDERED ===");
-  console.log("Registration ID:", registrationId);
-  console.log("Amount:", amount);
 
   const [step, setStep] = useState<"method" | "payment" | "success" | "error">(
     "method"

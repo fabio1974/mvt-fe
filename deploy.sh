@@ -1,8 +1,30 @@
 #!/bin/bash
 # Script para preparar e fazer deploy
+# Last Updated: 2024-12-24
+# Version: 1.1.0
+#
+# Recent Changes:
+# - Payment Report Modal with detailed split breakdown
+# - QR Code PIX display with copy functionality
+# - Enhanced payment management with custom actions
+# - Disabled view/edit actions for payments (delete only)
+# - Improved error handling and user feedback
+#
+# New Features in v1.1.0:
+# - Payment Report: Consolidated splits and delivery breakdown
+# - QR Code Modal: Visual QR + PIX copy-and-paste code
+# - Gateway Response: Translated error messages
+# - Custom Actions: 4 action buttons (QR, Report, Gateway, Delete)
 
-echo "🚀 MVT Events - Deploy Script"
-echo "================================"
+echo "🚀 MVT Events - Deploy Script v1.1.0"
+echo "===================================="
+echo ""
+echo "📦 New in this version:"
+echo "  ✓ Payment Report with split details"
+echo "  ✓ QR Code PIX display modal"
+echo "  ✓ Enhanced payment management"
+echo "  ✓ Improved error handling"
+echo ""
 
 # Verificar se está na branch main
 BRANCH=$(git branch --show-current)

@@ -1,0 +1,42 @@
+Release v1.1.0 - Payment Management Enhancements
+
+Major Features:
+- Payment Report Modal with comprehensive split breakdown
+- QR Code PIX display with copy-to-clipboard functionality
+- Enhanced gateway response viewer with Portuguese translations
+- Four custom action buttons in payment table
+
+Technical Improvements:
+- Added disableView and disableEdit props to EntityCRUD
+- Implemented proper loading states for async operations
+- Enhanced error handling with user-friendly messages
+- Mobile-responsive modal designs
+
+Components Added:
+- PaymentReportModal.tsx: Detailed payment report viewer
+- QR Code Modal: Inline modal for PIX QR Code display
+
+Components Modified:
+- PaymentCRUDPage.tsx: Added QR Code and Report features
+- EntityCRUD.tsx: New props for controlling CRUD operations
+
+API Integration:
+- GET /api/payments/{id}/report - Payment report with splits
+- GET /api/payments/{id} - Payment details with QR Code data
+
+Breaking Changes:
+- None (backward compatible)
+
+Testing:
+- All features tested on desktop and mobile
+- Cross-browser compatibility verified
+- Error states handled gracefully
+
+Documentation:
+- CHANGELOG.md updated
+- RELEASE_NOTES_v1.1.0.md created
+- DEPLOY_GUIDE.md created
+- Code comments added for maintainability
+
+Version: 1.1.0
+Date: 2024-12-24

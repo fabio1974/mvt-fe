@@ -85,7 +85,6 @@ const ExampleEventsListPage: React.FC = () => {
    * Navega para página de visualização do evento
    */
   const handleView = (eventId: number) => {
-    console.log("📖 Visualizando evento ID:", eventId);
     navigate(`/eventos/${eventId}`);
   };
 
@@ -93,7 +92,6 @@ const ExampleEventsListPage: React.FC = () => {
    * Navega para página de edição do evento
    */
   const handleEdit = (eventId: number) => {
-    console.log("✏️ Editando evento ID:", eventId);
     navigate(`/editar-evento/${eventId}`);
   };
 
@@ -101,23 +99,19 @@ const ExampleEventsListPage: React.FC = () => {
    * Exclui evento após confirmação
    */
   const handleDelete = async (eventId: number) => {
-    console.log("🗑️ Solicitação de exclusão para evento ID:", eventId);
 
     const confirmed = window.confirm(
       "⚠️ Tem certeza que deseja excluir este evento?\n\nEsta ação não pode ser desfeita."
     );
 
     if (!confirmed) {
-      console.log("❌ Exclusão cancelada pelo usuário");
       return;
     }
 
     try {
-      console.log("🔄 Enviando requisição de exclusão...");
       await api.delete(`/api/events/${eventId}`);
 
       showToast("✅ Evento excluído com sucesso!", "success");
-      console.log("✅ Evento excluído com sucesso");
 
       // Recarrega a página para atualizar a lista
       window.location.reload();

@@ -41,10 +41,6 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
 
   // 🔍 Log quando value prop muda
   useEffect(() => {
-    console.log(
-      `📥 [ArrayField] Recebido novo value prop:`,
-      value.length > 0 ? `${value.length} items` : "vazio"
-    );
   }, [value]);
 
   // 🔄 Converte plural em singular (Categorias → Categoria)
@@ -72,14 +68,6 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
     const itemLabel = `${singularName} {index}`;
     const addLabel = `Adicionar ${singularName}`;
 
-    console.log("🏷️ ArrayField Smart Labels:", {
-      "config.label (plural)": config.label,
-      singularName: singularName,
-      addLabel: addLabel,
-      itemLabel: itemLabel,
-      pluralLabel: pluralLabel,
-    });
-
     return { itemLabel, addLabel, pluralLabel };
   };
 
@@ -106,15 +94,6 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
 
     if (computedFields.length === 0 || !Array.isArray(value)) return;
 
-    console.log(
-      "🧮 [ArrayField] Computed fields detectados:",
-      computedFields.map((f) => ({
-        name: f.name,
-        computed: f.computed,
-        dependencies: f.computedDependencies,
-      }))
-    );
-
     let hasChanges = false;
     const newValue = value.map((item, index) => {
       if (!item || typeof item !== "object") return item;
@@ -131,10 +110,6 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
         if (result !== null && result !== updatedItem[field.name]) {
           updatedItem[field.name] = result;
           hasChanges = true;
-          console.log(
-            `🧮 [ArrayField] Item ${index}: Campo ${field.name} atualizado para:`,
-            result
-          );
         }
       });
 
@@ -153,37 +128,17 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
     fieldName: string,
     fieldValue: unknown
   ) => {
-    console.log(
-      `🔧 [ArrayField] handleFieldChange: item ${itemIndex}, field ${fieldName}, value:`,
-      fieldValue
-    );
-    console.log(`🔧 [ArrayField] RECEBIDO NA FUNÇÃO:`, {
-      fieldName,
-      fieldValue,
-      valueArrayLength: Array.isArray(value) ? value.length : "NOT ARRAY",
-      valueArrayContent: value,
-    });
 
     // ✅ USA O ARRAY PRINCIPAL: `value` (prop do componente)
     // NÃO usa `value` do parâmetro (que é o valor do campo individual)
     const newArray = [...value];
     const currentItem = (newArray[itemIndex] as Record<string, unknown>) || {};
 
-    console.log(
-      `🔧 [ArrayField] currentItem antes de atualizar:`,
-      currentItem
-    );
-
     // Atualiza o campo específico
     newArray[itemIndex] = {
       ...currentItem,
       [fieldName]: fieldValue,
     };
-
-    console.log(
-      `🔧 [ArrayField] Array atualizado:`,
-      newArray.map((item, idx) => `Item ${idx}: ${JSON.stringify(item)}`)
-    );
 
     onChange(newArray);
   };
@@ -206,15 +161,12 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
         newItem[field.name] = "";
       }
     });
-
-    console.log("➕ [ArrayField] Adicionando item:", newItem);
     onChange([...value, newItem]);
   };
 
   // Remove um item
   const removeItem = (index: number) => {
     const newArray = value.filter((_, i) => i !== index);
-    console.log(`🗑️ [ArrayField] Removendo item ${index}`);
     onChange(newArray);
 
     // Remove estado de collapse do item removido
@@ -256,14 +208,6 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
       // Se é um objeto, extrai o ID
       const entityObj = fieldValue as Record<string, unknown>;
       stringValue = String(entityObj.id || "");
-
-      console.log(
-        `🔧 [ArrayField] Campo entity "${field.name}" - Objeto detectado:`,
-        {
-          objeto: fieldValue,
-          idExtraido: stringValue,
-        }
-      );
     } else {
       stringValue = String(fieldValue || "");
     }
@@ -520,11 +464,6 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
             valueField: "id",
             renderAs: "typeahead" as const,
           };
-
-          console.log(
-            `🔧 [ArrayField] Fallback entityConfig criado para campo ${field.name}:`,
-            entityConfig
-          );
         }
 
         if (!entityConfig) {

@@ -151,7 +151,6 @@ const EntityTypeahead: React.FC<EntityTypeaheadProps> = ({
           // Se já tem o name/label no objeto, usa diretamente (não faz fetch)
           if (valueObj.name || valueObj.label) {
             const label = String(valueObj.name || valueObj.label);
-            console.log(`✅ EntityTypeahead: Usando label do objeto para ${config.entityName} (ID: ${valueId}):`, label);
             setSelectedLabel(label);
             setSearchTerm(label);
             hasLabel = true;
@@ -171,8 +170,6 @@ const EntityTypeahead: React.FC<EntityTypeaheadProps> = ({
         if (!endpoint.startsWith("/")) {
           endpoint = `/${endpoint}`;
         }
-
-        console.log(`🔍 EntityTypeahead: Buscando ${config.entityName} com ID:`, valueId);
         const response = await api.get(`${endpoint}/${valueId}`);
         const item = response.data as EntityOption;
         const label = String(item[config.labelField] || "");

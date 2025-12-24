@@ -37,7 +37,6 @@ const OrganizerFinancialPage: React.FC = () => {
 
   const loadSiteConfiguration = async () => {
     try {
-      console.log("⚙️ Carregando configuração do site...");
 
       // Busca a configuração ativa
       const response = await api.get<{ content: any[] }>("/api/site-configuration", {
@@ -47,18 +46,13 @@ const OrganizerFinancialPage: React.FC = () => {
         },
       });
 
-      console.log("⚙️ Resposta da API site-configuration:", response.data);
-
       const configs = response.data.content || [];
-      console.log("⚙️ Configs encontradas:", configs);
 
       if (configs.length > 0) {
         const activeConfig = configs[0];
-        console.log("⚙️ Config ativa completa:", activeConfig);
         
         const percentage = activeConfig.organizerPercentage || 0;
         setOrganizerPercentage(percentage);
-        console.log(`⚙️ Configuração carregada - Porcentagem do organizer: ${percentage}%`);
         return percentage; // Retorna para usar no cálculo
       } else {
         console.warn("⚠️ Nenhuma configuração ativa encontrada, usando 0%");
@@ -75,8 +69,6 @@ const OrganizerFinancialPage: React.FC = () => {
 
   const loadFinancialSummary = async (percentage: number) => {
     try {
-      console.log("💰 Carregando resumo financeiro do organizer:", userId);
-      console.log("💰 Usando porcentagem:", percentage, "%");
 
       // Busca todas as entregas completadas do organizer
       const response = await api.get<{ content: any[] }>("/api/deliveries", {
@@ -89,8 +81,6 @@ const OrganizerFinancialPage: React.FC = () => {
 
       const deliveries = response.data.content || [];
       setDeliveryCount(deliveries.length);
-
-      console.log("💰 Entregas encontradas:", deliveries.length);
 
       // Calcula os totais
       let shippingTotal = 0;
@@ -106,13 +96,8 @@ const OrganizerFinancialPage: React.FC = () => {
         }
       });
 
-      console.log("💰 Total bruto dos fretes:", shippingTotal);
-      console.log("💰 Aplicando porcentagem:", percentage, "%");
-
       // Total que o organizer tem direito (baseado na porcentagem configurada)
       const organizerTotal = shippingTotal * (percentage / 100);
-      
-      console.log("💰 Total calculado para organizer:", organizerTotal);
       
       // Pendente = o que o organizer tem direito - o que já foi pago
       const pendingTotal = organizerTotal - paidTotal;
@@ -121,8 +106,6 @@ const OrganizerFinancialPage: React.FC = () => {
       setTotalShippingFees(organizerTotal); // Total do organizer (com porcentagem)
       setTotalPaid(paidTotal);
       setTotalPending(pendingTotal);
-
-      console.log(`💰 Resumo FINAL: ${deliveries.length} entregas | Porcentagem: ${percentage}% | Total do Organizer: R$ ${organizerTotal.toFixed(2)} | Pago: R$ ${paidTotal.toFixed(2)} | Pendente: R$ ${pendingTotal.toFixed(2)}`);
     } catch (error) {
       console.error("❌ Erro ao carregar resumo financeiro:", error);
       showToast("Erro ao carregar resumo financeiro", "error");

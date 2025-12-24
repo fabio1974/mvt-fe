@@ -65,7 +65,6 @@ export const AddressMapPicker: React.FC<AddressMapPickerProps> = ({
   // 🐛 Debug: Log da API key (apenas para verificação)
   React.useEffect(() => {
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-    console.log("🗺️ Google Maps API Key:", apiKey ? `${apiKey.substring(0, 10)}...` : "❌ NÃO ENCONTRADA");
   }, []);
 
   const { isLoaded, loadError } = useJsApiLoader({
@@ -78,7 +77,6 @@ export const AddressMapPicker: React.FC<AddressMapPickerProps> = ({
     if (value.latitude && value.longitude) {
       const newCenter = { lat: value.latitude, lng: value.longitude };
       setMapCenter(newCenter);
-      console.log("📍 Centralizando mapa nas coordenadas existentes:", newCenter);
     }
   }, [value.latitude, value.longitude]);
 
@@ -97,7 +95,6 @@ export const AddressMapPicker: React.FC<AddressMapPickerProps> = ({
             lng: position.coords.longitude,
           };
           setMapCenter(userPos);
-          console.log("📍 Localização do usuário obtida:", userPos);
         },
         (error) => {
           console.warn("⚠️ Não foi possível obter localização do usuário:", error.message);
@@ -233,7 +230,6 @@ export const AddressMapPicker: React.FC<AddressMapPickerProps> = ({
         };
         setMapCenter(userPos);
         reverseGeocode(userPos.lat, userPos.lng);
-        console.log("📍 Centralizado na localização atual:", userPos);
         setIsLocating(false);
       },
       (error) => {

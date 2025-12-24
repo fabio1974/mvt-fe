@@ -57,8 +57,6 @@ const DailyPaymentPage: React.FC = () => {
 
       const deliveriesData = response.data.content || [];
       setDeliveries(deliveriesData);
-
-      console.log(`💰 Total de entregas: ${deliveriesData.length}`);
     } catch (error) {
       console.error("Erro ao carregar entregas:", error);
       showToast("Erro ao carregar entregas", "error");
@@ -73,7 +71,6 @@ const DailyPaymentPage: React.FC = () => {
       
       if (response.data) {
         setPayment(response.data);
-        console.log("💳 Pagamento pendente encontrado:", response.data);
       }
     } catch (error: any) {
       // Se retornar 404, não há pagamento pendente (isso é normal)

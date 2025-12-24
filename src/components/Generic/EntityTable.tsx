@@ -92,40 +92,9 @@ const EntityTable: React.FC<EntityTableProps> = ({
 
   // Carrega metadata do contexto
   useEffect(() => {
-    console.log(
-      "🔍 EntityTable useEffect - metadataLoading:",
-      metadataLoading,
-      "entityName:",
-      entityName
-    );
     if (!metadataLoading) {
       const entityMetadata = getEntityMetadata(entityName);
-      console.log(
-        "📦 Tentando carregar metadata para:",
-        entityName,
-        "Resultado:",
-        entityMetadata
-      );
-      console.log(
-        "📦 Metadata completo:",
-        JSON.stringify(entityMetadata, null, 2)
-      );
       if (entityMetadata) {
-        // Log dos campos ENUM/SELECT para debug
-        const enumFields = entityMetadata.tableFields?.filter(
-          (f) => f.type === "enum" || f.type === "select"
-        );
-        console.log(
-          "🔍 Campos ENUM/SELECT encontrados:",
-          enumFields?.map((f) => ({
-            name: f.name,
-            label: f.label,
-            type: f.type,
-            hasOptions: !!f.options,
-            optionsCount: f.options?.length || 0,
-            options: f.options,
-          }))
-        );
 
         // Garante que filters seja um array mesmo quando backend envia null
         const normalizedMetadata = {
@@ -250,14 +219,6 @@ const EntityTable: React.FC<EntityTableProps> = ({
   };
 
   const formatValue = (value: any, field: FieldMetadata): string => {
-    // 🔍 Debug: log de TODOS os campos sendo formatados
-    console.log(`🔍 [formatValue] ${field.name}:`, {
-      value,
-      type: field.type,
-      valueType: typeof value,
-      isNull: value === null,
-      isUndefined: value === undefined,
-    });
 
     // Para campos boolean, trata undefined/null como false
     if (field.type?.toLowerCase() === "boolean") {
@@ -518,9 +479,6 @@ const EntityTable: React.FC<EntityTableProps> = ({
                                 onClick={() => {
                                   // Tenta diferentes propriedades de ID
                                   const id = row.id || row.paymentId || row.ID;
-                                  console.log("🔍 [DELETE] Row data:", row);
-                                  console.log("🔍 [DELETE] Row.id:", id);
-                                  console.log("🔍 [DELETE] All keys:", Object.keys(row));
                                   
                                   if (!id) {
                                     console.error("❌ ID não encontrado na row!");

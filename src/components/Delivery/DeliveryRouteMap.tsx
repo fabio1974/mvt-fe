@@ -57,28 +57,11 @@ const DeliveryRouteMap: React.FC<DeliveryRouteMapProps> = ({
   inTransitAt,
   height = "400px",
 }) => {
-  console.log("🗺️ DeliveryRouteMap - Renderizando com props:", {
-    fromLatitude,
-    fromLongitude,
-    toLatitude,
-    toLongitude,
-    fromAddress,
-    toAddress,
-    distance,
-    deliveryManGpsLatitude,
-    deliveryManGpsLongitude,
-    deliveryManName,
-    status,
-    inTransitAt,
-    height,
-  });
 
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
   const [routeInfo, setRouteInfo] = useState<{ distance: string; duration: string } | null>(null);
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-
-  console.log("🗺️ DeliveryRouteMap - API Key:", apiKey ? "✅ Presente" : "❌ Ausente");
 
   // Calcula o centro do mapa (ponto médio entre origem e destino)
   const center = {
@@ -88,12 +71,8 @@ const DeliveryRouteMap: React.FC<DeliveryRouteMapProps> = ({
 
   // Busca a rota usando Directions API quando o mapa carregar
   useEffect(() => {
-    console.log("🗺️ DeliveryRouteMap - useEffect executado. Map:", map ? "✅ Presente" : "❌ null");
     
     if (!map) return;
-
-    console.log("🗺️ DeliveryRouteMap - Buscando rota com Directions API");
-    console.log("🗺️ DeliveryRouteMap - Verificando google:", typeof google !== 'undefined' ? "✅ Definido" : "❌ Não definido");
 
     try {
       const directionsService = new google.maps.DirectionsService();
@@ -110,7 +89,6 @@ const DeliveryRouteMap: React.FC<DeliveryRouteMapProps> = ({
         },
         (result, status) => {
           if (status === google.maps.DirectionsStatus.OK && result) {
-            console.log("🗺️ DeliveryRouteMap - Rota calculada com sucesso");
             setDirections(result);
             
             // Extrai informações da rota
@@ -121,8 +99,6 @@ const DeliveryRouteMap: React.FC<DeliveryRouteMapProps> = ({
                 distance: leg.distance?.text || "",
                 duration: leg.duration?.text || "",
               });
-              console.log("🗺️ DeliveryRouteMap - Distância:", leg.distance?.text);
-              console.log("🗺️ DeliveryRouteMap - Tempo:", leg.duration?.text);
             }
 
             // Ajusta o zoom para mostrar a rota completa
@@ -175,15 +151,10 @@ const DeliveryRouteMap: React.FC<DeliveryRouteMapProps> = ({
   const origin = { lat: fromLatitude, lng: fromLongitude };
   const destination = { lat: toLatitude, lng: toLongitude };
   
-  console.log("🗺️ DeliveryRouteMap - Origin:", origin);
-  console.log("🗺️ DeliveryRouteMap - Destination:", destination);
-  
   // Coordenadas do motoboy (se disponível)
   const deliveryManPosition = deliveryManGpsLatitude && deliveryManGpsLongitude
     ? { lat: deliveryManGpsLatitude, lng: deliveryManGpsLongitude }
     : null;
-
-  console.log("🗺️ DeliveryRouteMap - DeliveryMan Position:", deliveryManPosition);
 
   /**
    * Calcula a distância entre dois pontos usando a fórmula de Haversine
@@ -227,19 +198,11 @@ const DeliveryRouteMap: React.FC<DeliveryRouteMapProps> = ({
    * Só retorna ETA se houver movimento detectável (velocidade >= 1 km/h)
    */
   const calculateETA = (): { minutes: number; avgSpeed: number } | null => {
-    console.log("🔍 calculateETA - Verificando condições:", {
-      status,
-      hasDeliveryManPosition: !!deliveryManPosition,
-      inTransitAt,
-    });
 
     // Só calcula se estiver em trânsito e tiver todas as informações necessárias
     if (status !== "IN_TRANSIT" || !deliveryManPosition || !inTransitAt) {
-      console.log("❌ calculateETA - Condições não atendidas, retornando null");
       return null;
     }
-
-    console.log("✅ calculateETA - Condições OK, calculando ETA...");
 
     try {
       // Calcula distância percorrida (origem até posição atual do motoboy)
@@ -249,7 +212,6 @@ const DeliveryRouteMap: React.FC<DeliveryRouteMapProps> = ({
         deliveryManPosition.lat,
         deliveryManPosition.lng
       );
-      console.log("📏 Distância percorrida:", distanceTraveled.toFixed(3), "km");
 
       // Calcula distância restante (posição atual até destino)
       const distanceRemaining = calculateDistance(
@@ -258,42 +220,29 @@ const DeliveryRouteMap: React.FC<DeliveryRouteMapProps> = ({
         toLatitude,
         toLongitude
       );
-      console.log("📏 Distância restante:", distanceRemaining.toFixed(3), "km");
 
       // Calcula tempo decorrido desde que entrou em trânsito
       const startTime = new Date(inTransitAt).getTime();
       const currentTime = new Date().getTime();
       const timeElapsedHours = (currentTime - startTime) / (1000 * 60 * 60); // em horas
       const timeElapsedMinutes = timeElapsedHours * 60;
-      console.log("⏱️ Tempo decorrido:", timeElapsedMinutes.toFixed(1), "minutos");
 
       // Se passou menos de 1 minuto, não temos dados suficientes
       if (timeElapsedHours < 0.0167) { // 0.0167h = 1 minuto
-        console.log("❌ ETA cancelado: menos de 1 minuto decorrido");
         return null;
       }
 
       // Calcula velocidade média (km/h)
       const avgSpeed = distanceTraveled / timeElapsedHours;
-      console.log("🚀 Velocidade média:", avgSpeed.toFixed(1), "km/h");
 
       // Se velocidade muito baixa (< 1 km/h), provavelmente parado
       if (avgSpeed < 1) {
-        console.log("❌ ETA cancelado: velocidade muito baixa (<1 km/h)");
         return null;
       }
 
       // Calcula tempo estimado para percorrer distância restante
       const etaHours = distanceRemaining / avgSpeed;
       const etaMinutes = Math.ceil(etaHours * 60);
-
-      console.log("✅ ETA calculado com sucesso:", {
-        distanceTraveled: distanceTraveled.toFixed(2) + " km",
-        distanceRemaining: distanceRemaining.toFixed(2) + " km",
-        timeElapsedMinutes: timeElapsedMinutes.toFixed(1) + " min",
-        avgSpeed: avgSpeed.toFixed(1) + " km/h",
-        etaMinutes: etaMinutes + " min"
-      });
 
       return { minutes: etaMinutes, avgSpeed };
     } catch (error) {
@@ -304,10 +253,6 @@ const DeliveryRouteMap: React.FC<DeliveryRouteMapProps> = ({
 
   const remainingDistance = calculateRemainingDistance();
   const eta = calculateETA();
-  
-  console.log("📊 DeliveryRouteMap - Distância restante:", remainingDistance?.toFixed(2), "km");
-  console.log("📊 DeliveryRouteMap - ETA resultado:", eta);
-  console.log("📊 DeliveryRouteMap - Vai exibir linha 2?", !!(distance || deliveryManPosition || eta));
 
   /**
    * Calcula o ângulo da rota (de origem para destino) em graus
@@ -322,7 +267,6 @@ const DeliveryRouteMap: React.FC<DeliveryRouteMapProps> = ({
   };
 
   const needsFlip = shouldFlipMoto();
-  console.log("🏍️ DeliveryRouteMap - Moto precisa flip?", needsFlip, "deltaLng:", toLongitude - fromLongitude);
 
   return (
     <>

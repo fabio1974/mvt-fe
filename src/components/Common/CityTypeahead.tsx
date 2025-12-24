@@ -54,7 +54,6 @@ export const CityTypeahead: React.FC<CityTypeaheadProps> = ({
       const response = await api.get(
         `/api/cities/search?q=${encodeURIComponent(searchTerm)}`
       );
-      console.log("Dados da API de cidades:", response.data);
       setCities(Array.isArray(response.data) ? response.data : []);
       setIsOpen(true);
       setHighlightedIndex(-1);

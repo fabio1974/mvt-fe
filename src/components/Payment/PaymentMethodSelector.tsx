@@ -146,12 +146,10 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
 
   const loadPaymentMethods = useCallback(async () => {
     try {
-      console.log("Loading payment methods...");
       setLoading(true);
       setError(null);
 
       const response = await paymentService.getPaymentMethods();
-      console.log("Payment methods from API:", response);
 
       // Convert backend object format to array format
       const methodsArray: PaymentMethod[] = Object.entries(response).map(
@@ -163,8 +161,6 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
         })
       );
 
-      console.log("Converted payment methods:", methodsArray);
-
       // Filter only supported methods
       const supportedMethods = methodsArray.filter(
         (method) => method.supported
@@ -173,9 +169,7 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
       setLoading(false); // Always stop loading after methods are loaded
 
       // Only calculate fees if we have a valid amount (skip for now while amount is in DB)
-      console.log("Methods loaded, amount available:", amount);
       if (supportedMethods.length > 0 && amount && amount > 0) {
-        console.log("Calculating fees for amount:", amount);
         await calculateFees(supportedMethods);
       }
     } catch (error) {
@@ -197,13 +191,11 @@ const PaymentMethodSelector: React.FC<PaymentMethodSelectorProps> = ({
       amount > 0 &&
       Object.keys(fees).length === 0
     ) {
-      console.log("Amount became valid, calculating fees:", amount);
       calculateFees(methods);
     }
   }, [amount, methods, fees, calculateFees]);
 
   const handleMethodClick = (method: PaymentMethod) => {
-    console.log("Selected payment method:", method);
     onMethodSelect(method);
   };
 

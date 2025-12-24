@@ -242,7 +242,6 @@ export function convertEntityMetadataToFormMetadata(
       // Campos normais (não nested)
       const formField = convertFieldToFormField(field);
       if (formField) {
-        console.log(`✅ [convertEntityMetadataToFormMetadata] Campo "${field.name}" adicionado aos basicFields`);
         basicFields.push(formField);
       } else {
         console.warn(`⚠️ [convertEntityMetadataToFormMetadata] Campo "${field.name}" retornou NULL do conversor!`);

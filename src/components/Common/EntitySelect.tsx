@@ -63,10 +63,6 @@ const EntitySelect: React.FC<EntitySelectProps> = ({
           sort: `${config.labelField},asc`,
         });
 
-        console.log(
-          `🔍 EntitySelect: Carregando opções de ${config.entityName} - ${endpoint}?${params}`
-        );
-
         const response = await api.get(`${endpoint}?${params}`);
 
         // Suporta tanto array direto quanto estrutura paginada
@@ -75,9 +71,6 @@ const EntitySelect: React.FC<EntitySelectProps> = ({
           : (response.data as { content?: EntityOption[] }).content || [];
 
         setOptions(data);
-        console.log(
-          `✅ EntitySelect: ${data.length} opções carregadas para ${config.entityName}`
-        );
       } catch (err) {
         console.error(
           `❌ EntitySelect: Erro ao carregar ${config.entityName}:`,

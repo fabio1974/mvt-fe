@@ -26,7 +26,6 @@ const CardPaymentForm = ({
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    console.log("=== CARD PAYMENT SUBMIT STARTED ===");
 
     if (!stripe || !elements) {
       console.error("Stripe not loaded");
@@ -56,11 +55,9 @@ const CardPaymentForm = ({
       };
 
       const response = await paymentService.createPayment(paymentData);
-      console.log("Payment response:", response);
 
       // Extract client_secret from the correct location
       const clientSecret = response.providerResponse?.client_secret || response.clientSecret;
-      console.log("Extracted client_secret:", clientSecret);
 
       if (!response.success || !clientSecret) {
         throw new Error("Falha na criação do pagamento no backend");
@@ -82,7 +79,6 @@ const CardPaymentForm = ({
         setError(errorMsg);
         onPaymentError(errorMsg);
       } else if (paymentIntent?.status === "succeeded") {
-        console.log("Payment succeeded:", paymentIntent);
         onPaymentComplete(response.paymentId);
       } else {
         const errorMsg = "Pagamento não foi processado corretamente";

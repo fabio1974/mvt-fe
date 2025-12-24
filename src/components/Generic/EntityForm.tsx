@@ -101,9 +101,6 @@ const EntityForm: React.FC<EntityFormProps> = ({
       if (!entityId && organizationId) {
         // Detecta campos relacionados com Organization
         if (field.name === "organizationId" || field.name === "organization") {
-          console.log(
-            `🏢 Auto-preenchendo organizationId com valor: ${organizationId}`
-          );
           // Sempre salva como 'organizationId' (será usado no submit)
           defaultValues["organizationId"] = organizationId;
         }
@@ -121,8 +118,6 @@ const EntityForm: React.FC<EntityFormProps> = ({
 
     // Aplica initialValues sem normalização, preservando objetos de entidade
     const result = { ...defaultValues, ...initialValues };
-    console.log("🔍 [INIT] initialValues:", initialValues);
-    console.log("🔍 [INIT] formData inicial (com user):", result.user);
     return result;
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -139,8 +134,6 @@ const EntityForm: React.FC<EntityFormProps> = ({
   // ⚠️ Usa flag para evitar loops infinitos
   useEffect(() => {
     if (!entityId && !initialValuesApplied && Object.keys(initialValues).length > 0) {
-      console.log("🔍 [USEEFFECT] Aplicando initialValues sem normalização:", initialValues);
-      
       // 🚚 Para delivery: se toAddress não estiver preenchido, copia fromAddress
       // Isso garante que o endereço de destino seja igual ao de origem (do usuário logado)
       const valuesToApply = {...initialValues};
@@ -155,8 +148,6 @@ const EntityForm: React.FC<EntityFormProps> = ({
         ...prev,
         ...valuesToApply,
       }));
-      
-      console.log("🔍 [USEEFFECT] formData após aplicar initialValues:", valuesToApply);
       
       setInitialValuesApplied(true);
     }
@@ -223,11 +214,6 @@ const EntityForm: React.FC<EntityFormProps> = ({
         ) {
           const orgObj = data.organization as { id: number; name?: string };
           data.organizationId = orgObj.id;
-          console.log(
-            `🏢 Organization carregada: {id: ${orgObj.id}, name: "${
-              orgObj.name || "N/A"
-            }"}`
-          );
         }
 
         // ✅ CORREÇÃO GENÉRICA: Converte campos que são objetos com {id} para formato adequado
@@ -255,17 +241,9 @@ const EntityForm: React.FC<EntityFormProps> = ({
             if (isEntityField) {
               // Para campos entity, SEMPRE MANTÉM o objeto completo {id, name}
               // Backend espera esse formato para relacionamentos
-              console.log(
-                `🔄 Preservando objeto entity "${key}":`,
-                obj
-              );
               data[key] = obj; // Mantém objeto
             } else {
               // Para outros campos, converte para ID (valor primitivo)
-              console.log(
-                `🔄 Convertendo campo não-entity "${key}" de objeto para ID:`,
-                obj.id
-              );
               data[key] = String(obj.id);
             }
 
@@ -286,7 +264,6 @@ const EntityForm: React.FC<EntityFormProps> = ({
         const errorMessage = err?.response?.data?.message || err?.message || "";
         
         if (is404) {
-          console.log("⚠️ Registro não encontrado (404). Iniciando em modo criação.");
           // Não mostra toast de erro - deixa o formulário vazio para criação
         } else {
           // Outros erros mostram toast
@@ -309,17 +286,6 @@ const EntityForm: React.FC<EntityFormProps> = ({
 
     if (computedFields.length === 0) return;
 
-    console.log(
-      "🧮 [EntityForm] useEffect disparado - Campos computados detectados:",
-      computedFields.map((f) => ({
-        name: f.name,
-        computed: f.computed,
-        dependencies: f.computedDependencies,
-      })),
-      "formData keys:",
-      Object.keys(formData)
-    );
-
     // Para cada campo computado, verifica se alguma dependência mudou
     computedFields.forEach((field) => {
       if (!field.computed || !field.computedDependencies) return;
@@ -328,10 +294,6 @@ const EntityForm: React.FC<EntityFormProps> = ({
 
       // Só atualiza se o valor calculado for diferente do atual
       if (result !== null && result !== formData[field.name]) {
-        console.log(
-          `🧮 [EntityForm] Atualizando campo computado ${field.name}:`,
-          result
-        );
         setFormData((prev) => ({
           ...prev,
           [field.name]: result,
@@ -358,13 +320,6 @@ const EntityForm: React.FC<EntityFormProps> = ({
   // Atualiza valor de um campo
   const handleChange = (fieldName: string, value: unknown) => {
     if (fieldName === "addresses" && Array.isArray(value)) {
-      console.log(`🔄 [EntityForm] handleChange ADDRESSES:`, {
-        numItems: value.length,
-        items: value.map((item, idx) => ({
-          idx,
-          data: item,
-        })),
-      });
     }
 
     const normalizedValue =
@@ -375,7 +330,6 @@ const EntityForm: React.FC<EntityFormProps> = ({
     setFormData((prev) => {
       const newData = { ...prev, [fieldName]: normalizedValue };
       if (fieldName === "addresses") {
-        console.log(`✅ [EntityForm] setFormData com addresses:`, newData.addresses);
       }
 
       // 🏦 Auto-preenche bankName quando bankCode muda (para entidade bankAccount)
@@ -549,7 +503,6 @@ const EntityForm: React.FC<EntityFormProps> = ({
     if (Object.keys(newErrors).length > 0) {
       console.error(`❌ Total de ${Object.keys(newErrors).length} erro(s) de validação:`, newErrors);
     } else {
-      console.log("✅ Validação do formulário passou!");
     }
 
     setErrors(newErrors);
@@ -581,17 +534,6 @@ const EntityForm: React.FC<EntityFormProps> = ({
       const distance = formData[distanceFieldName];
       const distanceNumber = Number(distance);
       
-      console.log('🔍 Validação de distância:', {
-        distanceFieldName,
-        distance,
-        distanceNumber,
-        tipo: typeof distance,
-        isZero: distanceNumber === 0,
-        isTooSmall: distanceNumber < 0.1,
-        isNaN: isNaN(distanceNumber),
-        formDataKeys: Object.keys(formData).filter(k => k.toLowerCase().includes('dist'))
-      });
-      
       // ✅ Valida se a distância é zero ou muito pequena (< 100 metros / 0.1 km)
       // Isso captura casos onde origem e destino são praticamente o mesmo local
       if (distance !== undefined && distance !== null && !isNaN(distanceNumber) && distanceNumber < 0.1) {
@@ -609,9 +551,6 @@ const EntityForm: React.FC<EntityFormProps> = ({
 
       // Prepara o payload para envio
       const finalData = { ...formData };
-
-      console.log("🔍 [SUBMIT] formData original:", formData);
-      console.log("🔍 [SUBMIT] formData.user:", formData.user, typeof formData.user);
 
       // Obtém todos os campos (incluindo não visíveis)
       const allFields =
@@ -634,7 +573,6 @@ const EntityForm: React.FC<EntityFormProps> = ({
           finalData.organization = { id: organizationId };
           // Remove organizationId se existir (enviamos organization)
           delete finalData.organizationId;
-          console.log(`🏢 Injetando organization: {id: ${organizationId}}`);
         }
       }
 
@@ -642,16 +580,12 @@ const EntityForm: React.FC<EntityFormProps> = ({
       if (finalData.organizationId && !finalData.organization) {
         finalData.organization = { id: finalData.organizationId };
         delete finalData.organizationId;
-        console.log(
-          `🔄 Convertendo organizationId → organization: {id: ${finalData.organizationId}}`
-        );
       }
 
       // ✅ Converte cityId para city: {id}
       if (finalData.cityId && typeof finalData.cityId !== "object") {
         finalData.city = { id: parseInt(String(finalData.cityId)) };
         delete finalData.cityId;
-        console.log(`🏙️ Convertendo cityId → city: {id: ${finalData.cityId}}`);
       }
 
       // ✅ Remove máscaras de CPF, CNPJ, telefone, CEP antes de enviar ao backend
@@ -663,8 +597,6 @@ const EntityForm: React.FC<EntityFormProps> = ({
         (metadata.originalFields || metadata.sections.flatMap((s) => s.fields)).map((f) => f.name)
       );
 
-      console.log("📋 [DEBUG] Campos permitidos no metadata:", Array.from(allowedFieldNames));
-
       Object.keys(unmaskedData).forEach((key) => {
         // Mantém sempre "id" e campos de relacionamento conhecidos (arrays de contratos/endereços)
         const keepAlways = 
@@ -675,17 +607,13 @@ const EntityForm: React.FC<EntityFormProps> = ({
         
         if (!keepAlways && !allowedFieldNames.has(key)) {
           delete unmaskedData[key];
-          console.log(`🚫 Removendo campo fora do metadata: ${key}`);
         }
       });
-
-      console.log("📋 [DEBUG] Dados finais após whitelist:", unmaskedData);
 
       // 🚫 Remove campos "transferred" (campos de outras entidades que não devem ser enviados)
       allFields.forEach((field) => {
         if (field.transferred) {
           delete unmaskedData[field.name];
-          console.log(`🚫 Excluindo campo transferred: ${field.name}`);
         }
       });
 
@@ -825,7 +753,6 @@ const EntityForm: React.FC<EntityFormProps> = ({
         if (fieldExists) {
           try {
             // Busca a cidade no banco de dados pelo nome
-            console.log(`🏙️ Buscando cidade: ${addressData.city} - ${addressData.state}`);
             
             const response = await api.get<{ content: Array<{ id: string | number; name: string }> }>('/cities', {
               params: {
@@ -837,11 +764,9 @@ const EntityForm: React.FC<EntityFormProps> = ({
             
             if (response.data && response.data.content && response.data.content.length > 0) {
               const cityFromDB = response.data.content[0];
-              console.log(`🏙️ Cidade encontrada no banco:`, cityFromDB);
               
               // Atualiza o campo city com o ID da cidade do banco
               handleChange(cityField, cityFromDB.id);
-              console.log(`🏙️ Campo ${cityField} atualizado com ID: ${cityFromDB.id}`);
             } else {
               console.warn(`⚠️ Cidade "${addressData.city} - ${addressData.state}" não encontrada no banco de dados`);
               showToast(`Cidade "${addressData.city}" não encontrada no banco de dados`, 'warning');
@@ -862,9 +787,6 @@ const EntityForm: React.FC<EntityFormProps> = ({
       !isAdmin() && // ✅ ADMIN sempre vê o campo
       (field.name === "organizationId" || field.name === "organization")
     ) {
-      console.log(
-        `🔒 Ocultando campo ${field.name} (auto-preenchido com organizationId: ${organizationId})`
-      );
       return null;
     }
 
@@ -1805,19 +1727,10 @@ const EntityForm: React.FC<EntityFormProps> = ({
               f.relationship?.targetEntity === parentEntityName);
 
           if (isParentReference) {
-            console.log(
-              `🚫 ArrayField: Campo "${f.name}" removido (referencia ao pai "${parentEntityName}")`
-            );
           }
 
           return !isParentReference;
         }) || [];
-
-      console.log("🔍 ArrayField config:", {
-        fieldName: field.name,
-        "field.relationship?.labelField": field.relationship?.labelField,
-        "field.arrayConfig": field.arrayConfig,
-      });
 
       const error = errors[field.name];
 

@@ -121,7 +121,6 @@ const DeliveryCRUDPage: React.FC = () => {
 
   // 🗺️ Componente que renderiza o mapa de rota no modo view
   const DeliveryMapWrapper: React.FC<{ entityId: number | string | undefined; viewMode: string }> = ({ entityId, viewMode }) => {
-    console.log("🗺️ DeliveryMapWrapper - Montado com:", { entityId, viewMode });
 
     const [deliveryData, setDeliveryData] = useState<{
       fromLatitude?: number;
@@ -140,19 +139,15 @@ const DeliveryCRUDPage: React.FC = () => {
     } | null>(null);
 
     useEffect(() => {
-      console.log("🗺️ DeliveryMapWrapper - useEffect disparado", { entityId, viewMode });
       
       // Só carrega se estiver no modo view e tiver ID
       if (viewMode !== "view" || !entityId) {
-        console.log("🗺️ DeliveryMapWrapper - Não carregando (viewMode ou entityId inválido)");
         return;
       }
 
       const loadDelivery = async () => {
         try {
-          console.log("🗺️ DeliveryMapWrapper - Carregando delivery:", entityId);
           const response = await api.get(`/api/deliveries/${entityId}`);
-          console.log("🗺️ DeliveryMapWrapper - Resposta da API:", response.data);
           
           const data = response.data as {
             fromLatitude: number;
@@ -180,7 +175,6 @@ const DeliveryCRUDPage: React.FC = () => {
             distanceKm: data.distanceKm,
             courier: data.courier,
           });
-          console.log("🗺️ DeliveryMapWrapper - Dados salvos no estado");
         } catch (error) {
           console.error("❌ DeliveryMapWrapper - Erro ao carregar dados da entrega:", error);
         }
@@ -189,16 +183,6 @@ const DeliveryCRUDPage: React.FC = () => {
       loadDelivery();
     }, [entityId, viewMode]);
 
-    console.log("🗺️ DeliveryMapWrapper - Estado deliveryData:", deliveryData);
-    console.log("🗺️ DeliveryMapWrapper - Validações:", {
-      isViewMode: viewMode === "view",
-      hasDeliveryData: !!deliveryData,
-      hasFromLat: deliveryData?.fromLatitude !== undefined,
-      hasFromLng: deliveryData?.fromLongitude !== undefined,
-      hasToLat: deliveryData?.toLatitude !== undefined,
-      hasToLng: deliveryData?.toLongitude !== undefined,
-    });
-
     // Só renderiza o mapa no modo view com todos os dados carregados
     if (viewMode !== "view" || 
         !deliveryData || 
@@ -206,11 +190,8 @@ const DeliveryCRUDPage: React.FC = () => {
         deliveryData.fromLongitude === undefined ||
         deliveryData.toLatitude === undefined ||
         deliveryData.toLongitude === undefined) {
-      console.log("🗺️ DeliveryMapWrapper - Não renderizando mapa (condições não atendidas)");
       return null;
     }
-
-    console.log("🗺️ DeliveryMapWrapper - ✅ Renderizando DeliveryRouteMap");
 
     return (
       <DeliveryRouteMap
