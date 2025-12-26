@@ -214,6 +214,24 @@ const PaymentCRUDPage: React.FC = () => {
     );
   };
 
+  // Renderizadores customizados para campos específicos
+  const customRenderers = {
+    createdAt: (value: any) => {
+      if (!value) return "-";
+      try {
+        return new Date(value).toLocaleString("pt-BR", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      } catch (e) {
+        return String(value);
+      }
+    },
+  };
+
   return (
     <>
       <EntityCRUD
@@ -225,6 +243,7 @@ const PaymentCRUDPage: React.FC = () => {
         disableEdit={true}
         hideArrayFields={true}
         customActions={customActions}
+        customRenderers={customRenderers}
       />
       
       {showReport && reportData && (
