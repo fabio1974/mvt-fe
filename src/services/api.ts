@@ -5,7 +5,6 @@ import { showToast } from "../utils/toast";
 const normalizeUrl = (url: string): string => {
   if (!url) return url;
   
-  const original = url;
   // Remove duplicações de /api/api → /api em qualquer lugar da URL
   const normalized = url.replace(/\/api\/api(\/|$)/g, '/api$1');
   

@@ -42,8 +42,6 @@ const BankAccountModal: React.FC<BankAccountModalProps> = ({
         .catch((error) => {
           console.error("Erro ao buscar conta bancária:", error);
           // Não faz nada, deixa como criação de nova conta
-        })
-        .finally(() => {
           setLoadingBankAccount(false);
         });
     }

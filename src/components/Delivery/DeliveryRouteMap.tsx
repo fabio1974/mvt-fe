@@ -225,7 +225,6 @@ const DeliveryRouteMap: React.FC<DeliveryRouteMapProps> = ({
       const startTime = new Date(inTransitAt).getTime();
       const currentTime = new Date().getTime();
       const timeElapsedHours = (currentTime - startTime) / (1000 * 60 * 60); // em horas
-      const timeElapsedMinutes = timeElapsedHours * 60;
 
       // Se passou menos de 1 minuto, não temos dados suficientes
       if (timeElapsedHours < 0.0167) { // 0.0167h = 1 minuto

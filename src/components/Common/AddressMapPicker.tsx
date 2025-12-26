@@ -62,11 +62,6 @@ export const AddressMapPicker: React.FC<AddressMapPickerProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
 
-  // 🐛 Debug: Log da API key (apenas para verificação)
-  React.useEffect(() => {
-    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-  }, []);
-
   const { isLoaded, loadError } = useJsApiLoader({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "",
     libraries,

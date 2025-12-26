@@ -95,7 +95,7 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
     if (computedFields.length === 0 || !Array.isArray(value)) return;
 
     let hasChanges = false;
-    const newValue = value.map((item, index) => {
+    const newValue = value.map((item) => {
       if (!item || typeof item !== "object") return item;
 
       const itemData = item as Record<string, unknown>;
