@@ -390,9 +390,12 @@ const EntityTable: React.FC<EntityTableProps> = ({
       // Cria um campo básico para exibição
       fieldsWithForcedVisible.push({
         name: fieldName,
-        type: "text",
+        type: "string",
         label: fieldName,
         visible: true,
+        align: "left",
+        sortable: false,
+        searchable: false,
       });
     }
   });
