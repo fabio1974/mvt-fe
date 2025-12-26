@@ -215,6 +215,44 @@ const EntityTable: React.FC<EntityTableProps> = ({
       value = value?.[key];
       if (value === undefined || value === null) break;
     }
+
+    // 📱 Concatena automaticamente DDD + Telefone quando ambos existirem
+    // Detecta campos phone/telefone e busca por DDD correspondente
+    const fieldNameLower = field.name.toLowerCase();
+    const isPhoneNumber = fieldNameLower.includes('phone') || fieldNameLower.includes('telefone');
+    const isNotDDD = !fieldNameLower.includes('ddd');
+    
+    if (isPhoneNumber && isNotDDD && value) {
+      // Procura por campo DDD correspondente
+      // Padrões: phoneDdd, phone_ddd, ddd, telefone_ddd, etc
+      const possibleDddFields = [
+        field.name.replace(/phone|telefone/gi, '') + 'Ddd',
+        field.name.replace(/phone|telefone/gi, '') + 'ddd',
+        field.name + 'Ddd',
+        field.name + 'ddd',
+        'phoneDdd',
+        'ddd',
+        'phone_ddd',
+        'telefoneDdd',
+        'telefone_ddd'
+      ];
+
+      for (const dddFieldName of possibleDddFields) {
+        const dddValue = row[dddFieldName];
+        if (dddValue) {
+          // Remove caracteres não numéricos do DDD e telefone
+          const cleanDdd = String(dddValue).replace(/\D/g, '');
+          const cleanPhone = String(value).replace(/\D/g, '');
+          
+          if (cleanDdd && cleanPhone) {
+            // Retorna telefone completo formatado: (85) 99999-9999
+            const fullPhone = cleanDdd + cleanPhone;
+            return fullPhone;
+          }
+        }
+      }
+    }
+
     return value;
   };
 
