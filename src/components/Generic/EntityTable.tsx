@@ -382,8 +382,23 @@ const EntityTable: React.FC<EntityTableProps> = ({
     );
   }
 
+  // Adiciona campos ausentes do metadata que estão em showFields
+  const fieldsWithForcedVisible = [...fieldsSource];
+  showFields.forEach((fieldName) => {
+    const existsInMetadata = fieldsSource.some((f) => f.name === fieldName);
+    if (!existsInMetadata) {
+      // Cria um campo básico para exibição
+      fieldsWithForcedVisible.push({
+        name: fieldName,
+        type: "text",
+        label: fieldName,
+        visible: true,
+      });
+    }
+  });
+
   // Filtra campos visíveis: (visible=true OU está em showFields) E não está em hideFields
-  const visibleFields = (fieldsSource.filter((f) => 
+  const visibleFields = (fieldsWithForcedVisible.filter((f) => 
     f.visible || showFields.includes(f.name)
   ) || []).filter((f) => !hideFields.includes(f.name));
 
