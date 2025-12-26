@@ -54,6 +54,8 @@ interface EntityCRUDProps {
   initialValues?: Record<string, unknown>;
   /** Campos a serem escondidos na tabela */
   hideFields?: string[];
+  /** Campos que devem ser forçadamente exibidos na tabela (mesmo com visible:false no metadata) */
+  showFields?: string[];
   /** Campos que devem ficar readonly no formulário */
   readonlyFields?: string[];
   /** Campos que devem ficar escondidos (hidden) no formulário */
@@ -109,6 +111,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
   defaultValues,
   initialValues,
   hideFields,
+  showFields,
   readonlyFields,
   hiddenFields,
   beforeFormComponent,
@@ -347,6 +350,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
             hideHeader={true}
             initialFilters={initialFilters}
             hideFields={hideFields}
+            showFields={showFields}
             hideFilters={hideFilters}
           />
         </ErrorBoundary>

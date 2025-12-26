@@ -55,6 +55,7 @@ interface EntityTableProps {
   noWrapper?: boolean; // Opcional - remove o container entity-table-page
   hideFilters?: boolean; // Opcional - esconde apenas os filtros (mantém header)
   hideFields?: string[]; // Opcional - array de nomes de campos a serem escondidos
+  showFields?: string[]; // Opcional - array de nomes de campos a serem forçadamente exibidos (mesmo com visible:false)
 }
 
 const EntityTable: React.FC<EntityTableProps> = ({
@@ -71,6 +72,7 @@ const EntityTable: React.FC<EntityTableProps> = ({
   noWrapper = false,
   hideFilters = false,
   hideFields = [],
+  showFields = [],
 }) => {
   const {
     getEntityMetadata,
@@ -380,8 +382,10 @@ const EntityTable: React.FC<EntityTableProps> = ({
     );
   }
 
-  const visibleFields = (fieldsSource.filter((f) => f.visible) || [])
-    .filter((f) => !hideFields.includes(f.name));
+  // Filtra campos visíveis: (visible=true OU está em showFields) E não está em hideFields
+  const visibleFields = (fieldsSource.filter((f) => 
+    f.visible || showFields.includes(f.name)
+  ) || []).filter((f) => !hideFields.includes(f.name));
 
   // Determina se deve mostrar coluna ID (todas entidades exceto 'user')
   const showIdColumn = entityName.toLowerCase() !== "user";
