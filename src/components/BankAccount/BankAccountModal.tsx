@@ -38,6 +38,7 @@ const BankAccountModal: React.FC<BankAccountModalProps> = ({
             // Encontrou conta bancária existente
             setExistingBankAccount(response.data);
           }
+          setLoadingBankAccount(false);
         })
         .catch((error) => {
           console.error("Erro ao buscar conta bancária:", error);
