@@ -14,10 +14,8 @@ import {
   FiPackage,
   FiDollarSign,
   FiMapPin,
-  FiCreditCard,
   FiUsers,
 } from "react-icons/fi";
-import { BsBank } from "react-icons/bs";
 import "./Sidebar.css";
 
 interface MenuItem {
@@ -43,11 +41,6 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
     path: "/dados-pessoais",
   },
   {
-    label: "Dados Bancários",
-    icon: <FiCreditCard size={22} color="#0099ff" />,
-    path: "/dados-bancarios",
-  },
-  {
     label: "Dados de Endereço",
     icon: <FiMapPin size={22} color="#0099ff" />,
     path: "/dados-endereco",
@@ -64,12 +57,6 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
     label: "Configurações",
     icon: <FiSettings size={22} color="#8b5cf6" />,
     path: "/configuracoes",
-    roles: ["ROLE_ADMIN"],
-  },
-  {
-    label: "Contas Bancárias",
-    icon: <BsBank size={22} color="#10b981" />,
-    path: "/contas-bancarias",
     roles: ["ROLE_ADMIN"],
   },
   {
