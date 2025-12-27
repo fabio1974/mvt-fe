@@ -298,7 +298,8 @@ const EntityTable: React.FC<EntityTableProps> = ({
     if (field.options && field.options.length > 0) {
       const option = field.options.find((opt) => opt.value === String(value));
       if (option) {
-        return option.label;
+        // Aplica tradução customizada se houver (ex: "Concluída" -> "Pago" para payments)
+        return translateLabel(option.label);
       }
       // Se não encontrou a opção, retorna o valor original
       return String(value);

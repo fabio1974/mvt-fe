@@ -34,7 +34,8 @@ export const LABEL_TRANSLATIONS: Record<string, string> = {
   "Payment Date": "Pago Em",
   "paymentDate": "Pago Em",
   "createdAt": "Criado Em",
-  "Created At": "Criado Em",
+  "Created At": "Criado Em", 
+
 };
 
 /**
