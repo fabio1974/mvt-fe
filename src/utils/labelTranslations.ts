@@ -31,8 +31,8 @@ export const LABEL_TRANSLATIONS: Record<string, string> = {
   "Cpf": "CPF/CNPJ",
 
   // Payment fields
-  "Payment Date": "Criado Em",
-  "paymentDate": "Criado Em",
+  "Payment Date": "Pago Em",
+  "paymentDate": "Pago Em",
   "createdAt": "Criado Em",
   "Created At": "Criado Em",
 };

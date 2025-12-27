@@ -256,7 +256,6 @@ const PaymentCRUDPage: React.FC = () => {
         disableView={true}
         disableEdit={true}
         hideArrayFields={true}
-        hideFields={["paymentDate"]}
         showFields={["createdAt"]}
         customActions={customActions}
         customRenderers={customRenderers}
