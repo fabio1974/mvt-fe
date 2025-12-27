@@ -4,7 +4,6 @@ import { getUserRole } from "../../utils/auth";
 import LOGO_PATH from "../../config/logo";
 import {
   FiSettings,
-  FiUser,
   FiBriefcase,
   FiChevronDown,
   FiChevronRight,
@@ -34,17 +33,6 @@ interface MenuGroup {
 
 // Itens de menu organizados por grupos
 const menuStructure: (MenuItem | MenuGroup)[] = [
-  // Dados Pessoais - primeiro item do menu
-  {
-    label: "Dados Pessoais",
-    icon: <FiUser size={22} color="#0099ff" />,
-    path: "/dados-pessoais",
-  },
-  {
-    label: "Dados de Endereço",
-    icon: <FiMapPin size={22} color="#0099ff" />,
-    path: "/dados-endereco",
-  },
   // Grupo - promovido para menu principal (apenas ORGANIZER)
   {
     label: "Grupo",
@@ -53,12 +41,6 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
     roles: ["ROLE_ORGANIZER"],
   },
   // Itens de primeiro nível (ordem alfabética)
-  {
-    label: "Configurações",
-    icon: <FiSettings size={22} color="#8b5cf6" />,
-    path: "/configuracoes",
-    roles: ["ROLE_ADMIN"],
-  },
   {
     label: "Entregas",
     icon: <FiPackage size={22} color="#60a5fa" />,
@@ -128,9 +110,9 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
     roles: ["ROLE_ADMIN"],
   },
 ].sort((a, b) => {
-  // "Dados Pessoais" sempre em primeiro
-  if ("path" in a && a.label === "Dados Pessoais") return -1;
-  if ("path" in b && b.label === "Dados Pessoais") return 1;
+  // "Pessoas" sempre em primeiro
+  if (a.label === "Pessoas") return -1;
+  if (b.label === "Pessoas") return 1;
   // Resto em ordem alfabética
   return a.label.localeCompare(b.label, "pt-BR");
 });
