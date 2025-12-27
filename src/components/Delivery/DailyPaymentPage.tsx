@@ -15,7 +15,6 @@ import "../Generic/EntityCRUD.css";
 
 interface PaymentResponse {
   paymentId: number;
-  iuguInvoiceId: string;
   pixQrCode: string;
   pixQrCodeUrl: string;
   secureUrl: string;
