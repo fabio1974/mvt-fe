@@ -244,6 +244,18 @@ const PaymentCRUDPage: React.FC = () => {
         return String(value);
       }
     },
+    status: (value: any) => {
+      const statusTranslations: Record<string, string> = {
+        PENDING: "Pendente",
+        PROCESSING: "Processando",
+        PAID: "Pago",
+        FAILED: "Falhou",
+        CANCELLED: "Cancelado",
+        REFUNDED: "Reembolsado",
+        EXPIRED: "Expirado",
+      };
+      return statusTranslations[value] || value;
+    },
   };
 
   return (
