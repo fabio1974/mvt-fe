@@ -4,7 +4,6 @@ import PaymentMethodSelector, {
   type PaymentMethod,
 } from "./PaymentMethodSelector";
 import PixPayment from "./PixPayment";
-import CardPayment from "./CardPayment";
 import { FiCheck, FiX } from "react-icons/fi";
 
 interface PaymentProcessorProps {
@@ -82,13 +81,9 @@ export default function PaymentProcessor({
     // Use method ID to determine payment type
     switch (selectedMethod.id) {
       case "PIX":
-        return <PixPayment {...commonProps} />;
-
       case "CREDIT_CARD":
       case "DEBIT_CARD":
-        return (
-          <CardPayment {...commonProps} paymentMethod={selectedMethod.id} />
-        );
+        return <PixPayment {...commonProps} />;
 
       default:
         return (

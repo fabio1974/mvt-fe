@@ -9,7 +9,7 @@ export interface PaymentMethod {
   fixedFee?: number;
   description: string;
   icon?: string;
-  provider: 'STRIPE' | 'MERCADOPAGO' | 'PAYPAL';
+  provider: 'MERCADOPAGO' | 'PAYPAL' | 'PIX';
   enabled: boolean;
 }
 

@@ -16,8 +16,8 @@ interface PaymentMethodSelectorProps {
 // Map backend provider names to frontend display names
 const providerMap = {
   PIX: "MERCADOPAGO",
-  CREDIT_CARD: "STRIPE",
-  DEBIT_CARD: "STRIPE",
+  CREDIT_CARD: "PIX",
+  DEBIT_CARD: "PIX",
   PAYPAL_ACCOUNT: "PAYPAL",
   BANK_TRANSFER: "BANK_TRANSFER",
 };

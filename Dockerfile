@@ -18,7 +18,6 @@ COPY . .
 # Note: These are PUBLIC keys (client-side), not secrets
 # VITE_ prefix means they are embedded in the frontend bundle
 ARG VITE_API_URL
-ARG VITE_STRIPE_PUBLIC_KEY
 ARG VITE_GOOGLE_MAPS_API_KEY
 ARG VITE_DEBUG_MODE
 ARG VITE_ENVIRONMENT
