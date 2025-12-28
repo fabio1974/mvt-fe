@@ -111,13 +111,20 @@ const EntityForm: React.FC<EntityFormProps> = ({
       } else if (field.type === "array") {
         defaultValues[field.name] = [];
       } else if (field.type === "boolean") {
-        // ✅ Campos boolean sempre têm valor padrão false (nunca undefined/null)
+        // ✅ Campos boolean sem defaultValue recebem false
+        // Se o campo tem defaultValue, já foi aplicado acima
         defaultValues[field.name] = false;
       }
     });
 
-    // Aplica initialValues sem normalização, preservando objetos de entidade
-    const result = { ...defaultValues, ...initialValues };
+    // Aplica initialValues por cima dos defaultValues
+    // Se initialValues[field] é undefined, mantém o defaultValue
+    const result = { ...defaultValues };
+    Object.keys(initialValues).forEach(key => {
+      if (initialValues[key] !== undefined) {
+        result[key] = initialValues[key];
+      }
+    });
     return result;
   });
   const [errors, setErrors] = useState<Record<string, string>>({});

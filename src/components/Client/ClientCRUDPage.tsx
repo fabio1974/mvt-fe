@@ -10,6 +10,7 @@ import { FiCreditCard } from "react-icons/fi";
 const ClientCRUDPage: React.FC = () => {
   const [bankAccountModalOpen, setBankAccountModalOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [selectedUserName, setSelectedUserName] = useState<string>("");
 
   // Custom actions para adicionar ícone de conta bancária
   const customActions = (row: any) => {
@@ -17,6 +18,7 @@ const ClientCRUDPage: React.FC = () => {
       <button
         onClick={() => {
           setSelectedUserId(row.id);
+          setSelectedUserName(row.name || row.username || "Usuário");
           setBankAccountModalOpen(true);
         }}
         className="btn-action"
@@ -63,9 +65,11 @@ const ClientCRUDPage: React.FC = () => {
       <BankAccountModal
         isOpen={bankAccountModalOpen}
         userId={selectedUserId}
+        userName={selectedUserName}
         onClose={() => {
           setBankAccountModalOpen(false);
           setSelectedUserId(null);
+          setSelectedUserName("");
         }}
       />
     </>

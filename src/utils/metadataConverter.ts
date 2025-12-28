@@ -194,6 +194,15 @@ export function convertEntityMetadataToFormMetadata(
     ? entityMetadata.formFields
     : (entityMetadata.fields || []);
 
+  // DEBUG: Log campos booleanos recebidos do backend
+  if (entityMetadata.name === 'bankAccount') {
+    const booleanSourceFields = sourceFields.filter(f => f.type === 'boolean');
+    console.log('🔍 [convertEntityMetadataToFormMetadata] bankAccount - Campos booleanos do backend:', {
+      count: booleanSourceFields.length,
+      fields: booleanSourceFields.map(f => ({ name: f.name, label: f.label, type: f.type }))
+    });
+  }
+
   // console.log('[convertEntityMetadataToFormMetadata] Using source fields:', {
   //   hasFormFields: !!(entityMetadata.formFields && entityMetadata.formFields.length > 0),
   //   sourceFieldsCount: sourceFields.length,
@@ -254,17 +263,15 @@ export function convertEntityMetadataToFormMetadata(
     .map(field => convertFieldToFormField(field))
     .filter((field): field is FormFieldMetadata => field !== null);
 
-  // console.log('[convertEntityMetadataToFormMetadata] Processed fields:', {
-  //   basicFieldsCount: basicFields.length,
-  //   relationshipFieldsCount: relationshipFields.length,
-  //   basicFields: basicFields.map(f => ({
-  //     name: f.name,
-  //     type: f.type,
-  //     computed: f.computed,
-  //     computedDependencies: f.computedDependencies
-  //   })),
-  //   relationshipFields: relationshipFields.map(f => f.name)
-  // });
+  // DEBUG: Log campos booleanos
+  const booleanFields = basicFields.filter(f => f.type === 'boolean');
+  if (booleanFields.length > 0) {
+    console.log('🔍 [convertEntityMetadataToFormMetadata] Campos booleanos encontrados:', {
+      entityName: entityMetadata.name,
+      count: booleanFields.length,
+      fields: booleanFields.map(f => ({ name: f.name, label: f.label }))
+    });
+  }
 
   // Organiza em seções
   const sections: FormSectionMetadata[] = [];

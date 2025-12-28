@@ -8,6 +8,7 @@ import "./BankAccountModal.css";
 interface BankAccountModalProps {
   isOpen: boolean;
   userId: string | number | null;
+  userName?: string;
   onClose: () => void;
 }
 
@@ -18,6 +19,7 @@ interface BankAccountModalProps {
 const BankAccountModal: React.FC<BankAccountModalProps> = ({
   isOpen,
   userId,
+  userName,
   onClose,
 }) => {
   const [existingBankAccount, setExistingBankAccount] = useState<any>(null);
@@ -56,7 +58,7 @@ const BankAccountModal: React.FC<BankAccountModalProps> = ({
         <div className="bank-account-modal-header">
           <h2>
             <FiCreditCard size={24} style={{ marginRight: "10px" }} />
-            Conta Bancária
+            {userName || "Conta Bancária"}
           </h2>
           <button className="bank-account-modal-close" onClick={onClose}>
             <FiX size={24} />
@@ -71,6 +73,8 @@ const BankAccountModal: React.FC<BankAccountModalProps> = ({
             <EntityForm
               metadata={{
                 ...bankAccountMetadata,
+                // Remove o título interno do formulário
+                title: "",
                 // Endpoint correto baseado no modo:
                 // - POST (create): /api/bank-accounts
                 // - PUT (edit): /api/bank-accounts/{id} (EntityForm adiciona o ID automaticamente se entityId estiver presente)
