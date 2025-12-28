@@ -258,6 +258,11 @@ const PaymentCRUDPage: React.FC = () => {
     },
   };
 
+  // Permite deletar apenas pagamentos que falharam
+  const canDeletePayment = (payment: any) => {
+    return payment.status === 'FAILED' || payment.status === 'EXPIRED';
+  };
+
   return (
     <>
       <EntityCRUD
@@ -271,6 +276,7 @@ const PaymentCRUDPage: React.FC = () => {
         showFields={["createdAt"]}
         customActions={customActions}
         customRenderers={customRenderers}
+        canDelete={canDeletePayment}
       />
       
       {showReport && reportData && (

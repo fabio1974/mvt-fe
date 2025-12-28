@@ -56,6 +56,7 @@ interface EntityTableProps {
   hideFilters?: boolean; // Opcional - esconde apenas os filtros (mantém header)
   hideFields?: string[]; // Opcional - array de nomes de campos a serem escondidos
   showFields?: string[]; // Opcional - array de nomes de campos a serem forçadamente exibidos (mesmo com visible:false)
+  canDelete?: (row: any) => boolean; // Opcional - função que determina se uma linha pode ser deletada
 }
 
 const EntityTable: React.FC<EntityTableProps> = ({
@@ -68,6 +69,7 @@ const EntityTable: React.FC<EntityTableProps> = ({
   customRenderers = {},
   customActions,
   hideHeader = false,
+  canDelete,
   initialFilters = {},
   noWrapper = false,
   hideFilters = false,
@@ -463,7 +465,7 @@ const EntityTable: React.FC<EntityTableProps> = ({
                     </th>
                   ))}
                   {showActions && (
-                    <th style={{ textAlign: "center" }}>Ações</th>
+                    <th style={{ textAlign: "left" }}>Ações</th>
                   )}
                 </tr>
               </thead>
@@ -508,7 +510,7 @@ const EntityTable: React.FC<EntityTableProps> = ({
                         );
                       })}
                       {showActions && (
-                        <td style={{ textAlign: "center" }}>
+                        <td style={{ textAlign: "left" }}>
                           <div className="actions">
                             {onView && (
                               <button
@@ -534,7 +536,8 @@ const EntityTable: React.FC<EntityTableProps> = ({
                                 <FiEdit />
                               </button>
                             )}
-                            {onDelete && (
+                            {customActions && customActions(row)}
+                            {onDelete && (!canDelete || canDelete(row)) && (
                               <button
                                 className="btn-action btn-delete"
                                 onClick={() => {
@@ -553,7 +556,6 @@ const EntityTable: React.FC<EntityTableProps> = ({
                                 <FiTrash2 />
                               </button>
                             )}
-                            {customActions && customActions(row)}
                           </div>
                         </td>
                       )}

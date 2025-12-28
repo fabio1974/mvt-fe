@@ -74,6 +74,8 @@ interface EntityCRUDProps {
   disableView?: boolean;
   /** Desabilita a operação de editar */
   disableEdit?: boolean;
+  /** Função que determina se uma linha específica pode ser deletada */
+  canDelete?: (row: any) => boolean;
 }
 
 /**
@@ -121,6 +123,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
   disableDelete = false,
   disableView = false,
   disableEdit = false,
+  canDelete,
   // transformData, // Unused parameter
   pageTitle,
 }) => {
@@ -352,6 +355,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
             hideFields={hideFields}
             showFields={showFields}
             hideFilters={hideFilters}
+            canDelete={canDelete}
           />
         </ErrorBoundary>
       </div>
