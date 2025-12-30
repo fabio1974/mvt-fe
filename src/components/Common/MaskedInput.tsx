@@ -48,12 +48,20 @@ export const MaskedInput: React.FC<MaskedInputProps> = ({
         lazy: false,
       });
 
-      // ⚠️ NÃO usamos on("accept") aqui!
-      // O onChange nativo do input é suficiente
+      // ✅ Usa on("accept") para capturar mudanças do IMask
+      maskRef.current.on("accept", () => {
+        const event = {
+          target: {
+            value: maskRef.current.value,
+            name: inputRef.current?.name || "",
+          },
+        } as React.ChangeEvent<HTMLInputElement>;
+        onChange(event);
+      });
 
       maskRef.current.value = value;
     }
-  }, [mask, value]);
+  }, [mask, value, onChange]);
 
   useEffect(() => {
     return () => {
@@ -72,21 +80,7 @@ export const MaskedInput: React.FC<MaskedInputProps> = ({
       disabled={disabled || readOnly}
       required={required}
       className={`form-input ${className}`}
-      onChange={(e) => {
-        // ✅ onChange é disparado pelo input nativo
-        // IMask já atualizou inputRef.current.value automaticamente
-        if (maskRef.current) {
-          const event = {
-            target: {
-              value: maskRef.current.value,
-              name: inputRef.current?.name || "",
-            },
-          } as React.ChangeEvent<HTMLInputElement>;
-          onChange(event);
-        } else {
-          onChange(e);
-        }
-      }}
+      readOnly={readOnly}
     />
   );
 };

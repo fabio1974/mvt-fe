@@ -563,6 +563,8 @@ const EntityForm: React.FC<EntityFormProps> = ({
       const allFields =
         metadata.originalFields ||
         metadata.sections.flatMap((section) => section.fields);
+      
+      console.log("📋 allFields:", allFields.map(f => f.name));
 
       // ✅ Converte campos de relacionamento para formato {id: number}
       // Backend espera: { organization: { id: 6 }, city: { id: 964 } }

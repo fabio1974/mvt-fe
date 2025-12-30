@@ -52,9 +52,20 @@ export const DynamicDocumentInput: React.FC<DynamicDocumentInputProps> = ({
         mask: newMask.replace(/9/g, "0"),
         lazy: false,
       });
+      
+      // ✅ Usa on("accept") para capturar mudanças do IMask
+      maskRef.current.on("accept", () => {
+        const event = {
+          target: {
+            value: maskRef.current.value,
+          },
+        } as React.ChangeEvent<HTMLInputElement>;
+        onChange(event);
+      });
+      
       maskRef.current.value = value;
     }
-  }, [value, currentMask]);
+  }, [value, currentMask, onChange]);
 
   useEffect(() => {
     return () => {
@@ -73,14 +84,7 @@ export const DynamicDocumentInput: React.FC<DynamicDocumentInputProps> = ({
       disabled={disabled || readOnly}
       required={required}
       className={`form-input ${className}`}
-      onChange={(e) => {
-        // Atualiza o valor no formData
-        onChange(e);
-      }}
-      onBlur={(e) => {
-        // Garante que onChange seja disparado no blur também
-        onChange(e as any);
-      }}
+      readOnly={readOnly}
     />
   );
 };
