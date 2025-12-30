@@ -395,8 +395,8 @@ const EntityForm: React.FC<EntityFormProps> = ({
       return null;
     }
 
-    // Campo obrigatório
-    if (field.required && (!value || value === "")) {
+    // Campo obrigatório (funciona para todos os tipos, incluindo date)
+    if (field.required && (!value || value === "" || value === null || value === undefined)) {
       return `${field.label} é obrigatório`;
     }
 
@@ -563,8 +563,6 @@ const EntityForm: React.FC<EntityFormProps> = ({
       const allFields =
         metadata.originalFields ||
         metadata.sections.flatMap((section) => section.fields);
-      
-      console.log("📋 allFields:", allFields.map(f => f.name));
 
       // ✅ Converte campos de relacionamento para formato {id: number}
       // Backend espera: { organization: { id: 6 }, city: { id: 964 } }
@@ -595,6 +593,42 @@ const EntityForm: React.FC<EntityFormProps> = ({
       if (finalData.cityId && typeof finalData.cityId !== "object") {
         finalData.city = { id: parseInt(String(finalData.cityId)) };
         delete finalData.cityId;
+      }
+
+      // ✅ Converte campos de relacionamento em arrays (owner, courier, client, etc)
+      // Para arrays como employmentContracts e clientContracts
+      Object.keys(finalData).forEach((key) => {
+        if (Array.isArray(finalData[key])) {
+          finalData[key] = finalData[key].map((item: any) => {
+            if (!item || typeof item !== "object") return item;
+            
+            const transformed = { ...item };
+            
+            // Lista de campos que devem ser convertidos para {id: value}
+            const relationshipFields = ["owner", "courier", "client", "user", "organization", "city"];
+            
+            relationshipFields.forEach((field) => {
+              // Se o campo existe e é uma string/número (UUID ou ID), converte para objeto
+              if (transformed[field] && typeof transformed[field] !== "object") {
+                transformed[field] = { id: transformed[field] };
+              }
+            });
+            
+            // Converte datas vazias para null
+            Object.keys(transformed).forEach((itemKey) => {
+              if (transformed[itemKey] === "") {
+                transformed[itemKey] = null;
+              }
+            });
+            
+            return transformed;
+          });
+        }
+      });
+
+      // ✅ Converte owner na raiz (se existir e for string/número)
+      if (finalData.owner && typeof finalData.owner !== "object") {
+        finalData.owner = { id: finalData.owner };
       }
 
       // ✅ Remove máscaras de CPF, CNPJ, telefone, CEP antes de enviar ao backend
@@ -1104,7 +1138,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
             <FormDatePicker
               selected={value ? new Date(String(value)) : null}
               onChange={(date) =>
-                handleChange(field.name, date?.toISOString() || "")
+                handleChange(field.name, date ? date.toISOString() : null)
               }
               showTimeSelect={shouldShowTime}
               dateFormat={dateFormat}
