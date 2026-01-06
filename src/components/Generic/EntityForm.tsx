@@ -313,6 +313,141 @@ const EntityForm: React.FC<EntityFormProps> = ({
     metadata.sections,
   ]);
 
+  // 🚚 NOVO: Calcula distância do Google Maps para deliveries quando coordenadas mudam
+  useEffect(() => {
+    // Só para deliveries
+    if (metadata.entityName !== "delivery") return;
+
+    // Extrai as coordenadas de origem e destino
+    const fromLat = Number(formData.fromLatitude);
+    const fromLng = Number(formData.fromLongitude);
+    const toLat = Number(formData.toLatitude);
+    const toLng = Number(formData.toLongitude);
+
+    // Só prossegue se tiver TODAS as coordenadas com valores válidos
+    if (
+      isNaN(fromLat) || isNaN(fromLng) || isNaN(toLat) || isNaN(toLng) ||
+      fromLat === 0 || fromLng === 0 || toLat === 0 || toLng === 0
+    ) {
+      return;
+    }
+
+    // Função para carregar Google Maps API se necessário
+    const loadGoogleMapsAndCalculateDistance = async () => {
+      try {
+        const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+        if (!apiKey) {
+          console.warn("⚠️ Google Maps API Key não configurada");
+          return;
+        }
+
+        // Verifica se já existe um script do Google Maps carregado
+        let isGoogleMapsLoaded = typeof google !== "undefined" && google.maps;
+
+        // Se não estiver carregado, carrega
+        if (!isGoogleMapsLoaded) {
+          // Verifica se o script já foi adicionado ao DOM
+          const existingScript = document.querySelector(
+            `script[src*="maps.googleapis.com"]`
+          );
+
+          if (existingScript) {
+            // Script já foi adicionado, aguarda o carregamento
+            await new Promise<void>((resolve) => {
+              const checkGoogleMaps = setInterval(() => {
+                if (typeof google !== "undefined" && google.maps) {
+                  clearInterval(checkGoogleMaps);
+                  resolve();
+                }
+              }, 100);
+
+              // Timeout após 5 segundos
+              setTimeout(() => {
+                clearInterval(checkGoogleMaps);
+                resolve();
+              }, 5000);
+            });
+          } else {
+            // Adiciona o script
+            await new Promise<void>((resolve) => {
+              const script = document.createElement("script");
+              script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=routes`;
+              script.async = true;
+              script.onload = () => {
+                // Aguarda um pouco para garantir que google.maps está disponível
+                setTimeout(() => resolve(), 300);
+              };
+              script.onerror = () => {
+                console.error("❌ Erro ao carregar Google Maps API");
+                resolve(); // continua mesmo com erro
+              };
+              document.head.appendChild(script);
+            });
+          }
+        }
+
+        // Agora que google.maps está disponível, cria a DirectionsService
+        if (typeof google !== "undefined" && google.maps) {
+          const directionsService = new google.maps.DirectionsService();
+
+          directionsService.route(
+            {
+              origin: { lat: fromLat, lng: fromLng },
+              destination: { lat: toLat, lng: toLng },
+              travelMode: google.maps.TravelMode.DRIVING,
+            },
+            (result, status) => {
+              if (
+                status === google.maps.DirectionsStatus.OK &&
+                result?.routes[0]?.legs[0]
+              ) {
+                const distanceValue = result.routes[0].legs[0].distance?.value; // em metros
+                if (distanceValue) {
+                  const distanceKm = distanceValue / 1000;
+
+                  // Atualiza distanceKm no formData
+                  setFormData((prev) => ({
+                    ...prev,
+                    distanceKm: parseFloat(distanceKm.toFixed(2)),
+                  }));
+
+                  console.log(
+                    "✅ Distância calculada via Google Maps:",
+                    distanceKm.toFixed(2),
+                    "km"
+                  );
+                }
+              } else if (status !== google.maps.DirectionsStatus.OK) {
+                console.warn(
+                  "⚠️ Directions API retornou status:",
+                  status,
+                  "- Isso pode ser esperado se a rota não existe"
+                );
+              }
+            }
+          );
+        } else {
+          console.warn(
+            "⚠️ Google Maps não ficou disponível após tentar carregar"
+          );
+        }
+      } catch (error) {
+        console.error("❌ Erro ao calcular distância:", error);
+      }
+    };
+
+    // Aguarda um pouco para evitar muitas requisições simultâneas
+    const timeoutId = setTimeout(loadGoogleMapsAndCalculateDistance, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [
+    formData.fromLatitude,
+    formData.fromLongitude,
+    formData.toLatitude,
+    formData.toLongitude,
+    metadata.entityName,
+  ]);
+
   const isDocumentField = (fieldName: string): boolean => {
     const name = fieldName.toLowerCase();
     return name.includes("document");
