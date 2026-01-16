@@ -57,13 +57,13 @@ const PaymentCRUDPage: React.FC = () => {
   };
   
   // Verifica se o usuário tem permissão
-  const allowedRoles = ["ROLE_ADMIN", "ROLE_ORGANIZER", "ROLE_COURIER"];
+  const allowedRoles = ["ROLE_ADMIN", "ROLE_ORGANIZER", "ROLE_COURIER", "ROLE_CLIENT", "CLIENT"];
   const hasAccess = allowedRoles.includes(userRole || "");
 
   if (!hasAccess) {
     return (
       <div style={{ padding: "20px", textAlign: "center" }}>
-        <p>Acesso negado. Apenas ADMIN, ORGANIZER ou COURIER podem visualizar pagamentos.</p>
+        <p>Acesso negado. Você não tem permissão para visualizar pagamentos.</p>
       </div>
     );
   }
