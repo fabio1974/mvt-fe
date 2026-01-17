@@ -10,7 +10,6 @@ import CourierCRUDPage from "./components/Courier/CourierCRUDPage";
 import ClientCRUDPage from "./components/Client/ClientCRUDPage";
 import ManagerCRUDPage from "./components/Manager/ManagerCRUDPage";
 import DeliveryCRUDPage from "./components/Delivery/DeliveryCRUDPage";
-import DailyPaymentPage from "./components/Delivery/DailyPaymentPage";
 import OrganizerFinancialPage from "./components/Delivery/OrganizerFinancialPage";
 import PaymentSuccessPage from "./components/Payment/PaymentSuccessPage";
 import PaymentCancelPage from "./components/Payment/PaymentCancelPage";
@@ -133,7 +132,6 @@ function App() {
               <Route path="/gerentes" element={<ManagerCRUDPage />} />
               <Route path="/motoboy" element={<CourierCRUDPage />} />
               <Route path="/deliveries" element={<DeliveryCRUDPage />} />
-              <Route path="/pagamento-diario" element={<DailyPaymentPage />} />
               <Route path="/pagamentos" element={<PaymentCRUDPage />} />
               <Route path="/balanco-financeiro" element={<OrganizerFinancialPage />} />
               <Route path="/dados-pessoais" element={<PersonalDataPage />} />

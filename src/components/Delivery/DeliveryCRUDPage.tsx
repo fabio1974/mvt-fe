@@ -82,7 +82,7 @@ const DeliveryCRUDPage: React.FC = () => {
     return undefined;
   }, [userRole, userId]);
 
-  // Busca o endereço a partir das coordenadas do cliente
+  // Busca o endereço mais recente do cliente via API
   useEffect(() => {
     const fetchDefaultValues = async () => {
       // Se é CLIENT, pré-preenche o campo client com o ID do usuário logado
@@ -95,19 +95,82 @@ const DeliveryCRUDPage: React.FC = () => {
           }
         };
 
-        // 📍 Pré-preenche latitude, longitude e endereço de origem se disponíveis
-        if (userLatitude !== undefined && userLongitude !== undefined) {
-          values.fromLatitude = userLatitude;
-          values.fromLongitude = userLongitude;
-          
-          // Se temos o endereço salvo, usa diretamente
-          if (userAddress) {
-            values.fromAddress = userAddress;
-          } else {
-            // Senão, busca o endereço por extenso usando geocoding reverso
-            const address = await reverseGeocode(userLatitude, userLongitude);
-            if (address) {
-              values.fromAddress = address;
+        try {
+          // 📍 Busca os endereços do cliente logado via API
+          const response = await api.get("/api/addresses/me");
+          const addresses = response.data as Array<{
+            id: number;
+            street?: string;
+            number?: string;
+            complement?: string;
+            neighborhood?: string;
+            referencePoint?: string;
+            city?: { id: number; name: string; state?: string; stateCode?: string } | string;
+            state?: string;
+            zipCode?: string;
+            latitude?: number;
+            longitude?: number;
+            isDefault?: boolean;
+            updatedAt?: string;
+          }>;
+
+          // Pega o endereço mais recente (último updatedAt) ou o último do array
+          if (addresses && addresses.length > 0) {
+            // Ordena por updatedAt decrescente (mais recente primeiro)
+            const sortedAddresses = [...addresses].sort((a, b) => {
+              if (a.updatedAt && b.updatedAt) {
+                return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+              }
+              // Se não tem updatedAt, mantém ordem original (últimos primeiro)
+              return 0;
+            });
+            
+            // Usa o endereço mais recente (ou o último se não houver updatedAt)
+            const mostRecentAddress = sortedAddresses[0] || addresses[addresses.length - 1];
+            
+            // Monta o endereço formatado
+            const addressParts: string[] = [];
+            if (mostRecentAddress.street) addressParts.push(mostRecentAddress.street);
+            if (mostRecentAddress.number) addressParts.push(mostRecentAddress.number);
+            if (mostRecentAddress.neighborhood) addressParts.push(mostRecentAddress.neighborhood);
+            
+            // Extrai o nome da cidade (pode ser objeto ou string)
+            let cityName = "";
+            if (mostRecentAddress.city) {
+              if (typeof mostRecentAddress.city === "object" && mostRecentAddress.city.name) {
+                cityName = mostRecentAddress.city.name;
+                // Adiciona o estado (stateCode ou state)
+                const stateCode = mostRecentAddress.city.stateCode || mostRecentAddress.city.state;
+                if (stateCode) {
+                  cityName += ` - ${stateCode}`;
+                }
+              } else if (typeof mostRecentAddress.city === "string") {
+                cityName = mostRecentAddress.city;
+              }
+            }
+            if (cityName) addressParts.push(cityName);
+            if (mostRecentAddress.zipCode) addressParts.push(mostRecentAddress.zipCode);
+
+            const formattedAddress = addressParts.join(", ");
+            
+            if (formattedAddress) {
+              values.fromAddress = formattedAddress;
+            }
+
+            // Preenche coordenadas se disponíveis
+            if (mostRecentAddress.latitude !== undefined && mostRecentAddress.longitude !== undefined) {
+              values.fromLatitude = mostRecentAddress.latitude;
+              values.fromLongitude = mostRecentAddress.longitude;
+            }
+          }
+        } catch (error) {
+          console.error("Erro ao buscar endereços do cliente:", error);
+          // Fallback: usa dados do JWT se a API falhar
+          if (userLatitude !== undefined && userLongitude !== undefined) {
+            values.fromLatitude = userLatitude;
+            values.fromLongitude = userLongitude;
+            if (userAddress) {
+              values.fromAddress = userAddress;
             }
           }
         }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   FiPlus,
   FiTrash2,
@@ -7,6 +7,7 @@ import {
   FiChevronUp,
 } from "react-icons/fi";
 import type { ArrayFieldConfig, FormFieldMetadata } from "../../types/metadata";
+import { api } from "../../services/api";
 import {
   FormField,
   FormInput,
@@ -19,6 +20,8 @@ import { getAutoMask } from "../../utils/masks";
 import EntitySelect from "../Common/EntitySelect";
 import EntityTypeahead from "../Common/EntityTypeahead";
 import { CityTypeahead } from "../Common/CityTypeahead";
+import { AddressFieldWithMap } from "../Common/AddressFieldWithMap";
+import type { AddressData } from "../Common/AddressMapPicker";
 import { executeComputedField } from "../../utils/computedFields";
 import { translateLabel } from "../../utils/labelTranslations";
 import "./ArrayField.css";
@@ -41,6 +44,7 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
 
   // 🔍 Log quando value prop muda
   useEffect(() => {
+    console.log('📍 [ArrayField] value prop atualizado:', value);
   }, [value]);
 
   // 🔄 Converte plural em singular (Categorias → Categoria)
@@ -143,6 +147,24 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
     onChange(newArray);
   };
 
+  // 📍 Atualiza múltiplos campos de uma vez (ex: latitude e longitude juntos)
+  const handleMultipleFieldsChange = (
+    itemIndex: number,
+    updates: Record<string, unknown>
+  ) => {
+    console.log('📍 [ArrayField] handleMultipleFieldsChange:', { itemIndex, updates });
+    const newArray = [...value];
+    const currentItem = (newArray[itemIndex] as Record<string, unknown>) || {};
+
+    newArray[itemIndex] = {
+      ...currentItem,
+      ...updates,
+    };
+
+    console.log('📍 [ArrayField] Novo item após update:', newArray[itemIndex]);
+    onChange(newArray);
+  };
+
   // Adiciona um novo item
   const addItem = () => {
     if (value.length >= maxItems) return;
@@ -198,16 +220,21 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
 
     const fieldValue = itemValue[field.name];
 
+    // 🏙️ Detecta se é campo de cidade (por tipo ou por nome)
+    const isCityField = field.type === "city" || field.name === "city" || field.name === "cidade";
+
     // ✅ CORREÇÃO: Para campos entity, extrai o ID se o valor for um objeto
+    // 🏙️ Para campos city, extrai o NOME para exibição no typeahead
     let stringValue: string;
-    if (
-      field.type === "entity" &&
-      fieldValue &&
-      typeof fieldValue === "object"
-    ) {
-      // Se é um objeto, extrai o ID
+    if (fieldValue && typeof fieldValue === "object") {
       const entityObj = fieldValue as Record<string, unknown>;
-      stringValue = String(entityObj.id || "");
+      if (isCityField) {
+        // Para cidade, exibe apenas o nome (estado já aparece em campo separado)
+        stringValue = String(entityObj.name || "");
+      } else {
+        // Para outros entities, extrai o ID
+        stringValue = String(entityObj.id || "");
+      }
     } else {
       stringValue = String(fieldValue || "");
     }
@@ -229,12 +256,152 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
       );
     }
 
+    // 📍 Detecta se é campo de rua/logradouro que deve ter o botão do mapa
+    const isStreetField = 
+      field.name === 'street' || 
+      field.name === 'logradouro' ||
+      field.name === 'rua';
+
     switch (field.type) {
       case "text":
       case "email":
       case "password": {
         // 📱 Detecta automaticamente se precisa de máscara (CPF, telefone, etc)
         const autoMask = field.type === "text" ? getAutoMask(field.name) : null;
+
+        // 📍 Se é campo de rua, adiciona botão do mapa
+        if (isStreetField && !disabled) {
+          const latValue = itemValue.latitude as number || 0;
+          const lngValue = itemValue.longitude as number || 0;
+          const numberValue = String(itemValue.number || itemValue.numero || "");
+          const neighborhoodValue = String(itemValue.neighborhood || itemValue.bairro || "");
+          const cityValue = typeof itemValue.city === 'object' && itemValue.city 
+            ? String((itemValue.city as Record<string, unknown>).name || "")
+            : String(itemValue.city || itemValue.cidade || "");
+          const stateValue = typeof itemValue.city === 'object' && itemValue.city
+            ? String((itemValue.city as Record<string, unknown>).stateCode || (itemValue.city as Record<string, unknown>).state || "")
+            : String(itemValue.state || itemValue.uf || "");
+          const zipCodeValue = String(itemValue.zipCode || itemValue.cep || itemValue.postalCode || "");
+
+          return (
+            <FormField label={field.label} required={field.required}>
+              <AddressFieldWithMap
+                value={stringValue}
+                onChange={(newValue) => {
+                  handleFieldChange(itemIndex, field.name, newValue);
+                }}
+                placeholder={getPlaceholder(field)}
+                disabled={field.disabled || disabled}
+                required={field.required}
+                label={field.label}
+                initialLatitude={latValue}
+                initialLongitude={lngValue}
+                initialNumber={numberValue}
+                initialNeighborhood={neighborhoodValue}
+                initialCity={cityValue}
+                initialState={stateValue}
+                initialZipCode={zipCodeValue}
+                onAddressDataChange={(addressData: AddressData) => {
+                  console.log('📍 [ArrayField] Street field - onAddressDataChange:', addressData);
+                  
+                  const updates: Record<string, unknown> = {
+                    // Coordenadas
+                    latitude: addressData.latitude,
+                    longitude: addressData.longitude,
+                  };
+
+                  // Preenche o campo de rua atual
+                  if (addressData.street) {
+                    updates[field.name] = addressData.street;
+                  }
+
+                  // Preenche número
+                  if (addressData.number && fields.some(f => f.name === 'number' || f.name === 'numero')) {
+                    if (fields.some(f => f.name === 'number')) updates.number = addressData.number;
+                    if (fields.some(f => f.name === 'numero')) updates.numero = addressData.number;
+                  }
+
+                  // Preenche bairro
+                  if (addressData.neighborhood && fields.some(f => f.name === 'neighborhood' || f.name === 'bairro')) {
+                    if (fields.some(f => f.name === 'neighborhood')) updates.neighborhood = addressData.neighborhood;
+                    if (fields.some(f => f.name === 'bairro')) updates.bairro = addressData.neighborhood;
+                  }
+
+                  // Preenche estado/UF
+                  if (addressData.state && fields.some(f => f.name === 'state' || f.name === 'uf')) {
+                    if (fields.some(f => f.name === 'state')) updates.state = addressData.state;
+                    if (fields.some(f => f.name === 'uf')) updates.uf = addressData.state;
+                  }
+
+                  // Preenche CEP
+                  if (addressData.zipCode && fields.some(f => f.name === 'zipCode' || f.name === 'cep' || f.name === 'postalCode')) {
+                    if (fields.some(f => f.name === 'zipCode')) updates.zipCode = addressData.zipCode;
+                    if (fields.some(f => f.name === 'cep')) updates.cep = addressData.zipCode;
+                    if (fields.some(f => f.name === 'postalCode')) updates.postalCode = addressData.zipCode;
+                  }
+
+                  // 🏙️ Busca cidade automaticamente pelo nome e estado
+                  const searchAndSetCity = async () => {
+                    const hasCityField = fields.some(f => f.name === 'city');
+                    const cityField = fields.find(f => f.name === 'city');
+                    
+                    console.log('🏙️ [ArrayField] cityField:', cityField?.name, 'type:', cityField?.type);
+                    
+                    // Se campo city é um relacionamento (entity ou city type), buscar pelo ID
+                    const isCityRelation = cityField?.type === 'entity' || cityField?.type === 'city';
+                    
+                    if (hasCityField && isCityRelation && addressData.city) {
+                      try {
+                        console.log('🔍 [ArrayField] Buscando cidade:', addressData.city);
+                        const response = await api.get(`/api/cities/search?q=${encodeURIComponent(addressData.city)}`);
+                        const cities = Array.isArray(response.data) ? response.data : [];
+                        
+                        console.log('🔍 [ArrayField] Cidades encontradas:', cities.length);
+                        
+                        // Encontra a cidade que corresponde ao nome e estado
+                        let matchedCity = cities.find((c: { name: string; state?: string; stateCode?: string }) => 
+                          c.name.toLowerCase() === addressData.city?.toLowerCase() &&
+                          (addressData.state ? (c.stateCode === addressData.state || c.state === addressData.state) : true)
+                        );
+                        
+                        // Se não encontrou match exato, pega a primeira
+                        if (!matchedCity && cities.length > 0) {
+                          matchedCity = cities[0];
+                        }
+                        
+                        if (matchedCity) {
+                          console.log('✅ [ArrayField] Cidade encontrada:', matchedCity);
+                          
+                          // Monta o objeto final com todos os campos + cidade
+                          const finalUpdates = {
+                            ...updates,
+                            city: matchedCity
+                          };
+                          
+                          console.log('📍 [ArrayField] Atualizando todos os campos:', finalUpdates);
+                          handleMultipleFieldsChange(itemIndex, finalUpdates);
+                          return; // Já atualizou com a cidade
+                        } else {
+                          console.log('⚠️ [ArrayField] Cidade não encontrada para:', addressData.city);
+                        }
+                      } catch (error) {
+                        console.error('❌ [ArrayField] Erro ao buscar cidade:', error);
+                      }
+                    } else if (hasCityField && addressData.city) {
+                      // Campo city não é entity/city type, preenche só com o nome
+                      updates.city = addressData.city;
+                    }
+                    
+                    console.log('📍 [ArrayField] Street field - Atualizando (sem cidade entity):', updates);
+                    handleMultipleFieldsChange(itemIndex, updates);
+                  };
+                  
+                  searchAndSetCity();
+                }}
+              />
+            </FormField>
+          );
+        }
 
         return (
           <FormField label={field.label} required={field.required}>
@@ -265,17 +432,29 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
         );
       }
 
-      case "number":
+      case "number": {
+        // 📍 Detecta campos de coordenadas (latitude/longitude) - devem ser readonly
+        const isCoordinateField = 
+          field.name === "latitude" || 
+          field.name === "longitude" ||
+          field.name === "lat" ||
+          field.name === "lng" ||
+          field.name.toLowerCase().includes("latitude") ||
+          field.name.toLowerCase().includes("longitude");
+
+        const isReadonly = field.readonly || isCoordinateField;
+
         return (
           <FormField label={field.label} required={field.required}>
             <FormInput
               type="number"
-              placeholder={getPlaceholder(field)}
+              placeholder={isReadonly ? "" : getPlaceholder(field)}
               min={field.validation?.min}
               max={field.validation?.max}
+              step={isCoordinateField ? "0.000001" : undefined}
               value={stringValue}
               onChange={(e) =>
-                handleFieldChange(
+                !isReadonly && handleFieldChange(
                   itemIndex,
                   field.name,
                   field.type === "number"
@@ -284,10 +463,17 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
                 )
               }
               disabled={field.disabled || disabled}
+              readOnly={isReadonly}
               required={field.required}
+              style={isReadonly ? { 
+                backgroundColor: "#f3f4f6", 
+                cursor: "not-allowed",
+                color: "#6b7280"
+              } : undefined}
             />
           </FormField>
         );
+      }
 
       case "textarea":
         return (
@@ -409,7 +595,13 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
           </div>
         );
 
-      case "city":
+      case "city": {
+        // 🏙️ Extrai o estado do objeto cidade se disponível
+        const cityObj = fieldValue && typeof fieldValue === "object" 
+          ? fieldValue as Record<string, unknown>
+          : null;
+        const stateValue = cityObj?.stateCode || cityObj?.state || itemValue.state || itemValue.uf || "";
+        
         return (
           <div
             style={{
@@ -439,7 +631,7 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
             <FormField label="Estado" required={false}>
               <FormInput
                 type="text"
-                value={String(itemValue.state || itemValue.uf || "")}
+                value={String(stateValue)}
                 readOnly
                 disabled
                 placeholder={getPlaceholder(field) || "--"}
@@ -452,8 +644,55 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
             </FormField>
           </div>
         );
+      }
 
       case "entity": {
+        // 🏙️ Se é campo de cidade (por nome), renderiza como CityTypeahead
+        if (isCityField) {
+          const cityObj = fieldValue && typeof fieldValue === "object" 
+            ? fieldValue as Record<string, unknown>
+            : null;
+          const stateValue = cityObj?.stateCode || cityObj?.state || itemValue.state || itemValue.uf || "";
+          
+          return (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "2fr 100px",
+                gap: "1rem",
+                alignItems: "end",
+              }}
+            >
+              <FormField label={field.label} required={field.required}>
+                <CityTypeahead
+                  value={stringValue}
+                  onCitySelect={(city) => {
+                    // Salva o objeto cidade completo para manter nome e estado
+                    handleFieldChange(itemIndex, field.name, city);
+                  }}
+                  placeholder={getPlaceholder(field) || "Digite o nome da cidade"}
+                  disabled={field.disabled || disabled}
+                />
+              </FormField>
+
+              <FormField label="Estado" required={false}>
+                <FormInput
+                  type="text"
+                  value={String(stateValue)}
+                  readOnly
+                  disabled
+                  placeholder="--"
+                  style={{
+                    backgroundColor: "#f3f4f6",
+                    cursor: "not-allowed",
+                    textAlign: "center",
+                  }}
+                />
+              </FormField>
+            </div>
+          );
+        }
+
         // ✅ FALLBACK: Se não tiver entityConfig mas tiver relationship, cria automaticamente
         let entityConfig = field.entityConfig;
         if (!entityConfig && field.relationship) {
@@ -482,71 +721,130 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
           );
         }
 
-        // Detecta se é um campo de cidade
-        const isCityField =
-          field.name === "city" ||
-          field.name === "cityId" ||
-          entityConfig.entityName === "city";
+        // Componente genérico de entidade (já tratamos cidade no início do case)
+        const renderAs = entityConfig.renderAs || "select";
+        const EntityComponent =
+          renderAs === "typeahead" || renderAs === "autocomplete"
+            ? EntityTypeahead
+            : EntitySelect;
 
-        if (isCityField) {
-          return (
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "2fr 100px",
-                gap: "1rem",
-                alignItems: "end",
-              }}
-            >
-              <FormField label={field.label} required={field.required}>
-                <CityTypeahead
-                  value={stringValue}
-                  onCitySelect={(city) => {
-                    handleFieldChange(itemIndex, "cityId", String(city.id));
-                    handleFieldChange(itemIndex, "city", city.name);
-                  }}
-                  placeholder={getPlaceholder(field) || "Digite o nome da cidade"}
-                  disabled={field.disabled || disabled}
-                />
-              </FormField>
-
-              <FormField label="Estado" required={false}>
-                <FormInput
-                  type="text"
-                  value={String(itemValue.state || itemValue.uf || "")}
-                  readOnly
-                  disabled
-                  placeholder="--"
-                  style={{
-                    backgroundColor: "#f3f4f6",
-                    cursor: "not-allowed",
-                    textAlign: "center",
-                  }}
-                />
-              </FormField>
-            </div>
-          );
-        } else {
-          // Componente genérico de entidade
-          const renderAs = entityConfig.renderAs || "select";
-          const EntityComponent =
-            renderAs === "typeahead" || renderAs === "autocomplete"
-              ? EntityTypeahead
-              : EntitySelect;
-
-          return (
-            <FormField label={field.label} required={field.required}>
-              <EntityComponent
-                  config={entityConfig}
-                  value={stringValue}
-                  onChange={(newValue) =>
-                    handleFieldChange(itemIndex, field.name, newValue)
+        return (
+          <FormField label={field.label} required={field.required}>
+            <EntityComponent
+                config={entityConfig}
+                value={stringValue}
+                onChange={(newValue) =>
+                  handleFieldChange(itemIndex, field.name, newValue)
                   }
                   disabled={field.disabled || disabled}
                 />
             </FormField>
           );
-        }
+      }
+
+      case "address": {
+        // Campo de endereço com Google Maps picker
+        // Busca latitude e longitude do item atual
+        const latValue = itemValue.latitude as number || itemValue.lat as number || 0;
+        const lngValue = itemValue.longitude as number || itemValue.lng as number || 0;
+
+        return (
+          <FormField label={field.label} required={field.required}>
+            <AddressFieldWithMap
+              value={stringValue}
+              onChange={(newValue) => {
+                // Apenas atualiza o campo de texto quando digitado manualmente
+                // (não quando selecionado no mapa - isso é feito via onAddressDataChange)
+                handleFieldChange(itemIndex, field.name, newValue);
+              }}
+              placeholder={getPlaceholder(field)}
+              disabled={field.disabled || disabled}
+              required={field.required}
+              label={field.label}
+              initialLatitude={latValue}
+              initialLongitude={lngValue}
+              onAddressDataChange={(addressData: AddressData) => {
+                // 📍 Preenche TODOS os campos extraídos do Google Maps de uma só vez
+                console.log('📍 [ArrayField] onAddressDataChange recebido:', addressData);
+                console.log('📍 [ArrayField] fields disponíveis:', fields.map(f => f.name));
+                
+                const updates: Record<string, unknown> = {
+                  // Atualiza o próprio campo de endereço
+                  [field.name]: addressData.address,
+                  // Coordenadas
+                  latitude: addressData.latitude,
+                  longitude: addressData.longitude,
+                };
+
+                // Preenche campos de rua/logradouro se existirem
+                if (addressData.street) {
+                  if (fields.some(f => f.name === 'street')) {
+                    updates.street = addressData.street;
+                  }
+                  if (fields.some(f => f.name === 'logradouro')) {
+                    updates.logradouro = addressData.street;
+                  }
+                }
+
+                // Preenche número
+                if (addressData.number) {
+                  if (fields.some(f => f.name === 'number')) {
+                    updates.number = addressData.number;
+                  }
+                  if (fields.some(f => f.name === 'numero')) {
+                    updates.numero = addressData.number;
+                  }
+                }
+
+                // Preenche bairro
+                if (addressData.neighborhood) {
+                  if (fields.some(f => f.name === 'neighborhood')) {
+                    updates.neighborhood = addressData.neighborhood;
+                  }
+                  if (fields.some(f => f.name === 'bairro')) {
+                    updates.bairro = addressData.neighborhood;
+                  }
+                }
+
+                // Preenche cidade (nome)
+                if (addressData.city) {
+                  if (fields.some(f => f.name === 'cityName')) {
+                    updates.cityName = addressData.city;
+                  }
+                  if (fields.some(f => f.name === 'city')) {
+                    updates.city = addressData.city;
+                  }
+                }
+
+                // Preenche estado/UF
+                if (addressData.state) {
+                  if (fields.some(f => f.name === 'state')) {
+                    updates.state = addressData.state;
+                  }
+                  if (fields.some(f => f.name === 'uf')) {
+                    updates.uf = addressData.state;
+                  }
+                }
+
+                // Preenche CEP
+                if (addressData.zipCode) {
+                  if (fields.some(f => f.name === 'zipCode')) {
+                    updates.zipCode = addressData.zipCode;
+                  }
+                  if (fields.some(f => f.name === 'cep')) {
+                    updates.cep = addressData.zipCode;
+                  }
+                  if (fields.some(f => f.name === 'postalCode')) {
+                    updates.postalCode = addressData.zipCode;
+                  }
+                }
+
+                console.log('📍 [ArrayField] Atualizando campos:', updates);
+                handleMultipleFieldsChange(itemIndex, updates);
+              }}
+            />
+          </FormField>
+        );
       }
 
       default:
@@ -660,10 +958,12 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
           {value.map((item, index) => {
             const itemData = (item as Record<string, unknown>) || {};
             const isCollapsed = collapsedItems[index] || false;
+            // 🔄 Key estável baseada no ID ou índice (NÃO no conteúdo, para não perder foco)
+            const itemKey = itemData.id ? `item-${itemData.id}` : `item-new-${index}`;
 
             return (
               <div
-                key={index}
+                key={itemKey}
                 style={{
                   border: "1px solid #e5e7eb",
                   borderRadius: "8px",
@@ -766,11 +1066,14 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
                 {!isCollapsed && (
                   <div style={{ padding: "16px" }}>
                     <div className="array-field-grid">
-                      {fields.map((field) => (
-                        <div key={field.name}>
-                          {renderItemField(field, itemData, index)}
-                        </div>
-                      ))}
+                      {fields.map((field) => {
+                        console.log(`🔍 [ArrayField] Renderizando campo ${field.name}:`, itemData[field.name]);
+                        return (
+                          <div key={field.name}>
+                            {renderItemField(field, itemData, index)}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -790,8 +1093,10 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
             textAlign: "right",
           }}
         >
-          {value.length} / {maxItems} itens
-          {minItems > 0 && ` (mínimo: ${minItems})`}
+          {maxItems === 1 
+            ? (value.length === 1 ? "✓ Cadastrado" : "Nenhum cadastrado") 
+            : `${value.length} / ${maxItems} itens`}
+          {minItems > 0 && maxItems > 1 && ` (mínimo: ${minItems})`}
         </div>
       )}
     </div>

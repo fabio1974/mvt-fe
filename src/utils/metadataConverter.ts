@@ -88,7 +88,8 @@ function convertFieldToFormField(field: FieldMetadata): FormFieldMetadata | null
           addLabel: `Adicionar ${singularName}`,
           itemLabel: `${singularName} {index}`,
           minItems: field.required ? 1 : 0,
-          maxItems: 100,
+          // Para endereços de usuário, permite apenas 1 item
+          maxItems: field.name === 'addresses' ? 1 : 100,
           fields: relatedFields,
         },
       };
@@ -105,13 +106,38 @@ function convertFieldToFormField(field: FieldMetadata): FormFieldMetadata | null
   const isManyToOneRelationship = 
     field.relationship && 
     field.relationship.type === 'MANY_TO_ONE';
+
+  // 📍 Detecta campos de endereço COMPLETO que devem usar o AddressFieldWithMap
+  // NOTA: Campos como "street", "number", "neighborhood" são preenchidos PELO mapa,
+  // então devem continuar como campos de texto simples
+  const isAddressField = 
+    field.name === 'address' ||
+    field.name === 'fullAddress' ||
+    field.name === 'endereco' ||
+    field.name === 'enderecoCompleto' ||
+    (field.name.toLowerCase().includes('address') && 
+     !field.name.includes('Id') && 
+     !field.name.includes('street') &&
+     !field.name.includes('Data'));
+
+  // 📍 Detecta campos de coordenadas - devem ser readonly
+  const isCoordinateField = 
+    field.name === 'latitude' || 
+    field.name === 'longitude' ||
+    field.name === 'lat' ||
+    field.name === 'lng' ||
+    field.name.toLowerCase() === 'latitude' ||
+    field.name.toLowerCase() === 'longitude';
   
   // Se é MANY_TO_ONE, força o tipo para 'entity'
+  // Se é campo de endereço COMPLETO, força o tipo para 'address'
   const mappedType = hasOptions 
     ? 'select' 
     : isManyToOneRelationship 
       ? 'entity' 
-      : mapFieldType(field.type);
+      : isAddressField
+        ? 'address'
+        : mapFieldType(field.type);
 
   const formField: FormFieldMetadata = {
     name: field.name,
@@ -119,7 +145,8 @@ function convertFieldToFormField(field: FieldMetadata): FormFieldMetadata | null
     type: mappedType,
     width: field.width, // Largura no grid de 12 colunas
     required: field.required || false,
-    readonly: field.readonly || false, // ← CORREÇÃO: Copia readonly do backend
+    // Campos de coordenadas são sempre readonly (preenchidos pelo mapa)
+    readonly: field.readonly || isCoordinateField,
     placeholder: field.placeholder || `Digite ${field.label.toLowerCase()}`,
     format: field.format || undefined, // Formato de exibição (ex: "dd/MM/yyyy HH:mm")
     relationship: field.relationship, // Mantém informação de relacionamento

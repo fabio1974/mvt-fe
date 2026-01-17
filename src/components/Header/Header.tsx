@@ -421,59 +421,6 @@ export default function Header({
                       </svg>
                       <span>Dados Pessoais</span>
                     </button>
-
-                    <button
-                      style={{
-                        width: "100%",
-                        padding: "12px 16px",
-                        border: "none",
-                        backgroundColor: "transparent",
-                        textAlign: "left",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 12,
-                        fontSize: "0.95rem",
-                        color: "#374151",
-                        transition: "background-color 0.15s ease",
-                      }}
-                      onClick={() => {
-                        setUserMenuOpen(false);
-                        navigate("/dados-endereco");
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = "#f3f4f6";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.backgroundColor = "transparent";
-                      }}
-                    >
-                      <svg
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"
-                          stroke="#3b82f6"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                        <circle
-                          cx="12"
-                          cy="10"
-                          r="3"
-                          stroke="#3b82f6"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                      <span>Dados de Endereço</span>
-                    </button>
                   </div>
                 </div>
               </>

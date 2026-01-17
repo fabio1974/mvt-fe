@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import EntityCRUD from "../Generic/EntityCRUD";
-import { getUserId } from "../../utils/auth";
+import { getUserId, getUserRole } from "../../utils/auth";
 
 /**
  * Página de Dados Pessoais do Usuário
@@ -11,9 +11,23 @@ import { getUserId } from "../../utils/auth";
  * - Botão "Editar" habilita os campos (modo EDIT)
  * - Após salvar, volta para VIEW
  * - Breadcrumb no topo
+ * 
+ * Para clientes:
+ * - Subforms de contratos (clientContracts, employmentContracts) são escondidos no modo edit
+ * - Apenas visíveis no modo view
  */
 const PersonalDataPage: React.FC = () => {
   const userId = getUserId();
+  const userRole = getUserRole();
+  const [currentMode, setCurrentMode] = useState<"view" | "edit">("view");
+  
+  // Verifica se é cliente
+  const isClient = userRole === "ROLE_CLIENT" || userRole === "CLIENT";
+  
+  // Campos a esconder para clientes no modo edit
+  const hiddenFieldsForClient = isClient && currentMode === "edit" 
+    ? ["clientContracts", "employmentContracts"] 
+    : [];
 
   if (!userId) {
     return (
@@ -32,6 +46,8 @@ const PersonalDataPage: React.FC = () => {
       showEditButton={true}
       pageTitle="Meus Dados Pessoais"
       pageDescription="Visualize e edite suas informações pessoais"
+      hiddenFields={hiddenFieldsForClient}
+      onModeChange={(mode) => setCurrentMode(mode)}
     />
   );
 };

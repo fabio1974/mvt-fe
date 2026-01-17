@@ -10,6 +10,9 @@ export interface AddressData {
   city: string;
   state: string;
   zipCode: string;
+  street?: string;      // Logradouro (rua, avenida, etc)
+  number?: string;      // Número
+  neighborhood?: string; // Bairro
 }
 
 interface AddressMapPickerProps {
@@ -51,7 +54,25 @@ export const AddressMapPicker: React.FC<AddressMapPickerProps> = ({
   onAddressSelect,
   showConfirmButton = false,
 }) => {
-  const [searchInput, setSearchInput] = useState(value.address || "");
+  // 📍 Monta o endereço completo para a busca inicial (rua + número)
+  const buildInitialAddress = () => {
+    let address = value.street || value.address || "";
+    if (value.number) {
+      address += `, ${value.number}`;
+    }
+    if (value.neighborhood) {
+      address += ` - ${value.neighborhood}`;
+    }
+    if (value.city) {
+      address += `, ${value.city}`;
+    }
+    if (value.state) {
+      address += ` - ${value.state}`;
+    }
+    return address;
+  };
+
+  const [searchInput, setSearchInput] = useState(buildInitialAddress());
   const [mapCenter, setMapCenter] = useState(
     value.latitude && value.longitude
       ? { lat: value.latitude, lng: value.longitude }
@@ -132,8 +153,15 @@ export const AddressMapPicker: React.FC<AddressMapPickerProps> = ({
               getComponent("administrative_area_level_2"),
             state: getComponent("administrative_area_level_1"),
             zipCode: getComponent("postal_code"),
+            street: getComponent("route"), // Logradouro
+            number: getComponent("street_number"), // Número
+            neighborhood: 
+              getComponent("sublocality_level_1") ||
+              getComponent("sublocality") ||
+              getComponent("neighborhood"), // Bairro
           };
 
+          console.log('📍 [AddressMapPicker] Dados extraídos do Google Maps:', newData);
           setSearchInput(result.formatted_address);
           onChange(newData);
         }
@@ -189,24 +217,34 @@ export const AddressMapPicker: React.FC<AddressMapPickerProps> = ({
     
     if (!inputRef.current || !isLoaded) return;
 
-    const autocomplete = new google.maps.places.Autocomplete(inputRef.current, {
-      componentRestrictions: { country: "br" }, // Apenas Brasil
-      fields: ["formatted_address", "geometry", "address_components"],
-    });
-
-    autocomplete.addListener("place_changed", () => {
-      const place = autocomplete.getPlace();
-
-      if (place.geometry?.location) {
-        const lat = place.geometry.location.lat();
-        const lng = place.geometry.location.lng();
-
-        setMapCenter({ lat, lng });
-        reverseGeocode(lat, lng);
+    try {
+      // Verifica se a API do Places está disponível
+      if (!google.maps.places || !google.maps.places.Autocomplete) {
+        console.warn("Google Maps Places API não está carregada");
+        return;
       }
-    });
 
-    autocompleteRef.current = autocomplete;
+      const autocomplete = new google.maps.places.Autocomplete(inputRef.current, {
+        componentRestrictions: { country: "br" }, // Apenas Brasil
+        fields: ["formatted_address", "geometry", "address_components"],
+      });
+
+      autocomplete.addListener("place_changed", () => {
+        const place = autocomplete.getPlace();
+
+        if (place.geometry?.location) {
+          const lat = place.geometry.location.lat();
+          const lng = place.geometry.location.lng();
+
+          setMapCenter({ lat, lng });
+          reverseGeocode(lat, lng);
+        }
+      });
+
+      autocompleteRef.current = autocomplete;
+    } catch (error) {
+      console.warn("Erro ao inicializar autocomplete:", error);
+    }
   }, [isLoaded, reverseGeocode]);
 
   // 📍 Função para centralizar no local atual do navegador
@@ -327,7 +365,19 @@ export const AddressMapPicker: React.FC<AddressMapPickerProps> = ({
         }}
       >
         {value.latitude && value.longitude && (
-          <Marker position={{ lat: value.latitude, lng: value.longitude }} />
+          <Marker 
+            position={{ lat: value.latitude, lng: value.longitude }}
+            draggable={!disabled}
+            onDragEnd={(e) => {
+              if (e.latLng && !disabled) {
+                const lat = e.latLng.lat();
+                const lng = e.latLng.lng();
+                // Atualiza posição e busca endereço
+                reverseGeocode(lat, lng);
+              }
+            }}
+            title="Arraste para ajustar a posição"
+          />
         )}
       </GoogleMap>
 

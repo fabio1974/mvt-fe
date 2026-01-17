@@ -76,6 +76,8 @@ interface EntityCRUDProps {
   disableEdit?: boolean;
   /** Função que determina se uma linha específica pode ser deletada */
   canDelete?: (row: any) => boolean;
+  /** Callback quando o modo de visualização muda */
+  onModeChange?: (mode: ViewMode) => void;
 }
 
 /**
@@ -124,6 +126,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
   disableView = false,
   disableEdit = false,
   canDelete,
+  onModeChange,
   // transformData, // Unused parameter
   pageTitle,
 }) => {
@@ -138,11 +141,17 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
     return "table"; // Padrão: mostra tabela
   };
 
-  const [viewMode, setViewMode] = useState<ViewMode>(getInitialMode);
+  const [viewMode, setViewModeInternal] = useState<ViewMode>(getInitialMode);
   const [selectedEntityId, setSelectedEntityId] = useState<
     number | string | undefined
   >(propEntityId);
   const [refreshKey, setRefreshKey] = useState(0);
+
+  // Helper para mudar o modo e notificar o callback
+  const setViewMode = (mode: ViewMode) => {
+    setViewModeInternal(mode);
+    onModeChange?.(mode);
+  };
 
   const { getEntityMetadata, isLoading: metadataLoading } = useMetadata();
   const metadata = getEntityMetadata(entityName);

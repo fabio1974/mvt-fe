@@ -982,9 +982,13 @@ const EntityForm: React.FC<EntityFormProps> = ({
     const stringValue = String(value || "");
 
     // 🔒 Verifica se o campo deve ser readonly (por configuração prop ou regra de negócio)
+    // Campo "profile" é readonly para todos exceto admin
+    const isProfileField = field.name === 'profile' || field.name === 'perfil';
+    const isProfileReadonlyForNonAdmin = isProfileField && !isAdmin();
+    
     const isFieldReadonly = readonlyFields.includes(field.name) || 
                             field.name === 'role' || // Campo "role" sempre readonly
-                            field.name === 'perfil';  // Campo "perfil" sempre readonly (se houver)
+                            isProfileReadonlyForNonAdmin; // Campo "profile" readonly para não-admins
     
     // 🙈 Verifica se o campo deve ficar escondido (hidden)
     // 🏦 bankName sempre hidden em bankAccount (auto-preenchido pelo bankCode)

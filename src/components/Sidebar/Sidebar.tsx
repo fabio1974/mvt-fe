@@ -80,12 +80,6 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
     ],
   },
   {
-    label: "Pagamento Diário",
-    icon: <FiDollarSign size={22} color="#10b981" />,
-    path: "/pagamento-diario",
-    roles: ["ROLE_CLIENT", "CLIENT"],
-  },
-  {
     label: "Pagamentos",
     icon: <FiDollarSign size={22} color="#06b6d4" />,
     path: "/pagamentos",
