@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiSettings } from "react-icons/fi";
-import { getUserName, getUserRole } from "../../utils/auth";
+import { getUserName, getUserRole, isAdmin } from "../../utils/auth";
 import LOGO_PATH from "../../config/logo";
 import "./Header.css";
 
@@ -427,7 +427,8 @@ export default function Header({
             )}
           </div>
             
-            {/* Botão de Configurações */}
+            {/* Botão de Configurações - Apenas para ADMIN */}
+            {isAdmin() && (
             <button
               style={{
                 display: "flex",
@@ -450,6 +451,7 @@ export default function Header({
             >
               <FiSettings size={28} color="#64748b" />
             </button>
+            )}
           </div>
         )}
 

@@ -141,14 +141,9 @@ const EntityForm: React.FC<EntityFormProps> = ({
   // ⚠️ Usa flag para evitar loops infinitos
   useEffect(() => {
     if (!entityId && !initialValuesApplied && Object.keys(initialValues).length > 0) {
-      // 🚚 Para delivery: se toAddress não estiver preenchido, copia fromAddress
-      // Isso garante que o endereço de destino seja igual ao de origem (do usuário logado)
       const valuesToApply = {...initialValues};
-      if (metadata.entityName === 'delivery' && valuesToApply.fromAddress && !valuesToApply.toAddress) {
-        valuesToApply.toAddress = valuesToApply.fromAddress;
-        valuesToApply.toLatitude = valuesToApply.fromLatitude;
-        valuesToApply.toLongitude = valuesToApply.fromLongitude;
-      }
+      // 🚚 Para delivery: NÃO copia fromAddress para toAddress
+      // O campo de destino deve ficar em branco, mas o mapa abre centralizado na origem
       
       // Atualiza apenas os campos que vieram em initialValues, preservando os existentes
       setFormData((prev) => ({
@@ -920,41 +915,60 @@ const EntityForm: React.FC<EntityFormProps> = ({
           break;
         }
       }
-    };    // 🏙️ Busca cidade no banco de dados e atualiza campo city
-    const handleAddressDataChange = async (addressData: { city: string; state: string }) => {
-      // Verifica se existe um campo "city" ou similar no formulário
-      const cityFields = ['city', 'cityId', 'cidade'];
-      
-      for (const cityField of cityFields) {
-        const fieldExists = metadata.sections.some(s => s.fields.some(f => f.name === cityField));
+    };
+
+    // 🗺️ Callback para quando o endereço é selecionado no mapa
+    // Recebe o nome do campo (ex: "fromAddress", "toAddress") e todos os dados do endereço
+    const createAddressDataChangeHandler = (fieldName: string) => {
+      return async (addressData: { 
+        address: string; 
+        latitude: number; 
+        longitude: number; 
+        city: string; 
+        state: string; 
+        zipCode: string;
+        street?: string;
+        number?: string;
+        neighborhood?: string;
+      }) => {
+        console.log(`📍 [EntityForm] handleAddressDataChange para ${fieldName}:`, addressData);
         
-        if (fieldExists) {
-          try {
-            // Busca a cidade no banco de dados pelo nome
-            
-            const response = await api.get<{ content: Array<{ id: string | number; name: string }> }>('/cities', {
-              params: {
-                search: addressData.city,
-                state: addressData.state,
-                limit: 1
-              }
-            });
-            
-            if (response.data && response.data.content && response.data.content.length > 0) {
-              const cityFromDB = response.data.content[0];
+        // 1. Atualiza o campo de endereço principal
+        handleChange(fieldName, addressData.address);
+        
+        // 2. Atualiza latitude e longitude
+        handleAddressCoordinatesChange(fieldName, addressData.latitude, addressData.longitude);
+        
+        // 3. Verifica se existe um campo "city" ou similar no formulário (para ArrayFields)
+        const cityFields = ['city', 'cityId', 'cidade'];
+        
+        for (const cityField of cityFields) {
+          const fieldExists = metadata.sections.some(s => s.fields.some(f => f.name === cityField));
+          
+          if (fieldExists && addressData.city) {
+            try {
+              // Busca a cidade no banco de dados pelo nome
+              const response = await api.get<{ content: Array<{ id: string | number; name: string }> }>('/cities', {
+                params: {
+                  search: addressData.city,
+                  state: addressData.state,
+                  limit: 1
+                }
+              });
               
-              // Atualiza o campo city com o ID da cidade do banco
-              handleChange(cityField, cityFromDB.id);
-            } else {
-              console.warn(`⚠️ Cidade "${addressData.city} - ${addressData.state}" não encontrada no banco de dados`);
-              showToast(`Cidade "${addressData.city}" não encontrada no banco de dados`, 'warning');
+              if (response.data && response.data.content && response.data.content.length > 0) {
+                const cityFromDB = response.data.content[0];
+                handleChange(cityField, cityFromDB.id);
+              } else {
+                console.warn(`⚠️ Cidade "${addressData.city} - ${addressData.state}" não encontrada no banco de dados`);
+              }
+            } catch (error) {
+              console.error('❌ Erro ao buscar cidade no banco:', error);
             }
-          } catch (error) {
-            console.error('❌ Erro ao buscar cidade no banco:', error);
+            break;
           }
-          break;
         }
-      }
+      };
     };
 
     // Oculta campos de organização quando auto-preenchidos (modo criar)
@@ -1054,7 +1068,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
                 label={translateLabel(field.label)}
                 fieldName={field.name}
                 onCoordinatesChange={(lat, lng) => handleAddressCoordinatesChange(field.name, lat, lng)}
-                onAddressDataChange={handleAddressDataChange}
+                onAddressDataChange={createAddressDataChangeHandler(field.name)}
                 initialLatitude={initialLat}
                 initialLongitude={initialLng}
               />
@@ -1152,7 +1166,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
                 label={translateLabel(field.label)}
                 fieldName={field.name}
                 onCoordinatesChange={(lat, lng) => handleAddressCoordinatesChange(field.name, lat, lng)}
-                onAddressDataChange={handleAddressDataChange}
+                onAddressDataChange={createAddressDataChangeHandler(field.name)}
                 initialLatitude={initialLat}
                 initialLongitude={initialLng}
               />
@@ -1180,7 +1194,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
                 required={field.required}
                 fieldName={field.name}
                 onCoordinatesChange={(lat, lng) => handleAddressCoordinatesChange(field.name, lat, lng)}
-                onAddressDataChange={handleAddressDataChange}
+                onAddressDataChange={createAddressDataChangeHandler(field.name)}
                 initialLatitude={initialLat}
                 initialLongitude={initialLng}
               />
@@ -1553,12 +1567,25 @@ const EntityForm: React.FC<EntityFormProps> = ({
     const latFieldName = `${fieldBaseName}Latitude`;
     const lngFieldName = `${fieldBaseName}Longitude`;
     
+    // Se o campo tem coordenadas próprias, usa elas
     if (formData[latFieldName] !== undefined && formData[lngFieldName] !== undefined) {
       return {
         lat: Number(formData[latFieldName]),
         lng: Number(formData[lngFieldName])
       };
     }
+    
+    // 🚚 Para campo de destino (toAddress): se não tem coordenadas próprias,
+    // usa as coordenadas de origem para centralizar o mapa
+    if (fieldName === 'toAddress' || fieldName.toLowerCase() === 'toaddress') {
+      if (formData.fromLatitude !== undefined && formData.fromLongitude !== undefined) {
+        return {
+          lat: Number(formData.fromLatitude),
+          lng: Number(formData.fromLongitude)
+        };
+      }
+    }
+    
     return { lat: undefined, lng: undefined };
   };
 
