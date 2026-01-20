@@ -457,6 +457,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
   // Atualiza valor de um campo
   const handleChange = (fieldName: string, value: unknown) => {
     if (fieldName === "addresses" && Array.isArray(value)) {
+      console.log('📍 [EntityForm] handleChange addresses:', JSON.stringify(value, null, 2));
     }
 
     const normalizedValue =
@@ -467,6 +468,8 @@ const EntityForm: React.FC<EntityFormProps> = ({
     setFormData((prev) => {
       const newData = { ...prev, [fieldName]: normalizedValue };
       if (fieldName === "addresses") {
+        console.log('📍 [EntityForm] setFormData addresses - prev:', prev.addresses);
+        console.log('📍 [EntityForm] setFormData addresses - new:', newData.addresses);
       }
 
       // 🏦 Auto-preenche bankName quando bankCode muda (para entidade bankAccount)

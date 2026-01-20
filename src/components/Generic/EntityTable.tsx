@@ -57,6 +57,7 @@ interface EntityTableProps {
   hideFields?: string[]; // Opcional - array de nomes de campos a serem escondidos
   showFields?: string[]; // Opcional - array de nomes de campos a serem forçadamente exibidos (mesmo com visible:false)
   canDelete?: (row: any) => boolean; // Opcional - função que determina se uma linha pode ser deletada
+  canEdit?: (row: any) => boolean; // Opcional - função que determina se uma linha pode ser editada
 }
 
 const EntityTable: React.FC<EntityTableProps> = ({
@@ -70,6 +71,7 @@ const EntityTable: React.FC<EntityTableProps> = ({
   customActions,
   hideHeader = false,
   canDelete,
+  canEdit,
   initialFilters = {},
   noWrapper = false,
   hideFilters = false,
@@ -524,7 +526,7 @@ const EntityTable: React.FC<EntityTableProps> = ({
                                 <FiEye />
                               </button>
                             )}
-                            {onEdit && (
+                            {onEdit && (!canEdit || canEdit(row)) && (
                               <button
                                 className="btn-action btn-edit"
                                 onClick={() => {

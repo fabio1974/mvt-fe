@@ -105,6 +105,12 @@ export function isClient(): boolean {
   return role === 'ROLE_CLIENT' || role === 'CLIENT';
 }
 
+// Função para verificar se o usuário é courier (motoboy)
+export function isCourier(): boolean {
+  const role = getUserRole();
+  return role === 'ROLE_COURIER' || role === 'COURIER';
+}
+
 // Função para obter dados adicionais do usuário para inscrição
 export function getUserAdditionalData() {
   const token = localStorage.getItem('authToken');

@@ -2,7 +2,7 @@ import React, { useMemo, useEffect, useState } from "react";
 import EntityCRUD from "../Generic/EntityCRUD";
 import DeliveryRouteMap from "./DeliveryRouteMap";
 import DeliveryRouteMapModal from "./DeliveryRouteMapModal";
-import { getUserRole, getUserId, getUserName, getUserCoordinates, getUserAddress, isClient } from "../../utils/auth";
+import { getUserRole, getUserId, getUserName, getUserCoordinates, getUserAddress, isClient, isCourier } from "../../utils/auth";
 import { api } from "../../services/api";
 import { FiMap } from "react-icons/fi";
 import "./DeliveryCRUDPage.css";
@@ -69,6 +69,7 @@ const DeliveryCRUDPage: React.FC = () => {
   const [selectedDeliveryId, setSelectedDeliveryId] = useState<string | number | null>(null);
   
   // Define filtros iniciais baseados no role
+  // NOTA: O backend filtra automaticamente pelo token para COURIER
   const initialFilters = useMemo((): Record<string, string> | undefined => {
     // Se é CLIENT, filtra apenas suas entregas
     if ((userRole === "ROLE_CLIENT" || userRole === "CLIENT") && userId) {
@@ -78,7 +79,7 @@ const DeliveryCRUDPage: React.FC = () => {
     if (userRole === "ROLE_ORGANIZER" && userId) {
       return { organizer: String(userId) };
     }
-    // ADMIN vê todas
+    // ADMIN e COURIER: backend filtra pelo token
     return undefined;
   }, [userRole, userId]);
 
@@ -323,10 +324,13 @@ const DeliveryCRUDPage: React.FC = () => {
             ? "Acompanhe suas entregas"
             : userRole === "ROLE_ORGANIZER"
             ? "Gerencie as entregas do seu grupo"
+            : userRole === "ROLE_COURIER"
+            ? "Acompanhe suas corridas"
             : "Gerencie as entregas cadastradas na plataforma"
         }
         initialFilters={initialFilters}
         defaultValues={defaultValues}
+        disableCreate={isOrganizer() || isCourier()}
         hideFields={
           // CLIENT oculta "client", ORGANIZER oculta "organizer", ADMIN vê tudo
           isClient() ? ["client"] : isOrganizer() ? ["organizer"] : []
@@ -342,6 +346,10 @@ const DeliveryCRUDPage: React.FC = () => {
           <DeliveryMapWrapper entityId={entityId} viewMode={viewMode} />
         )}
         customActions={customActions}
+        // ✅ Motoboy não pode editar/deletar de forma alguma
+        // ✅ Outros perfis só podem editar/deletar entregas com status PENDING
+        canEdit={(row) => !isCourier() && row.status === "PENDING"}
+        canDelete={(row) => !isCourier() && row.status === "PENDING"}
       />
 
       {/* Modal do mapa */}

@@ -12,7 +12,7 @@ import { getUserId, getUserRole } from "../../utils/auth";
  * - Após salvar, volta para VIEW
  * - Breadcrumb no topo
  * 
- * Para clientes:
+ * Para clientes e motoboys:
  * - Subforms de contratos (clientContracts, employmentContracts) são escondidos no modo edit
  * - Apenas visíveis no modo view
  */
@@ -21,11 +21,12 @@ const PersonalDataPage: React.FC = () => {
   const userRole = getUserRole();
   const [currentMode, setCurrentMode] = useState<"view" | "edit">("view");
   
-  // Verifica se é cliente
+  // Verifica se é cliente ou motoboy
   const isClient = userRole === "ROLE_CLIENT" || userRole === "CLIENT";
+  const isCourier = userRole === "ROLE_COURIER" || userRole === "COURIER";
   
-  // Campos a esconder para clientes no modo edit
-  const hiddenFieldsForClient = isClient && currentMode === "edit" 
+  // Campos a esconder para clientes e motoboys no modo edit
+  const hiddenFieldsForContractUsers = (isClient || isCourier) && currentMode === "edit" 
     ? ["clientContracts", "employmentContracts"] 
     : [];
 
@@ -46,7 +47,7 @@ const PersonalDataPage: React.FC = () => {
       showEditButton={true}
       pageTitle="Meus Dados Pessoais"
       pageDescription="Visualize e edite suas informações pessoais"
-      hiddenFields={hiddenFieldsForClient}
+      hiddenFields={hiddenFieldsForContractUsers}
       onModeChange={(mode) => setCurrentMode(mode)}
     />
   );

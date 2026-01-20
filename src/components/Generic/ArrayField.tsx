@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   FiPlus,
   FiTrash2,
@@ -42,8 +42,13 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
 }) => {
   const { fields = [], minItems = 0, maxItems = 100 } = config;
 
-  // 🔍 Log quando value prop muda
+  // � useRef para manter referência atualizada do value
+  // Isso resolve o problema de stale closure em callbacks assíncronos
+  const valueRef = useRef(value);
+  
+  // 🔄 Sincroniza a ref sempre que value mudar
   useEffect(() => {
+    valueRef.current = value;
     console.log('📍 [ArrayField] value prop atualizado:', value);
   }, [value]);
 
@@ -125,17 +130,16 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
     }
   }, [fields, onChange]); // ✅ REMOVIDO: value da dependência para evitar loops infinitos
 
-  // ✅ CORREÇÃO CRÍTICA: handleFieldChange usa o array principal `value`
-  // ao invés da variável incorreta `value` do parâmetro
-  const handleFieldChange = (
+  // ✅ CORREÇÃO CRÍTICA: handleFieldChange usa valueRef.current
+  // para garantir que sempre pegue o valor mais recente (resolve stale closure)
+  const handleFieldChange = useCallback((
     itemIndex: number,
     fieldName: string,
     fieldValue: unknown
   ) => {
-
-    // ✅ USA O ARRAY PRINCIPAL: `value` (prop do componente)
-    // NÃO usa `value` do parâmetro (que é o valor do campo individual)
-    const newArray = [...value];
+    // ✅ USA valueRef.current para pegar o valor mais recente
+    const currentValue = valueRef.current;
+    const newArray = [...currentValue];
     const currentItem = (newArray[itemIndex] as Record<string, unknown>) || {};
 
     // Atualiza o campo específico
@@ -144,16 +148,22 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
       [fieldName]: fieldValue,
     };
 
+    // ✅ Atualiza a ref ANTES de chamar onChange
+    valueRef.current = newArray;
     onChange(newArray);
-  };
+  }, [onChange]);
 
   // 📍 Atualiza múltiplos campos de uma vez (ex: latitude e longitude juntos)
-  const handleMultipleFieldsChange = (
+  // ⚠️ USA valueRef.current para sempre pegar o valor mais recente (resolve stale closure)
+  const handleMultipleFieldsChange = useCallback((
     itemIndex: number,
     updates: Record<string, unknown>
   ) => {
-    console.log('📍 [ArrayField] handleMultipleFieldsChange:', { itemIndex, updates });
-    const newArray = [...value];
+    console.log('📍 [ArrayField] handleMultipleFieldsChange chamado:', { itemIndex, updates });
+    // ✅ USA valueRef.current para pegar o valor mais recente (não o valor do closure)
+    const currentValue = valueRef.current;
+    console.log('📍 [ArrayField] value atual (antes):', JSON.stringify(currentValue, null, 2));
+    const newArray = [...currentValue];
     const currentItem = (newArray[itemIndex] as Record<string, unknown>) || {};
 
     newArray[itemIndex] = {
@@ -162,8 +172,14 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
     };
 
     console.log('📍 [ArrayField] Novo item após update:', newArray[itemIndex]);
+    console.log('📍 [ArrayField] newArray completo:', JSON.stringify(newArray, null, 2));
+    console.log('📍 [ArrayField] Chamando onChange...');
+    
+    // ✅ Atualiza a ref ANTES de chamar onChange para que o próximo update use o valor correto
+    valueRef.current = newArray;
     onChange(newArray);
-  };
+    console.log('📍 [ArrayField] onChange chamado com sucesso');
+  }, [onChange]);
 
   // Adiciona um novo item
   const addItem = () => {
@@ -310,9 +326,10 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
                     longitude: addressData.longitude,
                   };
 
-                  // Preenche o campo de rua atual
-                  if (addressData.street) {
-                    updates[field.name] = addressData.street;
+                  // Preenche o campo de rua atual (usa street ou address como fallback)
+                  const streetValue = addressData.street || addressData.address;
+                  if (streetValue) {
+                    updates[field.name] = streetValue;
                   }
 
                   // Preenche número
@@ -340,7 +357,11 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
                     if (fields.some(f => f.name === 'postalCode')) updates.postalCode = addressData.zipCode;
                   }
 
-                  // 🏙️ Busca cidade automaticamente pelo nome e estado
+                  // 🔄 PRIMEIRO: Atualiza os campos básicos imediatamente
+                  console.log('📍 [ArrayField] Street field - Atualizando campos básicos:', updates);
+                  handleMultipleFieldsChange(itemIndex, updates);
+
+                  // 🏙️ DEPOIS: Busca cidade automaticamente pelo nome e estado (assíncrono)
                   const searchAndSetCity = async () => {
                     const hasCityField = fields.some(f => f.name === 'city');
                     const cityField = fields.find(f => f.name === 'city');
@@ -370,17 +391,9 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
                         }
                         
                         if (matchedCity) {
-                          console.log('✅ [ArrayField] Cidade encontrada:', matchedCity);
-                          
-                          // Monta o objeto final com todos os campos + cidade
-                          const finalUpdates = {
-                            ...updates,
-                            city: matchedCity
-                          };
-                          
-                          console.log('📍 [ArrayField] Atualizando todos os campos:', finalUpdates);
-                          handleMultipleFieldsChange(itemIndex, finalUpdates);
-                          return; // Já atualizou com a cidade
+                          console.log('✅ [ArrayField] Cidade encontrada, atualizando:', matchedCity);
+                          // Atualiza só o campo city (os outros já foram atualizados)
+                          handleMultipleFieldsChange(itemIndex, { city: matchedCity });
                         } else {
                           console.log('⚠️ [ArrayField] Cidade não encontrada para:', addressData.city);
                         }
@@ -389,11 +402,8 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
                       }
                     } else if (hasCityField && addressData.city) {
                       // Campo city não é entity/city type, preenche só com o nome
-                      updates.city = addressData.city;
+                      handleMultipleFieldsChange(itemIndex, { city: addressData.city });
                     }
-                    
-                    console.log('📍 [ArrayField] Street field - Atualizando (sem cidade entity):', updates);
-                    handleMultipleFieldsChange(itemIndex, updates);
                   };
                   
                   searchAndSetCity();

@@ -45,7 +45,7 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
     label: "Entregas",
     icon: <FiPackage size={22} color="#60a5fa" />,
     path: "/deliveries",
-    roles: ["ROLE_ADMIN", "ROLE_ORGANIZER", "ROLE_CLIENT", "CLIENT"],
+    roles: ["ROLE_ADMIN", "ROLE_ORGANIZER", "ROLE_COURIER", "ROLE_CLIENT", "CLIENT"],
   },
   // Grupo Pessoas (apenas ADMIN)
   {

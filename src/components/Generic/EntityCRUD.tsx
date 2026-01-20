@@ -76,6 +76,8 @@ interface EntityCRUDProps {
   disableEdit?: boolean;
   /** Função que determina se uma linha específica pode ser deletada */
   canDelete?: (row: any) => boolean;
+  /** Função que determina se uma linha específica pode ser editada */
+  canEdit?: (row: any) => boolean;
   /** Callback quando o modo de visualização muda */
   onModeChange?: (mode: ViewMode) => void;
 }
@@ -126,6 +128,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
   disableView = false,
   disableEdit = false,
   canDelete,
+  canEdit,
   onModeChange,
   // transformData, // Unused parameter
   pageTitle,
@@ -291,14 +294,17 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
           </div>
         </div>
 
-        {mode === "table" && !disableCreate ? (
-          <button
-            className="breadcrumb-action-btn btn-create"
-            onClick={handleCreate}
-          >
-            <FiPlus />
-            <span>Criar Novo</span>
-          </button>
+        {mode === "table" ? (
+          // Modo table: mostra botão "Criar Novo" se permitido, senão nada
+          !disableCreate ? (
+            <button
+              className="breadcrumb-action-btn btn-create"
+              onClick={handleCreate}
+            >
+              <FiPlus />
+              <span>Criar Novo</span>
+            </button>
+          ) : null
         ) : mode === "view" && showEditButton ? (
           // Modo view com botão editar: mostra ambos os botões
           <div style={{ display: "flex", gap: "0.5rem" }}>
@@ -365,6 +371,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
             showFields={showFields}
             hideFilters={hideFilters}
             canDelete={canDelete}
+            canEdit={canEdit}
           />
         </ErrorBoundary>
       </div>
