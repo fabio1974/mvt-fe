@@ -48,7 +48,12 @@ const PersonalDataPage: React.FC = () => {
       pageTitle="Meus Dados Pessoais"
       pageDescription="Visualize e edite suas informações pessoais"
       hiddenFields={hiddenFieldsForContractUsers}
-      onModeChange={(mode) => setCurrentMode(mode)}
+      onModeChange={(mode) => {
+        // Só atualiza se for view ou edit (ignora table e create)
+        if (mode === "view" || mode === "edit") {
+          setCurrentMode(mode);
+        }
+      }}
     />
   );
 };

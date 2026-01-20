@@ -16,34 +16,6 @@ const isOrganizer = (): boolean => {
 };
 
 /**
- * Função auxiliar para fazer geocoding reverso (lat/long -> endereço)
- */
-const reverseGeocode = async (lat: number, lng: number): Promise<string | null> => {
-  try {
-    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-    if (!apiKey) {
-      console.warn("Google Maps API Key não configurada");
-      return null;
-    }
-
-    const response = await fetch(
-      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${apiKey}`
-    );
-    
-    const data = await response.json();
-    
-    if (data.status === "OK" && data.results && data.results.length > 0) {
-      return data.results[0].formatted_address;
-    }
-    
-    return null;
-  } catch (error) {
-    console.error("Erro ao fazer geocoding reverso:", error);
-    return null;
-  }
-};
-
-/**
  * Página de CRUD para Deliveries (Entregas)
  * 
  * Comportamento por perfil:
