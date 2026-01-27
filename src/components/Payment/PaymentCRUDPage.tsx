@@ -57,7 +57,7 @@ const PaymentCRUDPage: React.FC = () => {
   };
   
   // Verifica se o usuário tem permissão
-  const allowedRoles = ["ROLE_ADMIN", "ROLE_ORGANIZER", "ROLE_COURIER", "ROLE_CLIENT", "CLIENT"];
+  const allowedRoles = ["ROLE_ADMIN", "ROLE_ORGANIZER", "ROLE_COURIER", "ROLE_CLIENT", "CLIENT", "ROLE_CUSTOMER", "CUSTOMER"];
   const hasAccess = allowedRoles.includes(userRole || "");
 
   if (!hasAccess) {

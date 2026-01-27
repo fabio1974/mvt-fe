@@ -7,7 +7,6 @@ import {
   FiBriefcase,
   FiChevronDown,
   FiChevronRight,
-  FiLogOut,
   FiTruck,
   FiShoppingBag,
   FiPackage,
@@ -45,7 +44,7 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
     label: "Entregas",
     icon: <FiPackage size={22} color="#60a5fa" />,
     path: "/deliveries",
-    roles: ["ROLE_ADMIN", "ROLE_ORGANIZER", "ROLE_COURIER", "ROLE_CLIENT", "CLIENT"],
+    roles: ["ROLE_ADMIN", "ROLE_ORGANIZER", "ROLE_COURIER", "ROLE_CLIENT", "CLIENT", "ROLE_CUSTOMER", "CUSTOMER"],
   },
   // Grupo Pessoas (apenas ADMIN)
   {
@@ -83,7 +82,7 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
     label: "Pagamentos",
     icon: <FiDollarSign size={22} color="#06b6d4" />,
     path: "/pagamentos",
-    roles: ["ROLE_ADMIN", "ROLE_ORGANIZER", "ROLE_COURIER", "ROLE_CLIENT", "CLIENT"],
+    roles: ["ROLE_ADMIN", "ROLE_ORGANIZER", "ROLE_COURIER", "ROLE_CLIENT", "CLIENT", "ROLE_CUSTOMER", "CUSTOMER"],
   },
   {
     label: "Balanço Financeiro",
@@ -252,22 +251,6 @@ export default function Sidebar({
               return renderMenuItem(item);
             }
           })}
-
-          {/* Separador antes do logout */}
-          <div className="sidebar-menu-separator"></div>
-
-          {/* Botão Sair - último item do menu */}
-          <button
-            onClick={() => {
-              localStorage.removeItem("authToken");
-              navigate("/login");
-              window.location.reload();
-            }}
-            className="sidebar-menu-item sidebar-logout"
-          >
-            <FiLogOut size={22} color="#dc2626" />
-            {!collapsed && <span className="sidebar-menu-label">Sair</span>}
-          </button>
         </nav>
         <div className={`sidebar-footer${collapsed ? " collapsed" : ""}`}>
           <span

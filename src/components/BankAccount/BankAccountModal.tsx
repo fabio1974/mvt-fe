@@ -171,60 +171,63 @@ const BankAccountModal: React.FC<BankAccountModalProps> = ({
                   existingBankAccount
                     ? { 
                         ...existingBankAccount, 
-                        user: { id: userId },
-                        transferInterval,
-                        transferDay
+                        user: { id: userId }
                       }
                     : { 
-                        user: { id: userId },
-                        transferInterval,
-                        transferDay
+                        user: { id: userId }
                       }
                 }
                 hiddenFields={["user", "transferInterval", "transferDay"]}
-              />
-              
-              {/* Seção de Configuração de Saque Automático */}
-              <div className="transfer-config-section">
-                <h3>
-                  <FiCalendar size={18} style={{ marginRight: "8px" }} />
-                  Configuração de Saque Automático
-                </h3>
-                <p className="transfer-config-description">
-                  Configure quando o saldo disponível será transferido automaticamente para sua conta bancária.
-                </p>
-                
-                <div className="transfer-fields-container">
-                  <div className="transfer-field">
-                    <label>Frequência do Saque</label>
-                    <select
-                      value={transferInterval}
-                      onChange={(e) => setTransferInterval(e.target.value)}
-                      className="transfer-select"
-                    >
-                      {TRANSFER_INTERVAL_OPTIONS.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </option>
-                      ))}
-                    </select>
+                additionalData={{
+                  transferInterval,
+                  transferDay: transferInterval === "Daily" ? 0 : transferDay
+                }}
+                renderBeforeButtons={() => (
+                  <div className="transfer-config-section">
+                    <h3>
+                      <FiCalendar size={18} style={{ marginRight: "8px" }} />
+                      Configuração de Saque Automático
+                    </h3>
+                    <p className="transfer-config-description">
+                      Configure quando o saldo disponível será transferido automaticamente para sua conta bancária.
+                    </p>
+                    
+                    <div className="transfer-fields-container">
+                      <div className="transfer-field">
+                        <label>Frequência do Saque</label>
+                        <select
+                          value={transferInterval}
+                          onChange={(e) => setTransferInterval(e.target.value)}
+                          className="transfer-select"
+                        >
+                          {TRANSFER_INTERVAL_OPTIONS.map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      
+                      {renderDaySelector()}
+                    </div>
+                    
+                    <div className="transfer-info">
+                      {transferInterval === "Daily" && (
+                        <p>💰 Seu saldo será transferido todo dia útil.</p>
+                      )}
+                      {transferInterval === "Weekly" && (
+                        <p>💰 Seu saldo será transferido toda <strong>{WEEKLY_DAY_OPTIONS.find(d => d.value === transferDay)?.label}</strong>.</p>
+                      )}
+                      {transferInterval === "Monthly" && (
+                        <p>💰 Seu saldo será transferido todo <strong>dia {transferDay}</strong> de cada mês.</p>
+                      )}
+                      <p style={{ marginTop: "8px", fontSize: "0.85em", color: "#666" }}>
+                        ⚠️ Cada transferência tem um custo de <strong>R$ 3,67</strong> (TED).
+                      </p>
+                    </div>
                   </div>
-                  
-                  {renderDaySelector()}
-                </div>
-                
-                <div className="transfer-info">
-                  {transferInterval === "Daily" && (
-                    <p>💰 Seu saldo será transferido todo dia útil.</p>
-                  )}
-                  {transferInterval === "Weekly" && (
-                    <p>💰 Seu saldo será transferido toda <strong>{WEEKLY_DAY_OPTIONS.find(d => d.value === transferDay)?.label}</strong>.</p>
-                  )}
-                  {transferInterval === "Monthly" && (
-                    <p>💰 Seu saldo será transferido todo <strong>dia {transferDay}</strong> de cada mês.</p>
-                  )}
-                </div>
-              </div>
+                )}
+              />
             </>
           ) : (
             <div style={{ textAlign: "center", padding: "20px", color: "red" }}>

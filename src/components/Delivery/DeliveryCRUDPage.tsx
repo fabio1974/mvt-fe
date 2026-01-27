@@ -43,8 +43,8 @@ const DeliveryCRUDPage: React.FC = () => {
   // Define filtros iniciais baseados no role
   // NOTA: O backend filtra automaticamente pelo token para COURIER
   const initialFilters = useMemo((): Record<string, string> | undefined => {
-    // Se é CLIENT, filtra apenas suas entregas
-    if ((userRole === "ROLE_CLIENT" || userRole === "CLIENT") && userId) {
+    // Se é CLIENT ou CUSTOMER, filtra apenas suas entregas
+    if ((userRole === "ROLE_CLIENT" || userRole === "CLIENT" || userRole === "ROLE_CUSTOMER" || userRole === "CUSTOMER") && userId) {
       return { client: String(userId) };
     }
     // Se é ORGANIZER, filtra entregas da sua organização
@@ -58,8 +58,8 @@ const DeliveryCRUDPage: React.FC = () => {
   // Busca o endereço mais recente do cliente via API
   useEffect(() => {
     const fetchDefaultValues = async () => {
-      // Se é CLIENT, pré-preenche o campo client com o ID do usuário logado
-      if ((userRole === "ROLE_CLIENT" || userRole === "CLIENT") && userId) {
+      // Se é CLIENT ou CUSTOMER, pré-preenche o campo client com o ID do usuário logado
+      if ((userRole === "ROLE_CLIENT" || userRole === "CLIENT" || userRole === "ROLE_CUSTOMER" || userRole === "CUSTOMER") && userId) {
         const values: Record<string, unknown> = {
           // Para TypeAhead, precisa ser um objeto com id e label
           client: {
@@ -292,7 +292,7 @@ const DeliveryCRUDPage: React.FC = () => {
         hideArrayFields={false}
         pageTitle="Entregas"
         pageDescription={
-          userRole === "ROLE_CLIENT" || userRole === "CLIENT"
+          userRole === "ROLE_CLIENT" || userRole === "CLIENT" || userRole === "ROLE_CUSTOMER" || userRole === "CUSTOMER"
             ? "Acompanhe suas entregas"
             : userRole === "ROLE_ORGANIZER"
             ? "Gerencie as entregas do seu grupo"

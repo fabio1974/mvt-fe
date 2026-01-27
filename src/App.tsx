@@ -2,8 +2,10 @@ import "./App.css";
 import Header from "./components/Header/Header";
 import Footer from "./components/Footer/Footer";
 import LandingPage from "./components/LandingPage/LandingPage";
+import Dashboard from "./components/Dashboard/Dashboard";
 import LoginRegisterPage from "./components/Auth/LoginRegisterPage";
 import ResetPasswordPage from "./components/Auth/ResetPasswordPage";
+import ConfirmEmailPage from "./components/Auth/ConfirmEmailPage";
 import OrganizationCRUDPage from "./components/Organization/OrganizationCRUDPage";
 import OrganizerOrganizationPage from "./components/Organization/OrganizerOrganizationPage";
 import CourierCRUDPage from "./components/Courier/CourierCRUDPage";
@@ -120,8 +122,9 @@ function App() {
               sidebarCollapsed={sidebarCollapsed}
             />
             <Routes>
-              <Route path="/" element={<LandingPage />} />
+              <Route path="/" element={isLoggedIn ? <Dashboard /> : <LandingPage />} />
               <Route path="/login" element={<LoginRegisterPage />} />
+              <Route path="/confirmar-email" element={<ConfirmEmailPage />} />
               <Route path="/recuperar-senha" element={<ResetPasswordPage />} />
               <Route path="/organizacao" element={<OrganizerOrganizationPage />} />
               <Route

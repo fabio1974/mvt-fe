@@ -55,6 +55,10 @@ interface EntityFormProps {
   readonlyFields?: string[];
   /** Lista de nomes de campos que devem ficar escondidos (hidden) */
   hiddenFields?: string[];
+  /** Dados adicionais para incluir no payload de submissão (sobrescreve valores do formulário) */
+  additionalData?: Record<string, unknown>;
+  /** Renderiza conteúdo customizado antes dos botões de ação */
+  renderBeforeButtons?: () => React.ReactNode;
 }
 
 /**
@@ -80,6 +84,8 @@ const EntityForm: React.FC<EntityFormProps> = ({
   hideArrayFields = false,
   readonlyFields = [],
   hiddenFields = [],
+  additionalData = {},
+  renderBeforeButtons,
 }) => {
   const navigate = useNavigate();
   const { organizationId } = useOrganization();
@@ -558,11 +564,11 @@ const EntityForm: React.FC<EntityFormProps> = ({
       // Validações numéricas (min/max) - para campos number
       const isNumericField = field.type === "number";
 
-      if (isNumericField && min !== undefined && Number(value) < min) {
+      if (isNumericField && min !== undefined && min !== null && Number(value) < min) {
         return message || `${field.label} deve ser maior ou igual a ${min}`;
       }
 
-      if (isNumericField && max !== undefined && Number(value) > max) {
+      if (isNumericField && max !== undefined && max !== null && Number(value) > max) {
         return message || `${field.label} deve ser menor ou igual a ${max}`;
       }
 
@@ -690,7 +696,8 @@ const EntityForm: React.FC<EntityFormProps> = ({
       setLoading(true);
 
       // Prepara o payload para envio
-      const finalData = { ...formData };
+      // Inclui additionalData que sobrescreve valores do formulário
+      const finalData = { ...formData, ...additionalData };
 
       // Obtém todos os campos (incluindo não visíveis)
       const allFields =
@@ -2009,6 +2016,9 @@ const EntityForm: React.FC<EntityFormProps> = ({
           </span>
         </div>
       )}
+
+      {/* Conteúdo customizado antes dos botões */}
+      {renderBeforeButtons && renderBeforeButtons()}
 
       {/* Botões de ação - Não renderiza no modo view (readonly) */}
       {!readonly && formMode !== "view" && (

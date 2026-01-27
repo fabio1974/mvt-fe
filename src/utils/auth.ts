@@ -99,10 +99,16 @@ export function isAdmin(): boolean {
   return role === 'ROLE_ADMIN';
 }
 
-// Função para verificar se o usuário é cliente
+// Função para verificar se o usuário é cliente (estabelecimento ou pessoa física)
 export function isClient(): boolean {
   const role = getUserRole();
-  return role === 'ROLE_CLIENT' || role === 'CLIENT';
+  return role === 'ROLE_CLIENT' || role === 'CLIENT' || role === 'ROLE_CUSTOMER' || role === 'CUSTOMER';
+}
+
+// Função para verificar se o usuário é cliente pessoa física
+export function isCustomer(): boolean {
+  const role = getUserRole();
+  return role === 'ROLE_CUSTOMER' || role === 'CUSTOMER';
 }
 
 // Função para verificar se o usuário é courier (motoboy)

@@ -101,8 +101,11 @@ export default function LoginForm() {
         if (response?.data) {
           // Se data é uma string (texto plano)
           if (typeof response.data === 'string') {
-            if (response.data.toLowerCase().includes("invalid username or password")) {
+            const dataLower = response.data.toLowerCase();
+            if (dataLower.includes("invalid username or password")) {
               errorMessage = "Usuário ou senha incorretos";
+            } else if (dataLower.includes("not confirmed") || dataLower.includes("email not verified") || dataLower.includes("account not activated")) {
+              errorMessage = "Sua conta ainda não foi ativada. Por favor, verifique seu email e clique no link de confirmação.";
             } else {
               errorMessage = response.data;
             }
@@ -119,18 +122,24 @@ export default function LoginForm() {
             }
             // Prioridade 2: message - mensagem geral
             else if (message) {
+              const msgLower = message.toLowerCase();
               // Traduz mensagens específicas do backend
-              if (message.toLowerCase().includes("invalid username or password")) {
+              if (msgLower.includes("invalid username or password")) {
                 errorMessage = "Usuário ou senha incorretos";
+              } else if (msgLower.includes("not confirmed") || msgLower.includes("email not verified") || msgLower.includes("account not activated") || msgLower.includes("not activated")) {
+                errorMessage = "Sua conta ainda não foi ativada. Por favor, verifique seu email e clique no link de confirmação.";
               } else {
                 errorMessage = message;
               }
             }
             // Prioridade 3: error
             else if (error) {
+              const errLower = error.toLowerCase();
               // Traduz mensagens específicas do backend
-              if (error.toLowerCase().includes("invalid username or password")) {
+              if (errLower.includes("invalid username or password")) {
                 errorMessage = "Usuário ou senha incorretos";
+              } else if (errLower.includes("not confirmed") || errLower.includes("email not verified") || errLower.includes("account not activated") || errLower.includes("not activated")) {
+                errorMessage = "Sua conta ainda não foi ativada. Por favor, verifique seu email e clique no link de confirmação.";
               } else {
                 errorMessage = error;
               }

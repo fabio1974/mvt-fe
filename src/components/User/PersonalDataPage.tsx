@@ -22,7 +22,7 @@ const PersonalDataPage: React.FC = () => {
   const [currentMode, setCurrentMode] = useState<"view" | "edit">("view");
   
   // Verifica se é cliente ou motoboy
-  const isClient = userRole === "ROLE_CLIENT" || userRole === "CLIENT";
+  const isClient = userRole === "ROLE_CLIENT" || userRole === "CLIENT" || userRole === "ROLE_CUSTOMER" || userRole === "CUSTOMER";
   const isCourier = userRole === "ROLE_COURIER" || userRole === "COURIER";
   
   // Campos a esconder para clientes e motoboys no modo edit
