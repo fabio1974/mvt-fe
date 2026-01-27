@@ -170,7 +170,29 @@ export default function ConfirmEmailPage() {
         )}
 
         {status === "error" && (
-          <div style={{ marginTop: "24px" }}>
+          <div style={{ marginTop: "24px", display: "flex", flexDirection: "column", gap: "12px", alignItems: "center" }}>
+            <button
+              style={{
+                background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+                color: "white",
+                border: "none",
+                borderRadius: "8px",
+                padding: "12px 24px",
+                fontSize: "0.95rem",
+                fontWeight: 600,
+                cursor: "pointer",
+                boxShadow: "0 4px 14px rgba(245, 158, 11, 0.4)",
+              }}
+              onClick={() => navigate("/reenviar-confirmacao")}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "translateY(-2px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
+            >
+              Reenviar Email de Confirmação
+            </button>
             <button
               style={{
                 background: "none",

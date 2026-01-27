@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 import { api } from "../../services/api";
 import { useState, useEffect } from "react";
-import { X } from "lucide-react";
 import {
   FormField,
   FormInput,
@@ -39,8 +39,8 @@ export default function RegisterForm({ onSuccess, preselectedRole, lockRole = fa
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [pendingFormData, setPendingFormData] = useState<RegisterFormData | null>(null);
+  const [isEmailAlreadyRegistered, setIsEmailAlreadyRegistered] = useState(false);
+  const navigate = useNavigate();
 
   // Atualiza o role quando preselectedRole muda
   useEffect(() => {
@@ -105,31 +105,10 @@ export default function RegisterForm({ onSuccess, preselectedRole, lockRole = fa
     return "Informe um CPF (11 dígitos) ou CNPJ (14 dígitos) válido";
   };
 
-  // Handler intermediário que mostra o modal de confirmação
-  const handleFormSubmit = (data: RegisterFormData) => {
-    setPendingFormData(data);
-    setShowConfirmModal(true);
-  };
-
-  // Handler para confirmar e enviar o cadastro
-  const handleConfirmSubmit = async () => {
-    if (!pendingFormData) return;
-    setShowConfirmModal(false);
-    await onSubmit(pendingFormData);
-  };
-
-  // Handler para trocar o perfil
-  const handleChangeRole = () => {
-    setShowConfirmModal(false);
-    setPendingFormData(null);
-    if (onChangeRole) {
-      onChangeRole();
-    }
-  };
-
   const onSubmit = async (data: RegisterFormData) => {
     setError("");
     setSuccess("");
+    setIsEmailAlreadyRegistered(false);
     try {
       // Remover formatação do CPF antes de enviar
       const cpfNumbers = data.cpf.replace(/\D/g, "");
@@ -195,6 +174,12 @@ export default function RegisterForm({ onSuccess, preselectedRole, lockRole = fa
         errorMessage = "Erro ao registrar usuário.";
       }
 
+      // Detectar se é erro de email já cadastrado
+      const errorLower = errorMessage.toLowerCase();
+      if (errorLower.includes("já está cadastrado") || errorLower.includes("already registered") || errorLower.includes("already exists") || errorLower.includes("já existe")) {
+        setIsEmailAlreadyRegistered(true);
+      }
+
       setError(errorMessage);
       console.error(err);
     }
@@ -207,140 +192,7 @@ export default function RegisterForm({ onSuccess, preselectedRole, lockRole = fa
     { value: "ORGANIZER", label: "Gerente" },
   ];
 
-  // Retorna o label do role selecionado
-  const getRoleLabel = (roleValue: string) => {
-    const option = roleOptions.find(opt => opt.value === roleValue);
-    return option?.label || roleValue;
-  };
-
-  // Retorna o emoji do role selecionado
-  const getRoleIcon = (roleValue: string) => {
-    const icons: Record<string, string> = {
-      CUSTOMER: "👤",
-      CLIENT: "🏪",
-      COURIER: "🏍️",
-      ORGANIZER: "👥",
-    };
-    return icons[roleValue] || "👤";
-  };
-
-  // Modal styles
-  const modalStyles: { [key: string]: React.CSSProperties } = {
-    overlay: {
-      position: "fixed",
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: "rgba(0, 0, 0, 0.7)",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      zIndex: 1000,
-      padding: "1rem",
-    },
-    modal: {
-      backgroundColor: "#ffffff",
-      borderRadius: "1rem",
-      maxWidth: "420px",
-      width: "100%",
-      overflow: "hidden",
-      position: "relative",
-      boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
-    },
-    header: {
-      padding: "1.5rem",
-      borderBottom: "1px solid #e5e7eb",
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-    },
-    title: {
-      fontSize: "1.25rem",
-      fontWeight: 600,
-      color: "#111827",
-      margin: 0,
-    },
-    closeButton: {
-      background: "none",
-      border: "none",
-      cursor: "pointer",
-      padding: "0.5rem",
-      borderRadius: "0.5rem",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      transition: "background-color 0.2s",
-    },
-    body: {
-      padding: "1.5rem",
-      textAlign: "center",
-    },
-    profileCard: {
-      display: "flex",
-      alignItems: "center",
-      gap: "1rem",
-      padding: "1rem",
-      backgroundColor: "#f0f9ff",
-      border: "2px solid #3b82f6",
-      borderRadius: "0.75rem",
-      marginBottom: "1.5rem",
-    },
-    profileIcon: {
-      fontSize: "2.5rem",
-      width: "60px",
-      height: "60px",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: "#ffffff",
-      borderRadius: "0.75rem",
-      boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-    },
-    profileLabel: {
-      fontSize: "1.125rem",
-      fontWeight: 600,
-      color: "#111827",
-      textAlign: "left",
-    },
-    question: {
-      fontSize: "1rem",
-      color: "#374151",
-      marginBottom: "1.5rem",
-    },
-    buttonGroup: {
-      display: "flex",
-      flexDirection: "column",
-      gap: "0.75rem",
-    },
-    confirmButton: {
-      width: "100%",
-      padding: "0.875rem",
-      backgroundColor: "#22c55e",
-      color: "#ffffff",
-      border: "none",
-      borderRadius: "0.5rem",
-      fontSize: "1rem",
-      fontWeight: 600,
-      cursor: "pointer",
-      transition: "background-color 0.2s",
-    },
-    changeButton: {
-      width: "100%",
-      padding: "0.875rem",
-      backgroundColor: "#f3f4f6",
-      color: "#374151",
-      border: "1px solid #d1d5db",
-      borderRadius: "0.5rem",
-      fontSize: "1rem",
-      fontWeight: 500,
-      cursor: "pointer",
-      transition: "background-color 0.2s",
-    },
-  };
-
   return (
-    <>
     <form
       style={{
         width: "100%",
@@ -348,7 +200,7 @@ export default function RegisterForm({ onSuccess, preselectedRole, lockRole = fa
         flexDirection: "column",
         gap: 16,
       }}
-      onSubmit={handleSubmit(handleFormSubmit)}
+      onSubmit={handleSubmit(onSubmit)}
     >
       {/* Primeira linha - 2 colunas */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
@@ -485,6 +337,30 @@ export default function RegisterForm({ onSuccess, preselectedRole, lockRole = fa
           }}
         >
           {error}
+          {isEmailAlreadyRegistered && (
+            <div style={{ marginTop: 12 }}>
+              <p style={{ fontSize: "0.85rem", color: "#6b7280", marginBottom: 8 }}>
+                Se você ainda não confirmou seu email:
+              </p>
+              <button
+                type="button"
+                onClick={() => navigate("/reenviar-confirmacao")}
+                style={{
+                  background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+                  color: "white",
+                  border: "none",
+                  borderRadius: 6,
+                  padding: "10px 20px",
+                  fontSize: "0.9rem",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  boxShadow: "0 2px 8px rgba(245, 158, 11, 0.3)",
+                }}
+              >
+                Reenviar Email de Confirmação
+              </button>
+            </div>
+          )}
         </div>
       )}
       {success && (
@@ -503,65 +379,5 @@ export default function RegisterForm({ onSuccess, preselectedRole, lockRole = fa
         </div>
       )}
     </form>
-
-    {/* Modal de Confirmação de Perfil */}
-    {showConfirmModal && pendingFormData && (
-      <div style={modalStyles.overlay} onClick={() => setShowConfirmModal(false)}>
-        <div style={modalStyles.modal} onClick={(e) => e.stopPropagation()}>
-          <div style={modalStyles.header}>
-            <h2 style={modalStyles.title}>Confirmar Cadastro</h2>
-            <button
-              style={modalStyles.closeButton}
-              onClick={() => setShowConfirmModal(false)}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#f3f4f6")}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
-            >
-              <X size={20} color="#6b7280" />
-            </button>
-          </div>
-
-          <div style={modalStyles.body}>
-            <p style={modalStyles.question}>
-              Você está se cadastrando como:
-            </p>
-            
-            <div style={modalStyles.profileCard}>
-              <div style={modalStyles.profileIcon}>
-                {getRoleIcon(pendingFormData.role || "COURIER")}
-              </div>
-              <div style={modalStyles.profileLabel}>
-                {getRoleLabel(pendingFormData.role || "COURIER")}
-              </div>
-            </div>
-
-            <p style={{ ...modalStyles.question, marginBottom: "1rem" }}>
-              Deseja confirmar ou prefere trocar o perfil?
-            </p>
-
-            <div style={modalStyles.buttonGroup}>
-              <button
-                style={modalStyles.confirmButton}
-                onClick={handleConfirmSubmit}
-                onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#16a34a")}
-                onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#22c55e")}
-              >
-                ✓ Confirmar e Cadastrar
-              </button>
-              {onChangeRole && (
-                <button
-                  style={modalStyles.changeButton}
-                  onClick={handleChangeRole}
-                  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#e5e7eb")}
-                  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#f3f4f6")}
-                >
-                  Trocar Perfil
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    )}
-    </>
   );
 }

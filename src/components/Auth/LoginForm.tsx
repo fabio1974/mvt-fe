@@ -17,11 +17,13 @@ export default function LoginForm() {
   } = useForm<LoginFormData>();
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [isNotActivatedError, setIsNotActivatedError] = useState(false);
   const navigate = useNavigate();
 
   const onSubmit = async (data: LoginFormData) => {
     setError("");
     setSuccess("");
+    setIsNotActivatedError(false);
     try {
       const response = await api.post<{
         token: string;
@@ -104,8 +106,9 @@ export default function LoginForm() {
             const dataLower = response.data.toLowerCase();
             if (dataLower.includes("invalid username or password")) {
               errorMessage = "Usuário ou senha incorretos";
-            } else if (dataLower.includes("not confirmed") || dataLower.includes("email not verified") || dataLower.includes("account not activated")) {
+            } else if (dataLower.includes("not confirmed") || dataLower.includes("email not verified") || dataLower.includes("account not activated") || dataLower.includes("confirme seu email") || dataLower.includes("confirm your email")) {
               errorMessage = "Sua conta ainda não foi ativada. Por favor, verifique seu email e clique no link de confirmação.";
+              setIsNotActivatedError(true);
             } else {
               errorMessage = response.data;
             }
@@ -126,8 +129,9 @@ export default function LoginForm() {
               // Traduz mensagens específicas do backend
               if (msgLower.includes("invalid username or password")) {
                 errorMessage = "Usuário ou senha incorretos";
-              } else if (msgLower.includes("not confirmed") || msgLower.includes("email not verified") || msgLower.includes("account not activated") || msgLower.includes("not activated")) {
+              } else if (msgLower.includes("not confirmed") || msgLower.includes("email not verified") || msgLower.includes("account not activated") || msgLower.includes("not activated") || msgLower.includes("confirme seu email") || msgLower.includes("confirm your email")) {
                 errorMessage = "Sua conta ainda não foi ativada. Por favor, verifique seu email e clique no link de confirmação.";
+                setIsNotActivatedError(true);
               } else {
                 errorMessage = message;
               }
@@ -138,8 +142,9 @@ export default function LoginForm() {
               // Traduz mensagens específicas do backend
               if (errLower.includes("invalid username or password")) {
                 errorMessage = "Usuário ou senha incorretos";
-              } else if (errLower.includes("not confirmed") || errLower.includes("email not verified") || errLower.includes("account not activated") || errLower.includes("not activated")) {
+              } else if (errLower.includes("not confirmed") || errLower.includes("email not verified") || errLower.includes("account not activated") || errLower.includes("not activated") || errLower.includes("confirme seu email") || errLower.includes("confirm your email") || errLower.includes("email_not_confirmed")) {
                 errorMessage = "Sua conta ainda não foi ativada. Por favor, verifique seu email e clique no link de confirmação.";
+                setIsNotActivatedError(true);
               } else {
                 errorMessage = error;
               }
@@ -252,6 +257,27 @@ export default function LoginForm() {
           }}
         >
           {error}
+          {isNotActivatedError && (
+            <div style={{ marginTop: 12 }}>
+              <button
+                type="button"
+                onClick={() => navigate("/reenviar-confirmacao")}
+                style={{
+                  background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+                  color: "white",
+                  border: "none",
+                  borderRadius: 6,
+                  padding: "10px 20px",
+                  fontSize: "0.9rem",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  boxShadow: "0 2px 8px rgba(245, 158, 11, 0.3)",
+                }}
+              >
+                Reenviar Email de Confirmação
+              </button>
+            </div>
+          )}
         </div>
       )}
       {success && (
