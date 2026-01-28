@@ -191,6 +191,7 @@
 @media (max-width: 768px) {
   .login-register-layout {
     min-height: calc(100vh - 111px); /* 100vh - (header 57px + footer 54px) em mobile */
+    padding: 0 16px; /* Adiciona margens laterais */
   }
   
   .login-register-layout::before {
@@ -201,7 +202,8 @@
     background: white;
     align-items: stretch;
     min-height: auto;
-    padding: 40px 24px;
+    padding: 40px 20px;
+    max-width: 100%;
   }
   
   .auth-panel > * {
@@ -223,10 +225,11 @@
 @media (max-width: 480px) {
   .login-register-layout {
     min-height: calc(100vh - 100px); /* 100vh - (header 57px + footer 43px) */
+    padding: 0 12px; /* Margens laterais menores em telas pequenas */
   }
   
   .auth-panel {
-    padding: 32px 20px;
+    padding: 24px 16px;
   }
   
   .auth-tab {
