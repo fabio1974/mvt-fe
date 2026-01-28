@@ -163,6 +163,64 @@
   padding-left: 40px;
 }
 
+/* Password Input with Toggle */
+.form-input-password-wrapper {
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-input-password-wrapper .form-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.form-input-password-wrapper .form-input-icon-wrapper {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #6b7280;
+  font-size: 16px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.form-input-password {
+  padding-right: 44px !important;
+}
+
+.form-input-password.form-input-icon {
+  padding-left: 40px;
+}
+
+.form-password-toggle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  padding: 6px;
+  cursor: pointer;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.form-password-toggle:hover {
+  color: #374151;
+  background-color: #f3f4f6;
+}
+
+.form-password-toggle:focus {
+  outline: none;
+  color: #5b4cfa;
+}
+
 /* Form Actions */
 .form-actions {
   display: flex;

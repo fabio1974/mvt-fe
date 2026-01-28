@@ -7,6 +7,7 @@ import {
   FormInput,
   FormSelect,
   FormButton,
+  FormPasswordInput,
 } from "../Common/FormComponents";
 
 interface RegisterFormData {
@@ -204,16 +205,22 @@ export default function RegisterForm({ onSuccess, preselectedRole }: RegisterFor
     >
       {/* Primeira linha - 2 colunas */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-        <FormField label="Nome Completo" required error={errors.name?.message}>
+        <FormField label="Nome" required error={errors.name?.message}>
           <FormInput
             type="text"
-            placeholder="Digite seu nome completo"
+            placeholder="Nome e sobrenome"
             {...register("name", {
               required: "Nome é obrigatório",
               minLength: {
                 value: 3,
                 message: "Nome deve ter no mínimo 3 caracteres",
               },
+              validate: {
+                hasTwoWords: (value) => {
+                  const words = value.trim().split(/\s+/).filter(word => word.length > 0);
+                  return words.length >= 2 || "Informe nome e sobrenome";
+                }
+              }
             })}
           />
         </FormField>
@@ -258,8 +265,7 @@ export default function RegisterForm({ onSuccess, preselectedRole }: RegisterFor
       {/* Terceira linha - 2 colunas para senhas */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
         <FormField label="Senha" required error={errors.password?.message}>
-          <FormInput
-            type="password"
+          <FormPasswordInput
             placeholder="••••••"
             {...register("password", {
               required: "Senha é obrigatória",
@@ -267,6 +273,14 @@ export default function RegisterForm({ onSuccess, preselectedRole }: RegisterFor
                 value: 6,
                 message: "Senha deve ter no mínimo 6 caracteres",
               },
+              validate: {
+                hasLetter: (value) => 
+                  /[a-zA-Z]/.test(value) || "Senha deve conter pelo menos uma letra",
+                hasNumber: (value) => 
+                  /[0-9]/.test(value) || "Senha deve conter pelo menos um número",
+                hasSpecialChar: (value) => 
+                  /[@#$%!&*]/.test(value) || "Senha deve conter um caractere especial (@#$%!&*)",
+              }
             })}
           />
         </FormField>
@@ -276,8 +290,7 @@ export default function RegisterForm({ onSuccess, preselectedRole }: RegisterFor
           required
           error={errors.confirmPassword?.message}
         >
-          <FormInput
-            type="password"
+          <FormPasswordInput
             placeholder="••••••"
             {...register("confirmPassword", {
               required: "Confirmação de senha é obrigatória",

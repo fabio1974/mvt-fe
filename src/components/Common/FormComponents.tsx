@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState, forwardRef } from "react";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 import "./FormComponents.css";
 
 interface FormContainerProps {
@@ -99,6 +100,43 @@ export const FormInput: React.FC<FormInputProps> = ({
 
   return <input className={`form-input ${className}`} {...props} />;
 };
+
+interface FormPasswordInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'type'> {
+  icon?: React.ReactNode;
+}
+
+export const FormPasswordInput = forwardRef<HTMLInputElement, FormPasswordInputProps>(
+  ({ icon, className = "", ...props }, ref) => {
+    const [showPassword, setShowPassword] = useState(false);
+
+    const togglePasswordVisibility = () => {
+      setShowPassword(!showPassword);
+    };
+
+    return (
+      <div className="form-input-password-wrapper">
+        {icon && <span className="form-input-icon-wrapper">{icon}</span>}
+        <input
+          ref={ref}
+          type={showPassword ? "text" : "password"}
+          className={`form-input ${icon ? "form-input-icon" : ""} form-input-password ${className}`}
+          {...props}
+        />
+        <button
+          type="button"
+          className="form-password-toggle"
+          onClick={togglePasswordVisibility}
+          tabIndex={-1}
+          aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+        >
+          {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+        </button>
+      </div>
+    );
+  }
+);
+
+FormPasswordInput.displayName = "FormPasswordInput";
 
 interface FormSelectProps
   extends React.SelectHTMLAttributes<HTMLSelectElement> {

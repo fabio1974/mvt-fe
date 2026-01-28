@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../services/api";
 import { useState } from "react";
-import { FormField, FormInput, FormButton } from "../Common/FormComponents";
+import { FormField, FormInput, FormButton, FormPasswordInput } from "../Common/FormComponents";
 
 interface LoginFormData {
   username: string;
@@ -204,8 +204,7 @@ export default function LoginForm() {
       </FormField>
 
       <FormField label="Senha" required error={errors.password?.message}>
-        <FormInput
-          type="password"
+        <FormPasswordInput
           placeholder="Digite sua senha"
           {...register("password", {
             required: "Senha é obrigatória",
@@ -306,7 +305,7 @@ export default function LoginForm() {
       >
         Esqueceu sua senha?{" "}
         <a
-          href="/recuperar-senha"
+          href="/esqueci-senha"
           style={{
             color: "#5b4cfa",
             textDecoration: "none",

@@ -1,10 +1,15 @@
 /* Layout Principal - Divisão de cores 50/50 com painéis centralizados */
-.login-register-layout {
+.login-register-layout,
+.login-register-page {
   display: grid;
   grid-template-columns: 50% 50%;
   min-height: calc(95vh - 155px); /* 100vh - (header 81px + footer 54px) */
   font-family: 'Inter', system-ui, sans-serif;
   position: relative;
+}
+
+.login-register-container {
+  display: contents;
 }
 
 /* Fundo cinza no lado esquerdo (auth) - só dentro do container */
@@ -157,16 +162,19 @@
 
 /* Tablets e Mobile - Esconde InfoPanel e centraliza AuthPanel */
 @media (max-width: 1024px) {
-  .login-register-layout {
+  .login-register-layout,
+  .login-register-page {
     grid-template-columns: 1fr;
     justify-items: center;
   }
   
-  .login-register-layout::before {
+  .login-register-layout::before,
+  .login-register-page::before {
     width: 100%;
   }
   
-  .login-register-layout::after {
+  .login-register-layout::after,
+  .login-register-page::after {
     display: none;
   }
   
@@ -189,12 +197,15 @@
 
 /* Mobile - Ajustes adicionais */
 @media (max-width: 768px) {
-  .login-register-layout {
+  .login-register-layout,
+  .login-register-page {
     min-height: calc(100vh - 111px); /* 100vh - (header 57px + footer 54px) em mobile */
     padding: 0 16px; /* Adiciona margens laterais */
+    box-sizing: border-box;
   }
   
-  .login-register-layout::before {
+  .login-register-layout::before,
+  .login-register-page::before {
     display: none;
   }
   
@@ -204,11 +215,31 @@
     min-height: auto;
     padding: 40px 20px;
     max-width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
   }
   
   .auth-panel > * {
     width: 100%;
     max-width: none;
+    box-sizing: border-box;
+  }
+  
+  .auth-panel form {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .auth-panel .form-field {
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .auth-panel .form-input,
+  .auth-panel .form-input-password-wrapper {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
   }
   
   .auth-panel h2 {
@@ -223,7 +254,8 @@
 
 /* Mobile pequeno - Reduz ainda mais os espaçamentos */
 @media (max-width: 480px) {
-  .login-register-layout {
+  .login-register-layout,
+  .login-register-page {
     min-height: calc(100vh - 100px); /* 100vh - (header 57px + footer 43px) */
     padding: 0 12px; /* Margens laterais menores em telas pequenas */
   }

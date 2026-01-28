@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../services/api";
 import { useState } from "react";
-import { FormField, FormInput, FormButton } from "../Common/FormComponents";
+import { FormField, FormInput, FormButton, FormPasswordInput } from "../Common/FormComponents";
 
 interface ResetPasswordFormData {
   username: string;
@@ -136,8 +136,7 @@ export default function ResetPasswordForm() {
           required
           error={errors.newPassword?.message}
         >
-          <FormInput
-            type="password"
+          <FormPasswordInput
             placeholder="Digite sua nova senha"
             {...register("newPassword", {
               required: "Nova senha é obrigatória",
@@ -154,8 +153,7 @@ export default function ResetPasswordForm() {
           required
           error={errors.confirmPassword?.message}
         >
-          <FormInput
-            type="password"
+          <FormPasswordInput
             placeholder="Confirme sua nova senha"
             {...register("confirmPassword", {
               required: "Confirmação de senha é obrigatória",
