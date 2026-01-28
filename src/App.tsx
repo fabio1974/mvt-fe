@@ -125,6 +125,7 @@ function App() {
             <Routes>
               <Route path="/" element={isLoggedIn ? <Dashboard /> : <LandingPage />} />
               <Route path="/login" element={<LoginRegisterPage />} />
+              <Route path="/confirm-email" element={<ConfirmEmailPage />} />
               <Route path="/confirmar-email" element={<ConfirmEmailPage />} />
               <Route path="/reenviar-confirmacao" element={<ResendConfirmationPage />} />
               <Route path="/recuperar-senha" element={<ResetPasswordPage />} />

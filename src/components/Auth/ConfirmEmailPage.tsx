@@ -34,7 +34,7 @@ export default function ConfirmEmailPage() {
       }
 
       try {
-        await api.get(`/auth/confirm-email?token=${token}`);
+        await api.get(`/auth/confirm?token=${token}`);
         setStatus("success");
         setMessage("Seu email foi confirmado com sucesso! Agora você pode fazer login.");
       } catch (err) {
