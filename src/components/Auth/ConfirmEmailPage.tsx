@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { api } from "../../services/api";
 import { FiCheckCircle, FiXCircle, FiLoader } from "react-icons/fi";
 import "./LoginRegisterPage.css";
@@ -19,7 +19,6 @@ import "./LoginRegisterPage.css";
  */
 export default function ConfirmEmailPage() {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [message, setMessage] = useState("");
 
@@ -155,7 +154,7 @@ export default function ConfirmEmailPage() {
         {status !== "loading" && (
           <button
             style={buttonStyle}
-            onClick={() => navigate("/login")}
+            onClick={() => window.close()}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = "translateY(-2px)";
               e.currentTarget.style.boxShadow = "0 6px 20px rgba(59, 130, 246, 0.5)";
@@ -165,48 +164,8 @@ export default function ConfirmEmailPage() {
               e.currentTarget.style.boxShadow = "0 4px 14px rgba(59, 130, 246, 0.4)";
             }}
           >
-            {status === "success" ? "Ir para Login" : "Voltar para Login"}
+            Fechar
           </button>
-        )}
-
-        {status === "error" && (
-          <div style={{ marginTop: "24px", display: "flex", flexDirection: "column", gap: "12px", alignItems: "center" }}>
-            <button
-              style={{
-                background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
-                color: "white",
-                border: "none",
-                borderRadius: "8px",
-                padding: "12px 24px",
-                fontSize: "0.95rem",
-                fontWeight: 600,
-                cursor: "pointer",
-                boxShadow: "0 4px 14px rgba(245, 158, 11, 0.4)",
-              }}
-              onClick={() => navigate("/reenviar-confirmacao")}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-2px)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0)";
-              }}
-            >
-              Reenviar Email de Confirmação
-            </button>
-            <button
-              style={{
-                background: "none",
-                border: "none",
-                color: "#3b82f6",
-                fontSize: "0.95rem",
-                cursor: "pointer",
-                textDecoration: "underline",
-              }}
-              onClick={() => navigate("/login?tab=register")}
-            >
-              Criar nova conta
-            </button>
-          </div>
         )}
       </div>
 
