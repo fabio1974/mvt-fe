@@ -25,7 +25,7 @@ interface RegisterFormProps {
   onChangeRole?: () => void;
 }
 
-export default function RegisterForm({ onSuccess, preselectedRole, lockRole = false, onChangeRole }: RegisterFormProps) {
+export default function RegisterForm({ onSuccess, preselectedRole }: RegisterFormProps) {
   const {
     register,
     handleSubmit,
