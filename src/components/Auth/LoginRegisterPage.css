@@ -7,24 +7,11 @@
   position: relative;
 }
 
-/* Fundo branco no lado esquerdo - só dentro do container */
+/* Fundo cinza no lado esquerdo (auth) - só dentro do container */
 .login-register-layout::before {
   content: '';
   position: absolute;
   left: 0;
-  top: 0;
-  width: 50%;
-  height: 100%;
-  background: white;
-  z-index: 0;
-  pointer-events: none;
-}
-
-/* Fundo cinza no lado direito - só dentro do container */
-.login-register-layout::after {
-  content: '';
-  position: absolute;
-  right: 0;
   top: 0;
   width: 50%;
   height: 100%;
@@ -33,14 +20,27 @@
   pointer-events: none;
 }
 
-/* Painel de Informações (35% centralizado no lado esquerdo) */
+/* Fundo branco no lado direito (info) - só dentro do container */
+.login-register-layout::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  background: white;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Painel de Informações (centralizado no lado direito) */
 .info-panel {
-  grid-column: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   padding: 40px;
+  padding-top: 15vh; /* Posiciona mais acima */
   position: relative;
   z-index: 1;
   min-height: calc(100vh - 135px); /* Mesma altura do container pai */
@@ -93,14 +93,14 @@
   flex-shrink: 0;
 }
 
-/* Painel de Autenticação (35% centralizado no lado direito) */
+/* Painel de Autenticação (centralizado no lado esquerdo) */
 .auth-panel {
-  grid-column: 2;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   padding: 40px;
+  padding-top: 15vh; /* Posiciona mais acima */
   position: relative;
   z-index: 1;
   min-height: calc(100vh - 135px); /* Mesma altura do container pai */
@@ -187,6 +187,7 @@
     background: white;
     align-items: stretch;
     min-height: auto; /* Remove min-height em mobile para evitar scroll */
+    order: 2; /* Info panel aparece depois em mobile */
   }
   
   .auth-panel {
@@ -194,6 +195,7 @@
     background: #f9f9f9;
     align-items: stretch;
     min-height: auto; /* Remove min-height em mobile para evitar scroll */
+    order: 1; /* Auth panel aparece primeiro em mobile */
   }
   
   .info-panel,

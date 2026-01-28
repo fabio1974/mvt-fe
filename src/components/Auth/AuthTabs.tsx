@@ -95,17 +95,18 @@ export default function AuthTabs() {
   // Modal styles
   const modalStyles: { [key: string]: React.CSSProperties } = {
     overlay: {
-      position: "fixed",
+      position: "absolute",
       top: 0,
       left: 0,
       right: 0,
       bottom: 0,
-      backgroundColor: "rgba(0, 0, 0, 0.7)",
+      backgroundColor: "rgba(255, 255, 255, 0.95)",
       display: "flex",
-      alignItems: "center",
+      alignItems: "flex-start",
       justifyContent: "center",
-      zIndex: 1000,
+      zIndex: 10,
       padding: "1rem",
+      paddingTop: "5vh",
     },
     modal: {
       backgroundColor: "#ffffff",
@@ -288,7 +289,7 @@ export default function AuthTabs() {
 
       {/* Wizard Modal */}
       {showWizard && (
-        <div style={modalStyles.overlay} onClick={handleCloseWizard}>
+        <div style={{...modalStyles.overlay, width: "100%", maxWidth: "none"}} onClick={handleCloseWizard}>
           <div style={modalStyles.modal} onClick={(e) => e.stopPropagation()}>
             <div style={modalStyles.header}>
               <h2 style={modalStyles.title}>Qual é o seu perfil?</h2>
