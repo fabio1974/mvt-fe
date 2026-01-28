@@ -48,6 +48,15 @@ export default function AuthTabs() {
   const [activeView, setActiveView] = useState<"login" | "register">(initialTab);
   const [showWizard, setShowWizard] = useState(false);
   const [selectedRole, setSelectedRole] = useState<string>(preselectedRole || "");
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detecta se é mobile
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
   const [isRoleLocked, setIsRoleLocked] = useState(lockRole);
   
   useEffect(() => {
@@ -95,28 +104,33 @@ export default function AuthTabs() {
   // Modal styles
   const modalStyles: { [key: string]: React.CSSProperties } = {
     overlay: {
-      position: "absolute",
+      position: isMobile ? "fixed" : "absolute",
       top: 0,
       left: 0,
       right: 0,
       bottom: 0,
-      backgroundColor: "rgba(255, 255, 255, 0.95)",
+      backgroundColor: "rgba(255, 255, 255, 0.98)",
       display: "flex",
       alignItems: "flex-start",
       justifyContent: "center",
-      zIndex: 10,
-      padding: "1rem",
-      paddingTop: "5vh",
+      zIndex: isMobile ? 1000 : 10,
+      padding: isMobile ? "0" : "1rem",
+      paddingTop: isMobile ? "0" : "5vh",
+      overflowY: "auto",
+      WebkitOverflowScrolling: "touch",
     },
     modal: {
       backgroundColor: "#ffffff",
-      borderRadius: "1rem",
-      maxWidth: "500px",
+      borderRadius: isMobile ? "0" : "1rem",
+      maxWidth: isMobile ? "100%" : "500px",
       width: "100%",
-      maxHeight: "90vh",
-      overflow: "auto",
+      minHeight: isMobile ? "100%" : "auto",
+      maxHeight: isMobile ? "none" : "90vh",
+      overflow: isMobile ? "visible" : "auto",
       position: "relative",
-      boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+      boxShadow: isMobile ? "none" : "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+      marginBottom: isMobile ? "0" : 0,
+      paddingBottom: isMobile ? "100px" : 0,
     },
     header: {
       padding: "1.5rem",

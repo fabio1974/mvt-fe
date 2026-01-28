@@ -155,62 +155,58 @@
   border-bottom-color: #5b4cfa;
 }
 
-/* Responsivo */
+/* Tablets e Mobile - Esconde InfoPanel e centraliza AuthPanel */
 @media (max-width: 1024px) {
   .login-register-layout {
     grid-template-columns: 1fr;
+    justify-items: center;
   }
-}
-
-/* Tablets - Mantém divisão 50/50 */
-@media (max-width: 1024px) {
+  
+  .login-register-layout::before {
+    width: 100%;
+  }
+  
+  .login-register-layout::after {
+    display: none;
+  }
+  
+  .info-panel {
+    display: none; /* Esconde InfoPanel em tablets e mobile */
+  }
+  
+  .auth-panel {
+    grid-column: 1;
+    width: 100%;
+    max-width: 600px;
+    background: #f9f9f9;
+  }
+  
   .info-panel > *,
   .auth-panel > * {
     width: 85%;
   }
 }
 
-/* Mobile - Layout empilhado (coluna única) */
+/* Mobile - Ajustes adicionais */
 @media (max-width: 768px) {
   .login-register-layout {
-    grid-template-columns: 1fr;
     min-height: calc(100vh - 111px); /* 100vh - (header 57px + footer 54px) em mobile */
   }
   
-  .login-register-layout::before,
-  .login-register-layout::after {
+  .login-register-layout::before {
     display: none;
   }
   
-  .info-panel {
-    grid-column: 1;
+  .auth-panel {
     background: white;
     align-items: stretch;
-    min-height: auto; /* Remove min-height em mobile para evitar scroll */
-    order: 2; /* Info panel aparece depois em mobile */
-  }
-  
-  .auth-panel {
-    grid-column: 1;
-    background: #f9f9f9;
-    align-items: stretch;
-    min-height: auto; /* Remove min-height em mobile para evitar scroll */
-    order: 1; /* Auth panel aparece primeiro em mobile */
-  }
-  
-  .info-panel,
-  .auth-panel {
+    min-height: auto;
     padding: 40px 24px;
   }
   
-  .info-panel > *,
   .auth-panel > * {
     width: 100%;
     max-width: none;
-  }
-  
-  .info-panel h2 {
-    font-size: 2rem;
   }
   
   .auth-panel h2 {
@@ -229,17 +225,8 @@
     min-height: calc(100vh - 100px); /* 100vh - (header 57px + footer 43px) */
   }
   
-  .info-panel,
   .auth-panel {
     padding: 32px 20px;
-  }
-  
-  .info-panel h2 {
-    font-size: 1.75rem;
-  }
-  
-  .info-panel li {
-    font-size: 0.9rem;
   }
   
   .auth-tab {
