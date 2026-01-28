@@ -5,8 +5,8 @@ import "./LoginRegisterPage.css";
 export default function LoginRegisterPage() {
   return (
     <div className="login-register-layout">
-      <InfoPanel />
       <AuthTabs />
+      <InfoPanel />
     </div>
   );
 }
