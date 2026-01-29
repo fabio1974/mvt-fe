@@ -29,5 +29,8 @@ dist-ssr
 .env.production
 .env.development
 
+# Garbage folder (old docs and unused files)
+garbage/
+
 # Auto-generated files
 src/version.ts

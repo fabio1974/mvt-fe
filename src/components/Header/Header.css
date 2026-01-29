@@ -142,13 +142,56 @@
   
   .header-container.modern-inner { 
     height:56px; 
-    padding:0 18px;
+    padding:0 12px;
     max-width: 100%; /* Remove limite de largura em mobile */
     margin: 0;
+    gap: 8px;
   }
   
   .modern-nav { display:none; }
   .modern-actions { display:none; }
+  
+  /* Logo mais compacto em mobile */
+  .brand-logo-wrapper { 
+    width: 40px; 
+    height: 40px; 
+  }
+  
+  .brand-text-block {
+    display: flex;
+  }
+  
+  .theme-light .brand-title,
+  .theme-dark .brand-title { 
+    font-size: 1rem; 
+  }
+  
+  .theme-light .brand-sub,
+  .theme-dark .brand-sub { 
+    display: none; 
+  }
+}
+
+/* Mobile pequeno - Ajustes adicionais */
+@media (max-width: 480px) {
+  .header-container.modern-inner { 
+    padding: 0 8px;
+    gap: 6px;
+  }
+  
+  .brand-logo-wrapper { 
+    width: 36px; 
+    height: 36px; 
+  }
+  
+  .theme-light .brand-title,
+  .theme-dark .brand-title { 
+    font-size: 0.9rem; 
+  }
+  
+  .modern-brand {
+    gap: 8px;
+  }
 }
 
 /* Logout Button Styles */

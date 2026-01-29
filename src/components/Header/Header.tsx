@@ -16,7 +16,6 @@ interface HeaderProps {
 export default function Header({
   isMobile: propIsMobile,
   isLoggedIn: propIsLoggedIn,
-  onToggleSidebar,
   sidebarVisible,
   sidebarCollapsed,
 }: HeaderProps = {}) {
@@ -151,74 +150,6 @@ export default function Header({
   return (
     <header className={headerClasses}>
       <div className="header-container modern-inner">
-        {/* Toggle do sidebar para mobile */}
-        {isMobile && isLoggedIn && (
-          <button
-            onClick={onToggleSidebar}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "40px",
-              height: "40px",
-              background: sidebarVisible
-                ? "rgba(59, 130, 246, 0.2)"
-                : "rgba(59, 130, 246, 0.1)",
-              border: "1px solid rgba(59, 130, 246, 0.3)",
-              borderRadius: "8px",
-              cursor: "pointer",
-              marginRight: "16px",
-              transition: "all 0.2s ease",
-              boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-            }}
-            onMouseEnter={(e) => {
-              if (!sidebarVisible) {
-                e.currentTarget.style.background = "rgba(59, 130, 246, 0.15)";
-                e.currentTarget.style.borderColor = "#3b82f6";
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!sidebarVisible) {
-                e.currentTarget.style.background = "rgba(59, 130, 246, 0.1)";
-                e.currentTarget.style.borderColor = "rgba(59, 130, 246, 0.3)";
-              }
-            }}
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <rect
-                x="3"
-                y="6"
-                width="18"
-                height="2"
-                fill={sidebarVisible ? "#3b82f6" : "#60a5fa"}
-                rx="1"
-              />
-              <rect
-                x="3"
-                y="11"
-                width="18"
-                height="2"
-                fill={sidebarVisible ? "#3b82f6" : "#60a5fa"}
-                rx="1"
-              />
-              <rect
-                x="3"
-                y="16"
-                width="18"
-                height="2"
-                fill={sidebarVisible ? "#3b82f6" : "#60a5fa"}
-                rx="1"
-              />
-            </svg>
-          </button>
-        )}
-
         <a href="/" className="logo modern-brand">
           {/* Logo PNG fica oculto quando o usuário está logado */}
           <div

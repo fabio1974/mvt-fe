@@ -382,44 +382,13 @@
   transform: rotate(0deg);
 }
 
-/* Mobile responsivo */
+/* Mobile responsivo - Esconde sidebar em mobile */
 @media (max-width: 900px) {
   .sidebar {
-    width: 280px !important;
-    transform: translateX(-100%);
-    box-shadow: 8px 0 42px -12px rgba(15,23,42,0.3);
-    z-index: 1000;
-  }
-  
-  .sidebar.mobile-visible {
-    transform: translateX(0);
-  }
-
-  .sidebar.collapsed {
-    width: 280px !important;
+    display: none !important;
   }
   
   .sidebar-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(15,23,42,0.45);
-    backdrop-filter: blur(4px);
-    z-index: 999;
-    opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s ease;
-  }
-  
-  .sidebar-overlay.visible {
-    opacity: 1;
-    visibility: visible;
-  }
-
-  .sidebar-footer {
-    width: 280px !important;
-  }
-
-  .sidebar-footer.collapsed {
-    width: 280px !important;
+    display: none !important;
   }
 }
