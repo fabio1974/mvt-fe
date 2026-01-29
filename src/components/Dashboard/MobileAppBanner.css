@@ -1,0 +1,211 @@
+/* MobileAppBanner - Só aparece em dispositivos pequenos */
+
+.mobile-app-banner {
+  display: none; /* Oculto por padrão em desktop */
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+  border-radius: 16px;
+  padding: 24px 20px;
+  margin-bottom: 24px;
+  color: white;
+  position: relative;
+  box-shadow: 0 8px 32px rgba(15, 23, 42, 0.3);
+  animation: slideDown 0.4s ease-out;
+  overflow: hidden;
+}
+
+.mobile-app-banner::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6, #06b6d4);
+}
+
+.mobile-app-banner.dismissing {
+  animation: slideUp 0.3s ease-in forwards;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+.mobile-app-banner-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mobile-app-banner-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.mobile-app-banner-icon {
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
+}
+
+.mobile-app-banner-content {
+  text-align: center;
+}
+
+.mobile-app-banner-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+}
+
+.mobile-app-banner-text {
+  font-size: 0.95rem;
+  opacity: 0.9;
+  margin: 0 0 8px 0;
+  line-height: 1.5;
+}
+
+.mobile-app-banner-text:last-of-type {
+  margin-bottom: 0;
+}
+
+.mobile-app-banner-text strong {
+  color: #60a5fa;
+}
+
+.mobile-app-banner-stores {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.store-button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: white;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.store-button.google-play {
+  background: linear-gradient(135deg, #34a853 0%, #1e7e34 100%);
+  box-shadow: 0 4px 12px rgba(52, 168, 83, 0.3);
+}
+
+.store-button.google-play:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(52, 168, 83, 0.4);
+}
+
+.store-button.app-store {
+  background: linear-gradient(135deg, #555 0%, #333 100%);
+}
+
+.store-button.app-store.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.coming-soon-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+}
+
+.store-button-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.store-label {
+  font-size: 0.7rem;
+  opacity: 0.8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.store-name {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+/* Só exibe em dispositivos móveis */
+@media (max-width: 768px) {
+  .mobile-app-banner {
+    display: flex;
+  }
+}
+
+/* Ajustes para telas muito pequenas */
+@media (max-width: 400px) {
+  .mobile-app-banner {
+    padding: 20px 16px;
+  }
+
+  .mobile-app-banner-title {
+    font-size: 1.1rem;
+  }
+
+  .mobile-app-banner-text {
+    font-size: 0.9rem;
+  }
+
+  .store-button {
+    padding: 10px 14px;
+  }
+
+  .store-name {
+    font-size: 0.9rem;
+  }
+}

@@ -19,7 +19,6 @@ export default function Header({
   sidebarVisible,
   sidebarCollapsed,
 }: HeaderProps = {}) {
-  const [menuOpen, setMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const navigate = useNavigate();
   const isMobile = propIsMobile ?? window.innerWidth <= 600;
@@ -174,7 +173,7 @@ export default function Header({
         >
           {/* Botões de ação */}
           <div className="actions modern-actions">
-            {!isMobile && !isLoggedIn && (
+            {!isLoggedIn && (
               <button
                 className="btn header-ghost"
                 onClick={() => navigate("/login")}
@@ -191,6 +190,7 @@ export default function Header({
             {/* Dropdown do usuário */}
             <div style={{ position: "relative" }}>
             <div
+              className="user-info-button"
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -221,6 +221,7 @@ export default function Header({
               {/* Nome e tipo do usuário */}
               <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 <span
+                  className="user-name"
                   style={{
                     fontSize: "0.95rem",
                     fontWeight: 600,
@@ -234,6 +235,7 @@ export default function Header({
                   {userName}
                 </span>
                 <span
+                  className="user-role"
                   style={{
                     fontSize: "0.75rem",
                     fontWeight: 400,
@@ -460,100 +462,7 @@ export default function Header({
             )}
           </div>
         )}
-
-        {isMobile && (
-          <button
-            className={`menu-toggle modern ${menuOpen ? "open" : ""}`}
-            onClick={() => setMenuOpen(!menuOpen)}
-            aria-label="Abrir menu"
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <circle cx="12" cy="5" r="2" fill="#60a5fa" />
-              <circle cx="12" cy="12" r="2" fill="#60a5fa" />
-              <circle cx="12" cy="19" r="2" fill="#60a5fa" />
-            </svg>
-          </button>
-        )}
       </div>
-      {menuOpen && (
-        <>
-          {/* Overlay de fundo escuro */}
-          <div
-            className="mobile-menu-overlay"
-            onClick={() => setMenuOpen(false)}
-          ></div>
-
-          <div
-            className={`mobile-menu modern-mobile ${menuOpen ? "open" : ""}`}
-          >
-            {isLoggedIn ? (
-              <button
-                className="btn logout-btn"
-                onClick={() => {
-                  localStorage.removeItem("authToken");
-                  localStorage.removeItem("organizationId");
-                  setMenuOpen(false);
-                  navigate("/");
-                  window.location.reload();
-                }}
-              >
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  style={{ marginRight: "8px" }}
-                >
-                  <path
-                    d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <polyline
-                    points="16 17 21 12 16 7"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <line
-                    x1="21"
-                    y1="12"
-                    x2="9"
-                    y2="12"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-                Sair
-              </button>
-            ) : (
-              <>
-                <button
-                  className="btn header-ghost"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    navigate("/login");
-                  }}
-                >
-                  Entrar
-                </button>
-              </>
-            )}
-          </div>
-        </>
-      )}
     </header>
   );
 }

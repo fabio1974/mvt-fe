@@ -80,6 +80,10 @@ interface EntityCRUDProps {
   canEdit?: (row: any) => boolean;
   /** Callback quando o modo de visualização muda */
   onModeChange?: (mode: ViewMode) => void;
+  /** Callback após criar com sucesso (diferente de onSuccess que é para ambos) */
+  onCreateSuccess?: (data: unknown) => void;
+  /** Remove o wrapper/container padrão (útil para mobile) */
+  noWrapper?: boolean;
 }
 
 /**
@@ -130,6 +134,8 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
   canDelete,
   canEdit,
   onModeChange,
+  onCreateSuccess,
+  noWrapper = false,
   // transformData, // Unused parameter
   pageTitle,
 }) => {
@@ -232,6 +238,12 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
         : "Registro atualizado com sucesso!",
       "success"
     );
+
+    // Callback específico para criação
+    if (viewMode === "create" && onCreateSuccess) {
+      onCreateSuccess(data);
+      return; // Não executa a lógica padrão se tiver onCreateSuccess
+    }
 
     if (hideTable && propEntityId) {
       // Se esconde tabela e tem ID fixo, volta para view após salvar
@@ -398,6 +410,27 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
   }
 
   const isReadonly = viewMode === "view";
+
+  // Se noWrapper, renderiza apenas o formulário sem container/breadcrumb
+  if (noWrapper) {
+    return (
+      <div className="entity-crud-form-wrapper">
+        <EntityForm
+          metadata={formMetadata}
+          entityId={selectedEntityId}
+          onSuccess={handleFormSuccess}
+          onCancel={handleBackToTable}
+          readonly={isReadonly}
+          mode={viewMode === "table" ? "view" : viewMode}
+          hideCancelButton={hideTable && isReadonly}
+          hideArrayFields={hideArrayFields}
+          initialValues={viewMode === "create" ? defaultValues : initialValues}
+          readonlyFields={readonlyFields}
+          hiddenFields={hiddenFields}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="entity-crud-container">

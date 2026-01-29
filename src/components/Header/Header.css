@@ -149,7 +149,17 @@
   }
   
   .modern-nav { display:none; }
-  .modern-actions { display:none; }
+  
+  /* Mantém o botão Entrar visível em mobile */
+  .modern-actions { 
+    display: flex;
+    gap: 8px;
+  }
+  
+  .modern-actions .btn.header-ghost {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+  }
   
   /* Logo mais compacto em mobile */
   .brand-logo-wrapper { 
@@ -177,6 +187,20 @@
   .header-container.modern-inner { 
     padding: 0 8px;
     gap: 6px;
+    height: 70px; /* Aumenta altura do header em mobile pequeno */
+  }
+  
+  /* Botão do usuário com mais padding */
+  .user-info-button {
+    padding: 10px 14px !important;
+  }
+  
+  .user-name {
+    font-size: 0.85rem !important;
+  }
+  
+  .user-role {
+    font-size: 0.7rem !important;
   }
   
   .brand-logo-wrapper { 

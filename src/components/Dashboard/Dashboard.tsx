@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { getUserName, getUserRole } from "../../utils/auth";
 import {
   FiPackage,
@@ -9,6 +9,7 @@ import {
   FiArrowRight,
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
+import MobileAppBanner from "./MobileAppBanner";
 
 /**
  * Dashboard - Página inicial para usuários logados
@@ -19,6 +20,17 @@ const Dashboard: React.FC = () => {
   const userName = getUserName();
   const userRole = getUserRole();
   const navigate = useNavigate();
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  // Detecta mudanças no tamanho da tela
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // Traduz o role para exibição
   const getRoleLabel = (role: string | null): string => {
@@ -101,6 +113,11 @@ const Dashboard: React.FC = () => {
           margin: "0 auto",
         }}
       >
+              {/* Banner de app mobile - só aparece em dispositivos pequenos */}
+        <MobileAppBanner userName={userName || undefined} />
+
+        {/* Header azul de boas-vindas - oculto em mobile */}
+        {!isMobile && (
         <div
           style={{
             background: "linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)",
@@ -142,8 +159,10 @@ const Dashboard: React.FC = () => {
             {getRoleLabel(userRole)}
           </span>
         </div>
+        )}
 
-        {/* Card de orientação */}
+        {/* Card de orientação - oculto em mobile */}
+        {!isMobile && (
         <div
           style={{
             background: "white",
@@ -193,8 +212,11 @@ const Dashboard: React.FC = () => {
             </p>
           </div>
         </div>
+        )}
 
-        {/* Quick Actions */}
+        {/* Quick Actions - oculto em mobile */}
+        {!isMobile && (
+        <>
         <h3
           style={{
             fontSize: "1.1rem",
@@ -279,6 +301,8 @@ const Dashboard: React.FC = () => {
             </button>
           ))}
         </div>
+        </>
+        )}
       </div>
     </div>
   );

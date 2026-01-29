@@ -175,3 +175,27 @@ export function getUserAddress(): string | null {
   // Fallback para localStorage
   return localStorage.getItem('userAddress');
 }
+
+// Função para obter o gênero do usuário
+export function getUserGender(): string | null {
+  const token = localStorage.getItem('authToken');
+  if (!token) return null;
+  
+  const decoded = decodeJWT(token);
+  return decoded?.gender || null;
+}
+
+// Função para obter saudação baseada no gênero
+export function getGenderedGreeting(): string {
+  const gender = getUserGender();
+  
+  // M = Masculino, F = Feminino
+  if (gender === 'M' || gender === 'MALE' || gender === 'MASCULINO') {
+    return 'Bem-vindo';
+  } else if (gender === 'F' || gender === 'FEMALE' || gender === 'FEMININO') {
+    return 'Bem-vinda';
+  }
+  
+  // Fallback neutro se gênero não disponível
+  return 'Bem-vindo(a)';
+}
