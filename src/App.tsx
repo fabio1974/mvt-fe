@@ -19,6 +19,8 @@ const ForgotPasswordPage = lazy(() => import("./components/Auth/ForgotPasswordPa
 const NewPasswordPage = lazy(() => import("./components/Auth/NewPasswordPage"));
 const ConfirmEmailPage = lazy(() => import("./components/Auth/ConfirmEmailPage"));
 const ResendConfirmationPage = lazy(() => import("./components/Auth/ResendConfirmationPage"));
+const ChangePasswordPage = lazy(() => import("./components/Auth/ChangePasswordPage"));
+const PublicRouteGuard = lazy(() => import("./components/Auth/PublicRouteGuard"));
 const OrganizationCRUDPage = lazy(() => import("./components/Organization/OrganizationCRUDPage"));
 const OrganizerOrganizationPage = lazy(() => import("./components/Organization/OrganizerOrganizationPage"));
 const CourierCRUDPage = lazy(() => import("./components/Courier/CourierCRUDPage"));
@@ -146,13 +148,14 @@ function App() {
             <Suspense fallback={<PageLoader />}>
               <Routes>
                 <Route path="/" element={isLoggedIn ? <Dashboard /> : <LandingPage />} />
-                <Route path="/login" element={<LoginRegisterPage />} />
-                <Route path="/confirm-email" element={<ConfirmEmailPage />} />
-                <Route path="/confirmar-email" element={<ConfirmEmailPage />} />
-                <Route path="/reenviar-confirmacao" element={<ResendConfirmationPage />} />
-                <Route path="/recuperar-senha" element={<ResetPasswordPage />} />
-                <Route path="/esqueci-senha" element={<ForgotPasswordPage />} />
-                <Route path="/nova-senha" element={<NewPasswordPage />} />
+                <Route path="/login" element={<PublicRouteGuard><LoginRegisterPage /></PublicRouteGuard>} />
+                <Route path="/confirm-email" element={<PublicRouteGuard><ConfirmEmailPage /></PublicRouteGuard>} />
+                <Route path="/confirmar-email" element={<PublicRouteGuard><ConfirmEmailPage /></PublicRouteGuard>} />
+                <Route path="/reenviar-confirmacao" element={<PublicRouteGuard><ResendConfirmationPage /></PublicRouteGuard>} />
+                <Route path="/recuperar-senha" element={<PublicRouteGuard><ResetPasswordPage /></PublicRouteGuard>} />
+                <Route path="/esqueci-senha" element={<PublicRouteGuard><ForgotPasswordPage /></PublicRouteGuard>} />
+                <Route path="/nova-senha" element={<PublicRouteGuard><NewPasswordPage /></PublicRouteGuard>} />
+                <Route path="/alterar-senha" element={<ChangePasswordPage />} />
                 <Route path="/organizacao" element={<OrganizerOrganizationPage />} />
                 <Route
                   path="/organizacao/gerenciar"

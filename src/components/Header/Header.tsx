@@ -357,6 +357,68 @@ export default function Header({
                       <span>Dados Pessoais</span>
                     </button>
                     
+                    {/* Botão Alterar Senha */}
+                    <button
+                      style={{
+                        width: "100%",
+                        padding: "12px 16px",
+                        border: "none",
+                        backgroundColor: "transparent",
+                        textAlign: "left",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 12,
+                        fontSize: "0.95rem",
+                        color: "#374151",
+                        transition: "background-color 0.15s ease",
+                      }}
+                      onClick={() => {
+                        setUserMenuOpen(false);
+                        navigate("/alterar-senha");
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = "#f3f4f6";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = "transparent";
+                      }}
+                    >
+                      <svg
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <rect
+                          x="3"
+                          y="11"
+                          width="18"
+                          height="11"
+                          rx="2"
+                          stroke="#3b82f6"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                        <circle
+                          cx="12"
+                          cy="16"
+                          r="1"
+                          fill="#3b82f6"
+                        />
+                        <path
+                          d="M7 11V7a5 5 0 0 1 10 0v4"
+                          stroke="#3b82f6"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                      <span>Alterar Senha</span>
+                    </button>
+                    
                     {/* Separador */}
                     <div
                       style={{
