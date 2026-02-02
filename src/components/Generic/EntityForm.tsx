@@ -460,16 +460,43 @@ const EntityForm: React.FC<EntityFormProps> = ({
     return digitsOnly.substring(0, 14);
   };
 
+  const isBankAccountAgencyField = (fieldName: string): boolean => {
+    if (metadata.entityName !== "bankAccount") return false;
+    const name = fieldName.toLowerCase();
+    const isAgency =
+      name === "agencia" ||
+      name === "agency" ||
+      name.includes("agencia") ||
+      name.includes("agency");
+    const isDigit =
+      name.includes("digit") || name.includes("digito") || name.includes("verificador");
+    return isAgency && !isDigit;
+  };
+
+  const isBankAccountDigitField = (fieldName: string): boolean => {
+    if (metadata.entityName !== "bankAccount") return false;
+    const name = fieldName.toLowerCase();
+    return name.includes("digit") || name.includes("digito") || name.includes("verificador");
+  };
+
   // Atualiza valor de um campo
   const handleChange = (fieldName: string, value: unknown) => {
     if (fieldName === "addresses" && Array.isArray(value)) {
       console.log('📍 [EntityForm] handleChange addresses:', JSON.stringify(value, null, 2));
     }
 
-    const normalizedValue =
+    let normalizedValue =
       isDocumentField(fieldName) && typeof value === "string"
         ? sanitizeDocumentValue(value)
         : value;
+
+    if (typeof normalizedValue === "string" && metadata.entityName === "bankAccount") {
+      if (isBankAccountAgencyField(fieldName)) {
+        normalizedValue = normalizedValue.slice(0, 4);
+      } else if (isBankAccountDigitField(fieldName)) {
+        normalizedValue = normalizedValue.slice(0, 1);
+      }
+    }
 
     setFormData((prev) => {
       const newData = { ...prev, [fieldName]: normalizedValue };
@@ -553,6 +580,19 @@ const EntityForm: React.FC<EntityFormProps> = ({
 
       if (digits.length === 14 && !isValidCNPJ(digits)) {
         return "CNPJ inválido";
+      }
+    }
+
+    // Validação específica para conta bancária: agência e dígito verificador
+    if (metadata.entityName === "bankAccount" && value !== undefined && value !== null) {
+      const stringValue = String(value);
+
+      if (isBankAccountAgencyField(field.name) && stringValue.length > 4) {
+        return `${field.label} deve ter no máximo 4 caracteres`;
+      }
+
+      if (isBankAccountDigitField(field.name) && stringValue.length > 1) {
+        return `${field.label} deve ter no máximo 1 caractere`;
       }
     }
 
@@ -1292,6 +1332,26 @@ const EntityForm: React.FC<EntityFormProps> = ({
         
         const dateFormat = field.format || (shouldShowTime ? "dd/MM/yyyy HH:mm" : "dd/MM/yyyy");
 
+        // Parse da data do backend: para datas puras (sem hora), ignora timezone
+        let selectedDate: Date | null = null;
+        if (value) {
+          const valueStr = String(value);
+          if (shouldShowTime) {
+            // Com hora: usa parser padrão (considera timezone)
+            selectedDate = new Date(valueStr);
+          } else {
+            // Sem hora: parseia como data local (ignora timezone)
+            // Espera formato YYYY-MM-DD
+            const match = valueStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            if (match) {
+              const [, year, month, day] = match;
+              selectedDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+            } else {
+              selectedDate = new Date(valueStr);
+            }
+          }
+        }
+
         fieldContent = (
           <FormField
             label={translateLabel(field.label)}
@@ -1299,10 +1359,21 @@ const EntityForm: React.FC<EntityFormProps> = ({
             error={error}
           >
             <FormDatePicker
-              selected={value ? new Date(String(value)) : null}
-              onChange={(date) =>
-                handleChange(field.name, date ? date.toISOString() : null)
-              }
+              selected={selectedDate}
+              onChange={(date) => {
+                if (!date) {
+                  handleChange(field.name, null);
+                } else if (shouldShowTime) {
+                  // Para campos com hora: envia ISO string completo
+                  handleChange(field.name, date.toISOString());
+                } else {
+                  // Para campos de data pura: envia apenas YYYY-MM-DD (evita problemas de timezone)
+                  const year = date.getFullYear();
+                  const month = String(date.getMonth() + 1).padStart(2, '0');
+                  const day = String(date.getDate()).padStart(2, '0');
+                  handleChange(field.name, `${year}-${month}-${day}`);
+                }
+              }}
               showTimeSelect={shouldShowTime}
               dateFormat={dateFormat}
               placeholder={readonly || field.readonly || isFieldReadonly ? "" : field.placeholder}
@@ -1843,11 +1914,17 @@ const EntityForm: React.FC<EntityFormProps> = ({
                       <FormInput
                         type="text"
                         value={mainValue}
-                        onChange={(e) => handleChange(mainField.name, e.target.value)}
+                        onChange={(e) => {
+                          const rawValue = e.target.value;
+                          const value =
+                            groupType === "agencia" ? rawValue.slice(0, 4) : rawValue;
+                          handleChange(mainField.name, value);
+                        }}
                         placeholder={readonly || mainField.readonly ? "" : mainField.placeholder}
                         disabled={mainField.disabled || mainField.readonly || loading || readonly}
                         required={mainField.required}
                         readOnly={readonly || mainField.readonly}
+                        maxLength={groupType === "agencia" ? 4 : undefined}
                       />
                     </FormField>
 

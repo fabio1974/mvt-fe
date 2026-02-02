@@ -539,17 +539,44 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
         const dateFormat =
           field.format || (shouldShowTime ? "dd/MM/yyyy HH:mm" : "dd/MM/yyyy");
 
+        // Parse da data do backend: para datas puras (sem hora), ignora timezone
+        let selectedDate: Date | null = null;
+        if (fieldValue) {
+          const valueStr = String(fieldValue);
+          if (shouldShowTime) {
+            // Com hora: usa parser padrão (considera timezone)
+            selectedDate = new Date(valueStr);
+          } else {
+            // Sem hora: parseia como data local (ignora timezone)
+            // Espera formato YYYY-MM-DD
+            const match = valueStr.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            if (match) {
+              const [, year, month, day] = match;
+              selectedDate = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+            } else {
+              selectedDate = new Date(valueStr);
+            }
+          }
+        }
+
         return (
           <FormField label={field.label} required={field.required}>
               <FormDatePicker
-                selected={fieldValue ? new Date(String(fieldValue)) : null}
-                onChange={(date) =>
-                  handleFieldChange(
-                    itemIndex,
-                    field.name,
-                    date?.toISOString() || ""
-                  )
-                }
+                selected={selectedDate}
+                onChange={(date) => {
+                  if (!date) {
+                    handleFieldChange(itemIndex, field.name, "");
+                  } else if (shouldShowTime) {
+                    // Para campos com hora: envia ISO string completo
+                    handleFieldChange(itemIndex, field.name, date.toISOString());
+                  } else {
+                    // Para campos de data pura: envia apenas YYYY-MM-DD (evita problemas de timezone)
+                    const year = date.getFullYear();
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    handleFieldChange(itemIndex, field.name, `${year}-${month}-${day}`);
+                  }
+                }}
                 showTimeSelect={shouldShowTime}
                 dateFormat={dateFormat}
                 placeholder={getPlaceholder(field)}

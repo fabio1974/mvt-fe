@@ -12,6 +12,8 @@ import { registerToast } from "./utils/toast";
 
 // Lazy load das páginas para code splitting
 const LandingPage = lazy(() => import("./components/LandingPage/LandingPage"));
+const PartnerPage = lazy(() => import("./components/LandingPage/PartnerPage"));
+const ParceiroCliente = lazy(() => import("./components/LandingPage/ParceiroCliente"));
 const Dashboard = lazy(() => import("./components/Dashboard/Dashboard"));
 const LoginRegisterPage = lazy(() => import("./components/Auth/LoginRegisterPage"));
 const ResetPasswordPage = lazy(() => import("./components/Auth/ResetPasswordPage"));
@@ -148,6 +150,8 @@ function App() {
             <Suspense fallback={<PageLoader />}>
               <Routes>
                 <Route path="/" element={isLoggedIn ? <Dashboard /> : <LandingPage />} />
+                <Route path="/parceiros" element={<PartnerPage />} />
+                <Route path="/parceiro-cliente" element={<ParceiroCliente />} />
                 <Route path="/login" element={<PublicRouteGuard><LoginRegisterPage /></PublicRouteGuard>} />
                 <Route path="/confirm-email" element={<PublicRouteGuard><ConfirmEmailPage /></PublicRouteGuard>} />
                 <Route path="/confirmar-email" element={<PublicRouteGuard><ConfirmEmailPage /></PublicRouteGuard>} />

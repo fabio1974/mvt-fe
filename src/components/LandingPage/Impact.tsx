@@ -4,7 +4,7 @@ import { Users, Heart, Building, TrendingUp } from "lucide-react";
 const impactStats = [
   {
     icon: TrendingUp,
-    value: "85%",
+    value: "87%",
     label: "Vai direto para o motoboy",
     description: "Vs. 70-75% dos concorrentes",
     color: "#22c55e",
@@ -243,7 +243,7 @@ const Impact = () => {
                 fontWeight: "bold",
               }}
             >
-              85% Motoboy
+              87% Motoboy
             </div>
             <div
               style={{
@@ -265,7 +265,7 @@ const Impact = () => {
                 fontWeight: "bold",
               }}
             >
-              10% Plataforma
+              8% Plataforma
             </div>
           </div>
           <p

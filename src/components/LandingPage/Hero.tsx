@@ -48,6 +48,7 @@ const Hero = () => {
   const [showModal, setShowModal] = useState(false);
   const [wizardStep, setWizardStep] = useState<"initial" | "selectType">("initial");
   const [selectedUserType, setSelectedUserType] = useState<string>("");
+  const [modalFlow, setModalFlow] = useState<"delivery" | "partner">("delivery");
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
@@ -154,14 +155,14 @@ const Hero = () => {
       textAlign: "center",
     },
     secondaryButton: {
-      backgroundColor: "rgba(31, 41, 55, 0.7)",
+      background: "linear-gradient(to right, #8b5cf6, #ec4899)",
       color: "#ffffff",
       padding: "0.75rem 2rem",
       borderRadius: "0.5rem",
       fontSize: "1.125rem",
-      border: "1px solid rgba(255, 255, 255, 0.2)",
+      border: "none",
       cursor: "pointer",
-      transition: "transform 0.2s, background-color 0.2s",
+      transition: "transform 0.2s, box-shadow 0.2s",
       textAlign: "center",
     },
     statsContainer: {
@@ -206,13 +207,14 @@ const Hero = () => {
   const secondaryButtonStyle = {
     ...styles.secondaryButton,
     transform: isSecondaryHovered ? "scale(1.05)" : "scale(1)",
-    backgroundColor: isSecondaryHovered
-      ? "rgba(55, 65, 81, 0.9)"
-      : "rgba(31, 41, 55, 0.7)",
+    boxShadow: isSecondaryHovered
+      ? "0 0 20px rgba(139, 92, 246, 0.5)"
+      : "none",
   };
 
   // Funções do wizard
-  const openModal = () => {
+  const openModal = (flow: "delivery" | "partner" = "delivery") => {
+    setModalFlow(flow);
     setShowModal(true);
     setWizardStep("initial");
     setSelectedUserType("");
@@ -230,7 +232,12 @@ const Hero = () => {
   };
 
   const handleNotRegistered = () => {
-    setWizardStep("selectType");
+    closeModal();
+    if (modalFlow === "delivery") {
+      navigate("/parceiro-cliente");
+    } else {
+      navigate("/parceiros");
+    }
   };
 
   const handleContinueToRegister = () => {
@@ -435,7 +442,7 @@ const Hero = () => {
               style={primaryButtonStyle}
               onMouseEnter={() => setIsPrimaryHovered(true)}
               onMouseLeave={() => setIsPrimaryHovered(false)}
-              onClick={openModal}
+              onClick={() => openModal("delivery")}
             >
               Solicitar Entrega
             </button>
@@ -443,8 +450,9 @@ const Hero = () => {
               style={secondaryButtonStyle}
               onMouseEnter={() => setIsSecondaryHovered(true)}
               onMouseLeave={() => setIsSecondaryHovered(false)}
+              onClick={() => openModal("partner")}
             >
-              Como Funciona
+              Seja um Parceiro
             </button>
           </div>
 
@@ -476,60 +484,6 @@ const Hero = () => {
                 <div style={styles.statLabel}>Cobertura</div>
               </div>
             </div>
-          </div>
-
-          {/* CTA para Motoboys */}
-          <div
-            style={{
-              marginTop: "2rem",
-              padding: "1.5rem",
-              background: "rgba(34, 197, 94, 0.1)",
-              borderRadius: "0.75rem",
-              border: "1px solid rgba(34, 197, 94, 0.2)",
-              textAlign: "center",
-            }}
-          >
-            <p
-              style={{
-                fontSize: "0.875rem",
-                color: "#a3e635",
-                marginBottom: "0.5rem",
-              }}
-            >
-              💼 Quer trabalhar conosco?
-            </p>
-            <p
-              style={{
-                fontSize: "1rem",
-                color: "#ffffff",
-                marginBottom: "1rem",
-              }}
-            >
-              <strong>Ganhe 85% do valor</strong> de cada entrega + formalização
-              MEI
-            </p>
-            <button
-              style={{
-                background: "linear-gradient(to right, #22c55e, #16a34a)",
-                color: "#ffffff",
-                padding: "0.625rem 1.5rem",
-                borderRadius: "0.375rem",
-                fontSize: "0.875rem",
-                fontWeight: 600,
-                border: "none",
-                cursor: "pointer",
-                transition: "transform 0.2s",
-              }}
-              onMouseEnter={(e) =>
-                (e.currentTarget.style.transform = "scale(1.05)")
-              }
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.transform = "scale(1)")
-              }
-              onClick={openModal}
-            >
-              Seja um Parceiro
-            </button>
           </div>
         </div>
       </div>

@@ -19,15 +19,13 @@ const TRANSFER_INTERVAL_OPTIONS = [
   { value: "Monthly", label: "Mensal" },
 ];
 
-// Opções para dias da semana
+// Opções para dias da semana (apenas dias úteis)
 const WEEKLY_DAY_OPTIONS = [
-  { value: 0, label: "Domingo" },
   { value: 1, label: "Segunda-feira" },
   { value: 2, label: "Terça-feira" },
   { value: 3, label: "Quarta-feira" },
   { value: 4, label: "Quinta-feira" },
   { value: 5, label: "Sexta-feira" },
-  { value: 6, label: "Sábado" },
 ];
 
 // Opções para dias do mês
@@ -92,7 +90,7 @@ const BankAccountModal: React.FC<BankAccountModalProps> = ({
   useEffect(() => {
     if (transferInterval === "Daily") {
       setTransferDay(0);
-    } else if (transferInterval === "Weekly" && (transferDay < 0 || transferDay > 6)) {
+    } else if (transferInterval === "Weekly" && (transferDay < 1 || transferDay > 5)) {
       setTransferDay(1); // Segunda-feira como padrão
     } else if (transferInterval === "Monthly" && (transferDay < 1 || transferDay > 31)) {
       setTransferDay(1); // Dia 1 como padrão

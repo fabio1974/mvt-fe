@@ -302,11 +302,13 @@ export default function RegisterForm({ onSuccess, preselectedRole }: RegisterFor
       </div>
 
       {/* Quarta linha - Tipo de usuário */}
-      <FormField label="Tipo de Usuário" error={errors.role?.message}>
+      <FormField label="Tipo de Usuário" required error={errors.role?.message}>
         <FormSelect
           options={roleOptions}
           placeholder="Selecione o tipo de usuário"
-          {...register("role")}
+          {...register("role", {
+            required: "Tipo de usuário é obrigatório",
+          })}
         />
       </FormField>
 
