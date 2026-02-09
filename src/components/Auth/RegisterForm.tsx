@@ -293,7 +293,7 @@ export default function RegisterForm({ onSuccess, preselectedRole }: RegisterFor
           <FormPasswordInput
             placeholder="••••••"
             {...register("confirmPassword", {
-              required: "Confirmação de senha é obrigatória",
+              required: "Confi?rmação de senha é obrigatória",
               validate: (value) =>
                 value === password || "As senhas não coincidem",
             })}
