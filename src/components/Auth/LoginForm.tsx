@@ -77,8 +77,18 @@ export default function LoginForm() {
         
         setSuccess("Login realizado com sucesso!");
         setTimeout(() => {
-          navigate("/");
-          window.location.reload();
+          const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+          if (isMobile) {
+            const isAndroid = /Android/i.test(navigator.userAgent);
+            if (isAndroid) {
+              window.location.href = "intent://#Intent;scheme=com.mvt.mobile.zapi10;package=com.mvt.mobile.zapi10;end";
+            } else {
+              window.location.href = "com.mvt.mobile.zapi10://";
+            }
+          } else {
+            navigate("/");
+            window.location.reload();
+          }
         }, 1000);
       } else {
         setError("Token não recebido. Verifique a resposta da API.");

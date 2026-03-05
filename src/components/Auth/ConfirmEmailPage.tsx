@@ -17,12 +17,15 @@ import "./LoginRegisterPage.css";
  * - success: Email confirmado com sucesso
  * - error: Token inválido ou expirado
  */
+const isMobileDevice = () => /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
 export default function ConfirmEmailPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [message, setMessage] = useState("");
   const [isExpired, setIsExpired] = useState(false);
+  const [countdown, setCountdown] = useState<number | null>(null);
 
   useEffect(() => {
     const confirmEmail = async () => {
@@ -71,6 +74,41 @@ export default function ConfirmEmailPage() {
 
     confirmEmail();
   }, [searchParams]);
+
+  // Auto-redirect para o app no mobile após sucesso
+  useEffect(() => {
+    if (status !== "success" || !isMobileDevice()) return;
+    setCountdown(3);
+    const interval = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev === null || prev <= 1) {
+          clearInterval(interval);
+          const isAndroid = /Android/i.test(navigator.userAgent);
+          if (isAndroid) {
+            window.location.href = "intent://#Intent;scheme=com.mvt.mobile.zapi10;package=com.mvt.mobile.zapi10;end";
+          } else {
+            window.location.href = "com.mvt.mobile.zapi10://";
+          }
+          return null;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [status]);
+
+  const handleGoToLogin = () => {
+    if (isMobileDevice()) {
+      const isAndroid = /Android/i.test(navigator.userAgent);
+      if (isAndroid) {
+        window.location.href = "intent://#Intent;scheme=com.mvt.mobile.zapi10;package=com.mvt.mobile.zapi10;end";
+      } else {
+        window.location.href = "com.mvt.mobile.zapi10://";
+      }
+    } else {
+      navigate("/login");
+    }
+  };
 
   const containerStyle: React.CSSProperties = {
     minHeight: "100vh",
@@ -152,6 +190,9 @@ export default function ConfirmEmailPage() {
 
         <p style={messageStyle}>
           {status === "loading" ? "Aguarde enquanto verificamos seu email..." : message}
+          {countdown !== null && (
+            <><br /><span style={{ fontSize: "0.85rem", color: "#94a3b8" }}>Abrindo o app em {countdown}s...</span></>
+          )}
         </p>
 
         {status !== "loading" && (
@@ -175,7 +216,7 @@ export default function ConfirmEmailPage() {
               <>
                 <button
                   style={buttonStyle}
-                  onClick={() => navigate("/login")}
+                  onClick={handleGoToLogin}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = "translateY(-2px)";
                     e.currentTarget.style.boxShadow = "0 6px 20px rgba(59, 130, 246, 0.5)";
@@ -185,7 +226,9 @@ export default function ConfirmEmailPage() {
                     e.currentTarget.style.boxShadow = "0 4px 14px rgba(59, 130, 246, 0.4)";
                   }}
                 >
-                  {status === "success" ? "Ir para Login" : "Voltar para Login"}
+                  {status === "success"
+                    ? isMobileDevice() ? "Abrir App" : "Ir para Login"
+                    : "Voltar para Login"}
                 </button>
                 {status === "error" && (
                   <div style={{ marginTop: "24px", display: "flex", flexDirection: "column", gap: "12px", alignItems: "center" }}>
