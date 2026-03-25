@@ -38,6 +38,9 @@ const AddressPage = lazy(() => import("./components/User/AddressPage"));
 const ConsolidatedPaymentProcessor = lazy(() => import("./components/ConsolidatedPayment/ConsolidatedPaymentProcessor"));
 const SiteConfigurationCRUDPage = lazy(() => import("./components/SiteConfiguration/SiteConfigurationCRUDPage"));
 const SpecialZonesMapPage = lazy(() => import("./components/SpecialZones/SpecialZonesMapPage"));
+const BankAccountPage = lazy(() => import("./components/User/BankAccountPage"));
+const CourierEarningsPage = lazy(() => import("./components/Courier/CourierEarningsPage"));
+const CourierWalletPage = lazy(() => import("./components/Courier/CourierWalletPage"));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -179,6 +182,9 @@ function App() {
                 <Route path="/zonas-especiais" element={<SpecialZonesMapPage />} />
                 <Route path="/payment/success" element={<PaymentSuccessPage />} />
                 <Route path="/payment/cancel" element={<PaymentCancelPage />} />
+                <Route path="/dados-bancarios" element={<BankAccountPage />} />
+                <Route path="/meus-ganhos" element={<CourierEarningsPage />} />
+                <Route path="/minha-carteira" element={<CourierWalletPage />} />
               </Routes>
             </Suspense>
             <Footer isLoggedIn={isLoggedIn} sidebarWidth={sidebarWidth} />

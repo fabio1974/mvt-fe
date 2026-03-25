@@ -418,7 +418,41 @@ export default function Header({
                       </svg>
                       <span>Alterar Senha</span>
                     </button>
-                    
+
+                    {/* Dados Bancários — couriers e clientes */}
+                    {(userRole === "ROLE_COURIER" || userRole === "COURIER" ||
+                      userRole === "ROLE_CLIENT" || userRole === "CLIENT" ||
+                      userRole === "ROLE_CUSTOMER" || userRole === "CUSTOMER") && (
+                      <button
+                        style={{
+                          width: "100%",
+                          padding: "12px 16px",
+                          border: "none",
+                          backgroundColor: "transparent",
+                          textAlign: "left",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 12,
+                          fontSize: "0.95rem",
+                          color: "#374151",
+                          transition: "background-color 0.15s ease",
+                        }}
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          navigate("/dados-bancarios");
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#f3f4f6"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <rect x="2" y="5" width="20" height="14" rx="2" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          <line x1="2" y1="10" x2="22" y2="10" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" />
+                        </svg>
+                        <span>Dados Bancários</span>
+                      </button>
+                    )}
+
                     {/* Separador */}
                     <div
                       style={{

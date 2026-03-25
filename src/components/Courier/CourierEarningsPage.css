@@ -1,0 +1,367 @@
+.earnings-page {
+  padding: 24px;
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+/* Breadcrumb */
+.earnings-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 20px;
+}
+.earnings-breadcrumb-current {
+  color: #111827;
+  font-weight: 500;
+}
+
+/* Header */
+.earnings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+.earnings-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+}
+.earnings-refresh-btn {
+  background: none;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  transition: background 0.15s;
+}
+.earnings-refresh-btn:hover:not(:disabled) {
+  background: #f3f4f6;
+}
+.spinning {
+  animation: spinIcon 0.8s linear infinite;
+}
+@keyframes spinIcon {
+  to { transform: rotate(360deg); }
+}
+
+/* Filter tabs */
+.earnings-filter-tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.earnings-filter-tab {
+  flex: 1;
+  padding: 10px 16px;
+  border-radius: 20px;
+  border: none;
+  background: #f3f4f6;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.earnings-filter-tab.active {
+  background: #10b981;
+  color: white;
+}
+
+/* Loading */
+.earnings-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+  gap: 12px;
+  color: #6b7280;
+}
+.earnings-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #e5e7eb;
+  border-top-color: #10b981;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Empty */
+.earnings-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 24px;
+  gap: 8px;
+  color: #6b7280;
+}
+.earnings-empty p {
+  margin: 8px 0 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: #111827;
+}
+.earnings-empty span {
+  font-size: 13px;
+  text-align: center;
+}
+
+/* Summary card */
+.earnings-summary-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #10b981;
+  border-radius: 16px;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+}
+.earnings-summary-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.earnings-summary-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.earnings-summary-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.85);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.earnings-summary-amount {
+  font-size: 32px;
+  font-weight: 800;
+  color: white;
+}
+.earnings-summary-sub {
+  font-size: 13px;
+  color: rgba(255,255,255,0.75);
+}
+
+/* List */
+.earnings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Card */
+.earnings-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: box-shadow 0.15s;
+}
+.earnings-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.earnings-card-header {
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.earnings-card-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.earnings-card-title {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.earnings-card-type {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.earnings-paid-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #d1fae5;
+  color: #059669;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 12px;
+  width: fit-content;
+}
+
+.earnings-card-meta {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.earnings-card-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+  color: #6b7280;
+}
+
+.earnings-amount-large {
+  font-size: 20px;
+  font-weight: 800;
+  color: #10b981;
+}
+
+/* Addresses */
+.earnings-card-addresses {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.earnings-address-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #374151;
+}
+.earnings-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.earnings-dot.from { background: #10b981; }
+.earnings-dot.to   { background: #ef4444; }
+
+/* Chips */
+.earnings-card-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.earnings-chip {
+  background: rgba(107,114,128,0.1);
+  color: #374151;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 8px;
+}
+
+/* Expanded */
+.earnings-expanded {
+  border-top: 1px solid #e5e7eb;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #fafafa;
+}
+.earnings-expanded-title {
+  margin: 0 0 4px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #374151;
+}
+.earnings-split-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  background: white;
+}
+.earnings-split-row.you {
+  border: 2px solid #7c3aed;
+  background: rgba(124,58,237,0.06);
+}
+.earnings-split-row.total {
+  background: #f3f4f6;
+}
+.earnings-split-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.earnings-you-badge {
+  font-size: 10px;
+  font-weight: 700;
+  color: #7c3aed;
+  letter-spacing: 0.5px;
+}
+.earnings-split-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+}
+.earnings-split-sub {
+  font-size: 12px;
+  color: #6b7280;
+}
+.earnings-split-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+.earnings-split-amount {
+  font-size: 16px;
+  font-weight: 700;
+  color: #374151;
+}
+.earnings-split-amount.you {
+  color: #10b981;
+}
+.earnings-split-pct {
+  font-size: 12px;
+  color: #6b7280;
+}
+.earnings-split-total-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+}
+.earnings-split-total-amount {
+  font-size: 18px;
+  font-weight: 800;
+  color: #111827;
+}
+
+@media (max-width: 600px) {
+  .earnings-page { padding: 16px; }
+  .earnings-summary-amount { font-size: 26px; }
+}

@@ -13,6 +13,8 @@ import {
   FiDollarSign,
   FiMapPin,
   FiUsers,
+  FiCreditCard,
+  FiTrendingUp,
 } from "react-icons/fi";
 import "./Sidebar.css";
 
@@ -89,6 +91,24 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
     icon: <FiDollarSign size={22} color="#10b981" />,
     path: "/balanco-financeiro",
     roles: ["ROLE_ORGANIZER", "ORGANIZER"],
+  },
+  {
+    label: "Meus Ganhos",
+    icon: <FiTrendingUp size={22} color="#10b981" />,
+    path: "/meus-ganhos",
+    roles: ["ROLE_COURIER", "COURIER"],
+  },
+  {
+    label: "Minha Carteira",
+    icon: <FiCreditCard size={22} color="#6366f1" />,
+    path: "/minha-carteira",
+    roles: ["ROLE_COURIER", "COURIER"],
+  },
+  {
+    label: "Dados Bancários",
+    icon: <FiCreditCard size={22} color="#f59e0b" />,
+    path: "/dados-bancarios",
+    roles: ["ROLE_COURIER", "COURIER", "ROLE_CLIENT", "CLIENT", "ROLE_CUSTOMER", "CUSTOMER"],
   },
   {
     label: "Processar Pagamentos",
