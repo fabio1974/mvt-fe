@@ -2,9 +2,10 @@ import React, { useMemo, useEffect, useState } from "react";
 import EntityCRUD from "../Generic/EntityCRUD";
 import DeliveryRouteMap from "./DeliveryRouteMap";
 import DeliveryRouteMapModal from "./DeliveryRouteMapModal";
+import DeliveryWizard from "./DeliveryWizard";
 import { getUserRole, getUserId, getUserName, getUserCoordinates, getUserAddress, isClient, isCourier } from "../../utils/auth";
 import { api } from "../../services/api";
-import { FiMap } from "react-icons/fi";
+import { FiMap, FiPlus } from "react-icons/fi";
 import "./DeliveryCRUDPage.css";
 
 /**
@@ -39,6 +40,10 @@ const DeliveryCRUDPage: React.FC = () => {
   // Estado para controlar a modal do mapa
   const [mapModalOpen, setMapModalOpen] = useState(false);
   const [selectedDeliveryId, setSelectedDeliveryId] = useState<string | number | null>(null);
+
+  // Estado para o wizard de nova entrega
+  const [wizardOpen, setWizardOpen] = useState(false);
+  const [wizardKey, setWizardKey] = useState(0); // força re-mount após sucesso
   
   // Define filtros iniciais baseados no role
   // NOTA: O backend filtra automaticamente pelo token para COURIER
@@ -285,8 +290,40 @@ const DeliveryCRUDPage: React.FC = () => {
     );
   };
 
+  // Clientes e admins podem usar o wizard; organizadores e couriers não criam
+  const canUseWizard = !isOrganizer() && !isCourier();
+
   return (
     <>
+      {/* Botão Nova Entrega via Wizard (multi-parada) */}
+      {canUseWizard && (
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "12px" }}>
+          <button
+            onClick={() => setWizardOpen(true)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              padding: "10px 20px",
+              background: "linear-gradient(135deg, #3b82f6, #6366f1)",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+              fontSize: "14px",
+              fontWeight: 600,
+              boxShadow: "0 4px 12px rgba(59,130,246,0.35)",
+              transition: "all 0.2s",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 6px 16px rgba(59,130,246,0.45)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 4px 12px rgba(59,130,246,0.35)"; }}
+          >
+            <FiPlus size={16} />
+            Nova Entrega (com paradas)
+          </button>
+        </div>
+      )}
+
       <EntityCRUD
         entityName="delivery"
         hideArrayFields={false}
@@ -304,12 +341,9 @@ const DeliveryCRUDPage: React.FC = () => {
         defaultValues={defaultValues}
         disableCreate={isOrganizer() || isCourier()}
         hideFields={
-          // CLIENT oculta "client", ORGANIZER oculta "organizer", ADMIN vê tudo
           isClient() ? ["client"] : isOrganizer() ? ["organizer"] : []
         }
         hiddenFields={
-          // ✅ Oculta coordenadas para todos os perfis
-          // ✅ CLIENT oculta "client", ORGANIZER oculta "organizer" no formulário
           ["fromLatitude", "fromLongitude", "toLatitude", "toLongitude"].concat(
             isClient() ? ["client"] : isOrganizer() ? ["organizer"] : []
           )
@@ -318,8 +352,6 @@ const DeliveryCRUDPage: React.FC = () => {
           <DeliveryMapWrapper entityId={entityId} viewMode={viewMode} />
         )}
         customActions={customActions}
-        // ✅ Motoboy não pode editar/deletar de forma alguma
-        // ✅ Outros perfis só podem editar/deletar entregas com status PENDING
         canEdit={(row) => !isCourier() && row.status === "PENDING"}
         canDelete={(row) => !isCourier() && row.status === "PENDING"}
       />
@@ -333,6 +365,22 @@ const DeliveryCRUDPage: React.FC = () => {
             setMapModalOpen(false);
             setSelectedDeliveryId(null);
           }}
+        />
+      )}
+
+      {/* Wizard de nova entrega multi-parada */}
+      {wizardOpen && (
+        <DeliveryWizard
+          key={wizardKey}
+          defaultValues={defaultValues as any}
+          onSuccess={(deliveryId) => {
+            setWizardOpen(false);
+            setWizardKey((k) => k + 1);
+            // Abre o mapa da entrega recém-criada
+            setSelectedDeliveryId(deliveryId);
+            setMapModalOpen(true);
+          }}
+          onCancel={() => setWizardOpen(false)}
         />
       )}
     </>

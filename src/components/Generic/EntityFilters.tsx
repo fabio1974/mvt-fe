@@ -168,8 +168,11 @@ const EntityFilters: React.FC<EntityFiltersProps> = ({
                 <CityTypeahead
                   value={values[filter.name] || ""}
                   onCitySelect={(city) => {
-                    onChange(filter.name, city.name);
-                    // Armazena o estado da cidade para exibição
+                    // Envia ID quando o campo espera ID (cityId, fromCityId, etc.)
+                    // Envia nome quando o campo espera o nome da cidade
+                    const isIdField = filter.name.toLowerCase().includes("id");
+                    const value = isIdField ? String(city.id) : city.name;
+                    onChange(filter.name, value);
                     setCityStates((prev) => ({
                       ...prev,
                       [filter.name]: city.stateCode || city.state || "",
