@@ -293,37 +293,31 @@ const DeliveryCRUDPage: React.FC = () => {
   // Clientes e admins podem usar o wizard; organizadores e couriers não criam
   const canUseWizard = !isOrganizer() && !isCourier();
 
+  const wizardButton = canUseWizard ? (
+    <button
+      onClick={() => setWizardOpen(true)}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "6px",
+        padding: "6px 14px",
+        background: "linear-gradient(135deg, #3b82f6, #6366f1)",
+        color: "white",
+        border: "none",
+        borderRadius: "6px",
+        cursor: "pointer",
+        fontSize: "13px",
+        fontWeight: 600,
+        whiteSpace: "nowrap",
+      }}
+    >
+      <FiPlus size={14} />
+      Com paradas
+    </button>
+  ) : undefined;
+
   return (
     <>
-      {/* Botão Nova Entrega via Wizard (multi-parada) */}
-      {canUseWizard && (
-        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "12px" }}>
-          <button
-            onClick={() => setWizardOpen(true)}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              padding: "10px 20px",
-              background: "linear-gradient(135deg, #3b82f6, #6366f1)",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              cursor: "pointer",
-              fontSize: "14px",
-              fontWeight: 600,
-              boxShadow: "0 4px 12px rgba(59,130,246,0.35)",
-              transition: "all 0.2s",
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 6px 16px rgba(59,130,246,0.45)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 4px 12px rgba(59,130,246,0.35)"; }}
-          >
-            <FiPlus size={16} />
-            Nova Entrega (com paradas)
-          </button>
-        </div>
-      )}
-
       <EntityCRUD
         entityName="delivery"
         hideArrayFields={false}
@@ -337,6 +331,7 @@ const DeliveryCRUDPage: React.FC = () => {
             ? "Acompanhe suas corridas"
             : "Gerencie as entregas cadastradas na plataforma"
         }
+        extraHeaderActions={wizardButton}
         initialFilters={initialFilters}
         defaultValues={defaultValues}
         disableCreate={isOrganizer() || isCourier()}

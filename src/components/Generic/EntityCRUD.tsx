@@ -84,6 +84,8 @@ interface EntityCRUDProps {
   onCreateSuccess?: (data: unknown) => void;
   /** Remove o wrapper/container padrão (útil para mobile) */
   noWrapper?: boolean;
+  /** Ações extras renderizadas no breadcrumb ao lado do botão Criar Novo */
+  extraHeaderActions?: React.ReactNode;
 }
 
 /**
@@ -136,6 +138,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
   onModeChange,
   onCreateSuccess,
   noWrapper = false,
+  extraHeaderActions,
   // transformData, // Unused parameter
   pageTitle,
 }) => {
@@ -307,16 +310,19 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
         </div>
 
         {mode === "table" ? (
-          // Modo table: mostra botão "Criar Novo" se permitido, senão nada
-          !disableCreate ? (
-            <button
-              className="breadcrumb-action-btn btn-create"
-              onClick={handleCreate}
-            >
-              <FiPlus />
-              <span>Criar Novo</span>
-            </button>
-          ) : null
+          // Modo table: mostra ações extras + botão "Criar Novo" se permitido
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            {extraHeaderActions}
+            {!disableCreate && (
+              <button
+                className="breadcrumb-action-btn btn-create"
+                onClick={handleCreate}
+              >
+                <FiPlus />
+                <span>Criar Novo</span>
+              </button>
+            )}
+          </div>
         ) : mode === "view" && showEditButton ? (
           // Modo view com botão editar: mostra ambos os botões
           <div style={{ display: "flex", gap: "0.5rem" }}>
@@ -378,6 +384,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
             customRenderers={customRenderers}
             customActions={customActions}
             hideHeader={true}
+            noWrapper={true}
             initialFilters={initialFilters}
             hideFields={hideFields}
             showFields={showFields}

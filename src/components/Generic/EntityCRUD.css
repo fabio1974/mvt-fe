@@ -1,8 +1,10 @@
 .entity-crud-container {
   width: 100%;
-  max-width: 98%; /* Mesma largura máxima do home */
+  max-width: 100%;
   margin: 0 auto;
-  padding: 0 15px 2rem 15px; /* Mesmo padding do home */
+  padding: 0 16px 2rem 16px;
+  box-sizing: border-box;
+  overflow-x: hidden; /* o scroll horizontal fica nas tabelas, não no container */
 }
 
 /* Breadcrumb */
