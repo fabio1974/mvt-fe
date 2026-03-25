@@ -41,6 +41,8 @@ const SpecialZonesMapPage = lazy(() => import("./components/SpecialZones/Special
 const BankAccountPage = lazy(() => import("./components/User/BankAccountPage"));
 const CourierEarningsPage = lazy(() => import("./components/Courier/CourierEarningsPage"));
 const CourierWalletPage = lazy(() => import("./components/Courier/CourierWalletPage"));
+const CreditCardsPage = lazy(() => import("./components/Client/CreditCardsPage"));
+const PaymentPreferencePage = lazy(() => import("./components/Client/PaymentPreferencePage"));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -185,6 +187,8 @@ function App() {
                 <Route path="/dados-bancarios" element={<BankAccountPage />} />
                 <Route path="/meus-ganhos" element={<CourierEarningsPage />} />
                 <Route path="/minha-carteira" element={<CourierWalletPage />} />
+                <Route path="/meus-cartoes" element={<CreditCardsPage />} />
+                <Route path="/preferencias-pagamento" element={<PaymentPreferencePage />} />
               </Routes>
             </Suspense>
             <Footer isLoggedIn={isLoggedIn} sidebarWidth={sidebarWidth} />

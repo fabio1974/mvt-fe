@@ -111,6 +111,18 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
     roles: ["ROLE_COURIER", "COURIER", "ROLE_CLIENT", "CLIENT", "ROLE_CUSTOMER", "CUSTOMER"],
   },
   {
+    label: "Meus Cartões",
+    icon: <FiCreditCard size={22} color="#8b5cf6" />,
+    path: "/meus-cartoes",
+    roles: ["ROLE_CLIENT", "CLIENT", "ROLE_CUSTOMER", "CUSTOMER"],
+  },
+  {
+    label: "Preferências de Pagamento",
+    icon: <FiSettings size={22} color="#06b6d4" />,
+    path: "/preferencias-pagamento",
+    roles: ["ROLE_CLIENT", "CLIENT", "ROLE_CUSTOMER", "CUSTOMER"],
+  },
+  {
     label: "Processar Pagamentos",
     icon: <FiDollarSign size={22} color="#8b5cf6" />,
     path: "/processar-pagamentos",
