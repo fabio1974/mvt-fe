@@ -152,6 +152,7 @@ function App() {
               width: `calc(100% - ${sidebarWidth}px)`,
               boxSizing: "border-box",
               minWidth: 0,
+              paddingBottom: "60px", // Espaço para o footer fixo
               transition: "margin-left 0.3s ease, width 0.3s ease",
             }}
           >

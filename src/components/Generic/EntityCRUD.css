@@ -15,7 +15,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  margin: 0 calc(-15px) 2rem calc(-15px); /* Expande até as bordas (mesmo do home) */
+  margin: 0 -16px 2rem -16px; /* Expande até as bordas do container (cancela o padding de 16px) */
   padding: 0.5rem 1.5rem; /* Altura ainda mais reduzida */
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   box-shadow: 0 2px 12px rgba(102, 126, 234, 0.25);

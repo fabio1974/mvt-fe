@@ -382,13 +382,4 @@
   transform: rotate(0deg);
 }
 
-/* Mobile responsivo - Esconde sidebar em mobile */
-@media (max-width: 900px) {
-  .sidebar {
-    display: none !important;
-  }
-  
-  .sidebar-overlay {
-    display: none !important;
-  }
-}
+/* Visibilidade controlada pelo JS (App.tsx) — sem override CSS aqui */

@@ -133,11 +133,9 @@
 
 @media (max-width: 900px) {
   .serra-header.modern {
-    width: 100vw; /* Garante largura total da viewport */
+    width: 100%; /* Respeita o container pai (content div) */
     margin: 0;
     padding: 0;
-    left: 0;
-    right: 0;
   }
   
   .header-container.modern-inner { 

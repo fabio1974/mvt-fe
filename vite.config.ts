@@ -1,12 +1,22 @@
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
 
-// https://vite.dev/config/
+// Configuração otimizada SEM plugin React (que está causando travamento)
+// O esbuild processa JSX nativamente
 export default defineConfig({
-  plugins: [react()],
+  plugins: [],
   server: {
+    host: '0.0.0.0',
+    port: 5173,
+    strictPort: false,
     proxy: {
-      '/api': 'http://localhost:8080',
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
     },
+  },
+  esbuild: {
+    jsx: 'automatic',
+    jsxImportSource: 'react',
   },
 })
