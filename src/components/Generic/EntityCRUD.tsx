@@ -86,6 +86,8 @@ interface EntityCRUDProps {
   noWrapper?: boolean;
   /** Ações extras renderizadas no breadcrumb ao lado do botão Criar Novo */
   extraHeaderActions?: React.ReactNode;
+  /** Campos a esconder SOMENTE na tabela (não afeta o formulário) */
+  tableHideFields?: string[];
 }
 
 /**
@@ -139,6 +141,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
   onCreateSuccess,
   noWrapper = false,
   extraHeaderActions,
+  tableHideFields = [] as string[],
   // transformData, // Unused parameter
   pageTitle,
 }) => {
@@ -386,7 +389,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
             hideHeader={true}
             noWrapper={true}
             initialFilters={initialFilters}
-            hideFields={hideFields}
+            hideFields={[...hideFields, ...tableHideFields]}
             showFields={showFields}
             hideFilters={hideFilters}
             canDelete={canDelete}

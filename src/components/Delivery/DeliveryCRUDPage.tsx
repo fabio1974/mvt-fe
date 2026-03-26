@@ -334,6 +334,12 @@ const DeliveryCRUDPage: React.FC = () => {
         extraHeaderActions={wizardButton}
         initialFilters={initialFilters}
         defaultValues={defaultValues}
+        tableHideFields={[
+          "actualRoute", "approachRoute", "plannedRoute",
+          "estimatedDistanceKm", "estimatedShippingFee",
+          "fromLatitude", "fromLongitude", "toLatitude", "toLongitude",
+          "paymentCaptured", "inTransitAt",
+        ]}
         disableCreate={isOrganizer() || isCourier()}
         hideFields={
           isClient() ? ["client"] : isOrganizer() ? ["organizer"] : []

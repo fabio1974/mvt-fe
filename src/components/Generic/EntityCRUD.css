@@ -4,7 +4,7 @@
   margin: 0 auto;
   padding: 0 16px 2rem 16px;
   box-sizing: border-box;
-  overflow-x: hidden; /* o scroll horizontal fica nas tabelas, não no container */
+  /* NÃO usar overflow-x:hidden aqui — bloquearia o scroll da entity-table-scroll */
 }
 
 /* Breadcrumb */
