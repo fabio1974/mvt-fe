@@ -138,12 +138,14 @@ function App() {
           )}
           <div
             style={{
-              flex: 1,
               display: "flex",
               flexDirection: "column",
               minHeight: "100vh",
               marginLeft: sidebarWidth,
-              transition: "margin-left 0.3s ease",
+              width: `calc(100% - ${sidebarWidth}px)`,
+              boxSizing: "border-box",
+              minWidth: 0,
+              transition: "margin-left 0.3s ease, width 0.3s ease",
             }}
           >
             <Header
