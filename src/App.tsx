@@ -80,9 +80,9 @@ function App() {
 
   // Estados do sidebar
   const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 600);
-  const [sidebarVisible, setSidebarVisible] = useState(false); // Para dispositivos pequenos
+  const [sidebarVisible, setSidebarVisible] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(
-    () => window.innerWidth <= 600
+    () => window.innerWidth <= 1024 // collapsed em mobile e telas médias
   );
 
   // Estado do toast
@@ -98,14 +98,21 @@ function App() {
   // Controle de responsividade
   useEffect(() => {
     function handleResize() {
-      const mobile = window.innerWidth <= 600;
+      const w = window.innerWidth;
+      const mobile = w <= 600;
+      const medium = w > 600 && w <= 1024;
+
       setIsMobile(mobile);
 
       if (mobile) {
-        setSidebarCollapsed(true); // Sempre collapsed em mobile
-        setSidebarVisible(false); // Oculto por padrão em mobile
+        setSidebarCollapsed(true);
+        setSidebarVisible(false);
+      } else if (medium) {
+        setSidebarCollapsed(true); // só ícones em telas médias
+        setSidebarVisible(true);
       } else {
-        setSidebarVisible(true); // Sempre visível em desktop
+        // desktop largo: expande (mas só se o usuário não tiver colapsado manualmente)
+        setSidebarVisible(true);
       }
     }
 
