@@ -1191,13 +1191,17 @@ const EntityForm: React.FC<EntityFormProps> = ({
             error={error}
           >
             <FormInput
-              type="number"
-              step="any"
+              type="text"
+              inputMode="decimal"
               placeholder={readonly || field.readonly || isFieldReadonly ? "" : field.placeholder}
-              min={field.validation?.min}
-              max={field.validation?.max}
               value={stringValue}
-              onChange={(e) => handleChange(field.name, e.target.value)}
+              onChange={(e) => {
+                // Permite apenas digitos, ponto e virgula (normaliza virgula→ponto)
+                const raw = e.target.value.replace(",", ".");
+                // Remove caracteres invalidos (aceita apenas numeros, ponto e sinal negativo)
+                const cleaned = raw.replace(/[^0-9.\-]/g, "");
+                handleChange(field.name, cleaned);
+              }}
               disabled={field.disabled || field.readonly || isFieldReadonly || loading || readonly}
               required={field.required}
             />
