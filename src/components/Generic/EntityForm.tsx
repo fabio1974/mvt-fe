@@ -814,6 +814,13 @@ const EntityForm: React.FC<EntityFormProps> = ({
       // ✅ Remove máscaras de CPF, CNPJ, telefone, CEP antes de enviar ao backend
       const unmaskedData = unmaskFormData(finalData);
 
+      // ✅ Converte campos number de string para número (input HTML retorna string)
+      allFields.forEach((field) => {
+        if (field.type === "number" && unmaskedData[field.name] !== undefined && unmaskedData[field.name] !== null && unmaskedData[field.name] !== "") {
+          unmaskedData[field.name] = Number(unmaskedData[field.name]);
+        }
+      });
+
       // 🚫 Remove campos que não pertencem à entidade atual (whitelist pelos metadados)
       // Isto evita enviar campos como "address", "city", "country" quando não existem no metadata da entidade
       const allowedFieldNames = new Set(
