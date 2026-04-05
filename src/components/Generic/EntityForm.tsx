@@ -1185,6 +1185,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
           >
             <FormInput
               type="number"
+              step="any"
               placeholder={readonly || field.readonly || isFieldReadonly ? "" : field.placeholder}
               min={field.validation?.min}
               max={field.validation?.max}
