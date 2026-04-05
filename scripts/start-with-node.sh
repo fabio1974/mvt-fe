@@ -66,10 +66,10 @@ fi
 # Limpar portas ocupadas pelo Vite
 echo "🧹 Limpando portas ocupadas..."
 for port in 5173 5174 5175 5176 5177; do
-    PID=$(lsof -ti:$port 2>/dev/null)
+    PID=$(lsof -ti:$port 2>/dev/null || true)
     if [ ! -z "$PID" ]; then
         echo "  Liberando porta $port (PID: $PID)..."
-        kill -9 $PID 2>/dev/null
+        kill -9 $PID 2>/dev/null || true
     fi
 done
 sleep 1
