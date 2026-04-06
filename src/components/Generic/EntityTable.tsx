@@ -512,7 +512,7 @@ const EntityTable: React.FC<EntityTableProps> = ({
                     >
                       {translateLabel(field.label)}
                     </th>
-                  )}
+                  ))}
                 </tr>
               </thead>
               <tbody>
