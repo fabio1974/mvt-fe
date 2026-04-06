@@ -437,7 +437,7 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
       <h3 className="wizard-section-title">
         <FiMapPin /> Endereço de coleta (origem)
       </h3>
-      <p className="wizard-section-desc">De onde o motoboy vai retirar a encomenda?</p>
+      <p className="wizard-section-desc">De onde o motoboy vai retirar a encomenda?</span>
       <AddressFieldWithMap
         value={originAddress}
         onChange={(addr, data) => { handleOriginChange(addr, data); setValidationErrors((e) => { const n = {...e}; delete n.origin; return n; }); }}
@@ -449,7 +449,7 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
         required
       />
       {validationErrors.origin && (
-        <p className="wizard-field-error">{validationErrors.origin}</p>
+        <span className="wizard-field-error">{validationErrors.origin}</span>
       )}
     </div>
   );
@@ -461,7 +461,7 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
       </h3>
       <p className="wizard-section-desc">
         Adicione os endereços de entrega em ordem. O motoboy vai seguir essa sequência.
-      </p>
+      </span>
 
       <div className="wizard-stops-list">
         {stops.map((stop, idx) => (
@@ -504,7 +504,7 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
               required
             />
             {validationErrors[`stop_${idx}_address`] && (
-              <p className="wizard-field-error">{validationErrors[`stop_${idx}_address`]}</p>
+              <span className="wizard-field-error">{validationErrors[`stop_${idx}_address`]}</span>
             )}
 
             {/* Detalhes da parada — mesmo fluxo do mobile */}
@@ -523,7 +523,7 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
                     style={validationErrors[`stop_${idx}_name`] ? { borderColor: "#ef4444" } : undefined}
                   />
                   {validationErrors[`stop_${idx}_name`] && (
-                    <p className="wizard-field-error">{validationErrors[`stop_${idx}_name`]}</p>
+                    <span className="wizard-field-error">{validationErrors[`stop_${idx}_name`]}</span>
                   )}
                 </div>
                 <div className="wizard-stop-field">
@@ -585,7 +585,7 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
       {routeLoading ? (
         <div className="wizard-loading">
           <div className="wizard-spinner" />
-          <p>Calculando rota e preço...</p>
+          <p>Calculando rota e preço...</span>
         </div>
       ) : (
         <>
@@ -718,7 +718,7 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
           {freightLoading && (
             <div className="wizard-loading" style={{ padding: 20 }}>
               <div className="wizard-spinner" />
-              <p>Calculando custo da corrida...</p>
+              <p>Calculando custo da corrida...</span>
             </div>
           )}
 
