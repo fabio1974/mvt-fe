@@ -33,8 +33,12 @@ export const LABEL_TRANSLATIONS: Record<string, string> = {
   // Payment fields
   "Payment Date": "Pago Em",
   "paymentDate": "Pago Em",
+  "Payment Completed": "Pagamento",
+  "paymentCompleted": "Pagamento",
+  "Payment Captured": "Pagamento Capturado",
+  "paymentCaptured": "Pagamento Capturado",
   "createdAt": "Criado Em",
-  "Created At": "Criado Em", 
+  "Created At": "Criado Em",
 
 };
 
