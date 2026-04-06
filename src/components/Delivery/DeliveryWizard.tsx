@@ -29,6 +29,8 @@ interface DeliveryWizardProps {
   onCancel: () => void;
 }
 
+const RequiredMark = () => <span style={{ color: "#ef4444", marginLeft: 2 }}>*</span>;
+
 const emptyAddress = (): AddressData => ({
   address: "",
   latitude: 0,
@@ -442,7 +444,7 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
         onAddressDataChange={handleOriginDataChange}
         initialLatitude={originData.latitude || undefined}
         initialLongitude={originData.longitude || undefined}
-        label="Endereço de Origem"
+        label="Endereço de Origem *"
         placeholder="Ex: Rua das Flores, 123 - Centro"
         required
       />
@@ -490,7 +492,7 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
               onAddressDataChange={(data) => updateStop(stop.id, data)}
               initialLatitude={stop.addressData.latitude || undefined}
               initialLongitude={stop.addressData.longitude || undefined}
-              label={`Parada ${idx + 1}`}
+              label={`Parada ${idx + 1} *`}
               placeholder="Ex: Av. Bezerra de Menezes, 456"
               required
             />
@@ -499,7 +501,7 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
             <div className="wizard-stop-details">
               <div className="wizard-stop-details-row">
                 <div className="wizard-stop-field">
-                  <label>Nome do destinatário</label>
+                  <label>Nome do destinatário<RequiredMark /></label>
                   <input
                     type="text"
                     placeholder="Quem vai receber?"
