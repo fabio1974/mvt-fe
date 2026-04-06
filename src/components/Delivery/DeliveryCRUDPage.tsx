@@ -355,7 +355,7 @@ const DeliveryCRUDPage: React.FC = () => {
           <DeliveryMapWrapper entityId={entityId} viewMode={viewMode} />
         )}
         customActions={customActions}
-        canEdit={(row) => !isCourier() && row.status === "PENDING"}
+        canEdit={() => false}
         canDelete={(row) => !isCourier() && row.status === "PENDING"}
       />
 

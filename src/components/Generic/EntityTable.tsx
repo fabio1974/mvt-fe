@@ -497,6 +497,9 @@ const EntityTable: React.FC<EntityTableProps> = ({
             <table className="entity-table">
               <thead>
                 <tr>
+                  {showActions && (
+                    <th style={{ textAlign: "left" }}>Ações</th>
+                  )}
                   {showIdColumn && (
                     <th style={{ textAlign: "center", width: "100px" }}>
                       Número
@@ -509,9 +512,6 @@ const EntityTable: React.FC<EntityTableProps> = ({
                     >
                       {translateLabel(field.label)}
                     </th>
-                  ))}
-                  {showActions && (
-                    <th style={{ textAlign: "left" }}>Ações</th>
                   )}
                 </tr>
               </thead>
@@ -532,29 +532,6 @@ const EntityTable: React.FC<EntityTableProps> = ({
                 ) : (
                   data.map((row, index) => (
                     <tr key={row?.id ?? index}>
-                      {showIdColumn && (
-                        <td style={{ textAlign: "center", fontFamily: "monospace", fontWeight: "600", color: "#6b7280" }}>
-                          {customRenderers?.['id'] 
-                            ? customRenderers['id'](row?.id, row)
-                            : formatId(row?.id)
-                          }
-                        </td>
-                      )}
-                      {visibleFields.map((field) => {
-                        const value = getFieldValue(row, field);
-                        const customRenderer = customRenderers?.[field.name];
-
-                        return (
-                          <td
-                            key={field.name}
-                            style={{ textAlign: getAlignment(field.align) }}
-                          >
-                            {customRenderer
-                              ? customRenderer(value, row)
-                              : formatValue(value, field)}
-                          </td>
-                        );
-                      })}
                       {showActions && (
                         <td style={{ textAlign: "left" }}>
                           <div className="actions">
@@ -587,15 +564,11 @@ const EntityTable: React.FC<EntityTableProps> = ({
                               <button
                                 className="btn-action btn-delete"
                                 onClick={() => {
-                                  // Tenta diferentes propriedades de ID
                                   const id = row.id || row.paymentId || row.ID;
-                                  
-                                  if (!id) {
-                                    console.error("❌ ID não encontrado na row!");
-                                    return;
+                                  if (!id) return;
+                                  if (window.confirm("Tem certeza que deseja excluir este registro?")) {
+                                    onDelete(id);
                                   }
-                                  
-                                  onDelete(id);
                                 }}
                                 title="Excluir"
                               >
@@ -605,6 +578,29 @@ const EntityTable: React.FC<EntityTableProps> = ({
                           </div>
                         </td>
                       )}
+                      {showIdColumn && (
+                        <td style={{ textAlign: "center", fontFamily: "monospace", fontWeight: "600", color: "#6b7280" }}>
+                          {customRenderers?.['id']
+                            ? customRenderers['id'](row?.id, row)
+                            : formatId(row?.id)
+                          }
+                        </td>
+                      )}
+                      {visibleFields.map((field) => {
+                        const value = getFieldValue(row, field);
+                        const customRenderer = customRenderers?.[field.name];
+
+                        return (
+                          <td
+                            key={field.name}
+                            style={{ textAlign: getAlignment(field.align) }}
+                          >
+                            {customRenderer
+                              ? customRenderer(value, row)
+                              : formatValue(value, field)}
+                          </td>
+                        );
+                      })}
                     </tr>
                   ))
                 )}
