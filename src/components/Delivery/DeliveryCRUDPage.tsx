@@ -342,8 +342,8 @@ const DeliveryCRUDPage: React.FC = () => {
     },
   };
 
-  // Clientes e admins podem usar o wizard; organizadores e couriers não criam
-  const canUseWizard = !isOrganizer() && !isCourier();
+  // Apenas CLIENT e CUSTOMER criam entregas via wizard
+  const canUseWizard = isClient() || userRole === "ROLE_CUSTOMER" || userRole === "CUSTOMER";
 
   const wizardButton = canUseWizard ? (
     <button
