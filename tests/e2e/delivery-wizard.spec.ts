@@ -309,6 +309,96 @@ test.describe('DeliveryWizard - Criação de Entregas', () => {
     await expect(page.locator('text=/paradas de entrega/i')).toBeVisible();
   });
 
+  test('ida e volta no wizard preserva todos os dados preenchidos', async ({ page }) => {
+    await openWizard(page);
+
+    // === Step 1: preenche origem ===
+    await fillOriginAddress(page, SOBRAL.origin.text);
+    await clickNext(page);
+
+    // === Step 2: preenche 3 paradas com detalhes ===
+    await expect(page.locator('text=/paradas de entrega/i')).toBeVisible({ timeout: 5_000 });
+    await fillStopDetails(page, 0, SOBRAL.stop1);
+    await addStop(page);
+    await fillStopDetails(page, 1, SOBRAL.stop2);
+    await addStop(page);
+    await fillStopDetails(page, 2, SOBRAL.stop3);
+
+    // Verifica que os 3 stops estão na tela
+    expect(await page.locator('.wizard-stop-item').count()).toBe(3);
+
+    // === VOLTA para Step 1 ===
+    await clickBack(page);
+    await expect(page.locator('text=/origem|coleta/i')).toBeVisible();
+
+    // Verifica que o endereço de origem foi preservado
+    const originInput = page.locator('.wizard-content input[type="text"]').first();
+    const originValue = await originInput.inputValue();
+    expect(originValue).toContain('Conselheiro Rodrigues');
+
+    // === AVANÇA de volta para Step 2 ===
+    await clickNext(page);
+    await expect(page.locator('text=/paradas de entrega/i')).toBeVisible();
+
+    // Verifica que TODAS as paradas foram preservadas (3 paradas)
+    expect(await page.locator('.wizard-stop-item').count()).toBe(3);
+
+    // Verifica dados da parada 1
+    const stop1 = page.locator('.wizard-stop-item').nth(0);
+    await expect(stop1.getByPlaceholder(/receber/i)).toHaveValue(SOBRAL.stop1.recipient);
+    await expect(stop1.locator('input[type="tel"]')).toHaveValue(SOBRAL.stop1.phone);
+    await expect(stop1.getByPlaceholder(/caixa|ex:/i)).toHaveValue(SOBRAL.stop1.item);
+
+    // Verifica dados da parada 2
+    const stop2 = page.locator('.wizard-stop-item').nth(1);
+    await expect(stop2.getByPlaceholder(/receber/i)).toHaveValue(SOBRAL.stop2.recipient);
+    await expect(stop2.locator('input[type="tel"]')).toHaveValue(SOBRAL.stop2.phone);
+
+    // Verifica dados da parada 3
+    const stop3 = page.locator('.wizard-stop-item').nth(2);
+    await expect(stop3.getByPlaceholder(/receber/i)).toHaveValue(SOBRAL.stop3.recipient);
+
+    // === AVANÇA para Step 3 (resumo) ===
+    await clickNext(page);
+    await page.waitForTimeout(3_000);
+    await expect(page.locator('text=/resumo/i')).toBeVisible({ timeout: 10_000 });
+
+    // Verifica que o resumo mostra todas as 3 paradas
+    await expect(page.locator(`text=${SOBRAL.stop1.recipient}`)).toBeVisible();
+    await expect(page.locator(`text=${SOBRAL.stop2.recipient}`)).toBeVisible();
+    await expect(page.locator(`text=${SOBRAL.stop3.recipient}`)).toBeVisible();
+
+    // === VOLTA para Step 2 de novo ===
+    await clickBack(page);
+    await expect(page.locator('text=/paradas de entrega/i')).toBeVisible();
+
+    // Dados continuam preservados
+    expect(await page.locator('.wizard-stop-item').count()).toBe(3);
+    await expect(page.locator('.wizard-stop-item').nth(0).getByPlaceholder(/receber/i)).toHaveValue(SOBRAL.stop1.recipient);
+    await expect(page.locator('.wizard-stop-item').nth(1).getByPlaceholder(/receber/i)).toHaveValue(SOBRAL.stop2.recipient);
+    await expect(page.locator('.wizard-stop-item').nth(2).getByPlaceholder(/receber/i)).toHaveValue(SOBRAL.stop3.recipient);
+
+    // === AVANÇA para Step 3 e submete ===
+    const requestPromise = page.waitForRequest(
+      (req) => req.url().includes('/deliveries') && req.method() === 'POST',
+      { timeout: 30_000 },
+    );
+
+    await clickNext(page);
+    await page.waitForTimeout(3_000);
+    await page.locator('button').filter({ hasText: /criar entrega/i }).click();
+
+    const request = await requestPromise;
+    const payload = JSON.parse(request.postData() || '{}');
+
+    // Mesmo após ida e volta, o payload deve ter os 3 stops com dados completos
+    expect(payload.stops).toHaveLength(3);
+    expect(payload.stops[0].recipientName).toBe(SOBRAL.stop1.recipient);
+    expect(payload.stops[1].recipientName).toBe(SOBRAL.stop2.recipient);
+    expect(payload.stops[2].recipientName).toBe(SOBRAL.stop3.recipient);
+    expect(payload.fromAddress).toContain('Conselheiro Rodrigues');
+  });
+
   test('botão cancelar fecha o wizard', async ({ page }) => {
     await openWizard(page);
 
