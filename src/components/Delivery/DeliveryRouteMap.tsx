@@ -245,7 +245,7 @@ const DeliveryRouteMap: React.FC<DeliveryRouteMapProps> = ({
                 position={{ lat: stop.latitude, lng: stop.longitude }}
                 title={`Parada ${idx + 1}${stop.address ? `: ${stop.address}` : ""}${stop.status === "COMPLETED" ? " ✓" : ""}`}
                 icon={{
-                  path: google.maps.SymbolPath.CIRCLE,
+                  path: (typeof google !== "undefined" ? google.maps.SymbolPath.CIRCLE : 0),
                   scale: 10,
                   fillColor: stopColor(stop),
                   fillOpacity: 1,
@@ -269,8 +269,8 @@ const DeliveryRouteMap: React.FC<DeliveryRouteMapProps> = ({
                 title={deliveryManName ? `🏍️ ${deliveryManName}` : "🏍️ Motoboy em rota"}
                 icon={{
                   url: motoIcon,
-                  scaledSize: new google.maps.Size(40, 40),
-                  anchor: new google.maps.Point(20, 20),
+                  scaledSize: (typeof google !== "undefined" ? new google.maps.Size(40, 40) : undefined),
+                  anchor: (typeof google !== "undefined" ? new google.maps.Point(20, 20) : undefined),
                 }}
                 zIndex={1000}
               />
@@ -288,7 +288,7 @@ const DeliveryRouteMap: React.FC<DeliveryRouteMapProps> = ({
                     icons: [
                       {
                         icon: {
-                          path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                          path: (typeof google !== "undefined" ? google.maps.SymbolPath.FORWARD_CLOSED_ARROW : 0),
                           scale: 3,
                           strokeColor: "#2563eb",
                           strokeWeight: 2,
