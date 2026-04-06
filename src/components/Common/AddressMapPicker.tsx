@@ -372,12 +372,24 @@ export const AddressMapPicker: React.FC<AddressMapPickerProps> = ({
         )}
       </div>
 
-      {/* Instrução de uso do mapa */}
-      {!disabled && (
-        <div className="address-map-hint">
-          Clique no mapa para posicionar o pin no local exato
-        </div>
-      )}
+      {/* Barra acima do mapa: instrução + botão confirmar */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 0" }}>
+        {!disabled && (
+          <div className="address-map-hint" style={{ margin: 0, flex: 1 }}>
+            Clique ou arraste o mapa para posicionar o pin
+          </div>
+        )}
+        {showConfirmButton && onAddressSelect && hasAddress && (
+          <button
+            type="button"
+            className="address-confirm-button"
+            style={{ marginLeft: 8, whiteSpace: "nowrap" }}
+            onClick={handleConfirm}
+          >
+            ✅ Confirmar Endereço
+          </button>
+        )}
+      </div>
 
       {/* Mapa com pin fixo no centro */}
       <div className="address-map-container">
@@ -404,7 +416,7 @@ export const AddressMapPicker: React.FC<AddressMapPickerProps> = ({
             disableDefaultUI: false,
             zoomControl: true,
             scrollwheel: false,
-            gestureHandling: "none",
+            gestureHandling: "cooperative",
             streetViewControl: true,
             mapTypeControl: true,
             mapTypeControlOptions: {
@@ -446,21 +458,10 @@ export const AddressMapPicker: React.FC<AddressMapPickerProps> = ({
         {value.zipCode && <span>📮 {value.zipCode}</span>}
       </div>
 
-      {/* Botão de confirmação — disponível quando há texto (coordenadas são opcionais) */}
-      {showConfirmButton && onAddressSelect && hasAddress && (
-        <div style={{ marginTop: "16px", display: "flex", gap: "12px", alignItems: "center", justifyContent: "flex-end" }}>
-          {!hasCoordinates && (
-            <span className="address-no-coords-warning">
-              ⚠️ Sem posição no mapa (só texto)
-            </span>
-          )}
-          <button
-            type="button"
-            className="address-confirm-button"
-            onClick={handleConfirm}
-          >
-            ✅ Confirmar Endereço
-          </button>
+      {/* Aviso sem coordenadas */}
+      {showConfirmButton && onAddressSelect && hasAddress && !hasCoordinates && (
+        <div style={{ marginTop: 8, textAlign: "right" }}>
+          <span className="address-no-coords-warning">⚠️ Sem posição no mapa (só texto)</span>
         </div>
       )}
     </div>
