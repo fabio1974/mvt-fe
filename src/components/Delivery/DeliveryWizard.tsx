@@ -151,8 +151,48 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
   // Validation
   // -----------------------------------------------------------------------
 
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+
   const step1Valid = originAddress.trim() !== "";
   const step2Valid = stops.length > 0 && stops.every((s) => s.addressData.address.trim() !== "");
+
+  /** Valida e tenta avançar do step atual */
+  const validateAndAdvance = () => {
+    const errors: Record<string, string> = {};
+
+    if (step === 1) {
+      if (!originAddress.trim()) {
+        errors.origin = "Endereço de origem é obrigatório";
+      }
+      if (Object.keys(errors).length > 0) {
+        setValidationErrors(errors);
+        return false;
+      }
+      setValidationErrors({});
+      setStep(2);
+      return true;
+    }
+
+    if (step === 2) {
+      stops.forEach((s, idx) => {
+        if (!s.addressData.address.trim()) {
+          errors[`stop_${idx}_address`] = "Endereço é obrigatório";
+        }
+        if (!s.recipientName.trim()) {
+          errors[`stop_${idx}_name`] = "Nome do destinatário é obrigatório";
+        }
+      });
+      if (Object.keys(errors).length > 0) {
+        setValidationErrors(errors);
+        return false;
+      }
+      setValidationErrors({});
+      goToStep3();
+      return true;
+    }
+
+    return true;
+  };
 
   // -----------------------------------------------------------------------
   // Route calculation (step 2 → 3)
@@ -708,11 +748,7 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
             <button
               type="button"
               className="wizard-btn primary"
-              disabled={step === 1 ? !step1Valid : !step2Valid}
-              onClick={() => {
-                if (step === 1) setStep(2);
-                else goToStep3();
-              }}
+              onClick={validateAndAdvance}
             >
               Próximo <FiChevronRight size={16} />
             </button>

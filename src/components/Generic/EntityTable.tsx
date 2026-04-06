@@ -319,6 +319,19 @@ const EntityTable: React.FC<EntityTableProps> = ({
       return value.id ? `ID: ${value.id}` : String(value);
     }
 
+    // Detecção automática de datas ISO (independente do tipo declarado no metadata)
+    if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(value)) {
+      const d = new Date(value);
+      if (!isNaN(d.getTime())) {
+        const dd = String(d.getDate()).padStart(2, "0");
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const yyyy = d.getFullYear();
+        const hh = String(d.getHours()).padStart(2, "0");
+        const min = String(d.getMinutes()).padStart(2, "0");
+        return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
+      }
+    }
+
     if (!field.type) return String(value);
 
     // ✅ PRIORIDADE 1: Se o campo tem options (enum/select), traduz SEMPRE
