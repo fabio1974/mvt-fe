@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# 🧪 Pre-push hook: roda testes unitários sempre + E2E se BE/FE estiverem rodando
+
+echo "🧪 [pre-push] Rodando testes unitários..."
+npx vitest run src/tests/ --silent 2>&1
+if [ $? -ne 0 ]; then
+    echo "❌ Testes unitários falharam! Push cancelado."
+    exit 1
+fi
+echo "✅ Testes unitários passaram"
+
+# E2E: só roda se BE + FE estiverem rodando
+BE_UP=$(curl -s http://localhost:8080/actuator/health 2>/dev/null | grep -c "UP")
+FE_UP=$(curl -s http://localhost:5173 2>/dev/null | grep -c "html")
+
+if [ "$BE_UP" -gt 0 ] && [ "$FE_UP" -gt 0 ]; then
+    echo "🧪 [pre-push] BE + FE rodando — executando testes E2E..."
+    npx playwright test tests/e2e/ --reporter=line 2>&1
+    if [ $? -ne 0 ]; then
+        echo "❌ Testes E2E falharam! Push cancelado."
+        exit 1
+    fi
+    echo "✅ Testes E2E passaram"
+else
+    echo "⚠️  [pre-push] BE ou FE não estão rodando — pulando testes E2E"
+    echo "   Rode manualmente: ./scripts/run-e2e.sh"
+fi
+
+echo "✅ [pre-push] Todos os testes passaram!"
