@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from "react";
-import { GoogleMap, useJsApiLoader, Marker, DirectionsRenderer } from "@react-google-maps/api";
+import { GoogleMap, useJsApiLoader, DirectionsRenderer } from "@react-google-maps/api";
 import { FiPlus, FiTrash2, FiChevronRight, FiChevronLeft, FiMapPin, FiCheck } from "react-icons/fi";
 import { AddressFieldWithMap } from "../Common/AddressFieldWithMap";
 import type { AddressData } from "../Common/AddressMapPicker";
@@ -297,13 +297,6 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
       ? { lat: originData.latitude, lng: originData.longitude }
       : { lat: -3.7327, lng: -38.5267 };
 
-  const allPoints = [
-    originData.latitude && originData.longitude ? originData : null,
-    ...stops.map((s) =>
-      s.addressData.latitude && s.addressData.longitude ? s.addressData : null
-    ),
-  ].filter(Boolean) as AddressData[];
-
   // -----------------------------------------------------------------------
   // Render helpers
   // -----------------------------------------------------------------------
@@ -454,47 +447,6 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
       <button type="button" className="wizard-add-stop" onClick={addStop}>
         <FiPlus size={16} /> Adicionar parada
       </button>
-
-      {/* Mini preview map */}
-      {isLoaded && allPoints.length > 0 && (
-        <div className="wizard-preview-map">
-          <GoogleMap
-            mapContainerStyle={{ width: "100%", height: "220px", borderRadius: "8px" }}
-            center={previewCenter}
-            zoom={13}
-            onLoad={(m) => {
-              mapRef.current = m;
-              if (allPoints.length > 1) {
-                const bounds = new google.maps.LatLngBounds();
-                allPoints.forEach((p) => bounds.extend({ lat: p.latitude, lng: p.longitude }));
-                m.fitBounds(bounds, 40);
-              }
-            }}
-            options={{ disableDefaultUI: true, zoomControl: true, gestureHandling: "greedy" }}
-          >
-            {allPoints.map((p, i) => (
-              <Marker
-                key={i}
-                position={{ lat: p.latitude, lng: p.longitude }}
-                label={i === 0 ? { text: "O", color: "white", fontWeight: "bold" } : { text: String(i), color: "white", fontWeight: "bold" }}
-                icon={{
-                  path: google.maps.SymbolPath.CIRCLE,
-                  scale: 12,
-                  fillColor: i === 0 ? "#22c55e" : i === allPoints.length - 1 ? "#ef4444" : "#f59e0b",
-                  fillOpacity: 1,
-                  strokeColor: "white",
-                  strokeWeight: 2,
-                }}
-              />
-            ))}
-          </GoogleMap>
-          <p className="wizard-preview-legend">
-            <span style={{ color: "#22c55e" }}>● Origem</span>
-            {stops.length > 1 && <span style={{ color: "#f59e0b", marginLeft: 12 }}>● Paradas</span>}
-            <span style={{ color: "#ef4444", marginLeft: 12 }}>● Destino</span>
-          </p>
-        </div>
-      )}
     </div>
   );
 
