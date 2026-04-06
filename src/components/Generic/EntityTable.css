@@ -119,6 +119,7 @@
   color: #374151;
   border-bottom: 2px solid #e5e7eb;
   border-right: 1px solid #e5e7eb;
+  white-space: nowrap;
 }
 
 .entity-table th:first-child {
