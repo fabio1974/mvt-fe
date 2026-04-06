@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from "react";
-import { GoogleMap, useJsApiLoader, DirectionsRenderer } from "@react-google-maps/api";
+import { GoogleMap, useJsApiLoader, DirectionsRenderer, Marker, InfoWindow } from "@react-google-maps/api";
 import { FiPlus, FiTrash2, FiChevronRight, FiChevronLeft, FiMapPin, FiCheck } from "react-icons/fi";
 import { AddressFieldWithMap } from "../Common/AddressFieldWithMap";
 import type { AddressData } from "../Common/AddressMapPicker";
@@ -81,6 +81,7 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
   } | null>(null);
   const [notes, setNotes] = useState("");
   const [routeLoading, setRouteLoading] = useState(false);
+  const [selectedMarker, setSelectedMarker] = useState<number | null>(null);
 
   const mapRef = useRef<google.maps.Map | null>(null);
 
@@ -495,23 +496,95 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
             ))}
           </div>
 
-          {/* Mapa da rota */}
+          {/* Mapa da rota com pins customizados */}
           {isLoaded && routeInfo?.directions && (
             <div style={{ marginBottom: 20, borderRadius: 8, overflow: "hidden", border: "1px solid #e5e7eb" }}>
               <GoogleMap
                 mapContainerStyle={{ width: "100%", height: "280px" }}
                 center={previewCenter}
                 zoom={12}
-                onLoad={(m) => { mapRef.current = m; }}
+                onLoad={(m) => {
+                  mapRef.current = m;
+                  // Fit bounds para todos os pontos
+                  const bounds = new google.maps.LatLngBounds();
+                  if (originData.latitude && originData.longitude) bounds.extend({ lat: originData.latitude, lng: originData.longitude });
+                  stops.forEach((s) => {
+                    if (s.addressData.latitude && s.addressData.longitude) bounds.extend({ lat: s.addressData.latitude, lng: s.addressData.longitude });
+                  });
+                  m.fitBounds(bounds, 40);
+                }}
                 options={{ disableDefaultUI: true, zoomControl: true }}
+                onClick={() => setSelectedMarker(null)}
               >
                 <DirectionsRenderer
                   directions={routeInfo.directions}
                   options={{
-                    suppressMarkers: false,
+                    suppressMarkers: true,
                     polylineOptions: { strokeColor: "#2563eb", strokeOpacity: 0.85, strokeWeight: 4 },
                   }}
                 />
+
+                {/* Pin de origem (verde) */}
+                {originData.latitude && originData.longitude && (
+                  <Marker
+                    position={{ lat: originData.latitude, lng: originData.longitude }}
+                    icon={{
+                      path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
+                      fillColor: "#22c55e",
+                      fillOpacity: 1,
+                      strokeColor: "#ffffff",
+                      strokeWeight: 2,
+                      scale: 1.8,
+                      anchor: new google.maps.Point(12, 22),
+                    }}
+                    onClick={() => setSelectedMarker(-1)}
+                  >
+                    {selectedMarker === -1 && (
+                      <InfoWindow onCloseClick={() => setSelectedMarker(null)}>
+                        <div style={{ fontSize: 13 }}>
+                          <strong>Origem (coleta)</strong><br />
+                          {originAddress}
+                        </div>
+                      </InfoWindow>
+                    )}
+                  </Marker>
+                )}
+
+                {/* Pins das paradas (laranja para intermediárias, vermelho para final) */}
+                {stops.map((stop, idx) => {
+                  if (!stop.addressData.latitude || !stop.addressData.longitude) return null;
+                  const isLast = idx === stops.length - 1;
+                  const color = isLast ? "#ef4444" : "#f59e0b";
+                  return (
+                    <Marker
+                      key={stop.id}
+                      position={{ lat: stop.addressData.latitude, lng: stop.addressData.longitude }}
+                      label={{ text: String(idx + 1), color: "#fff", fontWeight: "bold", fontSize: "12px" }}
+                      icon={{
+                        path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
+                        fillColor: color,
+                        fillOpacity: 1,
+                        strokeColor: "#ffffff",
+                        strokeWeight: 2,
+                        scale: 1.8,
+                        anchor: new google.maps.Point(12, 22),
+                        labelOrigin: new google.maps.Point(12, 10),
+                      }}
+                      onClick={() => setSelectedMarker(idx)}
+                    >
+                      {selectedMarker === idx && (
+                        <InfoWindow onCloseClick={() => setSelectedMarker(null)}>
+                          <div style={{ fontSize: 13 }}>
+                            <strong>{isLast ? "Destino final" : `Parada ${idx + 1}`}</strong><br />
+                            {stop.addressData.address}<br />
+                            {stop.recipientName && <span>👤 {stop.recipientName}</span>}
+                            {stop.itemDescription && <><br />📦 {stop.itemDescription}</>}
+                          </div>
+                        </InfoWindow>
+                      )}
+                    </Marker>
+                  );
+                })}
               </GoogleMap>
             </div>
           )}

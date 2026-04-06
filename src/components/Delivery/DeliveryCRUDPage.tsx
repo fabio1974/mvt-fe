@@ -299,20 +299,21 @@ const DeliveryCRUDPage: React.FC = () => {
       style={{
         display: "flex",
         alignItems: "center",
-        gap: "6px",
-        padding: "6px 14px",
+        gap: "8px",
+        padding: "10px 20px",
         background: "linear-gradient(135deg, #3b82f6, #6366f1)",
         color: "white",
         border: "none",
-        borderRadius: "6px",
+        borderRadius: "8px",
         cursor: "pointer",
-        fontSize: "13px",
+        fontSize: "14px",
         fontWeight: 600,
         whiteSpace: "nowrap",
+        boxShadow: "0 2px 8px rgba(59, 130, 246, 0.3)",
       }}
     >
-      <FiPlus size={14} />
-      Com paradas
+      <FiPlus size={16} />
+      Nova Entrega
     </button>
   ) : undefined;
 
