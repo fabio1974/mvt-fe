@@ -440,14 +440,17 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
       <p className="wizard-section-desc">De onde o motoboy vai retirar a encomenda?</p>
       <AddressFieldWithMap
         value={originAddress}
-        onChange={handleOriginChange}
-        onAddressDataChange={handleOriginDataChange}
+        onChange={(addr, data) => { handleOriginChange(addr, data); setValidationErrors((e) => { const n = {...e}; delete n.origin; return n; }); }}
+        onAddressDataChange={(data) => { handleOriginDataChange(data); setValidationErrors((e) => { const n = {...e}; delete n.origin; return n; }); }}
         initialLatitude={originData.latitude || undefined}
         initialLongitude={originData.longitude || undefined}
         label="Endereço de Origem *"
         placeholder="Ex: Rua das Flores, 123 - Centro"
         required
       />
+      {validationErrors.origin && (
+        <p className="wizard-field-error">{validationErrors.origin}</p>
+      )}
     </div>
   );
 
@@ -488,14 +491,21 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
               onChange={(addr, data) => {
                 if (data) updateStop(stop.id, data);
                 else updateStopAddress(stop.id, addr);
+                setValidationErrors((e) => { const n = {...e}; delete n[`stop_${idx}_address`]; return n; });
               }}
-              onAddressDataChange={(data) => updateStop(stop.id, data)}
+              onAddressDataChange={(data) => {
+                updateStop(stop.id, data);
+                setValidationErrors((e) => { const n = {...e}; delete n[`stop_${idx}_address`]; return n; });
+              }}
               initialLatitude={stop.addressData.latitude || undefined}
               initialLongitude={stop.addressData.longitude || undefined}
               label={`Parada ${idx + 1} *`}
               placeholder="Ex: Av. Bezerra de Menezes, 456"
               required
             />
+            {validationErrors[`stop_${idx}_address`] && (
+              <p className="wizard-field-error">{validationErrors[`stop_${idx}_address`]}</p>
+            )}
 
             {/* Detalhes da parada — mesmo fluxo do mobile */}
             <div className="wizard-stop-details">
@@ -506,8 +516,15 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
                     type="text"
                     placeholder="Quem vai receber?"
                     value={stop.recipientName}
-                    onChange={(e) => updateStopField(stop.id, "recipientName", e.target.value)}
+                    onChange={(e) => {
+                      updateStopField(stop.id, "recipientName", e.target.value);
+                      setValidationErrors((err) => { const n = {...err}; delete n[`stop_${idx}_name`]; return n; });
+                    }}
+                    style={validationErrors[`stop_${idx}_name`] ? { borderColor: "#ef4444" } : undefined}
                   />
+                  {validationErrors[`stop_${idx}_name`] && (
+                    <p className="wizard-field-error">{validationErrors[`stop_${idx}_name`]}</p>
+                  )}
                 </div>
                 <div className="wizard-stop-field">
                   <label>Telefone</label>
