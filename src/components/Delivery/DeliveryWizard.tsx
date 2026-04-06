@@ -142,7 +142,8 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
 
   /** Soma dos valores COD de todas as paradas */
   const totalAmount = stops.reduce((sum, s) => {
-    const val = parseFloat(s.itemValue.replace(",", ".") || "0");
+    // Remove pontos de milhar e troca vírgula decimal por ponto
+    const val = parseFloat((s.itemValue || "0").replace(/\./g, "").replace(",", "."));
     return sum + (isNaN(val) ? 0 : val);
   }, 0);
 
@@ -430,12 +431,17 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
                   <label>Valor a cobrar (R$)</label>
                   <input
                     type="text"
-                    inputMode="decimal"
-                    placeholder="0,00"
+                    inputMode="numeric"
+                    placeholder="R$ 0,00"
                     value={stop.itemValue}
                     onChange={(e) => {
-                      const raw = e.target.value.replace(/[^0-9.,]/g, "");
-                      updateStopField(stop.id, "itemValue", raw);
+                      // Extrai apenas dígitos
+                      const digits = e.target.value.replace(/\D/g, "");
+                      if (!digits) { updateStopField(stop.id, "itemValue", ""); return; }
+                      // Converte para centavos → reais com 2 casas decimais
+                      const cents = parseInt(digits, 10);
+                      const formatted = (cents / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                      updateStopField(stop.id, "itemValue", formatted);
                     }}
                   />
                 </div>
