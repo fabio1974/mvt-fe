@@ -273,6 +273,30 @@ const EntityTable: React.FC<EntityTableProps> = ({
 
     if (value === null || value === undefined) return "-";
 
+    // Se o valor é um array (ex: payments), exibe o último item relevante
+    if (Array.isArray(value)) {
+      if (value.length === 0) return "-";
+      // Para payments: mostra status + valor do último pagamento
+      const last = value[value.length - 1];
+      if (last && typeof last === "object") {
+        const statusMap: Record<string, string> = {
+          PAID: "Pago",
+          PENDING: "Pendente",
+          EXPIRED: "Expirado",
+          CANCELLED: "Cancelado",
+          FAILED: "Falhou",
+          PROCESSING: "Processando",
+          REFUNDED: "Estornado",
+        };
+        const status = last.status ? (statusMap[last.status] || last.status) : "";
+        const amount = last.amount != null
+          ? ` R$ ${Number(last.amount).toFixed(2).replace(".", ",")}`
+          : "";
+        return status + amount || `${value.length} item(s)`;
+      }
+      return `${value.length} item(s)`;
+    }
+
     // Se o valor é um objeto (relacionamento), tenta extrair o campo apropriado
     if (typeof value === "object" && !Array.isArray(value)) {
       // Se o field tem relationship com labelField definido, usa ele

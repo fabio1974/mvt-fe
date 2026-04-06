@@ -375,9 +375,7 @@ export const AddressMapPicker: React.FC<AddressMapPickerProps> = ({
       {/* Instrução de uso do mapa */}
       {!disabled && (
         <div className="address-map-hint">
-          {isMapDragging
-            ? "Solte para confirmar a posição do pin"
-            : "Arraste o mapa para posicionar o pin no local exato"}
+          Clique no mapa para posicionar o pin no local exato
         </div>
       )}
 
@@ -390,6 +388,18 @@ export const AddressMapPicker: React.FC<AddressMapPickerProps> = ({
           onLoad={onMapLoad}
           onIdle={handleMapIdle}
           onDragStart={handleMapDragStart}
+          onClick={(e) => {
+            if (disabled || !e.latLng) return;
+            const lat = e.latLng.lat();
+            const lng = e.latLng.lng();
+            // Move o mapa para o ponto clicado e faz geocode reverso
+            mapRef.current?.panTo({ lat, lng });
+            if (isManualTextRef.current) {
+              onChange({ ...value, latitude: lat, longitude: lng });
+            } else {
+              reverseGeocode(lat, lng);
+            }
+          }}
           options={{
             disableDefaultUI: false,
             zoomControl: true,
@@ -418,33 +428,21 @@ export const AddressMapPicker: React.FC<AddressMapPickerProps> = ({
         )}
       </div>
 
-      {/* Informações das coordenadas e endereço */}
-      <div className="address-info">
-        <div className="address-info-row">
-          <strong>📍 Coordenadas:</strong>
-          {hasCoordinates
-            ? ` ${value.latitude.toFixed(6)}, ${value.longitude.toFixed(6)}`
-            : " não posicionado (mova o mapa para definir)"}
-        </div>
-        <div className="address-info-row">
-          <strong>📝 Endereço:</strong>
-          {hasAddress
-            ? ` ${searchInput}`
-            : " não informado"}
-          {isManualTextRef.current && hasAddress && (
-            <span className="address-info-badge">personalizado</span>
-          )}
-        </div>
-        {value.city && (
-          <div className="address-info-row">
-            <strong>🏙️</strong> {value.city} - {value.state}
-          </div>
+      {/* Informações resumidas em uma linha */}
+      <div className="address-info" style={{ display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "center", fontSize: "0.8rem", color: "#6b7280" }}>
+        <span>
+          📍 {hasCoordinates
+            ? `${value.latitude.toFixed(6)}, ${value.longitude.toFixed(6)}`
+            : "sem coordenadas"}
+        </span>
+        {hasAddress && (
+          <span>
+            📝 {searchInput}
+            {isManualTextRef.current && <span className="address-info-badge" style={{ marginLeft: 4 }}>personalizado</span>}
+          </span>
         )}
-        {value.zipCode && (
-          <div className="address-info-row">
-            <strong>📮</strong> {value.zipCode}
-          </div>
-        )}
+        {value.city && <span>🏙️ {value.city} - {value.state}</span>}
+        {value.zipCode && <span>📮 {value.zipCode}</span>}
       </div>
 
       {/* Botão de confirmação — disponível quando há texto (coordenadas são opcionais) */}
