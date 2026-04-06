@@ -437,7 +437,7 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
       <h3 className="wizard-section-title">
         <FiMapPin /> Endereço de coleta (origem)
       </h3>
-      <p className="wizard-section-desc">De onde o motoboy vai retirar a encomenda?</span>
+      <p className="wizard-section-desc">De onde o motoboy vai retirar a encomenda?</p>
       <AddressFieldWithMap
         value={originAddress}
         onChange={(addr, data) => { handleOriginChange(addr, data); setValidationErrors((e) => { const n = {...e}; delete n.origin; return n; }); }}
@@ -461,7 +461,7 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
       </h3>
       <p className="wizard-section-desc">
         Adicione os endereços de entrega em ordem. O motoboy vai seguir essa sequência.
-      </span>
+      </p>
 
       <div className="wizard-stops-list">
         {stops.map((stop, idx) => (
@@ -585,7 +585,7 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
       {routeLoading ? (
         <div className="wizard-loading">
           <div className="wizard-spinner" />
-          <p>Calculando rota e preço...</span>
+          <p>Calculando rota e preço...</p>
         </div>
       ) : (
         <>
@@ -718,7 +718,7 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
           {freightLoading && (
             <div className="wizard-loading" style={{ padding: 20 }}>
               <div className="wizard-spinner" />
-              <p>Calculando custo da corrida...</span>
+              <p>Calculando custo da corrida...</p>
             </div>
           )}
 
