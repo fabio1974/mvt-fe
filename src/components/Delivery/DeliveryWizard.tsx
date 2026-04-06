@@ -83,6 +83,36 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
   const [routeLoading, setRouteLoading] = useState(false);
   const [selectedMarker, setSelectedMarker] = useState<number | null>(null);
 
+  // Simulação de frete do backend (mesma estrutura do mobile)
+  interface VehicleFreight {
+    vehicleType: string;
+    vehicleLabel: string;
+    pricePerKm: number;
+    baseFee: number;
+    minimumFee: number;
+    minimumApplied: boolean;
+    feeBeforeZone: number;
+    zoneSurcharge: number;
+    totalShippingFee: number;
+    creditCardFeePercentage: number;
+    creditCardFeeAmount: number;
+    totalWithCreditCardFee: number;
+  }
+  interface FreightSimulation {
+    distanceKm: number;
+    zoneName: string | null;
+    zoneType: string | null;
+    zoneFeePercentage: number;
+    motorcycle: VehicleFreight;
+    car: VehicleFreight;
+    stopCount?: number;
+    additionalStopFee?: number;
+    totalAdditionalStopFee?: number;
+  }
+  const [freightData, setFreightData] = useState<FreightSimulation | null>(null);
+  const [freightLoading, setFreightLoading] = useState(false);
+  const [freightError, setFreightError] = useState<string | null>(null);
+
   const mapRef = useRef<google.maps.Map | null>(null);
 
   const { isLoaded } = useJsApiLoader({
@@ -264,12 +294,42 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
       const estimatedPrice = parseFloat((totalDistanceKm * pricePerKm).toFixed(2));
 
       setRouteInfo({ directions: result, totalDistanceKm, totalDurationMin, pricePerKm, estimatedPrice });
+
+      // Simula frete no backend (mesma API do mobile)
+      setFreightLoading(true);
+      setFreightError(null);
+      try {
+        const lastS = stops[stops.length - 1];
+        const freightBody: Record<string, unknown> = {
+          fromLatitude: originData.latitude,
+          fromLongitude: originData.longitude,
+          fromAddress: originAddress,
+          toLatitude: lastS.addressData.latitude,
+          toLongitude: lastS.addressData.longitude,
+          toAddress: lastS.addressData.address,
+          distanceKm: parseFloat(totalDistanceKm.toFixed(2)),
+        };
+        if (stops.length > 1) {
+          freightBody.stops = stops.map((s) => ({
+            latitude: s.addressData.latitude,
+            longitude: s.addressData.longitude,
+            address: s.addressData.address,
+          }));
+        }
+        const freightResp = await api.post("/api/deliveries/simulate-freight", freightBody);
+        setFreightData(freightResp.data as FreightSimulation);
+      } catch (freightErr) {
+        console.error("Erro ao simular frete:", freightErr);
+        setFreightError("Não foi possível calcular o custo da corrida");
+      } finally {
+        setFreightLoading(false);
+      }
     } catch (err) {
       console.error("Erro ao calcular rota:", err);
     } finally {
       setRouteLoading(false);
     }
-  }, [isLoaded, originData, stops]);
+  }, [isLoaded, originData, stops, originAddress]);
 
   const goToStep3 = async () => {
     await calculateRoute();
@@ -635,53 +695,109 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
             </div>
           )}
 
-          {/* Métricas */}
-          {routeInfo && (
-            <div className="wizard-metrics">
-              <div className="wizard-metric">
-                <span className="wizard-metric-icon">📏</span>
-                <div>
-                  <div className="wizard-metric-label">Distância total</div>
-                  <div className="wizard-metric-value">{routeInfo.totalDistanceKm.toFixed(1)} km</div>
-                </div>
-              </div>
-              <div className="wizard-metric">
-                <span className="wizard-metric-icon">⏱️</span>
-                <div>
-                  <div className="wizard-metric-label">Tempo estimado</div>
-                  <div className="wizard-metric-value">
-                    {routeInfo.totalDurationMin >= 60
-                      ? `${Math.floor(routeInfo.totalDurationMin / 60)}h ${routeInfo.totalDurationMin % 60}min`
-                      : `${routeInfo.totalDurationMin} min`}
-                  </div>
-                </div>
-              </div>
-              <div className="wizard-metric highlight">
-                <span className="wizard-metric-icon">💰</span>
-                <div>
-                  <div className="wizard-metric-label">
-                    Preço estimado <span style={{ fontSize: 11, color: "#6b7280" }}>(R$ {routeInfo.pricePerKm.toFixed(2)}/km)</span>
-                  </div>
-                  <div className="wizard-metric-value" style={{ color: "#059669" }}>
-                    R$ {routeInfo.estimatedPrice.toFixed(2).replace(".", ",")}
-                  </div>
-                </div>
-              </div>
+          {/* Composição do preço (mesma estrutura do mobile) */}
+          {freightLoading && (
+            <div className="wizard-loading" style={{ padding: 20 }}>
+              <div className="wizard-spinner" />
+              <p>Calculando custo da corrida...</p>
             </div>
           )}
 
-          {/* Total a cobrar (COD) */}
-          {totalAmount > 0 && (
-            <div className="wizard-metrics" style={{ marginBottom: 16 }}>
-              <div className="wizard-metric highlight">
-                <span className="wizard-metric-icon">🏷️</span>
-                <div>
-                  <div className="wizard-metric-label">Total a cobrar na entrega (COD)</div>
-                  <div className="wizard-metric-value" style={{ color: "#2563eb" }}>
-                    R$ {totalAmount.toFixed(2).replace(".", ",")}
+          {freightError && !freightLoading && (
+            <div className="wizard-error" style={{ marginBottom: 16 }}>
+              ⚠️ {freightError}
+            </div>
+          )}
+
+          {freightData && !freightLoading && (() => {
+            const vd = freightData.motorcycle; // default MOTORCYCLE para CLIENT
+            const fmt = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
+            return (
+              <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 10, padding: 16, marginBottom: 16 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, fontWeight: 700, color: "#166534" }}>
+                  🧮 Detalhes do Custo da Corrida
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 14 }}>
+                  {/* Veículo */}
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ color: "#6b7280" }}>Veículo</span>
+                    <span>🏍️ Moto</span>
+                  </div>
+
+                  {/* Taxa base */}
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ color: "#6b7280" }}>Taxa base</span>
+                    <span>{fmt(vd.baseFee)}</span>
+                  </div>
+
+                  {/* Distância */}
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ color: "#6b7280" }}>Distância ({freightData.distanceKm.toFixed(2)} km × {fmt(vd.pricePerKm)}/km)</span>
+                    <span>{fmt(freightData.distanceKm * vd.pricePerKm)}</span>
+                  </div>
+
+                  {/* Mínimo aplicado */}
+                  {vd.minimumApplied && (
+                    <div style={{ display: "flex", justifyContent: "space-between", color: "#f59e0b" }}>
+                      <span>ℹ️ Valor mínimo aplicado</span>
+                      <span>{fmt(vd.minimumFee)}</span>
+                    </div>
+                  )}
+
+                  {/* Subtotal */}
+                  <div style={{ borderTop: "1px solid #d1d5db", paddingTop: 6, display: "flex", justifyContent: "space-between", fontWeight: 600 }}>
+                    <span style={{ color: "#6b7280" }}>Subtotal</span>
+                    <span>{fmt(vd.feeBeforeZone)}</span>
+                  </div>
+
+                  {/* Zona especial */}
+                  {freightData.zoneName && (
+                    <>
+                      <div style={{ display: "flex", alignItems: "center", gap: 4, color: freightData.zoneType === "DANGER" ? "#dc2626" : "#7c3aed" }}>
+                        {freightData.zoneType === "DANGER" ? "⚠️" : "💎"} Zona: {freightData.zoneName}
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between", color: freightData.zoneType === "DANGER" ? "#dc2626" : "#7c3aed" }}>
+                        <span>Acréscimo de zona (+{(freightData.zoneFeePercentage * 100).toFixed(0)}%)</span>
+                        <span>+{fmt(vd.zoneSurcharge)}</span>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Paradas extras */}
+                  {freightData.stopCount != null && freightData.stopCount > 1 && freightData.totalAdditionalStopFee != null && freightData.totalAdditionalStopFee > 0 && (
+                    <div style={{ display: "flex", justifyContent: "space-between", color: "#6366f1" }}>
+                      <span>📍 {freightData.stopCount - 1} parada{freightData.stopCount - 1 > 1 ? "s" : ""} extra{freightData.stopCount - 1 > 1 ? "s" : ""} (× R$ {freightData.additionalStopFee?.toFixed(2)})</span>
+                      <span>+{fmt(freightData.totalAdditionalStopFee)}</span>
+                    </div>
+                  )}
+
+                  {/* Total */}
+                  <div style={{ borderTop: "2px solid #16a34a", paddingTop: 8, marginTop: 4, display: "flex", justifyContent: "space-between", fontWeight: 700, fontSize: 16, color: "#166534" }}>
+                    <span>Total do Frete</span>
+                    <span>{fmt(vd.totalShippingFee)}</span>
                   </div>
                 </div>
+
+                {/* Distância e tempo */}
+                {routeInfo && (
+                  <div style={{ display: "flex", gap: 16, marginTop: 12, fontSize: 13, color: "#6b7280" }}>
+                    <span>📏 {routeInfo.totalDistanceKm.toFixed(1)} km</span>
+                    <span>⏱️ {routeInfo.totalDurationMin >= 60
+                      ? `${Math.floor(routeInfo.totalDurationMin / 60)}h ${routeInfo.totalDurationMin % 60}min`
+                      : `${routeInfo.totalDurationMin} min`}</span>
+                    {stops.length > 1 && <span>📍 {stops.length} paradas</span>}
+                  </div>
+                )}
               </div>
+            );
+          })()}
+
+          {/* Total a cobrar (COD) */}
+          {totalAmount > 0 && (
+            <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 10, padding: 12, marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ fontWeight: 600, color: "#1e40af" }}>🏷️ Total a cobrar na entrega (COD)</span>
+              <span style={{ fontWeight: 700, fontSize: 16, color: "#1e40af" }}>R$ {totalAmount.toFixed(2).replace(".", ",")}</span>
             </div>
           )}
 
