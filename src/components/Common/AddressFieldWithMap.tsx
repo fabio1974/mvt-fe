@@ -146,24 +146,14 @@ export const AddressFieldWithMap: React.FC<AddressFieldWithMapProps> = ({
         onClose={() => setIsModalOpen(false)}
         title={`📍 Selecionar ${label}`}
         size="xlarge"
-        headerActions={
-          addressData.address.trim() ? (
-            <button
-              type="button"
-              className="address-confirm-button"
-              onClick={() => handleAddressSelect(addressData)}
-            >
-              ✅ Confirmar
-            </button>
-          ) : undefined
-        }
       >
         <AddressMapPicker
           value={addressData}
           onChange={setAddressData}
           disabled={disabled}
           required={required}
-          showConfirmButton={false}
+          showConfirmButton
+          onAddressSelect={handleAddressSelect}
         />
       </Modal>
     </div>

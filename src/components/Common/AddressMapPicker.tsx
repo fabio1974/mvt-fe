@@ -368,6 +368,16 @@ export const AddressMapPicker: React.FC<AddressMapPickerProps> = ({
             >
               {isLocating ? "⏳" : "📍"}
             </button>
+            {showConfirmButton && onAddressSelect && hasAddress && (
+              <button
+                type="button"
+                className="address-confirm-button"
+                onClick={handleConfirm}
+                style={{ whiteSpace: "nowrap" }}
+              >
+                ✅ Confirmar
+              </button>
+            )}
           </div>
         )}
       </div>
