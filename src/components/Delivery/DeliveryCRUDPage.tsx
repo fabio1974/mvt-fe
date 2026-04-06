@@ -44,6 +44,7 @@ const DeliveryCRUDPage: React.FC = () => {
   // Estado para o wizard de nova entrega
   const [wizardOpen, setWizardOpen] = useState(false);
   const [wizardKey, setWizardKey] = useState(0); // força re-mount após sucesso
+  const [crudKey, setCrudKey] = useState(0); // força refresh da tabela
   
   // Define filtros iniciais baseados no role
   // NOTA: O backend filtra automaticamente pelo token para COURIER
@@ -320,6 +321,7 @@ const DeliveryCRUDPage: React.FC = () => {
   return (
     <>
       <EntityCRUD
+        key={crudKey}
         entityName="delivery"
         hideArrayFields={false}
         pageTitle="Entregas"
@@ -367,6 +369,7 @@ const DeliveryCRUDPage: React.FC = () => {
           onClose={() => {
             setMapModalOpen(false);
             setSelectedDeliveryId(null);
+            setCrudKey((k) => k + 1); // refresh da tabela
           }}
         />
       )}

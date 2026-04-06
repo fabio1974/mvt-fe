@@ -131,11 +131,16 @@ const DeliveryRouteMapModal: React.FC<DeliveryRouteMapModalProps> = ({
 
   const isLive = deliveryData?.status && LIVE_STATUSES.includes(deliveryData.status);
 
+  const hasStops = (deliveryData?.stops?.length ?? 0) > 0 &&
+    deliveryData?.stops?.some(s => s.latitude && s.longitude);
+
   const hasCoords =
     deliveryData?.fromLatitude !== undefined &&
     deliveryData?.fromLongitude !== undefined &&
-    deliveryData?.toLatitude !== undefined &&
-    deliveryData?.toLongitude !== undefined;
+    (
+      (deliveryData?.toLatitude !== undefined && deliveryData?.toLongitude !== undefined) ||
+      hasStops
+    );
 
   return (
     <>
@@ -196,12 +201,19 @@ const DeliveryRouteMapModal: React.FC<DeliveryRouteMapModalProps> = ({
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "400px", color: "#ef4444" }}>
               {error}
             </div>
-          ) : hasCoords ? (
+          ) : hasCoords ? (() => {
+            // Para multi-stop sem toLatitude, usa último stop como destino
+            const lastStop = deliveryData!.stops?.length
+              ? deliveryData!.stops[deliveryData!.stops.length - 1]
+              : null;
+            const toLat = deliveryData!.toLatitude ?? lastStop?.latitude ?? deliveryData!.fromLatitude!;
+            const toLng = deliveryData!.toLongitude ?? lastStop?.longitude ?? deliveryData!.fromLongitude!;
+            return (
             <DeliveryRouteMap
               fromLatitude={deliveryData!.fromLatitude!}
               fromLongitude={deliveryData!.fromLongitude!}
-              toLatitude={deliveryData!.toLatitude!}
-              toLongitude={deliveryData!.toLongitude!}
+              toLatitude={toLat}
+              toLongitude={toLng}
               fromAddress={deliveryData!.fromAddress}
               toAddress={deliveryData!.toAddress}
               distance={deliveryData!.distanceKm}
@@ -213,7 +225,8 @@ const DeliveryRouteMapModal: React.FC<DeliveryRouteMapModalProps> = ({
               stops={deliveryData!.stops}
               height="500px"
             />
-          ) : (
+            );
+          })() : (
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "400px", color: "#6b7280" }}>
               Dados de coordenadas não disponíveis para esta entrega
             </div>
