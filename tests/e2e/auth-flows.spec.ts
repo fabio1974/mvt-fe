@@ -17,6 +17,8 @@ test.describe('Login', () => {
 
     // Após login, deve redirecionar para dashboard
     await page.waitForURL(url => !url.toString().includes('/login'), { timeout: 15_000 });
+    await page.waitForLoadState('domcontentloaded');
+    await page.waitForTimeout(2_000);
 
     // Token deve estar no localStorage
     const token = await page.evaluate(() => localStorage.getItem('authToken'));
@@ -83,7 +85,7 @@ test.describe('Registro', () => {
     if (await cpfField.count() > 0) {
       await cpfField.fill(FAKE_REGISTER_DATA.cpf);
     }
-    await page.getByPlaceholder(/e-mail/i).fill(FAKE_REGISTER_DATA.username);
+    await page.locator('input[type="email"], input[placeholder*="@"]').first().fill(FAKE_REGISTER_DATA.username);
 
     const passwordFields = page.locator('input[type="password"]');
     await passwordFields.first().fill(FAKE_REGISTER_DATA.password);
@@ -120,7 +122,7 @@ test.describe('Registro', () => {
     await page.getByPlaceholder(/nome/i).first().fill(FAKE_REGISTER_DATA.name);
     const cpfField = page.getByPlaceholder(/000\.000\.000/i);
     if (await cpfField.count() > 0) await cpfField.fill(FAKE_REGISTER_DATA.cpf);
-    await page.getByPlaceholder(/e-mail/i).fill(FAKE_REGISTER_DATA.username);
+    await page.locator('input[type="email"], input[placeholder*="@"]').first().fill(FAKE_REGISTER_DATA.username);
 
     const passwordFields = page.locator('input[type="password"]');
     await passwordFields.first().fill(FAKE_REGISTER_DATA.password);
@@ -153,7 +155,7 @@ test.describe('Registro', () => {
       await page.getByPlaceholder(/nome/i).first().fill(FAKE_REGISTER_DATA.name);
       const cpfField = page.getByPlaceholder(/000\.000\.000/i);
       if (await cpfField.count() > 0) await cpfField.fill(FAKE_REGISTER_DATA.cpf);
-      await page.getByPlaceholder(/e-mail/i).fill(FAKE_REGISTER_DATA.username);
+      await page.locator('input[type="email"], input[placeholder*="@"]').first().fill(FAKE_REGISTER_DATA.username);
 
       const passwordFields = page.locator('input[type="password"]');
       await passwordFields.first().fill(FAKE_REGISTER_DATA.password);
@@ -192,7 +194,7 @@ test.describe('Esqueci minha senha', () => {
 
     await page.goto('/esqueci-senha', { waitUntil: 'networkidle' });
 
-    await page.getByPlaceholder(/e-mail/i).fill('teste@zapi10.com');
+    await page.locator('input[type="email"], input[placeholder*="@"]').first().fill('teste@zapi10.com');
 
     const requestPromise = page.waitForRequest(
       (req) => req.url().includes('/forgot-password') && req.method() === 'POST'
@@ -226,26 +228,13 @@ test.describe('Logout', () => {
     const token = await page.evaluate(() => localStorage.getItem('authToken'));
     expect(token).toBeTruthy();
 
-    // O menu lateral tem opção "Sair" — pode precisar expandir
-    const sairLink = page.locator('a, button, span').filter({ hasText: /^Sair$/ }).first();
+    // Clica no nome/avatar do header para abrir dropdown
+    const headerUser = page.locator('header, [class*="header"]').locator('button, [class*="user"], [class*="dropdown"], [class*="avatar"]').first();
+    await headerUser.click();
+    await page.waitForTimeout(500);
 
-    if (await sairLink.isVisible()) {
-      await sairLink.click();
-    } else {
-      // Tenta via menu lateral — clica no ícone de menu/hamburger
-      const menuToggle = page.locator('[class*="sidebar"] a, [class*="menu"] button, button[class*="toggle"]').first();
-      if (await menuToggle.count() > 0) {
-        await menuToggle.click();
-        await page.waitForTimeout(500);
-      }
-      // Tenta o dropdown do header
-      const headerDropdown = page.locator('[class*="header"] [class*="dropdown"], [class*="user-menu"]').first();
-      if (await headerDropdown.count() > 0) {
-        await headerDropdown.click();
-        await page.waitForTimeout(500);
-      }
-      await page.locator('a, button, span').filter({ hasText: /^Sair$/ }).first().click();
-    }
+    // Clica em "Sair" no dropdown
+    await page.locator('text=/^Sair$/').click();
 
     await page.waitForURL('**/login**', { timeout: 10_000 });
 

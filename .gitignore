@@ -34,3 +34,9 @@ garbage/
 
 # Auto-generated files
 src/version.ts
+
+# Test artifacts
+test-results/
+playwright-report/
+blob-report/
+coverage/
