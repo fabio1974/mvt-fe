@@ -185,8 +185,6 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
 
   const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
-  const step1Valid = originAddress.trim() !== "";
-  const step2Valid = stops.length > 0 && stops.every((s) => s.addressData.address.trim() !== "");
 
   /** Valida e tenta avançar do step atual */
   const validateAndAdvance = () => {

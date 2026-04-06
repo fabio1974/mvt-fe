@@ -36,7 +36,7 @@ const DeliveryRouteMap: React.FC<DeliveryRouteMapProps> = ({
   toLongitude,
   fromAddress,
   toAddress,
-  distance,
+  distance: _distance,
   deliveryManGpsLatitude,
   deliveryManGpsLongitude,
   deliveryManName,
@@ -47,7 +47,7 @@ const DeliveryRouteMap: React.FC<DeliveryRouteMapProps> = ({
 }) => {
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
-  const [routeInfo, setRouteInfo] = useState<{ distance: string; duration: string } | null>(null);
+  const [_routeInfo, setRouteInfo] = useState<{ distance: string; duration: string } | null>(null);
   const [selectedPin, setSelectedPin] = useState<string | null>(null);
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
@@ -157,43 +157,7 @@ const DeliveryRouteMap: React.FC<DeliveryRouteMapProps> = ({
       ? { lat: deliveryManGpsLatitude, lng: deliveryManGpsLongitude }
       : null;
 
-  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-    const R = 6371;
-    const dLat = ((lat2 - lat1) * Math.PI) / 180;
-    const dLon = ((lon2 - lon1) * Math.PI) / 180;
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos((lat1 * Math.PI) / 180) *
-        Math.cos((lat2 * Math.PI) / 180) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  };
-
-  const remainingDistance = deliveryManPosition
-    ? calculateDistance(deliveryManPosition.lat, deliveryManPosition.lng, toLatitude, toLongitude)
-    : null;
-
-  const calculateETA = () => {
-    if (status !== "IN_TRANSIT" || !deliveryManPosition || !inTransitAt) return null;
-    const distanceTraveled = calculateDistance(fromLatitude, fromLongitude, deliveryManPosition.lat, deliveryManPosition.lng);
-    const distanceRemaining = calculateDistance(deliveryManPosition.lat, deliveryManPosition.lng, toLatitude, toLongitude);
-    const elapsedHours = (Date.now() - new Date(inTransitAt).getTime()) / 3600000;
-    if (elapsedHours < 0.0167) return null;
-    const avgSpeed = distanceTraveled / elapsedHours;
-    if (avgSpeed < 1) return null;
-    return { minutes: Math.ceil((distanceRemaining / avgSpeed) * 60), avgSpeed };
-  };
-
-  const eta = calculateETA();
   const needsFlip = toLongitude - fromLongitude < 0;
-
-  // Cores dos stops por status
-  const stopColor = (s: DeliveryStop) => {
-    if (s.status === "COMPLETED") return "#10b981"; // verde
-    if (s.status === "SKIPPED") return "#9ca3af"; // cinza
-    return "#f59e0b"; // amarelo = pendente
-  };
 
   return (
     <>
