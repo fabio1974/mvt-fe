@@ -106,7 +106,7 @@ async function fillStopDetails(
   await detailsSection.locator('input[type="tel"]').fill(data.phone);
 
   // Descrição do item
-  await detailsSection.getByPlaceholder(/caixa|ex:/i).fill(data.item);
+  await detailsSection.getByPlaceholder(/caixa com/i).fill(data.item);
 
   // Valor a cobrar
   await detailsSection.locator('input[inputmode="decimal"]').fill(data.value);
@@ -291,7 +291,7 @@ test.describe('DeliveryWizard - Criação de Entregas', () => {
     await openWizard(page);
 
     // Step 1 visível
-    await expect(page.locator('text=/origem|coleta/i')).toBeVisible();
+    await expect(page.locator('.wizard-section-title').filter({ hasText: /origem|coleta/i }).first()).toBeVisible();
 
     // Preenche e avança
     await fillOriginAddress(page, SOBRAL.origin.text);
@@ -302,7 +302,7 @@ test.describe('DeliveryWizard - Criação de Entregas', () => {
 
     // Volta para Step 1
     await clickBack(page);
-    await expect(page.locator('text=/origem|coleta/i')).toBeVisible();
+    await expect(page.locator('.wizard-section-title').filter({ hasText: /origem|coleta/i }).first()).toBeVisible();
 
     // Avança de novo
     await clickNext(page);
@@ -329,7 +329,7 @@ test.describe('DeliveryWizard - Criação de Entregas', () => {
 
     // === VOLTA para Step 1 ===
     await clickBack(page);
-    await expect(page.locator('text=/origem|coleta/i')).toBeVisible();
+    await expect(page.locator('.wizard-section-title').filter({ hasText: /origem|coleta/i }).first()).toBeVisible();
 
     // Verifica que o endereço de origem foi preservado
     const originInput = page.locator('.wizard-content input[type="text"]').first();
@@ -347,7 +347,7 @@ test.describe('DeliveryWizard - Criação de Entregas', () => {
     const stop1 = page.locator('.wizard-stop-item').nth(0);
     await expect(stop1.getByPlaceholder(/receber/i)).toHaveValue(SOBRAL.stop1.recipient);
     await expect(stop1.locator('input[type="tel"]')).toHaveValue(SOBRAL.stop1.phone);
-    await expect(stop1.getByPlaceholder(/caixa|ex:/i)).toHaveValue(SOBRAL.stop1.item);
+    await expect(stop1.locator('.wizard-stop-details').getByPlaceholder(/caixa com/i)).toHaveValue(SOBRAL.stop1.item);
 
     // Verifica dados da parada 2
     const stop2 = page.locator('.wizard-stop-item').nth(1);
