@@ -11,6 +11,10 @@ const MAPS_LIBRARIES: ("places" | "geometry")[] = ["places", "geometry"];
 export interface WizardStop {
   id: string; // local key
   addressData: AddressData;
+  recipientName: string;
+  recipientPhone: string;
+  itemDescription: string;
+  itemValue: string; // valor COD em formato display (ex: "25,00")
 }
 
 interface DeliveryWizardProps {
@@ -57,9 +61,15 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
   });
 
   // Step 2 — Paradas
-  const [stops, setStops] = useState<WizardStop[]>([
-    { id: makeStopId(), addressData: emptyAddress() },
-  ]);
+  const emptyStop = (): WizardStop => ({
+    id: makeStopId(),
+    addressData: emptyAddress(),
+    recipientName: "",
+    recipientPhone: "",
+    itemDescription: "",
+    itemValue: "",
+  });
+  const [stops, setStops] = useState<WizardStop[]>([emptyStop()]);
 
   // Step 3 — Resumo (calculado ao avançar para step 3)
   const [routeInfo, setRouteInfo] = useState<{
@@ -98,7 +108,7 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
   // -----------------------------------------------------------------------
 
   const addStop = () => {
-    setStops((prev) => [...prev, { id: makeStopId(), addressData: emptyAddress() }]);
+    setStops((prev) => [...prev, emptyStop()]);
   };
 
   const removeStop = (id: string) => {
@@ -116,6 +126,24 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
       )
     );
   };
+
+  const updateStopField = (id: string, field: keyof WizardStop, value: string) => {
+    setStops((prev) => prev.map((s) => (s.id === id ? { ...s, [field]: value } : s)));
+  };
+
+  /** Formata telefone brasileiro: (XX) XXXXX-XXXX */
+  const formatPhone = (raw: string) => {
+    const digits = raw.replace(/\D/g, "").slice(0, 11);
+    if (digits.length <= 2) return digits;
+    if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+  };
+
+  /** Soma dos valores COD de todas as paradas */
+  const totalAmount = stops.reduce((sum, s) => {
+    const val = parseFloat(s.itemValue.replace(",", ".") || "0");
+    return sum + (isNaN(val) ? 0 : val);
+  }, 0);
 
   // -----------------------------------------------------------------------
   // Validation
@@ -222,6 +250,10 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
         toAddress: lastStop.addressData.address,
         toLatitude: lastStop.addressData.latitude || undefined,
         toLongitude: lastStop.addressData.longitude || undefined,
+        recipientName: stops[0]?.recipientName || undefined,
+        recipientPhone: stops[0]?.recipientPhone?.replace(/\D/g, "") || undefined,
+        itemDescription: stops[0]?.itemDescription || undefined,
+        totalAmount: totalAmount > 0 ? totalAmount.toFixed(2) : undefined,
         distanceKm: routeInfo?.totalDistanceKm
           ? parseFloat(routeInfo.totalDistanceKm.toFixed(2))
           : undefined,
@@ -230,6 +262,9 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
           address: s.addressData.address,
           latitude: s.addressData.latitude || undefined,
           longitude: s.addressData.longitude || undefined,
+          recipientName: s.recipientName || undefined,
+          recipientPhone: s.recipientPhone?.replace(/\D/g, "") || undefined,
+          itemDescription: s.itemDescription || undefined,
           plannedOrder: idx + 1,
         })),
       };
@@ -364,6 +399,54 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
               placeholder="Ex: Av. Bezerra de Menezes, 456"
               required
             />
+
+            {/* Detalhes da parada — mesmo fluxo do mobile */}
+            <div className="wizard-stop-details">
+              <div className="wizard-stop-details-row">
+                <div className="wizard-stop-field">
+                  <label>Nome do destinatário</label>
+                  <input
+                    type="text"
+                    placeholder="Quem vai receber?"
+                    value={stop.recipientName}
+                    onChange={(e) => updateStopField(stop.id, "recipientName", e.target.value)}
+                  />
+                </div>
+                <div className="wizard-stop-field">
+                  <label>Telefone</label>
+                  <input
+                    type="tel"
+                    placeholder="(85) 99999-9999"
+                    value={stop.recipientPhone}
+                    onChange={(e) => updateStopField(stop.id, "recipientPhone", formatPhone(e.target.value))}
+                  />
+                </div>
+              </div>
+              <div className="wizard-stop-details-row">
+                <div className="wizard-stop-field" style={{ flex: 2 }}>
+                  <label>Descrição do item</label>
+                  <input
+                    type="text"
+                    placeholder="Ex: Caixa com documentos"
+                    value={stop.itemDescription}
+                    onChange={(e) => updateStopField(stop.id, "itemDescription", e.target.value)}
+                  />
+                </div>
+                <div className="wizard-stop-field" style={{ flex: 1 }}>
+                  <label>Valor a cobrar (R$)</label>
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="0,00"
+                    value={stop.itemValue}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/[^0-9.,]/g, "");
+                      updateStopField(stop.id, "itemValue", raw);
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         ))}
       </div>
@@ -442,11 +525,19 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
                 <div className="wizard-summary-dot" style={{ background: idx === stops.length - 1 ? "#ef4444" : "#f59e0b" }}>
                   <span style={{ fontSize: 9, color: "white", fontWeight: "bold" }}>{idx + 1}</span>
                 </div>
-                <div>
+                <div style={{ flex: 1 }}>
                   <div className="wizard-summary-point-label">
                     {idx === stops.length - 1 ? "Destino final" : `Parada ${idx + 1}`}
                   </div>
                   <div className="wizard-summary-point-address">{stop.addressData.address || "—"}</div>
+                  {(stop.recipientName || stop.recipientPhone || stop.itemDescription) && (
+                    <div className="wizard-summary-stop-details">
+                      {stop.recipientName && <span>👤 {stop.recipientName}</span>}
+                      {stop.recipientPhone && <span>📞 {stop.recipientPhone}</span>}
+                      {stop.itemDescription && <span>📦 {stop.itemDescription}</span>}
+                      {stop.itemValue && <span>💰 R$ {stop.itemValue}</span>}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
@@ -502,6 +593,21 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
                   </div>
                   <div className="wizard-metric-value" style={{ color: "#059669" }}>
                     R$ {routeInfo.estimatedPrice.toFixed(2).replace(".", ",")}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Total a cobrar (COD) */}
+          {totalAmount > 0 && (
+            <div className="wizard-metrics" style={{ marginBottom: 16 }}>
+              <div className="wizard-metric highlight">
+                <span className="wizard-metric-icon">🏷️</span>
+                <div>
+                  <div className="wizard-metric-label">Total a cobrar na entrega (COD)</div>
+                  <div className="wizard-metric-value" style={{ color: "#2563eb" }}>
+                    R$ {totalAmount.toFixed(2).replace(".", ",")}
                   </div>
                 </div>
               </div>
