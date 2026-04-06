@@ -86,6 +86,8 @@ interface EntityCRUDProps {
   noWrapper?: boolean;
   /** Ações extras renderizadas no breadcrumb ao lado do botão Criar Novo */
   extraHeaderActions?: React.ReactNode;
+  /** Oculta o botão "Criar Novo" padrão (usar quando tem botão customizado via extraHeaderActions) */
+  hideCreateButton?: boolean;
   /** Campos a esconder SOMENTE na tabela (não afeta o formulário) */
   tableHideFields?: string[];
 }
@@ -141,6 +143,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
   onCreateSuccess,
   noWrapper = false,
   extraHeaderActions,
+  hideCreateButton = false,
   tableHideFields = [] as string[],
   // transformData, // Unused parameter
   pageTitle,
@@ -316,7 +319,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
           // Modo table: mostra ações extras + botão "Criar Novo" se permitido
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
             {extraHeaderActions}
-            {!disableCreate && (
+            {!disableCreate && !hideCreateButton && (
               <button
                 className="breadcrumb-action-btn btn-create"
                 onClick={handleCreate}

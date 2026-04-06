@@ -333,6 +333,7 @@ const DeliveryCRUDPage: React.FC = () => {
             : "Gerencie as entregas cadastradas na plataforma"
         }
         extraHeaderActions={wizardButton}
+        hideCreateButton={canUseWizard}
         initialFilters={initialFilters}
         defaultValues={defaultValues}
         tableHideFields={[
