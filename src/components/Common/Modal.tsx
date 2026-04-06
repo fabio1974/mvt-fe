@@ -8,6 +8,7 @@ interface ModalProps {
   title: string;
   children: React.ReactNode;
   size?: "small" | "medium" | "large" | "xlarge";
+  headerActions?: React.ReactNode;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -16,6 +17,7 @@ export const Modal: React.FC<ModalProps> = ({
   title,
   children,
   size = "medium",
+  headerActions,
 }) => {
   // Previne scroll do body quando modal está aberto
   useEffect(() => {
@@ -52,13 +54,16 @@ export const Modal: React.FC<ModalProps> = ({
       >
         <div className="modal-header">
           <h2 className="modal-title">{title}</h2>
-          <button
-            className="modal-close-button"
-            onClick={onClose}
-            aria-label="Fechar modal"
-          >
-            <FiX size={24} />
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            {headerActions}
+            <button
+              className="modal-close-button"
+              onClick={onClose}
+              aria-label="Fechar modal"
+            >
+              <FiX size={24} />
+            </button>
+          </div>
         </div>
         <div className="modal-body">{children}</div>
       </div>

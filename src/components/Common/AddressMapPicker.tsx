@@ -372,24 +372,12 @@ export const AddressMapPicker: React.FC<AddressMapPickerProps> = ({
         )}
       </div>
 
-      {/* Barra acima do mapa: instrução + botão confirmar */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 0" }}>
-        {!disabled && (
-          <div className="address-map-hint" style={{ margin: 0, flex: 1 }}>
-            Clique ou arraste o mapa para posicionar o pin
-          </div>
-        )}
-        {showConfirmButton && onAddressSelect && hasAddress && (
-          <button
-            type="button"
-            className="address-confirm-button"
-            style={{ marginLeft: 8, whiteSpace: "nowrap" }}
-            onClick={handleConfirm}
-          >
-            ✅ Confirmar Endereço
-          </button>
-        )}
-      </div>
+      {/* Instrução de uso do mapa */}
+      {!disabled && (
+        <div className="address-map-hint">
+          Clique ou arraste o mapa para posicionar o pin
+        </div>
+      )}
 
       {/* Mapa com pin fixo no centro */}
       <div className="address-map-container">
