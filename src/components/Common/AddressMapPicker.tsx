@@ -403,6 +403,8 @@ export const AddressMapPicker: React.FC<AddressMapPickerProps> = ({
           options={{
             disableDefaultUI: false,
             zoomControl: true,
+            scrollwheel: false,
+            gestureHandling: "none",
             streetViewControl: true,
             mapTypeControl: true,
             mapTypeControlOptions: {
@@ -416,7 +418,6 @@ export const AddressMapPicker: React.FC<AddressMapPickerProps> = ({
               ],
             },
             fullscreenControl: true,
-            gestureHandling: "greedy",
           }}
         />
         {/* Pin fixo no centro do mapa (posição atual) */}
