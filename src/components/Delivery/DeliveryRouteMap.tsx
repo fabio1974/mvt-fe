@@ -40,8 +40,8 @@ const DeliveryRouteMap: React.FC<DeliveryRouteMapProps> = ({
   deliveryManGpsLatitude,
   deliveryManGpsLongitude,
   deliveryManName,
-  status,
-  inTransitAt,
+  status: _status,
+  inTransitAt: _inTransitAt,
   stops = [],
   height = "400px",
 }) => {
