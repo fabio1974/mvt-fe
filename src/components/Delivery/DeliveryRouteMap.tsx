@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { GoogleMap, LoadScript, Marker, DirectionsRenderer } from "@react-google-maps/api";
+import { GoogleMap, LoadScript, Marker, DirectionsRenderer, InfoWindow } from "@react-google-maps/api";
 import motoIcon from "../../assets/moto.png";
 
 export interface DeliveryStop {
@@ -48,6 +48,7 @@ const DeliveryRouteMap: React.FC<DeliveryRouteMapProps> = ({
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
   const [routeInfo, setRouteInfo] = useState<{ distance: string; duration: string } | null>(null);
+  const [selectedPin, setSelectedPin] = useState<string | null>(null);
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
 
   const center = {
@@ -222,45 +223,92 @@ const DeliveryRouteMap: React.FC<DeliveryRouteMapProps> = ({
               zoomControl: true,
             }}
           >
-            {/* Origem (verde) */}
+            {/* Origem (pirulito verde) */}
             <Marker
               position={origin}
-              title={fromAddress || "Origem"}
-              icon={{ url: "http://maps.google.com/mapfiles/ms/icons/green-dot.png" }}
-            />
+              icon={typeof google !== "undefined" ? {
+                path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
+                fillColor: "#22c55e",
+                fillOpacity: 1,
+                strokeColor: "#fff",
+                strokeWeight: 2,
+                scale: 1.8,
+                anchor: new google.maps.Point(12, 22),
+              } : undefined}
+              onClick={() => setSelectedPin("origin")}
+            >
+              {selectedPin === "origin" && (
+                <InfoWindow onCloseClick={() => setSelectedPin(null)}>
+                  <div style={{ fontSize: 13 }}>
+                    <strong>Origem (coleta)</strong><br />
+                    {fromAddress || "N/A"}
+                  </div>
+                </InfoWindow>
+              )}
+            </Marker>
 
-            {/* Destino final (vermelho) — só mostra se não há stops ou se é diferente do último stop */}
+            {/* Destino final (pirulito vermelho) — só se não duplicado com último stop */}
             {(stops.length === 0 || (stops[stops.length - 1]?.latitude !== toLatitude || stops[stops.length - 1]?.longitude !== toLongitude)) && (
               <Marker
                 position={destination}
-                title={toAddress || "Destino"}
-                icon={{ url: "http://maps.google.com/mapfiles/ms/icons/red-dot.png" }}
-              />
+                icon={typeof google !== "undefined" ? {
+                  path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
+                  fillColor: "#ef4444",
+                  fillOpacity: 1,
+                  strokeColor: "#fff",
+                  strokeWeight: 2,
+                  scale: 1.8,
+                  anchor: new google.maps.Point(12, 22),
+                } : undefined}
+                onClick={() => setSelectedPin("dest")}
+              >
+                {selectedPin === "dest" && (
+                  <InfoWindow onCloseClick={() => setSelectedPin(null)}>
+                    <div style={{ fontSize: 13 }}>
+                      <strong>Destino final</strong><br />
+                      {toAddress || "N/A"}
+                    </div>
+                  </InfoWindow>
+                )}
+              </Marker>
             )}
 
-            {/* Paradas intermediárias com número */}
-            {stops.map((stop, idx) => (
-              <Marker
-                key={`stop-${stop.id ?? idx}`}
-                position={{ lat: stop.latitude, lng: stop.longitude }}
-                title={`Parada ${idx + 1}${stop.address ? `: ${stop.address}` : ""}${stop.status === "COMPLETED" ? " ✓" : ""}`}
-                icon={{
-                  path: (typeof google !== "undefined" ? google.maps.SymbolPath.CIRCLE : 0),
-                  scale: 10,
-                  fillColor: stopColor(stop),
-                  fillOpacity: 1,
-                  strokeColor: "white",
-                  strokeWeight: 2,
-                }}
-                label={{
-                  text: String(idx + 1),
-                  color: "white",
-                  fontSize: "11px",
-                  fontWeight: "bold",
-                }}
-                zIndex={500}
-              />
-            ))}
+            {/* Paradas (pirulitos laranja/verde com número) */}
+            {stops.map((stop, idx) => {
+              const isLast = idx === stops.length - 1;
+              const color = stop.status === "COMPLETED" ? "#22c55e" : stop.status === "SKIPPED" ? "#9ca3af" : isLast ? "#ef4444" : "#f59e0b";
+              return (
+                <Marker
+                  key={`stop-${stop.id ?? idx}`}
+                  position={{ lat: stop.latitude, lng: stop.longitude }}
+                  icon={typeof google !== "undefined" ? {
+                    path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
+                    fillColor: color,
+                    fillOpacity: 1,
+                    strokeColor: "#fff",
+                    strokeWeight: 2,
+                    scale: 1.8,
+                    anchor: new google.maps.Point(12, 22),
+                    labelOrigin: new google.maps.Point(12, 10),
+                  } : undefined}
+                  label={{ text: String(idx + 1), color: "#fff", fontWeight: "bold", fontSize: "12px" }}
+                  zIndex={500}
+                  onClick={() => setSelectedPin(`stop-${idx}`)}
+                >
+                  {selectedPin === `stop-${idx}` && (
+                    <InfoWindow onCloseClick={() => setSelectedPin(null)}>
+                      <div style={{ fontSize: 13 }}>
+                        <strong>{isLast ? "Destino final" : `Parada ${idx + 1}`}</strong>
+                        {stop.status && <span style={{ marginLeft: 6, color: stop.status === "COMPLETED" ? "#22c55e" : "#9ca3af" }}>
+                          {stop.status === "COMPLETED" ? "✓ Entregue" : stop.status === "SKIPPED" ? "– Pulada" : "⏳ Pendente"}
+                        </span>}<br />
+                        {stop.address || `Parada ${idx + 1}`}
+                      </div>
+                    </InfoWindow>
+                  )}
+                </Marker>
+              );
+            })}
 
             {/* Motoboy */}
             {deliveryManPosition && (
@@ -306,85 +354,6 @@ const DeliveryRouteMap: React.FC<DeliveryRouteMapProps> = ({
           </GoogleMap>
         </LoadScript>
 
-        {/* Legenda */}
-        <div style={{ padding: "16px 20px", backgroundColor: "#f9fafb", borderTop: "1px solid #e5e7eb" }}>
-          {/* Origem e destino */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "16px", fontSize: "14px", marginBottom: (routeInfo || distance || deliveryManPosition || stops.length > 0) ? "12px" : 0 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: "1 1 250px" }}>
-              <div style={{ width: 12, height: 12, borderRadius: "50%", backgroundColor: "#22c55e", flexShrink: 0 }} />
-              <span style={{ color: "#374151" }}><strong>Origem:</strong> {fromAddress || "N/A"}</span>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: "1 1 250px" }}>
-              <div style={{ width: 12, height: 12, borderRadius: "50%", backgroundColor: "#ef4444", flexShrink: 0 }} />
-              <span style={{ color: "#374151" }}><strong>Destino:</strong> {toAddress || "N/A"}</span>
-            </div>
-          </div>
-
-          {/* Paradas */}
-          {stops.length > 0 && (
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "12px" }}>
-              {stops.map((stop, idx) => (
-                <div
-                  key={stop.id ?? idx}
-                  style={{
-                    display: "flex", alignItems: "center", gap: "6px",
-                    backgroundColor: stop.status === "COMPLETED" ? "#f0fdf4" : stop.status === "SKIPPED" ? "#f9fafb" : "#fffbeb",
-                    border: `1px solid ${stopColor(stop)}`,
-                    borderRadius: "6px", padding: "4px 10px", fontSize: "13px",
-                  }}
-                >
-                  <span style={{ width: 18, height: 18, borderRadius: "50%", backgroundColor: stopColor(stop), color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", fontWeight: "bold", flexShrink: 0 }}>
-                    {idx + 1}
-                  </span>
-                  <span style={{ color: "#374151" }}>
-                    {stop.address || `Parada ${idx + 1}`}
-                    {stop.status === "COMPLETED" && <span style={{ marginLeft: 4, color: "#10b981" }}>✓</span>}
-                    {stop.status === "SKIPPED" && <span style={{ marginLeft: 4, color: "#9ca3af" }}>–</span>}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Métricas */}
-          {(routeInfo || distance || deliveryManPosition || eta) && (
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "16px", fontSize: "14px", paddingTop: "12px", borderTop: "1px solid #e5e7eb" }}>
-              {(routeInfo?.distance || distance) && (
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span style={{ fontSize: 18 }}>📏</span>
-                  <span style={{ color: "#374151" }}><strong>Distância:</strong> {routeInfo?.distance || `${distance?.toFixed(2)} km`}</span>
-                </div>
-              )}
-              {routeInfo?.duration && (
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span style={{ fontSize: 18 }}>⏱️</span>
-                  <span style={{ color: "#374151" }}><strong>Tempo est.:</strong> {routeInfo.duration}</span>
-                </div>
-              )}
-              {deliveryManPosition && (
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <div style={{ width: 12, height: 12, borderRadius: "50%", backgroundColor: "#2563eb", flexShrink: 0 }} />
-                  <span style={{ color: "#374151" }}><strong>🏍️ Motoboy:</strong> {deliveryManName || "Em rota"}</span>
-                </div>
-              )}
-              {remainingDistance !== null && (
-                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span style={{ fontSize: 18 }}>📍</span>
-                  <span style={{ color: "#374151" }}><strong>Faltam:</strong> {remainingDistance.toFixed(2)} km</span>
-                </div>
-              )}
-              {eta && (
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", backgroundColor: "#ecfdf5", padding: "6px 12px", borderRadius: "8px", border: "1px solid #10b981" }}>
-                  <span style={{ fontSize: 18 }}>⏱️</span>
-                  <span style={{ color: "#065f46", fontWeight: 600 }}>
-                    <strong>Chegada em:</strong> {eta.minutes} min
-                    <span style={{ fontSize: 12, color: "#059669", marginLeft: 6 }}>({eta.avgSpeed.toFixed(1)} km/h)</span>
-                  </span>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
       </div>
     </>
   );

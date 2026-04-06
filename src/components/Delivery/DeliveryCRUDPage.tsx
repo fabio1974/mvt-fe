@@ -291,6 +291,57 @@ const DeliveryCRUDPage: React.FC = () => {
     );
   };
 
+  // Estado para popup de detalhes do frete
+  const [freightDetailId, setFreightDetailId] = useState<string | number | null>(null);
+  const [freightDetail, setFreightDetail] = useState<any>(null);
+  const [freightDetailLoading, setFreightDetailLoading] = useState(false);
+
+  const loadFreightDetail = async (deliveryId: string | number) => {
+    setFreightDetailId(deliveryId);
+    setFreightDetailLoading(true);
+    try {
+      const resp = await api.get(`/api/deliveries/${deliveryId}`);
+      const d = resp.data as any;
+      // Simula frete para mostrar o breakdown
+      const simResp = await api.post("/api/deliveries/simulate-freight", {
+        fromLatitude: d.fromLatitude,
+        fromLongitude: d.fromLongitude,
+        fromAddress: d.fromAddress || "",
+        toLatitude: d.toLatitude,
+        toLongitude: d.toLongitude,
+        toAddress: d.toAddress || "",
+        distanceKm: d.distanceKm || 0,
+        stops: d.stops?.map((s: any) => ({ latitude: s.latitude, longitude: s.longitude, address: s.address || "" })),
+      });
+      setFreightDetail({ delivery: d, freight: simResp.data });
+    } catch {
+      setFreightDetail(null);
+    } finally {
+      setFreightDetailLoading(false);
+    }
+  };
+
+  // Custom renderer para shippingFee — botão com valor que abre detalhes
+  const tableCustomRenderers = {
+    shippingFee: (value: any, row: any) => {
+      if (value == null) return "-";
+      const formatted = `R$ ${Number(value).toFixed(2).replace(".", ",")}`;
+      return (
+        <button
+          onClick={(e) => { e.stopPropagation(); loadFreightDetail(row.id); }}
+          style={{
+            background: "none", border: "1px solid #d1d5db", borderRadius: 6,
+            padding: "4px 10px", cursor: "pointer", fontWeight: 600,
+            color: "#059669", fontSize: 13, whiteSpace: "nowrap",
+          }}
+          title="Ver detalhes do frete"
+        >
+          {formatted}
+        </button>
+      );
+    },
+  };
+
   // Clientes e admins podem usar o wizard; organizadores e couriers não criam
   const canUseWizard = !isOrganizer() && !isCourier();
 
@@ -357,9 +408,45 @@ const DeliveryCRUDPage: React.FC = () => {
           <DeliveryMapWrapper entityId={entityId} viewMode={viewMode} />
         )}
         customActions={customActions}
+        customRenderers={tableCustomRenderers}
         canEdit={() => false}
         canDelete={(row) => !isCourier() && row.status === "PENDING"}
       />
+
+      {/* Popup detalhes do frete */}
+      {freightDetailId && (
+        <>
+          <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 9990 }} onClick={() => setFreightDetailId(null)} />
+          <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", background: "#fff", borderRadius: 12, padding: 24, zIndex: 9991, minWidth: 360, maxWidth: 500, boxShadow: "0 20px 25px -5px rgb(0 0 0/0.1)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>🧮 Detalhes do Frete</h3>
+              <button onClick={() => setFreightDetailId(null)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 20 }}>✕</button>
+            </div>
+            {freightDetailLoading ? (
+              <div style={{ textAlign: "center", padding: 20, color: "#6b7280" }}>Calculando...</div>
+            ) : freightDetail?.freight ? (() => {
+              const f = freightDetail.freight;
+              const vd = f.motorcycle || f.car;
+              const fmt = (v: number) => `R$ ${v.toFixed(2).replace(".", ",")}`;
+              if (!vd) return <div style={{ color: "#6b7280" }}>Dados não disponíveis</div>;
+              return (
+                <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 14 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#6b7280" }}>Veículo</span><span>{vd.vehicleLabel || "🏍️ Moto"}</span></div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#6b7280" }}>Taxa base</span><span>{fmt(vd.baseFee)}</span></div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#6b7280" }}>Distância ({f.distanceKm?.toFixed(2)} km × {fmt(vd.pricePerKm)}/km)</span><span>{fmt(f.distanceKm * vd.pricePerKm)}</span></div>
+                  {vd.minimumApplied && <div style={{ display: "flex", justifyContent: "space-between", color: "#f59e0b" }}><span>ℹ️ Valor mínimo aplicado</span><span>{fmt(vd.minimumFee)}</span></div>}
+                  <div style={{ borderTop: "1px solid #d1d5db", paddingTop: 6, display: "flex", justifyContent: "space-between", fontWeight: 600 }}><span style={{ color: "#6b7280" }}>Subtotal</span><span>{fmt(vd.feeBeforeZone)}</span></div>
+                  {f.zoneName && <div style={{ display: "flex", justifyContent: "space-between", color: f.zoneType === "DANGER" ? "#dc2626" : "#7c3aed" }}><span>{f.zoneType === "DANGER" ? "⚠️" : "💎"} Zona: {f.zoneName} (+{(f.zoneFeePercentage * 100).toFixed(0)}%)</span><span>+{fmt(vd.zoneSurcharge)}</span></div>}
+                  {f.stopCount > 1 && f.totalAdditionalStopFee > 0 && <div style={{ display: "flex", justifyContent: "space-between", color: "#6366f1" }}><span>📍 {f.stopCount - 1} parada(s) extra</span><span>+{fmt(f.totalAdditionalStopFee)}</span></div>}
+                  <div style={{ borderTop: "2px solid #16a34a", paddingTop: 8, marginTop: 4, display: "flex", justifyContent: "space-between", fontWeight: 700, fontSize: 16, color: "#166534" }}><span>Total</span><span>{fmt(vd.totalShippingFee)}</span></div>
+                </div>
+              );
+            })() : (
+              <div style={{ color: "#6b7280" }}>Não foi possível calcular os detalhes</div>
+            )}
+          </div>
+        </>
+      )}
 
       {/* Modal do mapa */}
       {selectedDeliveryId && (
