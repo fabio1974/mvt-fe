@@ -154,7 +154,7 @@ export const applyAutoMask = (value: string, fieldName: string): string => {
     return maskPhone(value);
   }
   
-  if (name.includes("cep") || name.includes("zipcode")) {
+  if (isCEPField(fieldName)) {
     return maskCEP(value);
   }
   
