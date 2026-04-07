@@ -58,6 +58,8 @@ interface EntityTableProps {
   showFields?: string[]; // Opcional - array de nomes de campos a serem forçadamente exibidos (mesmo com visible:false)
   canDelete?: (row: any) => boolean; // Opcional - função que determina se uma linha pode ser deletada
   canEdit?: (row: any) => boolean; // Opcional - função que determina se uma linha pode ser editada
+  excludeFilterOptions?: Record<string, string[]>; // Opcional - exclui opções de filtros select
+  multiSelectFilters?: string[]; // Opcional - filtros select que usam multi-seleção com checkboxes
 }
 
 const EntityTable: React.FC<EntityTableProps> = ({
@@ -77,6 +79,8 @@ const EntityTable: React.FC<EntityTableProps> = ({
   hideFilters = false,
   hideFields = [],
   showFields = [],
+  excludeFilterOptions = {},
+  multiSelectFilters = [],
 }) => {
   const {
     getEntityMetadata,
@@ -477,10 +481,12 @@ const EntityTable: React.FC<EntityTableProps> = ({
 
       {!hideFilters && metadata.filters && metadata.filters.length > 0 && (
         <EntityFilters
-          filters={metadata.filters.filter((f) => !hideFields.includes(f.field))}
+          filters={metadata.filters.filter((f) => !hideFields.includes(f.field) && !hideFields.includes(f.name))}
           values={filters}
           onChange={handleFilterChange}
           onClear={clearFilters}
+          excludeOptions={excludeFilterOptions}
+          multiSelectFilters={multiSelectFilters}
         />
       )}
 

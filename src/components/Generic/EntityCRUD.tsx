@@ -66,6 +66,10 @@ interface EntityCRUDProps {
   afterFormComponent?: (entityId: number | string | undefined, viewMode: ViewMode) => React.ReactNode;
   /** Esconde os filtros da tabela */
   hideFilters?: boolean;
+  /** Exclui opções específicas de filtros select (ex: { status: ["WAITING_PAYMENT"] }) */
+  excludeFilterOptions?: Record<string, string[]>;
+  /** Filtros select que devem usar multi-seleção com checkboxes (ex: ["status"]) */
+  multiSelectFilters?: string[];
   /** Desabilita a operação de criar */
   disableCreate?: boolean;
   /** Desabilita a operação de deletar */
@@ -133,6 +137,8 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
   beforeFormComponent,
   afterFormComponent,
   hideFilters = false,
+  excludeFilterOptions = {},
+  multiSelectFilters = [],
   disableCreate = false,
   disableDelete = false,
   disableView = false,
@@ -395,6 +401,8 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
             hideFields={[...(hideFields ?? []), ...tableHideFields]}
             showFields={showFields}
             hideFilters={hideFilters}
+            excludeFilterOptions={excludeFilterOptions}
+            multiSelectFilters={multiSelectFilters}
             canDelete={canDelete}
             canEdit={canEdit}
           />

@@ -67,6 +67,8 @@ const BankAccountPage: React.FC = () => {
       showEditButton={!notFound}
       pageTitle="Meus Dados Bancários"
       pageDescription={notFound ? "Cadastre suas informações bancárias" : "Visualize e edite suas informações bancárias"}
+      hiddenFields={["user"]}
+      defaultValues={{ user: userId }}
     />
   );
 };

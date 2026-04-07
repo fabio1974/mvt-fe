@@ -49,8 +49,12 @@ const DeliveryCRUDPage: React.FC = () => {
   // Define filtros iniciais baseados no role
   // NOTA: O backend filtra automaticamente pelo token para COURIER
   const initialFilters = useMemo((): Record<string, string> | undefined => {
-    // Se é CLIENT ou CUSTOMER, filtra apenas suas entregas
-    if ((userRole === "ROLE_CLIENT" || userRole === "CLIENT" || userRole === "ROLE_CUSTOMER" || userRole === "CUSTOMER") && userId) {
+    // Se é CLIENT, filtra suas entregas + deliveryType=DELIVERY
+    if ((userRole === "ROLE_CLIENT" || userRole === "CLIENT") && userId) {
+      return { client: String(userId), deliveryType: "DELIVERY" };
+    }
+    // Se é CUSTOMER, filtra apenas suas entregas
+    if ((userRole === "ROLE_CUSTOMER" || userRole === "CUSTOMER") && userId) {
       return { client: String(userId) };
     }
     // Se é ORGANIZER, filtra entregas da sua organização
@@ -321,8 +325,12 @@ const DeliveryCRUDPage: React.FC = () => {
     }
   };
 
-  // Custom renderer para shippingFee — botão com valor que abre detalhes
+  // Custom renderers para valores monetários
   const tableCustomRenderers = {
+    totalAmount: (value: any) => {
+      if (value == null) return "-";
+      return <span style={{ whiteSpace: "nowrap" }}>{`R$ ${Number(value).toFixed(2).replace(".", ",")}`}</span>;
+    },
     shippingFee: (value: any, row: any) => {
       if (value == null) return "-";
       const formatted = `R$ ${Number(value).toFixed(2).replace(".", ",")}`;
@@ -365,7 +373,7 @@ const DeliveryCRUDPage: React.FC = () => {
       }}
     >
       <FiPlus size={16} />
-      Nova Entrega
+      Nova Corrida
     </button>
   ) : undefined;
 
@@ -375,15 +383,15 @@ const DeliveryCRUDPage: React.FC = () => {
         key={crudKey}
         entityName="delivery"
         hideArrayFields={false}
-        pageTitle="Entregas"
+        pageTitle="Corridas"
         pageDescription={
           userRole === "ROLE_CLIENT" || userRole === "CLIENT" || userRole === "ROLE_CUSTOMER" || userRole === "CUSTOMER"
-            ? "Acompanhe suas entregas"
+            ? "Acompanhe suas corridas"
             : userRole === "ROLE_ORGANIZER"
-            ? "Gerencie as entregas do seu grupo"
+            ? "Gerencie as corridas do seu grupo"
             : userRole === "ROLE_COURIER"
             ? "Acompanhe suas corridas"
-            : "Gerencie as entregas cadastradas na plataforma"
+            : "Gerencie as corridas cadastradas na plataforma"
         }
         extraHeaderActions={wizardButton}
         hideCreateButton={canUseWizard}
@@ -396,8 +404,11 @@ const DeliveryCRUDPage: React.FC = () => {
           "paymentCaptured", "inTransitAt",
         ]}
         disableCreate={isOrganizer() || isCourier()}
+        excludeFilterOptions={
+          isClient() ? { status: ["WAITING_PAYMENT"] } : {}
+        }
         hideFields={
-          isClient() ? ["client"] : isOrganizer() ? ["organizer"] : []
+          isClient() ? ["client", "deliveryType"] : isOrganizer() ? ["organizer"] : []
         }
         hiddenFields={
           ["fromLatitude", "fromLongitude", "toLatitude", "toLongitude"].concat(

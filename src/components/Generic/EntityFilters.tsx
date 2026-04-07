@@ -4,6 +4,7 @@ import type { FilterMetadata } from "../../types/metadata";
 import EntitySelect from "../Common/EntitySelect";
 import EntityTypeahead from "../Common/EntityTypeahead";
 import { CityTypeahead } from "../Common/CityTypeahead";
+import MultiSelectDropdown from "../Common/MultiSelectDropdown";
 import {
   FormContainer,
   FormField,
@@ -19,6 +20,10 @@ interface EntityFiltersProps {
   values: Record<string, string>;
   onChange: (field: string, value: string) => void;
   onClear: () => void;
+  /** Mapa de campo → valores de opções a excluir (ex: { status: ["WAITING_PAYMENT"] }) */
+  excludeOptions?: Record<string, string[]>;
+  /** Filtros select que devem usar multi-seleção com checkboxes (ex: ["status"]) */
+  multiSelectFilters?: string[];
 }
 
 const EntityFilters: React.FC<EntityFiltersProps> = ({
@@ -26,6 +31,8 @@ const EntityFilters: React.FC<EntityFiltersProps> = ({
   values,
   onChange,
   onClear,
+  excludeOptions = {},
+  multiSelectFilters = [],
 }) => {
   // Estado para armazenar os estados das cidades selecionadas (para exibição readonly)
   const [cityStates, setCityStates] = useState<Record<string, string>>({});
@@ -52,7 +59,27 @@ const EntityFilters: React.FC<EntityFiltersProps> = ({
           </FormField>
         );
 
-      case "select":
+      case "select": {
+        // Multi-select com dropdown de checkboxes
+        if (multiSelectFilters.includes(filter.name)) {
+          const selected = (values[filter.name] || "").split(",").filter(Boolean);
+          const availableOptions = filter.options
+            ?.slice()
+            .filter((option) => !(excludeOptions[filter.name]?.includes(option.value)))
+            .sort((a, b) => a.label.localeCompare(b.label, "pt-BR")) || [];
+
+          return (
+            <FormField key={filter.name} label={filter.label}>
+              <MultiSelectDropdown
+                options={availableOptions}
+                selectedValues={selected}
+                onChange={(newSelected) => onChange(filter.name, newSelected.join(","))}
+              />
+            </FormField>
+          );
+        }
+
+        // Single select (dropdown padrão)
         return (
           <FormField key={filter.name} label={filter.label}>
             <FormSelect
@@ -62,6 +89,7 @@ const EntityFilters: React.FC<EntityFiltersProps> = ({
               <option value="">Todos</option>
               {filter.options
                 ?.slice()
+                .filter((option) => !(excludeOptions[filter.name]?.includes(option.value)))
                 .sort((a, b) => a.label.localeCompare(b.label, "pt-BR"))
                 .map((option) => (
                   <option key={option.value} value={option.value}>
@@ -71,6 +99,7 @@ const EntityFilters: React.FC<EntityFiltersProps> = ({
             </FormSelect>
           </FormField>
         );
+      }
 
       case "number":
         return (

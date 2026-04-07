@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import EntityCRUD from "../Generic/EntityCRUD";
-import { getUserRole } from "../../utils/auth";
+import { getUserRole, isClient } from "../../utils/auth";
 import { FiInfo, FiFileText, FiImage } from "react-icons/fi";
 import { api } from "../../services/api";
 import PaymentReportModal from "./PaymentReportModal";
@@ -152,64 +152,70 @@ const PaymentCRUDPage: React.FC = () => {
     
     return (
       <>
-        <button
-          onClick={() => handleShowQrCode(payment)}
-          style={{
-            backgroundColor: "#3b82f6",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            padding: "6px 10px",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: "4px",
-            fontSize: "14px",
-            marginRight: "8px",
-          }}
-          title="Ver QR Code PIX"
-          disabled={loadingQrCode}
-        >
-          <FiImage />
-        </button>
-        <button
-          onClick={() => handleShowReport(payment)}
-          style={{
-            backgroundColor: "#8b5cf6",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            padding: "6px 10px",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: "4px",
-            fontSize: "14px",
-            marginRight: "8px",
-          }}
-          title="Ver relatório de pagamento"
-          disabled={loadingReport}
-        >
-          <FiFileText />
-        </button>
-        <button
-          onClick={() => handleShowGatewayResponse(payment)}
-          style={{
-            backgroundColor: buttonColor,
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            padding: "6px 10px",
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: "4px",
-            fontSize: "14px",
-          }}
-          title={hasErrorInGateway ? "Ver erro do Gateway" : "Ver resposta do Gateway"}
-        >
-          <FiInfo />
-        </button>
+        {(payment.status === "PENDING" || payment.status === "PAID") && (
+          <>
+            <button
+              onClick={() => handleShowQrCode(payment)}
+              style={{
+                backgroundColor: "#3b82f6",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                padding: "6px 10px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "4px",
+                fontSize: "14px",
+                marginRight: "8px",
+              }}
+              title="Ver QR Code PIX"
+              disabled={loadingQrCode}
+            >
+              <FiImage />
+            </button>
+            <button
+              onClick={() => handleShowReport(payment)}
+              style={{
+                backgroundColor: "#8b5cf6",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                padding: "6px 10px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "4px",
+                fontSize: "14px",
+                marginRight: "8px",
+              }}
+              title="Ver relatório de pagamento"
+              disabled={loadingReport}
+            >
+              <FiFileText />
+            </button>
+          </>
+        )}
+        {getUserRole() === "ROLE_ADMIN" && (
+          <button
+            onClick={() => handleShowGatewayResponse(payment)}
+            style={{
+              backgroundColor: buttonColor,
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              padding: "6px 10px",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+              fontSize: "14px",
+            }}
+            title={hasErrorInGateway ? "Ver erro do Gateway" : "Ver resposta do Gateway"}
+          >
+            <FiInfo />
+          </button>
+        )}
       </>
     );
   };
@@ -258,11 +264,6 @@ const PaymentCRUDPage: React.FC = () => {
     },
   };
 
-  // Permite deletar apenas pagamentos que falharam
-  const canDeletePayment = (payment: any) => {
-    return payment.status === 'FAILED' || payment.status === 'EXPIRED';
-  };
-
   return (
     <>
       <EntityCRUD
@@ -272,11 +273,14 @@ const PaymentCRUDPage: React.FC = () => {
         disableCreate={true}
         disableView={true}
         disableEdit={true}
+        disableDelete={true}
         hideArrayFields={true}
         showFields={["createdAt"]}
+        hideFields={isClient() ? ["payer"] : []}
+        initialFilters={{ status: "PENDING,PAID" }}
+        multiSelectFilters={["status"]}
         customActions={customActions}
         customRenderers={customRenderers}
-        canDelete={canDeletePayment}
       />
       
       {showReport && reportData && (
@@ -439,7 +443,7 @@ const PaymentCRUDPage: React.FC = () => {
                   {new Intl.NumberFormat("pt-BR", {
                     style: "currency",
                     currency: "BRL",
-                  }).format(qrCodeData.totalAmount || 0)}
+                  }).format(qrCodeData.amount || 0)}
                 </div>
               </div>
               <div>

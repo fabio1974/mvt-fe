@@ -295,3 +295,199 @@ describe("Delivery — campos que devem ser ocultos", () => {
     expect(HIDDEN_ROUTE_FIELDS.join(",")).not.toContain("MANAGER");
   });
 });
+
+// ============================================================
+// 9. Wizard — visível apenas para CLIENT e CUSTOMER
+// ============================================================
+
+describe("DeliveryCRUD — canUseWizard por role", () => {
+  // Replica a lógica de canUseWizard do DeliveryCRUDPage
+  function canUseWizard(userRole: string, isClientFn: () => boolean): boolean {
+    return isClientFn() || userRole === "ROLE_CUSTOMER" || userRole === "CUSTOMER";
+  }
+
+  // Simula isClient() que retorna true para CLIENT e CUSTOMER
+  function makeIsClient(role: string): () => boolean {
+    return () =>
+      role === "ROLE_CLIENT" || role === "CLIENT" ||
+      role === "ROLE_CUSTOMER" || role === "CUSTOMER";
+  }
+
+  it("CLIENT pode usar wizard", () => {
+    expect(canUseWizard("ROLE_CLIENT", makeIsClient("ROLE_CLIENT"))).toBe(true);
+  });
+
+  it("CUSTOMER pode usar wizard", () => {
+    expect(canUseWizard("ROLE_CUSTOMER", makeIsClient("ROLE_CUSTOMER"))).toBe(true);
+  });
+
+  it("CUSTOMER sem prefixo ROLE_ pode usar wizard", () => {
+    expect(canUseWizard("CUSTOMER", makeIsClient("CUSTOMER"))).toBe(true);
+  });
+
+  it("COURIER NÃO pode usar wizard", () => {
+    expect(canUseWizard("ROLE_COURIER", makeIsClient("ROLE_COURIER"))).toBe(false);
+  });
+
+  it("ORGANIZER NÃO pode usar wizard", () => {
+    expect(canUseWizard("ROLE_ORGANIZER", makeIsClient("ROLE_ORGANIZER"))).toBe(false);
+  });
+
+  it("ADMIN NÃO pode usar wizard", () => {
+    expect(canUseWizard("ROLE_ADMIN", makeIsClient("ROLE_ADMIN"))).toBe(false);
+  });
+});
+
+// ============================================================
+// 10. BankAccountPage — fetch por userId, estados loading/notFound
+// ============================================================
+
+describe("BankAccountPage — lógica de carregamento", () => {
+  // Simula a lógica de decidir entityId e initialMode
+  function bankAccountPageState(response: { id?: number } | null, isError404: boolean) {
+    let bankAccountId: number | null = null;
+    let notFound = false;
+
+    if (isError404) {
+      notFound = true;
+    } else if (response && response.id) {
+      bankAccountId = response.id;
+    } else {
+      notFound = true;
+    }
+
+    return {
+      entityId: notFound ? undefined : bankAccountId ?? undefined,
+      initialMode: notFound ? "create" : "view",
+      showEditButton: !notFound,
+      pageDescription: notFound
+        ? "Cadastre suas informações bancárias"
+        : "Visualize e edite suas informações bancárias",
+    };
+  }
+
+  it("conta encontrada → mode view, entityId numérico", () => {
+    const state = bankAccountPageState({ id: 42 }, false);
+    expect(state.entityId).toBe(42);
+    expect(state.initialMode).toBe("view");
+    expect(state.showEditButton).toBe(true);
+  });
+
+  it("404 → mode create, sem entityId", () => {
+    const state = bankAccountPageState(null, true);
+    expect(state.entityId).toBeUndefined();
+    expect(state.initialMode).toBe("create");
+    expect(state.showEditButton).toBe(false);
+  });
+
+  it("resposta sem id → mode create", () => {
+    const state = bankAccountPageState({}, false);
+    expect(state.entityId).toBeUndefined();
+    expect(state.initialMode).toBe("create");
+  });
+
+  it("descrição muda conforme notFound", () => {
+    const found = bankAccountPageState({ id: 1 }, false);
+    const notFound = bankAccountPageState(null, true);
+    expect(found.pageDescription).toContain("Visualize");
+    expect(notFound.pageDescription).toContain("Cadastre");
+  });
+});
+
+// ============================================================
+// 11. totalAmount — formatação em Real (R$ X,XX)
+// ============================================================
+
+describe("totalAmount — formatação monetária R$", () => {
+  function formatCurrencyBRL(value: unknown): string {
+    if (value == null) return "-";
+    return `R$ ${Number(value).toFixed(2).replace(".", ",")}`;
+  }
+
+  it("25 → R$ 25,00", () => {
+    expect(formatCurrencyBRL(25)).toBe("R$ 25,00");
+  });
+
+  it("15.5 → R$ 15,50", () => {
+    expect(formatCurrencyBRL(15.5)).toBe("R$ 15,50");
+  });
+
+  it("0 → R$ 0,00", () => {
+    expect(formatCurrencyBRL(0)).toBe("R$ 0,00");
+  });
+
+  it("null → -", () => {
+    expect(formatCurrencyBRL(null)).toBe("-");
+  });
+
+  it("undefined → -", () => {
+    expect(formatCurrencyBRL(undefined)).toBe("-");
+  });
+
+  it("116.74 → R$ 116,74", () => {
+    expect(formatCurrencyBRL(116.74)).toBe("R$ 116,74");
+  });
+
+  it("string numérica '9.98' → R$ 9,98", () => {
+    expect(formatCurrencyBRL("9.98")).toBe("R$ 9,98");
+  });
+
+  it("sempre usa vírgula como separador decimal", () => {
+    const result = formatCurrencyBRL(1234.56);
+    expect(result).toContain(",");
+    expect(result).not.toMatch(/\.\d{2}$/);
+  });
+
+  it("totalAmount e shippingFee usam mesma formatação", () => {
+    const formatTotal = formatCurrencyBRL;
+    const formatShipping = (v: unknown) => {
+      if (v == null) return "-";
+      return `R$ ${Number(v).toFixed(2).replace(".", ",")}`;
+    };
+    expect(formatTotal(79.80)).toBe(formatShipping(79.80));
+    expect(formatTotal(10.65)).toBe(formatShipping(10.65));
+  });
+});
+
+// ============================================================
+// 12. Vehicle — exibição "marca modelo - placa" na tabela
+// ============================================================
+
+describe("Vehicle — display name na tabela", () => {
+  function vehicleShortDescription(brand: string, model: string, plate: string): string {
+    return `${brand} ${model} - ${plate}`;
+  }
+
+  function resolveEntityDisplay(value: Record<string, unknown>): string {
+    // Mesma lógica do EntityTable: tenta name, title, label, etc.
+    const displayValue =
+      value.name ||
+      value.title ||
+      value.label ||
+      value.displayName ||
+      value.username ||
+      value.email;
+    if (displayValue) return String(displayValue);
+    return value.id ? `ID: ${value.id}` : String(value);
+  }
+
+  it("vehicle com name mostra marca/modelo - placa", () => {
+    const vehicle = {
+      id: 5,
+      name: vehicleShortDescription("Honda", "CG 160", "ABC1D23"),
+      brand: "Honda",
+      model: "CG 160",
+      plate: "ABC1D23",
+    };
+    expect(resolveEntityDisplay(vehicle)).toBe("Honda CG 160 - ABC1D23");
+  });
+
+  it("vehicle sem name mostra ID como fallback", () => {
+    const vehicle = { id: 5, brand: "Honda", model: "CG 160", plate: "ABC1D23" };
+    expect(resolveEntityDisplay(vehicle)).toBe("ID: 5");
+  });
+
+  it("shortDescription formato correto", () => {
+    expect(vehicleShortDescription("Yamaha", "Factor 150", "XYZ9K88")).toBe("Yamaha Factor 150 - XYZ9K88");
+  });
+});
