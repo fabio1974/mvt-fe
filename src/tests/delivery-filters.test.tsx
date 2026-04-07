@@ -69,10 +69,6 @@ function isOrganizer(role: Role): boolean {
   return role === "ROLE_ORGANIZER";
 }
 
-function isCourier(role: Role): boolean {
-  return role === "ROLE_COURIER";
-}
-
 /** Campos ocultos na tabela (incluindo filtros) por role — mesma lógica do DeliveryCRUDPage */
 function getHideFields(role: Role): string[] {
   return isClient(role) ? ["client", "deliveryType"] : isOrganizer(role) ? ["organizer"] : [];
