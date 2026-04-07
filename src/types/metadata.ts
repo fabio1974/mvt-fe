@@ -129,7 +129,8 @@ export type FormFieldType =
   | 'entity'
   | 'city'
   | 'address'
-  | 'array';
+  | 'array'
+  | 'currency';
 
 /**
  * Configuração para campos do tipo array (listas dinâmicas)
