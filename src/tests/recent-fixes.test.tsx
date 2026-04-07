@@ -491,3 +491,108 @@ describe("Vehicle — display name na tabela", () => {
     expect(vehicleShortDescription("Yamaha", "Factor 150", "XYZ9K88")).toBe("Yamaha Factor 150 - XYZ9K88");
   });
 });
+
+// ============================================================
+// 13. isCEPField — detecção segura sem falsos positivos
+// ============================================================
+
+describe("isCEPField — detecção segura de campos CEP", () => {
+  // Replica a lógica corrigida do masks.ts
+  function isCEPField(fieldName: string): boolean {
+    const words = fieldName.replace(/([a-z])([A-Z])/g, "$1_$2").toLowerCase().split(/[_\-]/);
+    const cepWords = ["cep", "zipcode", "zip", "postalcode", "postal"];
+    const excludeWords = ["point", "reference", "referencia"];
+    const hasCep = words.some((w) => cepWords.includes(w));
+    const isExcluded = words.some((w) => excludeWords.includes(w));
+    return hasCep && !isExcluded;
+  }
+
+  // Campos que SÃO CEP
+  it("cep → true", () => expect(isCEPField("cep")).toBe(true));
+  it("zipCode → true", () => expect(isCEPField("zipCode")).toBe(true));
+  it("postalCode → true", () => expect(isCEPField("postalCode")).toBe(true));
+  it("addressZipCode → true", () => expect(isCEPField("addressZipCode")).toBe(true));
+  it("address_cep → true", () => expect(isCEPField("address_cep")).toBe(true));
+  it("addressCep → true", () => expect(isCEPField("addressCep")).toBe(true));
+
+  // Campos que NÃO são CEP (falsos positivos anteriores)
+  it("pricePerKm → false (contém 'cep' em priCEPerkm)", () =>
+    expect(isCEPField("pricePerKm")).toBe(false));
+  it("carPricePerKm → false", () =>
+    expect(isCEPField("carPricePerKm")).toBe(false));
+  it("acceptedAt → false (contém 'cep' em acCEPtedAt)", () =>
+    expect(isCEPField("acceptedAt")).toBe(false));
+  it("exceptionHandler → false", () =>
+    expect(isCEPField("exceptionHandler")).toBe(false));
+  it("interceptor → false", () =>
+    expect(isCEPField("interceptor")).toBe(false));
+  it("conceptId → false", () =>
+    expect(isCEPField("conceptId")).toBe(false));
+  it("receptionDate → false", () =>
+    expect(isCEPField("receptionDate")).toBe(false));
+  it("perceptionScore → false", () =>
+    expect(isCEPField("perceptionScore")).toBe(false));
+
+  // Excluídos por conter "point" ou "reference"
+  it("referencePoint → false (excluído)", () =>
+    expect(isCEPField("referencePoint")).toBe(false));
+});
+
+// ============================================================
+// 14. unmaskFormData — não remove ponto decimal de números
+// ============================================================
+
+describe("unmaskFormData — preserva decimais em campos numéricos", () => {
+  // Simula unmaskFormData simplificado
+  function shouldUnmask(fieldName: string): boolean {
+    const name = fieldName.toLowerCase();
+    const words = name.replace(/([a-z])([A-Z])/g, "$1_$2").split(/[_\-]/);
+    const cepWords = ["cep", "zipcode", "zip", "postalcode", "postal"];
+    const isCep = words.some((w) => cepWords.includes(w));
+    const isPhone = ["phone", "telefone", "fone", "tel", "celular", "mobile", "movel", "whatsapp", "zap"]
+      .some((k) => name.includes(k));
+    return name.includes("cpf") || name.includes("cnpj") || name.includes("document") || isCep || isPhone;
+  }
+
+  it("pricePerKm NÃO é desmascardo", () =>
+    expect(shouldUnmask("pricePerKm")).toBe(false));
+  it("carPricePerKm NÃO é desmascardo", () =>
+    expect(shouldUnmask("carPricePerKm")).toBe(false));
+  it("minimumShippingFee NÃO é desmascardo", () =>
+    expect(shouldUnmask("minimumShippingFee")).toBe(false));
+  it("acceptedAt NÃO é desmascardo", () =>
+    expect(shouldUnmask("acceptedAt")).toBe(false));
+  it("totalAmount NÃO é desmascardo", () =>
+    expect(shouldUnmask("totalAmount")).toBe(false));
+  it("shippingFee NÃO é desmascardo", () =>
+    expect(shouldUnmask("shippingFee")).toBe(false));
+  it("distanceKm NÃO é desmascardo", () =>
+    expect(shouldUnmask("distanceKm")).toBe(false));
+
+  // Campos que DEVEM ser desmascardos
+  it("documentNumber É desmascardo", () =>
+    expect(shouldUnmask("documentNumber")).toBe(true));
+  it("cpf É desmascardo", () =>
+    expect(shouldUnmask("cpf")).toBe(true));
+  it("recipientPhone É desmascardo", () =>
+    expect(shouldUnmask("recipientPhone")).toBe(true));
+  it("cep É desmascardo", () =>
+    expect(shouldUnmask("cep")).toBe(true));
+  it("zipCode É desmascardo", () =>
+    expect(shouldUnmask("zipCode")).toBe(true));
+
+  it("valor 1.5 sobrevive unmask quando campo é numérico", () => {
+    // Simula o fluxo completo
+    const value = "1.5";
+    const fieldName = "pricePerKm";
+    const result = shouldUnmask(fieldName) ? value.replace(/\D/g, "") : value;
+    expect(result).toBe("1.5");
+  });
+
+  it("valor 25.99 sobrevive unmask quando campo é numérico", () => {
+    const value = "25.99";
+    const fieldName = "shippingFee";
+    const result = shouldUnmask(fieldName) ? value.replace(/\D/g, "") : value;
+    expect(result).toBe("25.99");
+  });
+});

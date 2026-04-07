@@ -98,6 +98,7 @@ const EntityTable: React.FC<EntityTableProps> = ({
   const [filters, setFilters] =
     useState<Record<string, string>>(initialFilters);
   const filtersRef = useRef<Record<string, string>>(initialFilters);
+  const [filterClearKey, setFilterClearKey] = useState(0);
   const debounceRef = useRef<number | null>(null);
 
   // Carrega metadata do contexto
@@ -211,12 +212,14 @@ const EntityTable: React.FC<EntityTableProps> = ({
   );
 
   const clearFilters = useCallback(() => {
-    const emptyFilters: Record<string, string> = {};
-    setFilters(emptyFilters);
-    filtersRef.current = emptyFilters;
+    // Restaura os initialFilters (ex: status=PENDING,PAID) em vez de limpar tudo
+    const resetFilters: Record<string, string> = { ...initialFilters };
+    setFilters(resetFilters);
+    filtersRef.current = resetFilters;
     setCurrentPage(1);
-    fetchData(emptyFilters);
-  }, [fetchData]);
+    setFilterClearKey(k => k + 1); // Força re-mount dos componentes de filtro (typeahead, etc)
+    fetchData(resetFilters);
+  }, [fetchData, initialFilters]);
 
   const getFieldValue = (row: any, field: FieldMetadata): any => {
     const fieldPath = field.name.split(".");
@@ -481,6 +484,7 @@ const EntityTable: React.FC<EntityTableProps> = ({
 
       {!hideFilters && metadata.filters && metadata.filters.length > 0 && (
         <EntityFilters
+          key={filterClearKey}
           filters={metadata.filters.filter((f) => !hideFields.includes(f.field) && !hideFields.includes(f.name))}
           values={filters}
           onChange={handleFilterChange}

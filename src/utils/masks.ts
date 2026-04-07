@@ -40,15 +40,14 @@ export const getPhoneMask = (fieldName: string): string => {
  * Detecta se o campo é um CEP baseado no nome
  */
 const isCEPField = (fieldName: string): boolean => {
-  const name = fieldName.toLowerCase();
-  // NÃO inclui "point", "reference", "referência" pois esses são campos de texto livre
-  const cepKeywords = ["cep", "zipcode", "zip", "postalcode", "postal"];
-  const excludeKeywords = ["point", "reference", "referencia", "reference_point"];
-  
-  const hasCepKeyword = cepKeywords.some(keyword => name.includes(keyword));
-  const isExcluded = excludeKeywords.some(keyword => name.includes(keyword));
-  
-  return hasCepKeyword && !isExcluded;
+  // Separa camelCase e snake_case em palavras: "addressZipCode" → ["address","Zip","Code"]
+  const words = fieldName.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase().split(/[_\-]/);
+  const cepWords = ["cep", "zipcode", "zip", "postalcode", "postal"];
+  const excludeWords = ["point", "reference", "referencia"];
+
+  const hasCep = words.some(w => cepWords.includes(w));
+  const isExcluded = words.some(w => excludeWords.includes(w));
+  return hasCep && !isExcluded;
 };
 
 /**

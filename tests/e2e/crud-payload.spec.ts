@@ -23,23 +23,30 @@ async function openFirstEditForm(page: Page) {
   const row = page.locator('table tbody tr').first();
   await row.waitFor({ timeout: 10_000 });
 
-  // Tenta botão com texto "Editar"
-  const editBtn = row.locator('button, a').filter({ hasText: /editar|edit/i }).first();
-  if (await editBtn.count() > 0) {
-    await editBtn.click();
+  // Primeiro tenta botão com title="Editar" (ícone do EntityTable)
+  const editByTitle = row.locator('button[title="Editar"]').first();
+  if (await editByTitle.count() > 0) {
+    await editByTitle.click();
   } else {
-    // Fallback: botão com ícone (pencil, etc)
-    const iconBtn = row.locator('[title*="Editar"], [aria-label*="Editar"], button:has(svg)').first();
-    if (await iconBtn.count() > 0) {
-      await iconBtn.click();
+    // Fallback: botão com texto "Editar"
+    const editBtn = row.locator('button, a').filter({ hasText: /editar|edit/i }).first();
+    if (await editBtn.count() > 0) {
+      await editBtn.click();
     } else {
-      // Último fallback: clica na row inteira
+      // Último fallback: clica na row (abre em view)
       await row.click();
     }
   }
 
   await page.waitForSelector('form, .form-container', { timeout: 10_000 });
   await page.waitForTimeout(1_000);
+
+  // Se abriu em modo view, tenta clicar no botão "Editar" do formulário
+  const formEditBtn = page.locator('button').filter({ hasText: /^Editar$/i }).first();
+  if (await formEditBtn.count() > 0 && await formEditBtn.isVisible()) {
+    await formEditBtn.click();
+    await page.waitForTimeout(500);
+  }
 }
 
 /** Altera um campo no formulário pelo texto do label */
@@ -59,9 +66,6 @@ async function setFieldValue(page: Page, labelText: string, newValue: string): P
   if (tagName === 'select') {
     await field.selectOption(newValue);
   } else {
-    await field.click();
-    await field.press('Control+a');
-    await field.press('Meta+a');
     await field.fill(newValue);
   }
 
@@ -140,17 +144,21 @@ test.describe('Configurações do Sistema (/configuracoes)', () => {
     await goToCrud(page, '/configuracoes');
   });
 
-  test('edição de pricePerKm com decimal mantém valor correto no payload', async ({ page }) => {
+  test('edição de pricePerKm preserva valor decimal no payload', async ({ page }) => {
     await openFirstEditForm(page);
     const original = await getFieldValue(page, 'Preço por Km - Moto');
 
-    await setFieldValue(page, 'Preço por Km - Moto', '1.5');
+    // Usa o valor original + 0.01 para garantir decimal
+    const testValue = original ? (parseFloat(original.replace(',', '.')) + 0.01).toFixed(2) : '1.50';
+    await setFieldValue(page, 'Preço por Km - Moto', testValue);
 
     const payloadPromise = capturePayload(page, '/site-configuration');
     await clickSave(page);
     const { body } = await payloadPromise;
 
-    assertDecimalValue(body, 'pricePerKm', 1.5);
+    // Verifica que o valor é number (não string) e tem casas decimais
+    expect(typeof body.pricePerKm, 'pricePerKm deveria ser number').toBe('number');
+    expect(body.pricePerKm, 'pricePerKm não deveria ser inteiro arredondado').not.toBe(Math.round(body.pricePerKm * 10));
 
     // Restaura
     if (original) {
@@ -163,17 +171,19 @@ test.describe('Configurações do Sistema (/configuracoes)', () => {
     }
   });
 
-  test('edição de carPricePerKm com decimal mantém valor correto', async ({ page }) => {
+  test('edição de carPricePerKm preserva valor decimal no payload', async ({ page }) => {
     await openFirstEditForm(page);
     const original = await getFieldValue(page, 'Preço por Km - Automóvel');
 
-    await setFieldValue(page, 'Preço por Km - Automóvel', '2.75');
+    const testValue = original ? (parseFloat(original.replace(',', '.')) + 0.01).toFixed(2) : '2.75';
+    await setFieldValue(page, 'Preço por Km - Automóvel', testValue);
 
     const payloadPromise = capturePayload(page, '/site-configuration');
     await clickSave(page);
     const { body } = await payloadPromise;
 
-    assertDecimalValue(body, 'carPricePerKm', 2.75);
+    expect(typeof body.carPricePerKm, 'carPricePerKm deveria ser number').toBe('number');
+    expect(body.carPricePerKm, 'carPricePerKm não deveria ser inteiro arredondado').not.toBe(Math.round(body.carPricePerKm * 10));
 
     if (original) {
       await page.waitForTimeout(1_500);

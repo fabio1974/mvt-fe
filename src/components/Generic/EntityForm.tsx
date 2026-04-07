@@ -814,9 +814,9 @@ const EntityForm: React.FC<EntityFormProps> = ({
       // ✅ Remove máscaras de CPF, CNPJ, telefone, CEP antes de enviar ao backend
       const unmaskedData = unmaskFormData(finalData);
 
-      // ✅ Converte campos number de string para número (input HTML retorna string)
+      // ✅ Converte campos number/currency de string para número (input HTML retorna string)
       allFields.forEach((field) => {
-        if (field.type === "number" && unmaskedData[field.name] !== undefined && unmaskedData[field.name] !== null && unmaskedData[field.name] !== "") {
+        if ((field.type === "number" || field.type === "currency") && unmaskedData[field.name] !== undefined && unmaskedData[field.name] !== null && unmaskedData[field.name] !== "") {
           unmaskedData[field.name] = Number(unmaskedData[field.name]);
         }
       });
@@ -1050,7 +1050,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
     }
 
     const error = errors[field.name];
-    const stringValue = String(value || "");
+    const stringValue = String(value ?? "");
 
     // 🔒 Verifica se o campo deve ser readonly (por configuração prop ou regra de negócio)
     // Campo "profile" é readonly para todos exceto admin
@@ -1183,6 +1183,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
         break;
       }
 
+      case "currency":
       case "number":
         fieldContent = (
           <FormField
@@ -1196,10 +1197,11 @@ const EntityForm: React.FC<EntityFormProps> = ({
               placeholder={readonly || field.readonly || isFieldReadonly ? "" : field.placeholder}
               value={stringValue}
               onChange={(e) => {
-                // Permite apenas digitos, ponto e virgula (normaliza virgula→ponto)
-                const raw = e.target.value.replace(",", ".");
-                // Remove caracteres invalidos (aceita apenas numeros, ponto e sinal negativo)
-                const cleaned = raw.replace(/[^0-9.\-]/g, "");
+                // Normaliza vírgula → ponto e remove caracteres inválidos
+                const raw = e.target.value.replace(/,/g, ".");
+                // Mantém apenas dígitos, ponto e sinal negativo; preserva só o primeiro ponto
+                const match = raw.match(/^(-?\d*\.?\d*)/);
+                const cleaned = match ? match[1] : "";
                 handleChange(field.name, cleaned);
               }}
               disabled={field.disabled || field.readonly || isFieldReadonly || loading || readonly}
