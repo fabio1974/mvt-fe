@@ -68,12 +68,12 @@ async function openWizard(page: Page) {
   await page.goto('/deliveries', { waitUntil: 'networkidle' });
   await page.waitForTimeout(2_000);
 
-  // Clica no botão "Com paradas" para abrir o wizard
-  const wizardBtn = page.locator('button').filter({ hasText: /com paradas|nova entrega/i }).first();
+  // Clica no botão "Nova Corrida" para abrir o wizard
+  const wizardBtn = page.locator('button').filter({ hasText: /nova corrida|com paradas|nova entrega/i }).first();
   await wizardBtn.click();
 
   // Espera o modal do wizard aparecer
-  await expect(page.locator('text=Nova Entrega')).toBeVisible({ timeout: 5_000 });
+  await expect(page.locator('text=Nova Corrida')).toBeVisible({ timeout: 5_000 });
 }
 
 /** Preenche o endereço de origem no Step 1 (digita direto no input de texto) */
@@ -406,7 +406,7 @@ test.describe('DeliveryWizard - Criação de Entregas', () => {
     await page.locator('.wizard-footer .wizard-btn.secondary').filter({ hasText: /cancelar/i }).click();
 
     // Wizard deve fechar (modal desaparece)
-    await expect(page.locator('text=Nova Entrega')).not.toBeVisible({ timeout: 3_000 });
+    await expect(page.locator('text=Nova Corrida')).not.toBeVisible({ timeout: 3_000 });
   });
 
   test('botão X fecha o wizard', async ({ page }) => {
@@ -414,7 +414,7 @@ test.describe('DeliveryWizard - Criação de Entregas', () => {
 
     await page.locator('.wizard-close').click();
 
-    await expect(page.locator('text=Nova Entrega')).not.toBeVisible({ timeout: 3_000 });
+    await expect(page.locator('text=Nova Corrida')).not.toBeVisible({ timeout: 3_000 });
   });
 
   // ----------------------------------------------------------

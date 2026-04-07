@@ -850,7 +850,7 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
       <div className="wizard-modal">
         {/* Header */}
         <div className="wizard-header">
-          <h2 className="wizard-title">🚀 Nova Entrega</h2>
+          <h2 className="wizard-title">🚀 Nova Corrida</h2>
           <button className="wizard-close" onClick={onCancel} title="Cancelar">✕</button>
         </div>
 
@@ -892,7 +892,7 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
               disabled={submitting || routeLoading}
               onClick={handleSubmit}
             >
-              {submitting ? "Criando..." : "✅ Criar Entrega"}
+              {submitting ? "Criando..." : "✅ Criar Corrida"}
             </button>
           )}
         </div>

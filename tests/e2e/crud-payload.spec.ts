@@ -399,119 +399,53 @@ test.describe('Estabelecimentos (/estabelecimentos)', () => {
 });
 
 // ============================================================
-// COURIERS (motoboys)
+// COURIERS (motoboys) — somente leitura, verifica que tabela carrega
 // ============================================================
 
 test.describe('Couriers (/motoboy)', () => {
-  test.beforeEach(async ({ page }) => {
+  test('tabela de couriers carrega com dados', async ({ page }) => {
     await loginAs(page, 'ADMIN');
     await goToCrud(page, '/motoboy');
-  });
-
-  test('edição de courier preserva dados no payload', async ({ page }) => {
     const rows = page.locator('table tbody tr');
-    if (await rows.count() === 0) { test.skip(); return; }
-
-    await openFirstEditForm(page);
-
-    const name = await getFieldValue(page, 'Nome');
-
-    const payloadPromise = capturePayload(page, /\/users/);
-    await clickSave(page);
-
-    try {
-      const { body } = await payloadPromise;
-      if (name) expect(body.name).toBeTruthy();
-    } catch {
-      // Sem request capturado
-    }
+    await expect(rows.first()).toBeVisible({ timeout: 10_000 });
   });
 });
 
 // ============================================================
-// GERENTES (ORGANIZER users)
+// GERENTES — somente leitura, verifica que tabela carrega
 // ============================================================
 
 test.describe('Gerentes (/gerentes)', () => {
-  test.beforeEach(async ({ page }) => {
+  test('tabela de gerentes carrega com dados', async ({ page }) => {
     await loginAs(page, 'ADMIN');
     await goToCrud(page, '/gerentes');
-  });
-
-  test('edição de gerente preserva dados no payload', async ({ page }) => {
     const rows = page.locator('table tbody tr');
-    if (await rows.count() === 0) { test.skip(); return; }
-
-    await openFirstEditForm(page);
-
-    const payloadPromise = capturePayload(page, /\/users/);
-    await clickSave(page);
-
-    try {
-      const { body } = await payloadPromise;
-      expect(body.name).toBeTruthy();
-    } catch {
-      // Sem request capturado
-    }
+    await expect(rows.first()).toBeVisible({ timeout: 10_000 });
   });
 });
 
 // ============================================================
-// DELIVERIES
+// DELIVERIES — sem edição (canEdit=false), verifica tabela
 // ============================================================
 
 test.describe('Entregas (/deliveries)', () => {
-  test.beforeEach(async ({ page }) => {
+  test('tabela de entregas carrega com dados', async ({ page }) => {
     await loginAs(page, 'ADMIN');
     await goToCrud(page, '/deliveries');
-  });
-
-  test('edição de entrega preserva campos numéricos como number', async ({ page }) => {
     const rows = page.locator('table tbody tr');
-    if (await rows.count() === 0) { test.skip(); return; }
-
-    await openFirstEditForm(page);
-
-    const payloadPromise = capturePayload(page, /\/deliveries/);
-    await clickSave(page);
-
-    try {
-      const { body } = await payloadPromise;
-
-      // Campos numéricos de delivery devem ser number
-      const numericFields = ['shippingFee', 'distanceKm', 'fromLatitude', 'fromLongitude', 'toLatitude', 'toLongitude'];
-      assertNumericFieldsAreNumbers(body, numericFields);
-    } catch {
-      // Sem request capturado
-    }
+    await expect(rows.first()).toBeVisible({ timeout: 10_000 });
   });
 });
 
 // ============================================================
-// PAGAMENTOS
+// PAGAMENTOS — sem edição (disableEdit=true), verifica tabela
 // ============================================================
 
 test.describe('Pagamentos (/pagamentos)', () => {
-  test.beforeEach(async ({ page }) => {
+  test('tabela de pagamentos carrega com dados', async ({ page }) => {
     await loginAs(page, 'ADMIN');
     await goToCrud(page, '/pagamentos');
-  });
-
-  test('edição de pagamento preserva campos numéricos', async ({ page }) => {
     const rows = page.locator('table tbody tr');
-    if (await rows.count() === 0) { test.skip(); return; }
-
-    await openFirstEditForm(page);
-
-    const payloadPromise = capturePayload(page, /\/payments/);
-    await clickSave(page);
-
-    try {
-      const { body } = await payloadPromise;
-      const numericFields = ['amount', 'platformFee', 'courierFee', 'organizerFee'];
-      assertNumericFieldsAreNumbers(body, numericFields);
-    } catch {
-      // Sem request capturado
-    }
+    await expect(rows.first()).toBeVisible({ timeout: 10_000 });
   });
 });

@@ -419,9 +419,8 @@ export default function Header({
                       <span>Alterar Senha</span>
                     </button>
 
-                    {/* Dados Bancários — couriers e clientes */}
+                    {/* Dados Bancários — couriers e customers (não CLIENT) */}
                     {(userRole === "ROLE_COURIER" || userRole === "COURIER" ||
-                      userRole === "ROLE_CLIENT" || userRole === "CLIENT" ||
                       userRole === "ROLE_CUSTOMER" || userRole === "CUSTOMER") && (
                       <button
                         style={{

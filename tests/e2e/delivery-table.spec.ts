@@ -124,11 +124,11 @@ test.describe('Tabela de Entregas', () => {
   });
 
   // ----------------------------------------------------------
-  // Botão "Nova Entrega" (sem "Criar Novo")
+  // Botão "Nova Corrida" — visível apenas para CLIENT/CUSTOMER
   // ----------------------------------------------------------
 
-  test('botão "Nova Entrega" visível e "Criar Novo" ausente', async ({ page }) => {
-    await expect(page.locator('button').filter({ hasText: /Nova Entrega/i })).toBeVisible();
+  test('ADMIN não vê botão "Nova Corrida" nem "Criar Novo"', async ({ page }) => {
+    await expect(page.locator('button').filter({ hasText: /Nova Corrida/i })).not.toBeVisible();
     await expect(page.locator('button').filter({ hasText: /Criar Novo/i })).not.toBeVisible();
   });
 
@@ -179,16 +179,16 @@ test.describe('Wizard de entrega — validações visuais', () => {
 
   test('campos obrigatórios têm asterisco *', async ({ page }) => {
     // Abre wizard
-    await page.locator('button').filter({ hasText: /Nova Entrega/i }).click();
-    await expect(page.locator('text=Nova Entrega')).toBeVisible({ timeout: 5_000 });
+    await page.locator('button').filter({ hasText: /Nova Corrida/i }).click();
+    await expect(page.locator('text=Nova Corrida')).toBeVisible({ timeout: 5_000 });
 
     // Step 1: "Endereço de Origem *"
     await expect(page.locator('text=/Origem.*\\*/i')).toBeVisible();
   });
 
   test('erro de validação aparece ao tentar avançar sem preencher', async ({ page }) => {
-    await page.locator('button').filter({ hasText: /Nova Entrega/i }).click();
-    await expect(page.locator('text=Nova Entrega')).toBeVisible({ timeout: 5_000 });
+    await page.locator('button').filter({ hasText: /Nova Corrida/i }).click();
+    await expect(page.locator('text=Nova Corrida')).toBeVisible({ timeout: 5_000 });
 
     // Tenta avançar sem preencher origem
     await page.locator('.wizard-btn.primary').click();
@@ -199,8 +199,8 @@ test.describe('Wizard de entrega — validações visuais', () => {
   });
 
   test('máscara monetária formata corretamente', async ({ page }) => {
-    await page.locator('button').filter({ hasText: /Nova Entrega/i }).click();
-    await expect(page.locator('text=Nova Entrega')).toBeVisible({ timeout: 5_000 });
+    await page.locator('button').filter({ hasText: /Nova Corrida/i }).click();
+    await expect(page.locator('text=Nova Corrida')).toBeVisible({ timeout: 5_000 });
 
     // Preenche origem para avançar
     await page.locator('.wizard-content input[type="text"]').first().fill('Rua Teste, 123');
@@ -224,8 +224,8 @@ test.describe('Popup de endereço (mapa)', () => {
   });
 
   test('popup de mapa tem botão confirmar na linha dos botões', async ({ page }) => {
-    await page.locator('button').filter({ hasText: /Nova Entrega/i }).click();
-    await expect(page.locator('text=Nova Entrega')).toBeVisible({ timeout: 5_000 });
+    await page.locator('button').filter({ hasText: /Nova Corrida/i }).click();
+    await expect(page.locator('text=Nova Corrida')).toBeVisible({ timeout: 5_000 });
 
     // Preenche origem e avança
     await page.locator('.wizard-content input[type="text"]').first().fill('Rua Teste, 123');
