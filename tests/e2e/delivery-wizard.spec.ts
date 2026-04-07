@@ -139,7 +139,7 @@ async function clickBack(page: Page) {
 test.describe('DeliveryWizard - Criação de Entregas', () => {
 
   test.beforeEach(async ({ page }) => {
-    await loginAs(page, 'ADMIN');
+    await loginAs(page, 'CLIENT');
   });
 
   // ----------------------------------------------------------
