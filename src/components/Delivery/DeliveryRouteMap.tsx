@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { GoogleMap, LoadScript, Marker, DirectionsRenderer, InfoWindow } from "@react-google-maps/api";
+import { GoogleMap, LoadScript, Marker, DirectionsRenderer, InfoWindow, Polyline } from "@react-google-maps/api";
 import motoIcon from "../../assets/moto.png";
 
 export interface DeliveryStop {
@@ -26,6 +26,8 @@ interface DeliveryRouteMapProps {
   inTransitAt?: string;
   /** Paradas intermediárias da entrega */
   stops?: DeliveryStop[];
+  /** Rota real percorrida (actual_route do banco) — se fornecida, desenha polyline em vez de Google Directions */
+  actualRoute?: Array<{ lat: number; lng: number }>;
   height?: string;
 }
 
@@ -43,6 +45,7 @@ const DeliveryRouteMap: React.FC<DeliveryRouteMapProps> = ({
   status: _status,
   inTransitAt: _inTransitAt,
   stops = [],
+  actualRoute,
   height = "400px",
 }) => {
   const [map, setMap] = useState<google.maps.Map | null>(null);
@@ -63,6 +66,8 @@ const DeliveryRouteMap: React.FC<DeliveryRouteMapProps> = ({
 
   useEffect(() => {
     if (!map) return;
+    // Se tem rota real, não precisa calcular via Google Directions
+    if (actualRoute && actualRoute.length >= 2) return;
 
     try {
       const directionsService = new google.maps.DirectionsService();
@@ -135,12 +140,28 @@ const DeliveryRouteMap: React.FC<DeliveryRouteMapProps> = ({
       console.error("❌ DeliveryRouteMap - Erro ao configurar mapa:", error);
     }
   }, [
-    map,
+    map, actualRoute,
     fromLatitude, fromLongitude,
     toLatitude, toLongitude,
     pendingStops.length, // eslint-disable-line react-hooks/exhaustive-deps
     deliveryManGpsLatitude, deliveryManGpsLongitude,
   ]);
+
+  // Ajusta zoom para caber toda a rota real
+  useEffect(() => {
+    if (!map || !actualRoute || actualRoute.length < 2) return;
+
+    const bounds = new google.maps.LatLngBounds();
+    bounds.extend({ lat: fromLatitude, lng: fromLongitude });
+    actualRoute.forEach(p => bounds.extend(p));
+    stops.forEach(s => {
+      if (s.latitude && s.longitude) bounds.extend({ lat: s.latitude, lng: s.longitude });
+    });
+    if (deliveryManGpsLatitude && deliveryManGpsLongitude) {
+      bounds.extend({ lat: deliveryManGpsLatitude, lng: deliveryManGpsLongitude });
+    }
+    map.fitBounds(bounds, { top: 60, bottom: 60, left: 60, right: 60 });
+  }, [map, actualRoute, fromLatitude, fromLongitude, stops, deliveryManGpsLatitude, deliveryManGpsLongitude]);
 
   if (!apiKey) {
     return (
@@ -288,7 +309,17 @@ const DeliveryRouteMap: React.FC<DeliveryRouteMapProps> = ({
               />
             )}
 
-            {directions && (
+            {/* Rota real (actual_route do banco) tem prioridade sobre Google Directions */}
+            {actualRoute && actualRoute.length >= 2 ? (
+              <Polyline
+                path={actualRoute}
+                options={{
+                  strokeColor: "#111827",
+                  strokeOpacity: 0.9,
+                  strokeWeight: 4,
+                }}
+              />
+            ) : directions ? (
               <DirectionsRenderer
                 directions={directions}
                 options={{
@@ -314,7 +345,7 @@ const DeliveryRouteMap: React.FC<DeliveryRouteMapProps> = ({
                   },
                 }}
               />
-            )}
+            ) : null}
           </GoogleMap>
         </LoadScript>
 

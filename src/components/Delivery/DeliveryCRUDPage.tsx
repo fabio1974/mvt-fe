@@ -176,41 +176,34 @@ const DeliveryCRUDPage: React.FC = () => {
       fromAddress?: string;
       toAddress?: string;
       distanceKm?: number;
-      courier?: {
-        id: number;
-        name: string;
-        gpsLatitude?: number;
-        gpsLongitude?: number;
-      };
+      courier?: { id: number; name: string; gpsLatitude?: number; gpsLongitude?: number };
     } | null>(null);
+    const [actualRoute, setActualRoute] = useState<Array<{ lat: number; lng: number }>>([]);
 
     useEffect(() => {
-      
-      // Só carrega se estiver no modo view e tiver ID
-      if (viewMode !== "view" || !entityId) {
-        return;
-      }
+      if (viewMode !== "view" || !entityId) return;
 
-      const loadDelivery = async () => {
+      (async () => {
         try {
-          const response = await api.get(`/api/deliveries/${entityId}`);
-          
-          const data = response.data as {
-            fromLatitude: number;
-            fromLongitude: number;
-            toLatitude: number;
-            toLongitude: number;
-            fromAddress?: string;
-            toAddress?: string;
-            distanceKm?: number;
-            courier?: {
-              id: number;
-              name: string;
-              gpsLatitude?: number;
-              gpsLongitude?: number;
-            };
-          };
-          
+          // Busca delivery + rota real em paralelo
+          const [deliveryRes, trackRes] = await Promise.all([
+            api.get(`/api/deliveries/${entityId}`),
+            api.get(`/api/deliveries/${entityId}/tracking`).catch(() => null),
+          ]);
+
+          const data = deliveryRes.data as any;
+
+          // Parseia rota real se disponível
+          let route: Array<{ lat: number; lng: number }> = [];
+          if (trackRes?.data?.route) {
+            const geoJson = typeof trackRes.data.route === 'string' ? JSON.parse(trackRes.data.route) : trackRes.data.route;
+            if (geoJson?.type === 'LineString' && Array.isArray(geoJson.coordinates)) {
+              route = geoJson.coordinates.map((c: number[]) => ({ lat: c[1], lng: c[0] }));
+            }
+          }
+
+          // Seta tudo junto — evita flash da rota azul antes da preta
+          setActualRoute(route);
           setDeliveryData({
             fromLatitude: data.fromLatitude,
             fromLongitude: data.fromLongitude,
@@ -222,20 +215,14 @@ const DeliveryCRUDPage: React.FC = () => {
             courier: data.courier,
           });
         } catch (error) {
-          console.error("❌ DeliveryMapWrapper - Erro ao carregar dados da entrega:", error);
+          console.error("❌ DeliveryMapWrapper - Erro ao carregar dados:", error);
         }
-      };
-
-      loadDelivery();
+      })();
     }, [entityId, viewMode]);
 
-    // Só renderiza o mapa no modo view com todos os dados carregados
-    if (viewMode !== "view" || 
-        !deliveryData || 
-        deliveryData.fromLatitude === undefined || 
-        deliveryData.fromLongitude === undefined ||
-        deliveryData.toLatitude === undefined ||
-        deliveryData.toLongitude === undefined) {
+    if (viewMode !== "view" || !deliveryData ||
+        deliveryData.fromLatitude === undefined || deliveryData.fromLongitude === undefined ||
+        deliveryData.toLatitude === undefined || deliveryData.toLongitude === undefined) {
       return null;
     }
 
@@ -251,6 +238,7 @@ const DeliveryCRUDPage: React.FC = () => {
         deliveryManGpsLatitude={deliveryData.courier?.gpsLatitude}
         deliveryManGpsLongitude={deliveryData.courier?.gpsLongitude}
         deliveryManName={deliveryData.courier?.name}
+        actualRoute={actualRoute.length >= 2 ? actualRoute : undefined}
         height="450px"
       />
     );

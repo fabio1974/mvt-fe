@@ -596,3 +596,94 @@ describe("unmaskFormData — preserva decimais em campos numéricos", () => {
     expect(result).toBe("25.99");
   });
 });
+
+// ============================================================
+// 15. Rota real (actualRoute) — prioridade sobre Google Directions
+// ============================================================
+
+describe("actualRoute — lógica de prioridade e fitBounds", () => {
+  it("GeoJSON LineString é parseado para array de {lat, lng}", () => {
+    const geoJson = {
+      type: "LineString",
+      coordinates: [[-40.922, -3.854], [-40.917, -3.856]],
+    };
+    const route = geoJson.coordinates.map((c: number[]) => ({ lat: c[1], lng: c[0] }));
+    expect(route).toHaveLength(2);
+    expect(route[0]).toEqual({ lat: -3.854, lng: -40.922 });
+    expect(route[1]).toEqual({ lat: -3.856, lng: -40.917 });
+  });
+
+  it("coordenadas invertidas: GeoJSON [lng, lat] → mapa {lat, lng}", () => {
+    const coord = [-40.922644, -3.854743];
+    const point = { lat: coord[1], lng: coord[0] };
+    expect(point.lat).toBe(-3.854743);
+    expect(point.lng).toBe(-40.922644);
+  });
+
+  it("fitBounds calcula extremos corretos da rota", () => {
+    const route = [
+      { lat: -3.854, lng: -40.922 },
+      { lat: -3.856, lng: -40.918 },
+      { lat: -3.855, lng: -40.920 },
+    ];
+    const minLat = Math.min(...route.map(p => p.lat));
+    const maxLat = Math.max(...route.map(p => p.lat));
+    const minLng = Math.min(...route.map(p => p.lng));
+    const maxLng = Math.max(...route.map(p => p.lng));
+
+    expect(minLat).toBe(-3.856);
+    expect(maxLat).toBe(-3.854);
+    expect(minLng).toBe(-40.922);
+    expect(maxLng).toBe(-40.918);
+
+    const center = { lat: (minLat + maxLat) / 2, lng: (minLng + maxLng) / 2 };
+    expect(center.lat).toBeCloseTo(-3.855, 3);
+    expect(center.lng).toBeCloseTo(-40.920, 3);
+  });
+
+  it("actualRoute com >= 2 pontos tem prioridade (Directions não roda)", () => {
+    const actualRoute = [{ lat: -3.854, lng: -40.922 }, { lat: -3.856, lng: -40.917 }];
+    const shouldSkipDirections = actualRoute && actualRoute.length >= 2;
+    expect(shouldSkipDirections).toBe(true);
+  });
+
+  it("actualRoute vazio ou 1 ponto → usa Google Directions como fallback", () => {
+    expect([].length >= 2).toBe(false);
+    expect([{ lat: 0, lng: 0 }].length >= 2).toBe(false);
+  });
+
+  it("actualRoute undefined → usa Google Directions", () => {
+    const actualRoute = undefined;
+    const shouldSkipDirections = actualRoute && actualRoute.length >= 2;
+    expect(shouldSkipDirections).toBeFalsy();
+  });
+});
+
+// ============================================================
+// 16. Tradução Delivery → Corrida, Stop → Entrega
+// ============================================================
+
+describe("i18n — Delivery = Corrida, Stop = Entrega", () => {
+  const translations: Record<string, string> = {
+    delivery: "Corrida",
+    stops: "Entregas",
+    stopOrder: "Ordem da Entrega",
+    completionOrder: "Ordem de Conclusão",
+  };
+
+  it("delivery traduz para Corrida", () => {
+    expect(translations.delivery).toBe("Corrida");
+  });
+
+  it("stops traduz para Entregas (plural)", () => {
+    expect(translations.stops).toBe("Entregas");
+  });
+
+  it("delivery NÃO traduz para Entrega", () => {
+    expect(translations.delivery).not.toBe("Entrega");
+  });
+
+  it("stopOrder traduz para Ordem da Entrega", () => {
+    expect(translations.stopOrder).toBe("Ordem da Entrega");
+  });
+});

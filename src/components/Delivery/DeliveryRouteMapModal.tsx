@@ -42,18 +42,35 @@ const DeliveryRouteMapModal: React.FC<DeliveryRouteMapModalProps> = ({
   onClose,
 }) => {
   const [deliveryData, setDeliveryData] = useState<DeliveryData | null>(null);
+  const [actualRoute, setActualRoute] = useState<Array<{ lat: number; lng: number }>>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  /** Carrega dados completos da entrega */
+  /** Carrega dados da corrida + rota real em paralelo */
   const loadDelivery = async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await api.get(`/api/deliveries/${deliveryId}`);
+      const [response, trackingRes] = await Promise.all([
+        api.get(`/api/deliveries/${deliveryId}`),
+        api.get(`/api/deliveries/${deliveryId}/tracking`).catch(() => null),
+      ]);
+
       const data = response.data as any;
+
+      // Parseia rota real se disponível
+      let route: Array<{ lat: number; lng: number }> = [];
+      if (trackingRes?.data?.route) {
+        const geoJson = typeof trackingRes.data.route === 'string' ? JSON.parse(trackingRes.data.route) : trackingRes.data.route;
+        if (geoJson?.type === 'LineString' && Array.isArray(geoJson.coordinates)) {
+          route = geoJson.coordinates.map((c: number[]) => ({ lat: c[1], lng: c[0] }));
+        }
+      }
+
+      // Seta rota real ANTES do deliveryData — evita flash da rota azul
+      setActualRoute(route);
       setDeliveryData({
         fromLatitude: data.fromLatitude,
         fromLongitude: data.fromLongitude,
@@ -69,7 +86,7 @@ const DeliveryRouteMapModal: React.FC<DeliveryRouteMapModalProps> = ({
       });
       setLastUpdated(new Date());
     } catch (err) {
-      console.error("Erro ao carregar dados da entrega:", err);
+      console.error("Erro ao carregar dados da corrida:", err);
       setError("Erro ao carregar dados da corrida");
     } finally {
       setLoading(false);
@@ -223,6 +240,7 @@ const DeliveryRouteMapModal: React.FC<DeliveryRouteMapModalProps> = ({
               status={deliveryData!.status}
               inTransitAt={deliveryData!.inTransitAt}
               stops={deliveryData!.stops}
+              actualRoute={actualRoute.length >= 2 ? actualRoute : undefined}
               height="500px"
             />
           ) : (
