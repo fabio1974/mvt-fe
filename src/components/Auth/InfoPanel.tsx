@@ -11,7 +11,7 @@ export default function InfoPanel() {
             color: "transparent",
           }}
         >
-          entregas e mototáxi
+          corridas e mototáxi
         </span>
       </h2>
       <div className="info-panel-subtitle">
@@ -24,7 +24,7 @@ export default function InfoPanel() {
         </li>
         <li>
           <span>✓</span>
-          <span>Histórico completo de suas entregas</span>
+          <span>Histórico completo de suas corridas</span>
         </li>
         <li>
           <span>✓</span>
@@ -54,7 +54,7 @@ export default function InfoPanel() {
             }}
           >
             Mantenha seus dados atualizados para receber mais oportunidades de
-            entregas!
+            corridas!
           </p>
         </div>
       </div>

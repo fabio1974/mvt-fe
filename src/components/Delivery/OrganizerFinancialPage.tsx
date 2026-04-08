@@ -143,7 +143,7 @@ const OrganizerFinancialPage: React.FC = () => {
               color: "#ffffff",
               fontWeight: "normal" 
             }}>
-              (Entregas completadas do seu grupo)
+              (Corridas completadas do seu grupo)
             </span>
           </div>
         </div>
@@ -201,7 +201,7 @@ const OrganizerFinancialPage: React.FC = () => {
                   <p className="card-label">Total de Fretes</p>
                   <p className="card-value">{formatCurrency(totalShippingFeesGross)}</p>
                   <p className="card-subtitle">
-                    {deliveryCount} {deliveryCount === 1 ? "entrega completada" : "entregas completadas"}
+                    {deliveryCount} {deliveryCount === 1 ? "corrida completada" : "corridas completadas"}
                   </p>
                 </div>
               </div>
@@ -256,10 +256,10 @@ const OrganizerFinancialPage: React.FC = () => {
             <div className="text-center py-8">
               <FiDollarSign className="mx-auto text-6xl text-gray-300 mb-4" />
               <p className="text-xl text-gray-600 mb-2">
-                Nenhuma entrega completada
+                Nenhuma corrida completada
               </p>
               <p className="text-gray-500">
-                Entregas completadas do seu grupo aparecerão aqui
+                Corridas completadas do seu grupo aparecerão aqui
               </p>
             </div>
           )}

@@ -23,7 +23,7 @@ const MENU_ITEMS = [
     roles: ["ROLE_CUSTOMER", "CUSTOMER"],
   },
   {
-    label: "Entregas",
+    label: "Corridas",
     path: "/deliveries",
     roles: ["ROLE_ADMIN", "ROLE_ORGANIZER", "ROLE_CLIENT", "CLIENT", "ROLE_CUSTOMER", "CUSTOMER", "ROLE_COURIER", "COURIER"],
   },

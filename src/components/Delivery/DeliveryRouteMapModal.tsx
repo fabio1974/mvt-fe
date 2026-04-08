@@ -70,7 +70,7 @@ const DeliveryRouteMapModal: React.FC<DeliveryRouteMapModalProps> = ({
       setLastUpdated(new Date());
     } catch (err) {
       console.error("Erro ao carregar dados da entrega:", err);
-      setError("Erro ao carregar dados da entrega");
+      setError("Erro ao carregar dados da corrida");
     } finally {
       setLoading(false);
     }
@@ -227,7 +227,7 @@ const DeliveryRouteMapModal: React.FC<DeliveryRouteMapModalProps> = ({
             />
           ) : (
             <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "400px", color: "#6b7280" }}>
-              Dados de coordenadas não disponíveis para esta entrega
+              Dados de coordenadas não disponíveis para esta corrida
             </div>
           )}
         </div>

@@ -393,7 +393,7 @@ const PaymentReportModal: React.FC<PaymentReportModalProps> = ({
                 gap: "8px",
               }}
             >
-              <FiPackage /> Entregas Incluídas ({report.deliveries.length})
+              <FiPackage /> Corridas Incluídas ({report.deliveries.length})
             </h3>
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               {report.deliveries.map((delivery, index) => (
@@ -422,7 +422,7 @@ const PaymentReportModal: React.FC<PaymentReportModalProps> = ({
                         margin: 0,
                       }}
                     >
-                      Entrega #{delivery.deliveryId}
+                      Corrida #{delivery.deliveryId}
                     </h4>
                     <div
                       style={{
@@ -474,7 +474,7 @@ const PaymentReportModal: React.FC<PaymentReportModalProps> = ({
                         gap: "4px",
                       }}
                     >
-                      <FiUsers /> Divisão desta entrega
+                      <FiUsers /> Divisão desta corrida
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                       {delivery.splits.map((split, splitIndex) => (

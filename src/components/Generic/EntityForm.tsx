@@ -723,7 +723,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
       // ✅ Valida se a distância é zero ou muito pequena (< 100 metros / 0.1 km)
       // Isso captura casos onde origem e destino são praticamente o mesmo local
       if (distance !== undefined && distance !== null && !isNaN(distanceNumber) && distanceNumber < 0.1) {
-        showToast("Não é possível criar uma entrega com origem e destino no mesmo local. Por favor, selecione um endereço de destino diferente.", "error");
+        showToast("Não é possível criar uma corrida com origem e destino no mesmo local. Por favor, selecione um endereço de destino diferente.", "error");
         setErrors({
           ...errors,
           [distanceFieldName]: "A distância mínima deve ser de pelo menos 100 metros"

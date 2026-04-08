@@ -236,7 +236,7 @@ const ConsolidatedPaymentProcessor: React.FC = () => {
                 )}
                 {taskStatus.statistics.includedDeliveries !== undefined && (
                   <div className="stat-item">
-                    <span className="stat-label">Entregas Incluídas</span>
+                    <span className="stat-label">Corridas Incluídas</span>
                     <span className="stat-value">{taskStatus.statistics.includedDeliveries}</span>
                   </div>
                 )}

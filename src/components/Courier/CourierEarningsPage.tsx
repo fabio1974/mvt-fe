@@ -42,7 +42,7 @@ const fmtDate = (s: string) => {
 };
 
 const translateMethod = (m: string) => (m === "PIX" ? "PIX" : "Cartão");
-const translateType = (t: string) => (t === "RIDE" ? "Corrida" : "Entrega");
+const translateType = (t: string) => (t === "RIDE" ? "Corrida" : "Corrida");
 
 const CourierEarningsPage: React.FC = () => {
   const [showRecent, setShowRecent] = useState(true);

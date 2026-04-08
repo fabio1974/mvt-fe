@@ -383,7 +383,7 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
       const msg =
         err?.response?.data?.message ||
         err?.response?.data?.error ||
-        "Erro ao criar entrega. Tente novamente.";
+        "Erro ao criar corrida. Tente novamente.";
       setSubmitError(msg);
     } finally {
       setSubmitting(false);
@@ -813,7 +813,7 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
           {/* Total a cobrar (COD) */}
           {totalAmount > 0 && (
             <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 10, padding: 12, marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontWeight: 600, color: "#1e40af" }}>🏷️ Total a cobrar na entrega (COD)</span>
+              <span style={{ fontWeight: 600, color: "#1e40af" }}>🏷️ Total a cobrar na corrida (COD)</span>
               <span style={{ fontWeight: 700, fontSize: 16, color: "#1e40af" }}>R$ {totalAmount.toFixed(2).replace(".", ",")}</span>
             </div>
           )}

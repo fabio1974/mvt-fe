@@ -55,7 +55,7 @@ const MobileAppBanner: React.FC<MobileAppBannerProps> = ({ userName }) => {
           Seja {getGenderedGreeting().toLowerCase()} ao <strong>Zapi10</strong>!
         </p>
         <p className="mobile-app-banner-text">
-          Para criar entregas, visualizar histórico e muito mais, baixe nosso aplicativo:
+          Para criar corridas, visualizar histórico e muito mais, baixe nosso aplicativo:
         </p>
       </div>
 

@@ -40,7 +40,7 @@ const DELIVERY_FILTERS: FilterMeta[] = [
     { label: "Cancelado", value: "CANCELLED" },
   ]},
   { name: "deliveryType", field: "deliveryType", label: "Tipo", type: "select", options: [
-    { label: "Entrega", value: "DELIVERY" },
+    { label: "Corrida", value: "DELIVERY" },
     { label: "Corrida", value: "RIDE" },
   ]},
   { name: "preferredVehicleType", field: "preferredVehicleType", label: "Preferência de Veículo", type: "select", options: [

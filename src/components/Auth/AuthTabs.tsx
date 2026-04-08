@@ -16,13 +16,13 @@ const USER_TYPE_OPTIONS: UserTypeOption[] = [
   {
     value: "CUSTOMER",
     label: "Cliente Pessoa Física",
-    description: "Quero solicitar entregas para uso pessoal",
+    description: "Quero solicitar corridas para uso pessoal",
     icon: "👤",
   },
   {
     value: "CLIENT",
     label: "Estabelecimento Comercial",
-    description: "Tenho um negócio e preciso de entregas para meus clientes",
+    description: "Tenho um negócio e preciso de corridas para meus clientes",
     icon: "🏪",
   },
   {

@@ -56,11 +56,11 @@ const Dashboard: React.FC = () => {
   const getQuickActions = () => {
     const actions = [];
 
-    // Entregas - disponível para todos
+    // Corridas - disponível para todos
     actions.push({
       icon: <FiPackage size={28} />,
-      label: "Entregas",
-      description: "Visualize e gerencie suas entregas",
+      label: "Corridas",
+      description: "Visualize e gerencie suas corridas",
       path: "/deliveries",
       color: "#3b82f6",
     });

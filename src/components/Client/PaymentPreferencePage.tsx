@@ -110,7 +110,7 @@ const PaymentPreferencePage: React.FC = () => {
           <div className="pref-section">
             <p className="pref-section-title">Método de Pagamento Padrão</p>
             <p className="pref-section-desc">
-              Escolha como você prefere pagar pelas suas entregas
+              Escolha como você prefere pagar pelas suas corridas
             </p>
 
             <div className="pref-methods">
