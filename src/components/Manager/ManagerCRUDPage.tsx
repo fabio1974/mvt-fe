@@ -56,8 +56,8 @@ const ManagerCRUDPage: React.FC = () => {
       <EntityCRUD
         entityName="user"
         hideArrayFields={false}
-        hideFields={["clientContracts", "employmentContracts"]}
-        hiddenFields={["clientContracts", "employmentContracts"]}
+        hideFields={["clientContracts", "employmentContracts", "vehicles"]}
+        hiddenFields={["clientContracts", "employmentContracts", "vehicles"]}
         pageTitle="Gerentes"
         pageDescription="Gerencie os gerentes (organizadores) cadastrados na plataforma"
         initialFilters={{ role: "ORGANIZER" }}

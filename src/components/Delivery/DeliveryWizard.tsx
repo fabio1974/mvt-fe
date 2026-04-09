@@ -27,6 +27,8 @@ interface DeliveryWizardProps {
   };
   onSuccess: (deliveryId: number) => void;
   onCancel: () => void;
+  /** Renderiza inline (sem overlay), para uso em páginas */
+  inline?: boolean;
 }
 
 const RequiredMark = () => <span style={{ color: "#ef4444", marginLeft: 2 }}>*</span>;
@@ -46,6 +48,7 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
   defaultValues,
   onSuccess,
   onCancel,
+  inline = false,
 }) => {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [submitting, setSubmitting] = useState(false);
@@ -164,6 +167,25 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
     setStops((prev) => prev.map((s) => (s.id === id ? { ...s, [field]: value } : s)));
   };
 
+  /** Valida distância mínima de 200m entre origem e a primeira parada */
+  const validateFirstStopDistance = (data: AddressData): string | null => {
+    if (!originData.latitude || !originData.longitude || !data.latitude || !data.longitude) return null;
+    const toRad = (deg: number) => (deg * Math.PI) / 180;
+    const R = 6371000;
+    const dLat = toRad(data.latitude - originData.latitude);
+    const dLon = toRad(data.longitude - originData.longitude);
+    const a =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(toRad(originData.latitude)) *
+        Math.cos(toRad(data.latitude)) *
+        Math.sin(dLon / 2) ** 2;
+    const meters = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    if (meters < 200) {
+      return `Origem e destino estão a apenas ${Math.round(meters)}m de distância. O mínimo é 200m. Altere o destino ou volte e altere a origem.`;
+    }
+    return null;
+  };
+
   /** Formata telefone brasileiro: (XX) XXXXX-XXXX */
   const formatPhone = (raw: string) => {
     const digits = raw.replace(/\D/g, "").slice(0, 11);
@@ -212,6 +234,7 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
           errors[`stop_${idx}_name`] = "Nome do destinatário é obrigatório";
         }
       });
+
       if (Object.keys(errors).length > 0) {
         setValidationErrors(errors);
         return false;
@@ -495,11 +518,12 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
                 updateStop(stop.id, data);
                 setValidationErrors((e) => { const n = {...e}; delete n[`stop_${idx}_address`]; return n; });
               }}
-              initialLatitude={stop.addressData.latitude || undefined}
-              initialLongitude={stop.addressData.longitude || undefined}
+              initialLatitude={stop.addressData.latitude || originData.latitude || undefined}
+              initialLongitude={stop.addressData.longitude || originData.longitude || undefined}
               label={`Parada ${idx + 1} *`}
               placeholder="Ex: Av. Bezerra de Menezes, 456"
               required
+              validate={idx === 0 ? validateFirstStopDistance : undefined}
             />
             {validationErrors[`stop_${idx}_address`] && (
               <span className="wizard-field-error">{validationErrors[`stop_${idx}_address`]}</span>
@@ -591,7 +615,7 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
           <div className="wizard-summary-route">
             <div className="wizard-summary-point origin">
               <div className="wizard-summary-dot" style={{ background: "#22c55e" }} />
-              <div>
+              <div style={{ flex: 1 }}>
                 <div className="wizard-summary-point-label">Origem (coleta)</div>
                 <div className="wizard-summary-point-address">{originAddress || "—"}</div>
               </div>
@@ -643,7 +667,18 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
                   directions={routeInfo.directions}
                   options={{
                     suppressMarkers: true,
-                    polylineOptions: { strokeColor: "#2563eb", strokeOpacity: 0.85, strokeWeight: 4 },
+                    polylineOptions: {
+                      strokeColor: "#2563eb",
+                      strokeOpacity: 0.85,
+                      strokeWeight: 4,
+                      icons: [
+                        {
+                          icon: { path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW, scale: 3, strokeColor: "#2563eb", fillColor: "#2563eb", fillOpacity: 1 },
+                          repeat: "120px",
+                          offset: "50%",
+                        },
+                      ],
+                    },
                   }}
                 />
 
@@ -651,15 +686,10 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
                 {originData.latitude && originData.longitude && (
                   <Marker
                     position={{ lat: originData.latitude, lng: originData.longitude }}
-                    icon={{
-                      path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
-                      fillColor: "#22c55e",
-                      fillOpacity: 1,
-                      strokeColor: "#ffffff",
-                      strokeWeight: 2,
-                      scale: 1.8,
-                      anchor: new google.maps.Point(12, 22),
-                    }}
+                    icon={(() => {
+                      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="30" height="44" viewBox="0 0 30 44"><circle cx="15" cy="13" r="11" fill="#10b981" stroke="#059669" stroke-width="2.5"/><text x="15" y="18" text-anchor="middle" font-size="12" font-weight="800" fill="white" font-family="Arial,sans-serif">O</text><rect x="13" y="24" width="4" height="20" rx="2" fill="#374151"/></svg>`;
+                      return { url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`, anchor: new google.maps.Point(15, 44), scaledSize: new google.maps.Size(30, 44) };
+                    })()}
                     onClick={() => setSelectedMarker(-1)}
                   >
                     {selectedMarker === -1 && (
@@ -678,21 +708,15 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
                   if (!stop.addressData.latitude || !stop.addressData.longitude) return null;
                   const isLast = idx === stops.length - 1;
                   const color = isLast ? "#ef4444" : "#f59e0b";
+                  const border = isLast ? "#dc2626" : "#d97706";
                   return (
                     <Marker
                       key={stop.id}
                       position={{ lat: stop.addressData.latitude, lng: stop.addressData.longitude }}
-                      label={{ text: String(idx + 1), color: "#fff", fontWeight: "bold", fontSize: "12px" }}
-                      icon={{
-                        path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
-                        fillColor: color,
-                        fillOpacity: 1,
-                        strokeColor: "#ffffff",
-                        strokeWeight: 2,
-                        scale: 1.8,
-                        anchor: new google.maps.Point(12, 22),
-                        labelOrigin: new google.maps.Point(12, 10),
-                      }}
+                      icon={(() => {
+                        const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="30" height="44" viewBox="0 0 30 44"><circle cx="15" cy="13" r="11" fill="${color}" stroke="${border}" stroke-width="2"/><text x="15" y="18" text-anchor="middle" font-size="13" font-weight="800" fill="white" font-family="Arial,sans-serif">${idx + 1}</text><rect x="13" y="24" width="4" height="20" rx="2" fill="#374151"/></svg>`;
+                        return { url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`, anchor: new google.maps.Point(15, 44), scaledSize: new google.maps.Size(30, 44) };
+                      })()}
                       onClick={() => setSelectedMarker(idx)}
                     >
                       {selectedMarker === idx && (
@@ -845,58 +869,64 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
   // Main render
   // -----------------------------------------------------------------------
 
-  return (
-    <div className="wizard-overlay">
-      <div className="wizard-modal">
-        {/* Header */}
-        <div className="wizard-header">
-          <h2 className="wizard-title">🚀 Nova Corrida</h2>
+  const inner = (
+    <div className={inline ? "wizard-inline" : "wizard-modal"}>
+      {/* Header */}
+      <div className="wizard-header">
+        <h2 className="wizard-title">🚀 Nova Corrida</h2>
+        {!inline && (
           <button className="wizard-close" onClick={onCancel} title="Cancelar">✕</button>
-        </div>
+        )}
+      </div>
 
-        {/* Steps */}
-        <div className="wizard-steps-container">
-          <StepIndicator />
-        </div>
+      {/* Steps */}
+      <div className="wizard-steps-container">
+        <StepIndicator />
+      </div>
 
-        {/* Content */}
-        <div className="wizard-body">
-          {step === 1 && renderStep1()}
-          {step === 2 && renderStep2()}
-          {step === 3 && renderStep3()}
-        </div>
+      {/* Content */}
+      <div className="wizard-body">
+        {step === 1 && renderStep1()}
+        {step === 2 && renderStep2()}
+        {step === 3 && renderStep3()}
+      </div>
 
-        {/* Footer navigation */}
-        <div className="wizard-footer">
+      {/* Footer navigation */}
+      <div className="wizard-footer">
+        <button
+          type="button"
+          className="wizard-btn secondary"
+          onClick={step === 1 ? onCancel : () => setStep((s) => (s - 1) as 1 | 2 | 3)}
+        >
+          <FiChevronLeft size={16} />
+          {step === 1 ? "Cancelar" : "Voltar"}
+        </button>
+
+        {step < 3 ? (
           <button
             type="button"
-            className="wizard-btn secondary"
-            onClick={step === 1 ? onCancel : () => setStep((s) => (s - 1) as 1 | 2 | 3)}
+            className="wizard-btn primary"
+            onClick={validateAndAdvance}
           >
-            <FiChevronLeft size={16} />
-            {step === 1 ? "Cancelar" : "Voltar"}
+            Próximo <FiChevronRight size={16} />
           </button>
-
-          {step < 3 ? (
-            <button
-              type="button"
-              className="wizard-btn primary"
-              onClick={validateAndAdvance}
-            >
-              Próximo <FiChevronRight size={16} />
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="wizard-btn primary"
-              disabled={submitting || routeLoading}
-              onClick={handleSubmit}
-            >
-              {submitting ? "Criando..." : "✅ Criar Corrida"}
-            </button>
-          )}
-        </div>
+        ) : (
+          <button
+            type="button"
+            className="wizard-btn primary"
+            disabled={submitting || routeLoading}
+            onClick={handleSubmit}
+          >
+            {submitting ? "Criando..." : "✅ Criar Corrida"}
+          </button>
+        )}
       </div>
+    </div>
+  );
+
+  return inline ? inner : (
+    <div className="wizard-overlay">
+      {inner}
     </div>
   );
 };

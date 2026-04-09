@@ -5,7 +5,8 @@ import DeliveryRouteMapModal from "./DeliveryRouteMapModal";
 import DeliveryWizard from "./DeliveryWizard";
 import { getUserRole, getUserId, getUserName, getUserCoordinates, getUserAddress, isClient, isCourier } from "../../utils/auth";
 import { api } from "../../services/api";
-import { FiMap, FiPlus } from "react-icons/fi";
+import { FiMap, FiPlus, FiHome, FiChevronRight, FiArrowLeft } from "react-icons/fi";
+import { useLocation } from "react-router-dom";
 import "./DeliveryCRUDPage.css";
 
 /**
@@ -29,6 +30,7 @@ const DeliveryCRUDPage: React.FC = () => {
   const userId = getUserId();
   const userName = getUserName() || "Você (Cliente atual)";
   const userAddress = getUserAddress();
+  const location = useLocation();
   
   // ⚠️ Extrai valores primitivos para evitar re-renders infinitos
   const coordinates = getUserCoordinates();
@@ -36,13 +38,14 @@ const DeliveryCRUDPage: React.FC = () => {
   const userLongitude = coordinates?.longitude;
   
   const [defaultValues, setDefaultValues] = useState<Record<string, unknown> | undefined>(undefined);
+  const [defaultValuesReady, setDefaultValuesReady] = useState(false);
   
   // Estado para controlar a modal do mapa
   const [mapModalOpen, setMapModalOpen] = useState(false);
   const [selectedDeliveryId, setSelectedDeliveryId] = useState<string | number | null>(null);
 
   // Estado para o wizard de nova entrega
-  const [wizardOpen, setWizardOpen] = useState(false);
+  const [wizardOpen, setWizardOpen] = useState(() => !!(location.state as any)?.openWizard);
   const [wizardKey, setWizardKey] = useState(0); // força re-mount após sucesso
   const [crudKey, setCrudKey] = useState(0); // força refresh da tabela
   
@@ -159,6 +162,9 @@ const DeliveryCRUDPage: React.FC = () => {
         }
 
         setDefaultValues(values);
+        setDefaultValuesReady(true);
+      } else {
+        setDefaultValuesReady(true);
       }
     };
 
@@ -364,6 +370,76 @@ const DeliveryCRUDPage: React.FC = () => {
     </button>
   ) : undefined;
 
+  const handleWizardBack = () => {
+    setWizardOpen(false);
+    setWizardKey((k) => k + 1);
+  };
+
+  // Modo wizard inline: aguarda fetch do endereço antes de renderizar
+  if (wizardOpen && !defaultValuesReady) {
+    return (
+      <div className="entity-crud-loading">
+        <div className="loading-spinner" />
+        <p>Carregando...</p>
+      </div>
+    );
+  }
+
+  if (wizardOpen) {
+    return (
+      <>
+        <div className="entity-crud-container">
+          {/* Breadcrumb igual ao EntityCRUD create */}
+          <div className="entity-crud-breadcrumb">
+            <div className="breadcrumb-content">
+              <div className="breadcrumb-item">
+                <FiHome className="breadcrumb-icon" />
+                <span>Início</span>
+              </div>
+              <FiChevronRight className="breadcrumb-separator" />
+              <div className="breadcrumb-item">
+                <span>Corridas</span>
+              </div>
+              <FiChevronRight className="breadcrumb-separator" />
+              <div className="breadcrumb-item breadcrumb-current">
+                <span>Nova Corrida</span>
+              </div>
+            </div>
+            <button className="breadcrumb-action-btn btn-back" onClick={handleWizardBack}>
+              <FiArrowLeft />
+              <span>Voltar</span>
+            </button>
+          </div>
+
+          {/* Wizard no lugar do form genérico */}
+          <div style={{
+            display: "flex",
+            justifyContent: "center",
+            paddingTop: "4vh",
+            paddingBottom: "4vh",
+            minHeight: "60vh",
+            alignItems: "flex-start",
+          }}>
+            <div style={{ width: "100%", maxWidth: "760px" }}>
+              <DeliveryWizard
+                key={wizardKey}
+                inline
+                defaultValues={defaultValues as any}
+                onSuccess={() => {
+                  setWizardOpen(false);
+                  setWizardKey((k) => k + 1);
+                  setCrudKey((k) => k + 1);
+                }}
+                onCancel={handleWizardBack}
+              />
+            </div>
+          </div>
+        </div>
+
+      </>
+    );
+  }
+
   return (
     <>
       <EntityCRUD
@@ -454,24 +530,8 @@ const DeliveryCRUDPage: React.FC = () => {
           onClose={() => {
             setMapModalOpen(false);
             setSelectedDeliveryId(null);
-            setCrudKey((k) => k + 1); // refresh da tabela
+            setCrudKey((k) => k + 1);
           }}
-        />
-      )}
-
-      {/* Wizard de nova entrega multi-parada */}
-      {wizardOpen && (
-        <DeliveryWizard
-          key={wizardKey}
-          defaultValues={defaultValues as any}
-          onSuccess={(deliveryId) => {
-            setWizardOpen(false);
-            setWizardKey((k) => k + 1);
-            // Abre o mapa da entrega recém-criada
-            setSelectedDeliveryId(deliveryId);
-            setMapModalOpen(true);
-          }}
-          onCancel={() => setWizardOpen(false)}
         />
       )}
     </>

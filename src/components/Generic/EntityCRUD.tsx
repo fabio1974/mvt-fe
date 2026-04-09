@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   FiPlus,
   FiHome,
@@ -170,6 +171,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
     number | string | undefined
   >(propEntityId);
   const [refreshKey, setRefreshKey] = useState(0);
+  const navigate = useNavigate();
 
   // Helper para mudar o modo e notificar o callback
   const setViewMode = (mode: ViewMode) => {
@@ -304,21 +306,38 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
       }
     };
 
+    const entityLabel = pageTitle || metadata.label || entityName;
+    const isInTable = mode === "table";
+
     return (
       <div className="entity-crud-breadcrumb">
         <div className="breadcrumb-content">
-          <div className="breadcrumb-item">
+          <button
+            className="breadcrumb-item breadcrumb-link"
+            onClick={() => navigate("/")}
+          >
             <FiHome className="breadcrumb-icon" />
             <span>Início</span>
-          </div>
+          </button>
           <FiChevronRight className="breadcrumb-separator" />
-          <div className="breadcrumb-item">
-            <span>{pageTitle || metadata.label || entityName}</span>
-          </div>
-          <FiChevronRight className="breadcrumb-separator" />
-          <div className="breadcrumb-item breadcrumb-current">
-            <span>{getModeLabel()}</span>
-          </div>
+          {isInTable ? (
+            <div className="breadcrumb-item breadcrumb-current">
+              <span>{entityLabel}</span>
+            </div>
+          ) : (
+            <>
+              <button
+                className="breadcrumb-item breadcrumb-link"
+                onClick={handleBackToTable}
+              >
+                <span>{entityLabel}</span>
+              </button>
+              <FiChevronRight className="breadcrumb-separator" />
+              <div className="breadcrumb-item breadcrumb-current">
+                <span>{getModeLabel()}</span>
+              </div>
+            </>
+          )}
         </div>
 
         {mode === "table" ? (

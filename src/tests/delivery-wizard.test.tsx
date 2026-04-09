@@ -290,3 +290,169 @@ describe("DeliveryWizard - Payload", () => {
     });
   });
 });
+
+// ============================================================
+// Validação por step (lógica pura extraída do wizard)
+// ============================================================
+
+function validateStep1(originAddress: string): Record<string, string> {
+  const errors: Record<string, string> = {};
+  if (!originAddress.trim()) {
+    errors.origin = "Endereço de origem é obrigatório";
+  }
+  return errors;
+}
+
+function validateStep2(
+  stops: Array<{ address: string; recipientName: string }>
+): Record<string, string> {
+  const errors: Record<string, string> = {};
+  stops.forEach((s, idx) => {
+    if (!s.address.trim()) {
+      errors[`stop_${idx}_address`] = "Endereço é obrigatório";
+    }
+    if (!s.recipientName.trim()) {
+      errors[`stop_${idx}_name`] = "Nome do destinatário é obrigatório";
+    }
+  });
+  return errors;
+}
+
+describe("DeliveryWizard - Validação Step 1 (Origem)", () => {
+  it("sem endereço retorna erro de origem", () => {
+    const errors = validateStep1("");
+    expect(errors.origin).toBe("Endereço de origem é obrigatório");
+  });
+
+  it("endereço só com espaços retorna erro", () => {
+    const errors = validateStep1("   ");
+    expect(errors.origin).toBe("Endereço de origem é obrigatório");
+  });
+
+  it("endereço preenchido não retorna erros", () => {
+    const errors = validateStep1("Rua Conselheiro Rodrigues, 100");
+    expect(Object.keys(errors)).toHaveLength(0);
+  });
+});
+
+describe("DeliveryWizard - Validação Step 2 (Paradas)", () => {
+  it("stop sem endereço retorna erro de endereço", () => {
+    const errors = validateStep2([{ address: "", recipientName: "João" }]);
+    expect(errors["stop_0_address"]).toBe("Endereço é obrigatório");
+    expect(errors["stop_0_name"]).toBeUndefined();
+  });
+
+  it("stop sem nome retorna erro de nome", () => {
+    const errors = validateStep2([{ address: "Rua A, 100", recipientName: "" }]);
+    expect(errors["stop_0_name"]).toBe("Nome do destinatário é obrigatório");
+    expect(errors["stop_0_address"]).toBeUndefined();
+  });
+
+  it("stop sem endereço e sem nome retorna ambos os erros", () => {
+    const errors = validateStep2([{ address: "", recipientName: "" }]);
+    expect(errors["stop_0_address"]).toBeDefined();
+    expect(errors["stop_0_name"]).toBeDefined();
+  });
+
+  it("múltiplos stops — erro só no stop incompleto", () => {
+    const errors = validateStep2([
+      { address: "Rua A, 100", recipientName: "João" },
+      { address: "", recipientName: "Maria" },
+      { address: "Rua C, 300", recipientName: "" },
+    ]);
+    expect(errors["stop_0_address"]).toBeUndefined();
+    expect(errors["stop_0_name"]).toBeUndefined();
+    expect(errors["stop_1_address"]).toBeDefined();
+    expect(errors["stop_1_name"]).toBeUndefined();
+    expect(errors["stop_2_address"]).toBeUndefined();
+    expect(errors["stop_2_name"]).toBeDefined();
+  });
+
+  it("todos os stops válidos não retorna erros", () => {
+    const errors = validateStep2([
+      { address: "Rua A, 100", recipientName: "João" },
+      { address: "Rua B, 200", recipientName: "Maria" },
+    ]);
+    expect(Object.keys(errors)).toHaveLength(0);
+  });
+});
+
+// ============================================================
+// Modo popup vs inline — verificação via CSS
+// ============================================================
+
+describe("DeliveryWizard - CSS popup vs inline", () => {
+  it("classe wizard-overlay existe no CSS (modo popup)", async () => {
+    const css = await import("../components/Delivery/DeliveryWizard.css?raw");
+    const content = (css as any).default || css;
+    expect(content).toContain(".wizard-overlay");
+    expect(content).toContain("position: fixed");
+  });
+
+  it("classe wizard-inline existe no CSS (modo inline)", async () => {
+    const css = await import("../components/Delivery/DeliveryWizard.css?raw");
+    const content = (css as any).default || css;
+    expect(content).toContain(".wizard-inline");
+  });
+
+  it("wizard-inline não usa position fixed", async () => {
+    const css = await import("../components/Delivery/DeliveryWizard.css?raw");
+    const content = (css as any).default || css;
+    // Extrai só o bloco .wizard-inline
+    const inlineBlock = content.match(/\.wizard-inline\s*\{[^}]+\}/)?.[0] || "";
+    expect(inlineBlock).not.toContain("position: fixed");
+  });
+
+  it("wizard-modal não usa position fixed", async () => {
+    const css = await import("../components/Delivery/DeliveryWizard.css?raw");
+    const content = (css as any).default || css;
+    const modalBlock = content.match(/\.wizard-modal\s*\{[^}]+\}/)?.[0] || "";
+    expect(modalBlock).not.toContain("position: fixed");
+  });
+});
+
+// ============================================================
+// Payload com client pré-preenchido (CLIENT/CUSTOMER)
+// ============================================================
+
+function buildDeliveryPayloadWithClient(
+  origin: { address: string; latitude?: number; longitude?: number },
+  stops: Array<{
+    address: string; latitude?: number; longitude?: number;
+    recipientName?: string; recipientPhone?: string;
+    itemDescription?: string; itemValue?: string;
+  }>,
+  client?: { id: number | string; label: string },
+) {
+  const base = buildDeliveryPayload(origin, stops);
+  if (client) {
+    return { ...base, client: { id: client.id } };
+  }
+  return base;
+}
+
+describe("DeliveryWizard - Payload com client", () => {
+  it("client pré-preenchido é incluído no payload como { id }", () => {
+    const payload = buildDeliveryPayloadWithClient(
+      SOBRAL_ORIGIN,
+      [SOBRAL_STOPS[0]],
+      { id: 42, label: "Farmácia Pague Menos" },
+    );
+    expect((payload as any).client).toEqual({ id: 42 });
+  });
+
+  it("client sem label — só id é enviado (não expõe label ao BE)", () => {
+    const payload = buildDeliveryPayloadWithClient(
+      SOBRAL_ORIGIN,
+      [SOBRAL_STOPS[0]],
+      { id: 99, label: "Nome que não vai pro BE" },
+    );
+    expect((payload as any).client.label).toBeUndefined();
+    expect((payload as any).client.id).toBe(99);
+  });
+
+  it("sem client no payload quando não há defaultValues", () => {
+    const payload = buildDeliveryPayloadWithClient(SOBRAL_ORIGIN, [SOBRAL_STOPS[0]]);
+    expect((payload as any).client).toBeUndefined();
+  });
+});

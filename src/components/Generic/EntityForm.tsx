@@ -1057,8 +1057,9 @@ const EntityForm: React.FC<EntityFormProps> = ({
     const isProfileField = field.name === 'profile' || field.name === 'perfil';
     const isProfileReadonlyForNonAdmin = isProfileField && !isAdmin();
     
-    const isFieldReadonly = readonlyFields.includes(field.name) || 
-                            field.name === 'role' || // Campo "role" sempre readonly
+    const isRoleReadonlyForNonAdmin = field.name === 'role' && !isAdmin();
+    const isFieldReadonly = readonlyFields.includes(field.name) ||
+                            isRoleReadonlyForNonAdmin || // Campo "role/Perfil" readonly para não-admins
                             isProfileReadonlyForNonAdmin; // Campo "profile" readonly para não-admins
     
     // 🙈 Verifica se o campo deve ficar escondido (hidden)
@@ -1286,7 +1287,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
 
       case "select": {
         const isSelectDisabled =
-          field.disabled || field.readonly || loading || readonly;
+          field.disabled || field.readonly || isFieldReadonly || loading || readonly;
 
         fieldContent = (
           <FormField

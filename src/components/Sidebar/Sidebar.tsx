@@ -15,6 +15,7 @@ import {
   FiUsers,
   FiCreditCard,
   FiTrendingUp,
+  FiHome,
 } from "react-icons/fi";
 import "./Sidebar.css";
 
@@ -34,6 +35,12 @@ interface MenuGroup {
 
 // Itens de menu organizados por grupos
 const menuStructure: (MenuItem | MenuGroup)[] = [
+  // Início - visível para todos
+  {
+    label: "Início",
+    icon: <FiHome size={22} color="#60a5fa" />,
+    path: "/",
+  },
   // Grupo - promovido para menu principal (apenas ORGANIZER)
   {
     label: "Grupo",
@@ -135,7 +142,10 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
     roles: ["ROLE_ADMIN"],
   },
 ].sort((a, b) => {
-  // "Pessoas" sempre em primeiro
+  // "Início" sempre no topo absoluto
+  if (a.label === "Início") return -1;
+  if (b.label === "Início") return 1;
+  // "Pessoas" sempre em segundo
   if (a.label === "Pessoas") return -1;
   if (b.label === "Pessoas") return 1;
   // Resto em ordem alfabética

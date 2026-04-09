@@ -57,6 +57,21 @@
   color: white;
 }
 
+/* Item clicável do breadcrumb */
+button.breadcrumb-item.breadcrumb-link {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+button.breadcrumb-item.breadcrumb-link:hover {
+  color: white;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .breadcrumb-current {
   color: white;
   font-weight: 600;

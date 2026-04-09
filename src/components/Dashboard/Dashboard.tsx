@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getUserName, getUserRole } from "../../utils/auth";
+import { getUserName, getUserRole, isClient } from "../../utils/auth";
 import {
   FiPackage,
   FiDollarSign,
@@ -7,6 +7,7 @@ import {
   FiMapPin,
   FiMenu,
   FiArrowRight,
+  FiPlus,
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import MobileAppBanner from "./MobileAppBanner";
@@ -21,6 +22,8 @@ const Dashboard: React.FC = () => {
   const userRole = getUserRole();
   const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  const canUseWizard = isClient() || userRole === "ROLE_CUSTOMER" || userRole === "CUSTOMER";
 
   // Detecta mudanças no tamanho da tela
   useEffect(() => {
@@ -53,49 +56,51 @@ const Dashboard: React.FC = () => {
   };
 
   // Quick actions baseadas no role do usuário
-  const getQuickActions = () => {
-    const actions = [];
+  const quickActions: { icon: React.ReactNode; label: string; description: string; color: string; highlight?: boolean; onClick: () => void }[] = [];
 
-    // Corridas - disponível para todos
-    actions.push({
+  // Nova Corrida (CLIENT/CUSTOMER) substitui o card de Corridas — sempre primeiro
+  if (canUseWizard) {
+    quickActions.push({
+      icon: <FiPlus size={28} />,
+      label: "Nova Corrida",
+      description: "Crie uma nova corrida agora",
+      color: "#3b82f6",
+      highlight: true,
+      onClick: () => navigate("/deliveries", { state: { openWizard: true } }),
+    });
+  } else {
+    quickActions.push({
       icon: <FiPackage size={28} />,
       label: "Corridas",
       description: "Visualize e gerencie suas corridas",
-      path: "/deliveries",
       color: "#3b82f6",
+      onClick: () => navigate("/deliveries"),
     });
+  }
 
-    // Pagamentos - disponível para todos
-    actions.push({
-      icon: <FiDollarSign size={28} />,
-      label: "Pagamentos",
-      description: "Acompanhe seus pagamentos",
-      path: "/pagamentos",
-      color: "#06b6d4",
-    });
+  quickActions.push({
+    icon: <FiDollarSign size={28} />,
+    label: "Pagamentos",
+    description: "Acompanhe seus pagamentos",
+    color: "#06b6d4",
+    onClick: () => navigate("/pagamentos"),
+  });
 
-    // Dados pessoais - disponível para todos
-    actions.push({
-      icon: <FiUser size={28} />,
-      label: "Dados Pessoais",
-      description: "Atualize suas informações",
-      path: "/dados-pessoais",
-      color: "#8b5cf6",
-    });
+  quickActions.push({
+    icon: <FiUser size={28} />,
+    label: "Dados Pessoais",
+    description: "Atualize suas informações",
+    color: "#8b5cf6",
+    onClick: () => navigate("/dados-pessoais"),
+  });
 
-    // Endereço - disponível para todos
-    actions.push({
-      icon: <FiMapPin size={28} />,
-      label: "Endereço",
-      description: "Gerencie seu endereço",
-      path: "/dados-endereco",
-      color: "#ef4444",
-    });
-
-    return actions;
-  };
-
-  const quickActions = getQuickActions();
+  quickActions.push({
+    icon: <FiMapPin size={28} />,
+    label: "Endereço",
+    description: "Gerencie seu endereço",
+    color: "#ef4444",
+    onClick: () => navigate("/dados-endereco"),
+  });
 
   return (
     <div
@@ -207,7 +212,7 @@ const Dashboard: React.FC = () => {
               }}
             >
               Todas as funcionalidades estão disponíveis no menu à esquerda.
-              Clique nos itens para acessar entregas, pagamentos, dados pessoais
+              Clique nos itens para acessar corridas, pagamentos, dados pessoais
               e muito mais.
             </p>
           </div>
@@ -236,11 +241,13 @@ const Dashboard: React.FC = () => {
         >
           {quickActions.map((action) => (
             <button
-              key={action.path}
-              onClick={() => navigate(action.path)}
+              key={action.label}
+              onClick={action.onClick}
               style={{
-                background: "white",
-                border: "1px solid #e2e8f0",
+                background: action.highlight
+                  ? "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)"
+                  : "white",
+                border: action.highlight ? "none" : "1px solid #e2e8f0",
                 borderRadius: "12px",
                 padding: "20px 24px",
                 display: "flex",
@@ -249,27 +256,31 @@ const Dashboard: React.FC = () => {
                 cursor: "pointer",
                 transition: "all 0.2s ease",
                 textAlign: "left",
-                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)",
+                boxShadow: action.highlight
+                  ? "0 4px 14px rgba(59, 130, 246, 0.4)"
+                  : "0 2px 8px rgba(0, 0, 0, 0.04)",
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = "translateY(-2px)";
-                e.currentTarget.style.boxShadow =
-                  "0 8px 24px rgba(0, 0, 0, 0.1)";
-                e.currentTarget.style.borderColor = action.color;
+                e.currentTarget.style.boxShadow = action.highlight
+                  ? "0 8px 24px rgba(59, 130, 246, 0.5)"
+                  : "0 8px 24px rgba(0, 0, 0, 0.1)";
+                if (!action.highlight) e.currentTarget.style.borderColor = action.color;
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow =
-                  "0 2px 8px rgba(0, 0, 0, 0.04)";
-                e.currentTarget.style.borderColor = "#e2e8f0";
+                e.currentTarget.style.boxShadow = action.highlight
+                  ? "0 4px 14px rgba(59, 130, 246, 0.4)"
+                  : "0 2px 8px rgba(0, 0, 0, 0.04)";
+                if (!action.highlight) e.currentTarget.style.borderColor = "#e2e8f0";
               }}
             >
               <div
                 style={{
-                  background: `${action.color}15`,
+                  background: action.highlight ? "rgba(255,255,255,0.2)" : `${action.color}15`,
                   borderRadius: "10px",
                   padding: "12px",
-                  color: action.color,
+                  color: action.highlight ? "white" : action.color,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
@@ -282,7 +293,7 @@ const Dashboard: React.FC = () => {
                   style={{
                     fontSize: "1rem",
                     fontWeight: 600,
-                    color: "#1e293b",
+                    color: action.highlight ? "white" : "#1e293b",
                     marginBottom: "4px",
                   }}
                 >
@@ -291,19 +302,21 @@ const Dashboard: React.FC = () => {
                 <p
                   style={{
                     fontSize: "0.875rem",
-                    color: "#64748b",
+                    color: action.highlight ? "rgba(255,255,255,0.8)" : "#64748b",
                   }}
                 >
                   {action.description}
                 </p>
               </div>
-              <FiArrowRight size={20} color="#94a3b8" />
+              <FiArrowRight size={20} color={action.highlight ? "rgba(255,255,255,0.7)" : "#94a3b8"} />
             </button>
           ))}
         </div>
         </>
         )}
+
       </div>
+
     </div>
   );
 };

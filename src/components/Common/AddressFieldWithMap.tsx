@@ -22,6 +22,8 @@ interface AddressFieldWithMapProps {
   initialCity?: string; // Cidade inicial
   initialState?: string; // Estado inicial
   initialZipCode?: string; // CEP inicial
+  /** Validação extra ao confirmar no mapa. Retorna string de erro ou null se ok. */
+  validate?: (data: AddressData) => string | null;
 }
 
 /**
@@ -44,8 +46,10 @@ export const AddressFieldWithMap: React.FC<AddressFieldWithMapProps> = ({
   initialCity,
   initialState,
   initialZipCode,
+  validate,
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [mapError, setMapError] = useState<string | null>(null);
   const [addressData, setAddressData] = useState<AddressData>({
     address: value || "",
     latitude: initialLatitude || 0,
@@ -89,9 +93,19 @@ export const AddressFieldWithMap: React.FC<AddressFieldWithMapProps> = ({
 
   const handleAddressSelect = (selectedAddress: AddressData) => {
     console.log('📍 [AddressFieldWithMap] handleAddressSelect:', selectedAddress);
-    
+
+    // Validação extra (ex: distância mínima) — bloqueia confirmação se falhar
+    if (validate) {
+      const err = validate(selectedAddress);
+      if (err) {
+        setMapError(err);
+        return;
+      }
+    }
+    setMapError(null);
+
     setAddressData(selectedAddress);
-    
+
     // 🏙️ Se tiver onAddressDataChange, usa ele para atualizar TODOS os campos
     // Isso evita conflito de state entre onChange e onAddressDataChange
     if (onAddressDataChange) {
@@ -104,16 +118,16 @@ export const AddressFieldWithMap: React.FC<AddressFieldWithMapProps> = ({
       }, 0);
       return;
     }
-    
+
     // Se não tiver onAddressDataChange, usa onChange como fallback
     console.log('📍 [AddressFieldWithMap] Usando onChange como fallback');
     onChange(selectedAddress.address, selectedAddress);
-    
+
     // 🗺️ Atualiza os campos de latitude e longitude relacionados
     if (onCoordinatesChange && selectedAddress.latitude && selectedAddress.longitude) {
       onCoordinatesChange(selectedAddress.latitude, selectedAddress.longitude);
     }
-    
+
     setIsModalOpen(false);
   };
 
@@ -143,13 +157,27 @@ export const AddressFieldWithMap: React.FC<AddressFieldWithMapProps> = ({
 
       <Modal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={() => { setIsModalOpen(false); setMapError(null); }}
         title={`📍 Selecionar ${label}`}
         size="xlarge"
       >
+        {mapError && (
+          <div style={{
+            background: "#fef2f2",
+            border: "1px solid #fca5a5",
+            borderRadius: "8px",
+            padding: "0.75rem 1rem",
+            marginBottom: "0.75rem",
+            color: "#dc2626",
+            fontSize: "0.9rem",
+            fontWeight: 500,
+          }}>
+            ⚠️ {mapError}
+          </div>
+        )}
         <AddressMapPicker
           value={addressData}
-          onChange={setAddressData}
+          onChange={(data) => { setAddressData(data); setMapError(null); }}
           disabled={disabled}
           required={required}
           showConfirmButton

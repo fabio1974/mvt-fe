@@ -1,4 +1,18 @@
-/* DeliveryWizard — overlay e modal */
+/* DeliveryWizard — overlay, modal e inline */
+
+/* Modo inline: ocupa a área da página sem overlay */
+.wizard-inline {
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: wizardSlideIn 0.3s ease;
+}
 
 .wizard-overlay {
   position: fixed;
@@ -317,12 +331,14 @@
   color: #6b7280;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  text-align: left;
 }
 
 .wizard-summary-point-address {
   font-size: 14px;
   color: #111827;
   margin-top: 2px;
+  text-align: left;
 }
 
 /* Métricas */

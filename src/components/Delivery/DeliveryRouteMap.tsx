@@ -208,18 +208,13 @@ const DeliveryRouteMap: React.FC<DeliveryRouteMapProps> = ({
               zoomControl: true,
             }}
           >
-            {/* Origem (pirulito verde) */}
+            {/* Origem (pirulito verde com "O") */}
             <Marker
               position={origin}
-              icon={typeof google !== "undefined" ? {
-                path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
-                fillColor: "#22c55e",
-                fillOpacity: 1,
-                strokeColor: "#fff",
-                strokeWeight: 2,
-                scale: 1.8,
-                anchor: new google.maps.Point(12, 22),
-              } : undefined}
+              icon={typeof google !== "undefined" ? (() => {
+                const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="30" height="44" viewBox="0 0 30 44"><circle cx="15" cy="13" r="11" fill="#10b981" stroke="#059669" stroke-width="2.5"/><text x="15" y="18" text-anchor="middle" font-size="12" font-weight="800" fill="white" font-family="Arial,sans-serif">O</text><rect x="13" y="24" width="4" height="20" rx="2" fill="#374151"/></svg>`;
+                return { url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`, anchor: new google.maps.Point(15, 44), scaledSize: new google.maps.Size(30, 44) };
+              })() : undefined}
               onClick={() => setSelectedPin("origin")}
             >
               {selectedPin === "origin" && (
@@ -236,15 +231,11 @@ const DeliveryRouteMap: React.FC<DeliveryRouteMapProps> = ({
             {(stops.length === 0 || (stops[stops.length - 1]?.latitude !== toLatitude || stops[stops.length - 1]?.longitude !== toLongitude)) && (
               <Marker
                 position={destination}
-                icon={typeof google !== "undefined" ? {
-                  path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
-                  fillColor: "#ef4444",
-                  fillOpacity: 1,
-                  strokeColor: "#fff",
-                  strokeWeight: 2,
-                  scale: 1.8,
-                  anchor: new google.maps.Point(12, 22),
-                } : undefined}
+                icon={typeof google !== "undefined" ? (() => {
+                  const n = stops.length + 1;
+                  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="30" height="44" viewBox="0 0 30 44"><circle cx="15" cy="13" r="11" fill="#ef4444" stroke="#dc2626" stroke-width="2"/><text x="15" y="18" text-anchor="middle" font-size="13" font-weight="800" fill="white" font-family="Arial,sans-serif">${n}</text><rect x="13" y="24" width="4" height="20" rx="2" fill="#374151"/></svg>`;
+                  return { url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`, anchor: new google.maps.Point(15, 44), scaledSize: new google.maps.Size(30, 44) };
+                })() : undefined}
                 onClick={() => setSelectedPin("dest")}
               >
                 {selectedPin === "dest" && (
@@ -258,25 +249,19 @@ const DeliveryRouteMap: React.FC<DeliveryRouteMapProps> = ({
               </Marker>
             )}
 
-            {/* Paradas (pirulitos laranja/verde com número) */}
+            {/* Paradas (pirulitos com número e cor por status) */}
             {stops.map((stop, idx) => {
               const isLast = idx === stops.length - 1;
               const color = stop.status === "COMPLETED" ? "#22c55e" : stop.status === "SKIPPED" ? "#9ca3af" : isLast ? "#ef4444" : "#f59e0b";
+              const border = stop.status === "COMPLETED" ? "#16a34a" : stop.status === "SKIPPED" ? "#6b7280" : isLast ? "#dc2626" : "#d97706";
               return (
                 <Marker
                   key={`stop-${stop.id ?? idx}`}
                   position={{ lat: stop.latitude, lng: stop.longitude }}
-                  icon={typeof google !== "undefined" ? {
-                    path: "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z",
-                    fillColor: color,
-                    fillOpacity: 1,
-                    strokeColor: "#fff",
-                    strokeWeight: 2,
-                    scale: 1.8,
-                    anchor: new google.maps.Point(12, 22),
-                    labelOrigin: new google.maps.Point(12, 10),
-                  } : undefined}
-                  label={{ text: String(idx + 1), color: "#fff", fontWeight: "bold", fontSize: "12px" }}
+                  icon={typeof google !== "undefined" ? (() => {
+                    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="30" height="44" viewBox="0 0 30 44"><circle cx="15" cy="13" r="11" fill="${color}" stroke="${border}" stroke-width="2"/><text x="15" y="18" text-anchor="middle" font-size="13" font-weight="800" fill="white" font-family="Arial,sans-serif">${idx + 1}</text><rect x="13" y="24" width="4" height="20" rx="2" fill="#374151"/></svg>`;
+                    return { url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`, anchor: new google.maps.Point(15, 44), scaledSize: new google.maps.Size(30, 44) };
+                  })() : undefined}
                   zIndex={500}
                   onClick={() => setSelectedPin(`stop-${idx}`)}
                 >

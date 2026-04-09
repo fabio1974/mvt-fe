@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import EntityCRUD from "../Generic/EntityCRUD";
-import { getUserId, getUserRole } from "../../utils/auth";
+import { getUserId, getUserRole, isAdmin } from "../../utils/auth";
 
 /**
  * Página de Dados Pessoais do Usuário
@@ -26,9 +26,15 @@ const PersonalDataPage: React.FC = () => {
   const isCourier = userRole === "ROLE_COURIER" || userRole === "COURIER";
   
   // Campos a esconder para clientes e motoboys no modo edit
-  const hiddenFieldsForContractUsers = (isClient || isCourier) && currentMode === "edit" 
-    ? ["clientContracts", "employmentContracts"] 
+  const hiddenFieldsForContractUsers = (isClient || isCourier) && currentMode === "edit"
+    ? ["clientContracts", "employmentContracts"]
     : [];
+
+  // Campos booleanos administrativos — hidden para não-ADMIN (em qualquer modo)
+  const booleanAdminFields = isAdmin() ? [] : ["enabled", "blocked", "confirmed"];
+
+  // Veículos — só visível para COURIER
+  const vehicleFields = isCourier ? [] : ["vehicles"];
 
   if (!userId) {
     return (
@@ -47,7 +53,7 @@ const PersonalDataPage: React.FC = () => {
       showEditButton={true}
       pageTitle="Meus Dados Pessoais"
       pageDescription="Visualize e edite suas informações pessoais"
-      hiddenFields={hiddenFieldsForContractUsers}
+      hiddenFields={[...hiddenFieldsForContractUsers, ...booleanAdminFields, ...vehicleFields]}
       onModeChange={(mode) => {
         // Só atualiza se for view ou edit (ignora table e create)
         if (mode === "view" || mode === "edit") {
