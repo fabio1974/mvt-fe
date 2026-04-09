@@ -72,8 +72,8 @@ async function openWizard(page: Page) {
   const wizardBtn = page.locator('button').filter({ hasText: /nova corrida|com paradas|nova entrega/i }).first();
   await wizardBtn.click();
 
-  // Espera o modal do wizard aparecer
-  await expect(page.locator('text=Nova Corrida')).toBeVisible({ timeout: 5_000 });
+  // Espera o título do wizard aparecer (h2 específico, não o item do sidebar)
+  await expect(page.locator('h2.wizard-title')).toBeVisible({ timeout: 5_000 });
 }
 
 /** Preenche o endereço de origem no Step 1 (digita direto no input de texto) */
