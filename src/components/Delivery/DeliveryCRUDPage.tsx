@@ -186,8 +186,10 @@ const DeliveryCRUDPage: React.FC = () => {
       (async () => {
         try {
           // Busca delivery + rota real em paralelo
-          const deliveryRes = await api.get(`/api/deliveries/${entityId}`);
-          const trackRes = await api.get(`/api/deliveries/${entityId}/tracking`).catch(() => null) as { data?: { route?: string } } | null;
+          const [deliveryRes, trackRes] = await Promise.all([
+            api.get(`/api/deliveries/${entityId}`),
+            api.get(`/api/deliveries/${entityId}/tracking`).catch((): null => null),
+          ]);
 
           const data = deliveryRes.data as any;
 

@@ -53,8 +53,10 @@ const DeliveryRouteMapModal: React.FC<DeliveryRouteMapModalProps> = ({
     setLoading(true);
     setError(null);
     try {
-      const response = await api.get(`/api/deliveries/${deliveryId}`);
-      const trackingRes = await api.get(`/api/deliveries/${deliveryId}/tracking`).catch(() => null) as { data?: { route?: string } } | null;
+      const [response, trackingRes] = await Promise.all([
+        api.get(`/api/deliveries/${deliveryId}`),
+        api.get(`/api/deliveries/${deliveryId}/tracking`).catch((): null => null),
+      ]);
 
       const data = response.data as any;
 
