@@ -648,14 +648,20 @@ describe("actualRoute — lógica de prioridade e fitBounds", () => {
   });
 
   it("actualRoute vazio ou 1 ponto → usa Google Directions como fallback", () => {
-    expect([].length >= 2).toBe(false);
-    expect([{ lat: 0, lng: 0 }].length >= 2).toBe(false);
+    const empty: Array<{ lat: number; lng: number }> = [];
+    const single: Array<{ lat: number; lng: number }> = [{ lat: 0, lng: 0 }];
+    expect(empty.length >= 2).toBe(false);
+    expect(single.length >= 2).toBe(false);
   });
 
   it("actualRoute undefined → usa Google Directions", () => {
-    const actualRoute = undefined;
-    const shouldSkipDirections = actualRoute && actualRoute.length >= 2;
-    expect(shouldSkipDirections).toBeFalsy();
+    function hasActualRoute(route?: Array<{ lat: number; lng: number }>): boolean {
+      return !!route && route.length >= 2;
+    }
+    expect(hasActualRoute(undefined)).toBe(false);
+    expect(hasActualRoute([])).toBe(false);
+    expect(hasActualRoute([{ lat: 0, lng: 0 }])).toBe(false);
+    expect(hasActualRoute([{ lat: 0, lng: 0 }, { lat: 1, lng: 1 }])).toBe(true);
   });
 });
 
