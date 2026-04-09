@@ -127,9 +127,11 @@ test.describe('Tabela de Entregas', () => {
   // Botão "Nova Corrida" — visível apenas para CLIENT/CUSTOMER
   // ----------------------------------------------------------
 
-  test('ADMIN não vê botão "Nova Corrida" nem "Criar Novo"', async ({ page }) => {
-    await expect(page.locator('button').filter({ hasText: /Nova Corrida/i })).not.toBeVisible();
-    await expect(page.locator('button').filter({ hasText: /Criar Novo/i })).not.toBeVisible();
+  test('ADMIN não vê wizard "Nova Corrida" mas vê "Criar Novo" do formulário genérico', async ({ page }) => {
+    // ADMIN não usa o wizard — não tem "Nova Corrida" no sidebar
+    await expect(page.locator('.sidebar-nav').filter({ hasText: /^Nova Corrida$/ })).not.toBeVisible();
+    // ADMIN pode criar via formulário genérico ("Criar Novo" no breadcrumb)
+    await expect(page.locator('button.breadcrumb-action-btn').filter({ hasText: /Criar Novo/i })).toBeVisible();
   });
 
   // ----------------------------------------------------------
@@ -180,7 +182,7 @@ test.describe('Wizard de entrega — validações visuais', () => {
   test('campos obrigatórios têm asterisco *', async ({ page }) => {
     // Abre wizard
     await page.locator('button').filter({ hasText: /Nova Corrida/i }).click();
-    await expect(page.locator('text=Nova Corrida')).toBeVisible({ timeout: 5_000 });
+    await expect(page.locator('h2.wizard-title')).toBeVisible({ timeout: 5_000 });
 
     // Step 1: "Endereço de Origem *"
     await expect(page.locator('text=/Origem.*\\*/i')).toBeVisible();
@@ -188,7 +190,7 @@ test.describe('Wizard de entrega — validações visuais', () => {
 
   test('erro de validação aparece ao tentar avançar sem preencher', async ({ page }) => {
     await page.locator('button').filter({ hasText: /Nova Corrida/i }).click();
-    await expect(page.locator('text=Nova Corrida')).toBeVisible({ timeout: 5_000 });
+    await expect(page.locator('h2.wizard-title')).toBeVisible({ timeout: 5_000 });
 
     // Tenta avançar sem preencher origem
     await page.locator('.wizard-btn.primary').click();
@@ -200,7 +202,7 @@ test.describe('Wizard de entrega — validações visuais', () => {
 
   test('máscara monetária formata corretamente', async ({ page }) => {
     await page.locator('button').filter({ hasText: /Nova Corrida/i }).click();
-    await expect(page.locator('text=Nova Corrida')).toBeVisible({ timeout: 5_000 });
+    await expect(page.locator('h2.wizard-title')).toBeVisible({ timeout: 5_000 });
 
     // Preenche origem para avançar
     await page.locator('.wizard-content input[type="text"]').first().fill('Rua Teste, 123');
@@ -225,7 +227,7 @@ test.describe('Popup de endereço (mapa)', () => {
 
   test('popup de mapa tem botão confirmar na linha dos botões', async ({ page }) => {
     await page.locator('button').filter({ hasText: /Nova Corrida/i }).click();
-    await expect(page.locator('text=Nova Corrida')).toBeVisible({ timeout: 5_000 });
+    await expect(page.locator('h2.wizard-title')).toBeVisible({ timeout: 5_000 });
 
     // Preenche origem e avança
     await page.locator('.wizard-content input[type="text"]').first().fill('Rua Teste, 123');
