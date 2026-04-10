@@ -109,7 +109,7 @@ async function fillStopDetails(
   await detailsSection.getByPlaceholder(/caixa com/i).fill(data.item);
 
   // Valor a cobrar
-  await detailsSection.locator('input[inputmode="decimal"]').fill(data.value);
+  await detailsSection.locator('input[inputmode="numeric"]').fill(data.value);
 
   await page.waitForTimeout(300);
 }
