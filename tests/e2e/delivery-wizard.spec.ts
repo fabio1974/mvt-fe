@@ -409,12 +409,10 @@ test.describe('DeliveryWizard - Criação de Entregas', () => {
     await expect(page.locator('h2.wizard-title')).not.toBeVisible({ timeout: 3_000 });
   });
 
-  test('botão X fecha o wizard', async ({ page }) => {
-    await openWizard(page);
-
-    await page.locator('.wizard-close').click();
-
-    await expect(page.locator('text=Nova Corrida')).not.toBeVisible({ timeout: 3_000 });
+  test('botão X fecha o wizard', async () => {
+    // O wizard inline não tem botão X — fechar é feito pelo botão "Cancelar" no footer
+    // (coberto pelo teste "botão cancelar fecha o wizard")
+    test.skip(true, 'wizard inline não tem botão X; fechar via Cancelar já testado');
   });
 
   // ----------------------------------------------------------
@@ -424,9 +422,15 @@ test.describe('DeliveryWizard - Criação de Entregas', () => {
   test('não avança do Step 1 sem endereço de origem', async ({ page }) => {
     await openWizard(page);
 
-    // Botão "Próximo" deve estar desabilitado
-    const nextBtn = page.locator('.wizard-footer .wizard-btn.primary');
-    await expect(nextBtn).toBeDisabled();
+    // Limpa o endereço (pode estar pré-preenchido pelo default do CLIENT)
+    await page.locator('.wizard-content input[type="text"]').first().fill('');
+
+    // Clica Próximo — deve mostrar erro de validação em vez de avançar
+    await page.locator('.wizard-footer .wizard-btn.primary').click();
+
+    await expect(page.locator('.wizard-field-error')).toBeVisible({ timeout: 3_000 });
+    // Ainda em step 1
+    await expect(page.locator('h2.wizard-title')).toBeVisible();
   });
 
   test('não avança do Step 2 sem endereço na parada', async ({ page }) => {
@@ -435,9 +439,13 @@ test.describe('DeliveryWizard - Criação de Entregas', () => {
     await fillOriginAddress(page, SOBRAL.origin.text);
     await clickNext(page);
 
-    // Step 2 com parada vazia — botão deve estar desabilitado
-    const nextBtn = page.locator('.wizard-footer .wizard-btn.primary');
-    await expect(nextBtn).toBeDisabled();
+    // Step 2: limpa o endereço da 1ª parada e tenta avançar
+    const stopInput = page.locator('.wizard-stop-item').first().locator('input[type="text"]').first();
+    await stopInput.fill('');
+    await page.locator('.wizard-footer .wizard-btn.primary').click();
+
+    // Deve mostrar erro de validação
+    await expect(page.locator('.wizard-field-error').first()).toBeVisible({ timeout: 3_000 });
   });
 
   // ----------------------------------------------------------
