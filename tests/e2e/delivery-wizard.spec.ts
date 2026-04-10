@@ -159,7 +159,7 @@ test.describe('DeliveryWizard - Criação de Entregas', () => {
 
     // Intercepta o POST para verificar o payload
     const requestPromise = page.waitForRequest(
-      (req) => req.url().includes('/deliveries') && req.method() === 'POST',
+      (req) => req.url().includes('/deliveries') && !req.url().includes('simulate') && req.method() === 'POST',
       { timeout: 30_000 },
     );
 
@@ -223,7 +223,7 @@ test.describe('DeliveryWizard - Criação de Entregas', () => {
 
     // Intercepta POST
     const requestPromise = page.waitForRequest(
-      (req) => req.url().includes('/deliveries') && req.method() === 'POST',
+      (req) => req.url().includes('/deliveries') && !req.url().includes('simulate') && req.method() === 'POST',
       { timeout: 30_000 },
     );
 
@@ -380,7 +380,7 @@ test.describe('DeliveryWizard - Criação de Entregas', () => {
 
     // === AVANÇA para Step 3 e submete ===
     const requestPromise = page.waitForRequest(
-      (req) => req.url().includes('/deliveries') && req.method() === 'POST',
+      (req) => req.url().includes('/deliveries') && !req.url().includes('simulate') && req.method() === 'POST',
       { timeout: 30_000 },
     );
 
@@ -486,7 +486,7 @@ test.describe('DeliveryWizard - Criação de Entregas', () => {
     await fillStopDetails(page, 0, SOBRAL.stop1);
 
     const requestPromise = page.waitForRequest(
-      (req) => req.url().includes('/deliveries') && req.method() === 'POST',
+      (req) => req.url().includes('/deliveries') && !req.url().includes('simulate') && req.method() === 'POST',
       { timeout: 30_000 },
     );
 
