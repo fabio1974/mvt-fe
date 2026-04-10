@@ -173,7 +173,7 @@ test.describe('DeliveryWizard - Criação de Entregas', () => {
     await expect(page.locator(`text=${SOBRAL.stop1.recipient}`)).toBeVisible();
 
     // Submete a entrega
-    await page.locator('button').filter({ hasText: /criar entrega/i }).click();
+    await page.locator('button').filter({ hasText: /criar corrida/i }).click();
 
     const request = await requestPromise;
     const payload = JSON.parse(request.postData() || '{}');
@@ -240,7 +240,7 @@ test.describe('DeliveryWizard - Criação de Entregas', () => {
     await expect(page.locator(`text=${SOBRAL.stop4_volta.recipient}`)).toBeVisible();
 
     // Submete
-    await page.locator('button').filter({ hasText: /criar entrega/i }).click();
+    await page.locator('button').filter({ hasText: /criar corrida/i }).click();
 
     const request = await requestPromise;
     const payload = JSON.parse(request.postData() || '{}');
@@ -386,7 +386,7 @@ test.describe('DeliveryWizard - Criação de Entregas', () => {
 
     await clickNext(page);
     await page.waitForTimeout(3_000);
-    await page.locator('button').filter({ hasText: /criar entrega/i }).click();
+    await page.locator('button').filter({ hasText: /criar corrida/i }).click();
 
     const request = await requestPromise;
     const payload = JSON.parse(request.postData() || '{}');
@@ -405,8 +405,8 @@ test.describe('DeliveryWizard - Criação de Entregas', () => {
     // Clica em Cancelar (step 1 mostra "Cancelar" ao invés de "Voltar")
     await page.locator('.wizard-footer .wizard-btn.secondary').filter({ hasText: /cancelar/i }).click();
 
-    // Wizard deve fechar (modal desaparece)
-    await expect(page.locator('text=Nova Corrida')).not.toBeVisible({ timeout: 3_000 });
+    // Wizard deve fechar (h2 do wizard desaparece)
+    await expect(page.locator('h2.wizard-title')).not.toBeVisible({ timeout: 3_000 });
   });
 
   test('botão X fecha o wizard', async ({ page }) => {
@@ -492,7 +492,7 @@ test.describe('DeliveryWizard - Criação de Entregas', () => {
 
     await clickNext(page);
     await page.waitForTimeout(3_000);
-    await page.locator('button').filter({ hasText: /criar entrega/i }).click();
+    await page.locator('button').filter({ hasText: /criar corrida/i }).click();
 
     const request = await requestPromise;
     const payload = JSON.parse(request.postData() || '{}');

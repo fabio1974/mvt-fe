@@ -184,16 +184,20 @@ test.describe('Wizard de entrega — validações visuais', () => {
     await page.locator('button').filter({ hasText: /Nova Corrida/i }).click();
     await expect(page.locator('h2.wizard-title')).toBeVisible({ timeout: 5_000 });
 
-    // Step 1: "Endereço de Origem *"
-    await expect(page.locator('text=/Origem.*\\*/i')).toBeVisible();
+    // Step 1: seção de origem visível e campo com required
+    await expect(page.locator('h3.wizard-section-title')).toContainText(/origem/i);
+    await expect(page.locator('.wizard-content input[required]').first()).toBeAttached();
   });
 
   test('erro de validação aparece ao tentar avançar sem preencher', async ({ page }) => {
     await page.locator('button').filter({ hasText: /Nova Corrida/i }).click();
     await expect(page.locator('h2.wizard-title')).toBeVisible({ timeout: 5_000 });
 
-    // Tenta avançar sem preencher origem
-    await page.locator('.wizard-btn.primary').click();
+    // Limpa o endereço de origem (pode estar pré-preenchido) e tenta avançar
+    const originInput = page.locator('.wizard-content input[type="text"]').first();
+    await originInput.fill('');
+
+    await page.locator('.wizard-footer .wizard-btn.primary').click();
 
     // Erro deve aparecer
     await expect(page.locator('.wizard-field-error')).toBeVisible({ timeout: 3_000 });
