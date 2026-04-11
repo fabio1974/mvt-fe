@@ -6,9 +6,12 @@ import Sidebar from "./components/Sidebar/Sidebar";
 import Toast from "./components/Common/Toast";
 import MetadataLoader from "./components/Common/MetadataLoader";
 import { MetadataProvider } from "./contexts/MetadataContext";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { registerToast } from "./utils/toast";
+
+// Página pública de rastreamento (sem layout autenticado)
+const TrackingPage = lazy(() => import("./components/Tracking/TrackingPage"));
 
 // Lazy load das páginas para code splitting
 const LandingPage = lazy(() => import("./components/LandingPage/LandingPage"));
@@ -130,6 +133,19 @@ function App() {
   };
 
   const sidebarWidth = getSidebarWidth();
+  const location = useLocation();
+
+  // Rota pública de rastreamento — renderiza fora do layout principal
+  if (location.pathname.startsWith("/rastreio/")) {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="/rastreio/:token" element={<TrackingPage />} />
+        </Routes>
+      </Suspense>
+    );
+  }
+
   return (
     <MetadataProvider>
       <MetadataLoader>

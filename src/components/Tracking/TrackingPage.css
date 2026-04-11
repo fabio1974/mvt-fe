@@ -1,0 +1,247 @@
+/* Tracking Page — mobile-first, standalone */
+
+.tracking-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: #f8fafc;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Header */
+.tracking-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #0f0f23;
+  color: #fff;
+}
+
+.tracking-logo {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.tracking-delivery-id {
+  font-size: 13px;
+  color: #94a3b8;
+  font-family: monospace;
+}
+
+/* Status bar */
+.tracking-status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  color: #fff;
+  font-size: 14px;
+}
+
+.tracking-status-label {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.tracking-courier-name {
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+/* Progress bar */
+.tracking-progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  gap: 0;
+}
+
+.tracking-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  flex: 1;
+}
+
+.tracking-step-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #d1d5db;
+  border: 2px solid #d1d5db;
+  z-index: 1;
+  transition: all 0.3s;
+}
+
+.tracking-step.active .tracking-step-dot {
+  background: #3b82f6;
+  border-color: #1d4ed8;
+}
+
+.tracking-step-label {
+  font-size: 10px;
+  color: #9ca3af;
+  margin-top: 4px;
+  text-align: center;
+}
+
+.tracking-step.active .tracking-step-label {
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+.tracking-step-line {
+  position: absolute;
+  top: 7px;
+  left: 50%;
+  width: 100%;
+  height: 3px;
+  background: #e5e7eb;
+  z-index: 0;
+}
+
+.tracking-step-line.active {
+  background: #3b82f6;
+}
+
+/* Map */
+.tracking-map-container {
+  flex: 1;
+  min-height: 300px;
+  position: relative;
+}
+
+@media (min-width: 768px) {
+  .tracking-map-container {
+    min-height: 450px;
+  }
+}
+
+.tracking-map-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #6b7280;
+}
+
+/* Details */
+.tracking-details {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tracking-detail-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.tracking-detail-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.tracking-detail-label {
+  font-size: 12px;
+  color: #6b7280;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tracking-detail-value {
+  font-size: 14px;
+  color: #1f2937;
+  margin-top: 2px;
+}
+
+/* Footer */
+.tracking-footer {
+  padding: 12px 16px;
+  text-align: center;
+  font-size: 11px;
+  color: #9ca3af;
+  background: #fff;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* Loading state */
+.tracking-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #0f0f23;
+  color: #fff;
+}
+
+.tracking-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #3b82f6;
+  border-radius: 50%;
+  animation: tracking-spin 1s linear infinite;
+  margin-bottom: 16px;
+}
+
+@keyframes tracking-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Error state */
+.tracking-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #f8fafc;
+  padding: 32px;
+  text-align: center;
+}
+
+.tracking-error-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+
+.tracking-error h2 {
+  font-size: 20px;
+  color: #1f2937;
+  margin-bottom: 8px;
+}
+
+.tracking-error p {
+  color: #6b7280;
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+.tracking-home-link {
+  padding: 10px 24px;
+  background: #3b82f6;
+  color: #fff;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.tracking-home-link:hover {
+  background: #2563eb;
+}
