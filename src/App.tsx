@@ -46,6 +46,7 @@ const CourierEarningsPage = lazy(() => import("./components/Courier/CourierEarni
 const CourierWalletPage = lazy(() => import("./components/Courier/CourierWalletPage"));
 const CreditCardsPage = lazy(() => import("./components/Client/CreditCardsPage"));
 const PaymentPreferencePage = lazy(() => import("./components/Client/PaymentPreferencePage"));
+const FoodOrderCRUDPage = lazy(() => import("./components/FoodOrder/FoodOrderCRUDPage"));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -200,6 +201,7 @@ function App() {
                 <Route path="/gerentes" element={<ManagerCRUDPage />} />
                 <Route path="/motoboy" element={<CourierCRUDPage />} />
                 <Route path="/deliveries" element={<DeliveryCRUDPage />} />
+                <Route path="/pedidos" element={<FoodOrderCRUDPage />} />
                 <Route path="/pagamentos" element={<PaymentCRUDPage />} />
                 <Route path="/balanco-financeiro" element={<OrganizerFinancialPage />} />
                 <Route path="/dados-pessoais" element={<PersonalDataPage />} />

@@ -8,6 +8,7 @@ import {
   FiMenu,
   FiArrowRight,
   FiPlus,
+  FiShoppingBag,
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import MobileAppBanner from "./MobileAppBanner";
@@ -75,6 +76,17 @@ const Dashboard: React.FC = () => {
       description: "Visualize e gerencie suas corridas",
       color: "#3b82f6",
       onClick: () => navigate("/deliveries"),
+    });
+  }
+
+  // Pedidos (apenas CLIENT — Zapi-Food)
+  if (userRole === "ROLE_CLIENT" || userRole === "CLIENT") {
+    quickActions.push({
+      icon: <FiShoppingBag size={28} />,
+      label: "Pedidos",
+      description: "Gerencie pedidos do Zapi-Food",
+      color: "#f59e0b",
+      onClick: () => navigate("/pedidos"),
     });
   }
 

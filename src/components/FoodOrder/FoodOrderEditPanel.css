@@ -1,0 +1,85 @@
+.food-order-loading {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-height: 300px; color: #94a3b8;
+}
+
+.food-order-edit {
+  max-width: 900px; margin: 0 auto; padding: 20px;
+}
+
+.food-order-edit-header {
+  display: flex; align-items: center; gap: 16px; margin-bottom: 24px; flex-wrap: wrap;
+}
+
+.food-order-back-btn {
+  display: flex; align-items: center; gap: 6px; background: none; border: 1px solid #334155;
+  color: #94a3b8; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 14px;
+}
+.food-order-back-btn:hover { background: #1e293b; color: #fff; }
+
+.food-order-edit-header h2 { flex: 1; font-size: 22px; margin: 0; }
+
+.food-order-status-badge {
+  padding: 6px 16px; border-radius: 20px; color: #fff; font-weight: 700; font-size: 14px;
+}
+
+.food-order-edit-body { display: flex; flex-direction: column; gap: 20px; }
+
+.food-order-section {
+  background: var(--bg-surface, #1e293b); border: 1px solid var(--border, #334155);
+  border-radius: 12px; padding: 20px;
+}
+.food-order-section h3 { margin: 0 0 16px; font-size: 16px; }
+
+.food-order-info-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+}
+.food-order-info-item { display: flex; flex-direction: column; }
+.food-order-info-item .label { font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: 600; }
+.food-order-info-item .value { font-size: 14px; margin-top: 4px; }
+.food-order-info-item .notes { font-style: italic; color: #f59e0b; }
+.food-order-info-item.full-width { grid-column: 1 / -1; }
+
+.food-order-items-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.food-order-items-table th { text-align: left; padding: 8px; border-bottom: 1px solid #334155; color: #64748b; font-size: 12px; text-transform: uppercase; }
+.food-order-items-table td { padding: 8px; border-bottom: 1px solid #1e293b; }
+.item-notes { color: #94a3b8; font-size: 12px; margin-left: 6px; }
+
+.food-order-totals { margin-top: 12px; border-top: 1px solid #334155; padding-top: 12px; }
+.total-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 14px; color: #94a3b8; }
+.total-final { font-size: 18px; font-weight: 700; color: #f59e0b; padding-top: 8px; border-top: 1px solid #334155; }
+
+/* Timeline */
+.food-order-timeline { display: flex; flex-direction: column; gap: 0; }
+.timeline-step { display: flex; align-items: center; gap: 12px; padding: 10px 0; position: relative; }
+.timeline-step::before {
+  content: ""; position: absolute; left: 7px; top: 32px; bottom: -10px;
+  width: 2px; background: #334155;
+}
+.timeline-step:last-child::before { display: none; }
+.timeline-dot {
+  width: 16px; height: 16px; border-radius: 50%; background: #334155; flex-shrink: 0; z-index: 1;
+}
+.timeline-step.done .timeline-dot { background: #10b981; }
+.timeline-step.cancelled .timeline-dot { background: #ef4444; }
+.timeline-label { flex: 1; font-size: 14px; }
+.timeline-date { font-size: 12px; color: #64748b; }
+
+/* Action buttons */
+.food-order-actions { display: flex; flex-direction: column; gap: 12px; }
+
+.food-order-action-btn {
+  display: flex; align-items: center; gap: 16px; padding: 16px 20px;
+  border: none; border-radius: 12px; cursor: pointer; transition: all 0.2s;
+  text-align: left; color: #fff;
+}
+.food-order-action-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+.food-order-action-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.food-order-action-btn .action-label { font-size: 18px; font-weight: 700; }
+.food-order-action-btn .action-desc { font-size: 13px; opacity: 0.85; }
+
+.food-order-action-btn.accept { background: #10b981; }
+.food-order-action-btn.preparing { background: #8b5cf6; }
+.food-order-action-btn.ready { background: #f59e0b; }
+.food-order-action-btn.cancel { background: #ef4444; }

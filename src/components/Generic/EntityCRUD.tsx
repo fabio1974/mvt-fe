@@ -95,6 +95,8 @@ interface EntityCRUDProps {
   hideCreateButton?: boolean;
   /** Campos a esconder SOMENTE na tabela (não afeta o formulário) */
   tableHideFields?: string[];
+  /** Componente customizado para modo edit (substitui EntityForm no edit) */
+  customEditComponent?: (entityId: number | string | undefined, viewMode: string, onBack: () => void) => React.ReactNode;
 }
 
 /**
@@ -152,6 +154,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
   extraHeaderActions,
   hideCreateButton = false,
   tableHideFields = [] as string[],
+  customEditComponent,
   // transformData, // Unused parameter
   pageTitle,
 }) => {
@@ -450,6 +453,15 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
   }
 
   const isReadonly = viewMode === "view";
+
+  // Componente customizado de edit (ex: FoodOrderEditPanel)
+  if (customEditComponent && viewMode === "edit") {
+    return (
+      <div className="entity-crud-container">
+        {customEditComponent(selectedEntityId, viewMode, handleBackToTable)}
+      </div>
+    );
+  }
 
   // Se noWrapper, renderiza apenas o formulário sem container/breadcrumb
   if (noWrapper) {
