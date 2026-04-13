@@ -1,85 +1,303 @@
-.food-order-loading {
+/* Layout: sidebar esquerda + conteúdo direita */
+.fop-layout {
+  display: flex;
+  gap: 20px;
+}
+
+.fop-loading {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  min-height: 300px; color: #94a3b8;
+  min-height: 300px; color: #64748b;
 }
 
-.food-order-edit {
-  max-width: 900px; margin: 0 auto; padding: 20px;
+/* ================================================================
+   SIDEBAR — botões de status
+   ================================================================ */
+.fop-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 110px;
+  flex-shrink: 0;
 }
 
-.food-order-edit-header {
-  display: flex; align-items: center; gap: 16px; margin-bottom: 24px; flex-wrap: wrap;
+.fop-sidebar-title {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #94a3b8;
+  margin: 0 0 4px;
+  text-align: center;
+  font-weight: 700;
 }
 
-.food-order-back-btn {
-  display: flex; align-items: center; gap: 6px; background: none; border: 1px solid #334155;
-  color: #94a3b8; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-size: 14px;
+.fop-status-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 100%;
+  height: 72px;
+  border: 2px solid;
+  border-radius: 10px;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
 }
-.food-order-back-btn:hover { background: #1e293b; color: #fff; }
 
-.food-order-edit-header h2 { flex: 1; font-size: 22px; margin: 0; }
-
-.food-order-status-badge {
-  padding: 6px 16px; border-radius: 20px; color: #fff; font-weight: 700; font-size: 14px;
+.fop-status-btn:hover:not(:disabled) {
+  transform: scale(1.04);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
 }
 
-.food-order-edit-body { display: flex; flex-direction: column; gap: 20px; }
+.fop-status-btn:disabled { cursor: not-allowed; }
+.fop-status-btn.done { cursor: default; }
 
-.food-order-section {
-  background: var(--bg-surface, #1e293b); border: 1px solid var(--border, #334155);
-  border-radius: 12px; padding: 20px;
+.fop-status-btn.next {
+  animation: pulse-glow 2s infinite;
 }
-.food-order-section h3 { margin: 0 0 16px; font-size: 16px; }
 
-.food-order-info-grid {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.3); }
+  50% { box-shadow: 0 0 0 5px rgba(59, 130, 246, 0); }
 }
-.food-order-info-item { display: flex; flex-direction: column; }
-.food-order-info-item .label { font-size: 12px; color: #64748b; text-transform: uppercase; font-weight: 600; }
-.food-order-info-item .value { font-size: 14px; margin-top: 4px; }
-.food-order-info-item .notes { font-style: italic; color: #f59e0b; }
-.food-order-info-item.full-width { grid-column: 1 / -1; }
 
-.food-order-items-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-.food-order-items-table th { text-align: left; padding: 8px; border-bottom: 1px solid #334155; color: #64748b; font-size: 12px; text-transform: uppercase; }
-.food-order-items-table td { padding: 8px; border-bottom: 1px solid #1e293b; }
-.item-notes { color: #94a3b8; font-size: 12px; margin-left: 6px; }
+.fop-btn-icon { font-size: 20px; }
+.fop-btn-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
 
-.food-order-totals { margin-top: 12px; border-top: 1px solid #334155; padding-top: 12px; }
-.total-row { display: flex; justify-content: space-between; padding: 4px 0; font-size: 14px; color: #94a3b8; }
-.total-final { font-size: 18px; font-weight: 700; color: #f59e0b; padding-top: 8px; border-top: 1px solid #334155; }
-
-/* Timeline */
-.food-order-timeline { display: flex; flex-direction: column; gap: 0; }
-.timeline-step { display: flex; align-items: center; gap: 12px; padding: 10px 0; position: relative; }
-.timeline-step::before {
-  content: ""; position: absolute; left: 7px; top: 32px; bottom: -10px;
-  width: 2px; background: #334155;
+/* ================================================================
+   CONTEÚDO — dados do pedido
+   ================================================================ */
+.fop-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
 }
-.timeline-step:last-child::before { display: none; }
-.timeline-dot {
-  width: 16px; height: 16px; border-radius: 50%; background: #334155; flex-shrink: 0; z-index: 1;
+
+/* Header */
+.fop-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
-.timeline-step.done .timeline-dot { background: #10b981; }
-.timeline-step.cancelled .timeline-dot { background: #ef4444; }
-.timeline-label { flex: 1; font-size: 14px; }
-.timeline-date { font-size: 12px; color: #64748b; }
 
-/* Action buttons */
-.food-order-actions { display: flex; flex-direction: column; gap: 12px; }
-
-.food-order-action-btn {
-  display: flex; align-items: center; gap: 16px; padding: 16px 20px;
-  border: none; border-radius: 12px; cursor: pointer; transition: all 0.2s;
-  text-align: left; color: #fff;
+.fop-header h2 {
+  margin: 0;
+  font-size: 20px;
+  flex: 1;
 }
-.food-order-action-btn:hover { opacity: 0.9; transform: translateY(-1px); }
-.food-order-action-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-.food-order-action-btn .action-label { font-size: 18px; font-weight: 700; }
-.food-order-action-btn .action-desc { font-size: 13px; opacity: 0.85; }
+.fop-badge {
+  padding: 5px 14px;
+  border-radius: 16px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 12px;
+  white-space: nowrap;
+}
 
-.food-order-action-btn.accept { background: #10b981; }
-.food-order-action-btn.preparing { background: #8b5cf6; }
-.food-order-action-btn.ready { background: #f59e0b; }
-.food-order-action-btn.cancel { background: #ef4444; }
+
+.fop-notes { color: #b45309 !important; font-style: italic; background: #fef3c7; padding: 4px 8px; border-radius: 4px; }
+
+/* Cards (FormContainer) — bordas nítidas */
+.fop-content .form-container {
+  border: 2px solid #94a3b8 !important;
+}
+
+.fop-whatsapp-link {
+  color: #25D366;
+  font-weight: 600;
+  font-size: 12px;
+  text-decoration: none;
+  border: 1px solid #25D366;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: 4px;
+}
+.fop-whatsapp-link:hover { background: #25D366; color: #fff; }
+
+/* Tfoot — totais dentro da tabela */
+.fop-tfoot-row td {
+  padding: 10px 10px !important;
+  font-size: 14px;
+  color: #64748b;
+  background: #f8fafc;
+  border-top: 1.5px solid #94a3b8 !important;
+}
+
+.fop-tfoot-total td {
+  padding: 10px 10px !important;
+  font-size: 14px;
+  font-weight: 700;
+  color: #f59e0b;
+  background: #e2e8f0;
+  border-top: 1.5px solid #94a3b8 !important;
+}
+
+/* Header da tabela — mesma cor de fundo que o footer total */
+.fop-items-table-wrapper table thead th {
+  background: #e2e8f0 !important;
+  color: #000 !important;
+  font-weight: 700 !important;
+}
+
+/* Todas as fontes pretas na tabela */
+.fop-items-table-wrapper table td {
+  color: #000 !important;
+}
+
+.fop-items-table-wrapper .fop-tfoot-row td,
+.fop-items-table-wrapper .fop-tfoot-total td {
+  color: #000 !important;
+  font-weight: 700 !important;
+}
+
+/* Remover hover azul nas linhas da tabela de itens */
+.fop-items-table-wrapper .entity-table tbody tr:hover,
+.fop-items-table-wrapper table tbody tr:hover {
+  background: transparent !important;
+}
+
+/* Altura uniforme para todas as linhas */
+.fop-items-table-wrapper table th,
+.fop-items-table-wrapper table td {
+  padding: 10px 10px !important;
+}
+
+/* Timeline horizontal */
+.fop-tl-horizontal {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  padding: 8px 0;
+}
+
+.fop-tl-h-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  min-width: 80px;
+}
+
+.fop-tl-h-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  border: 3px solid #e2e8f0;
+  margin-bottom: 6px;
+  transition: all 0.2s;
+}
+
+.fop-tl-h-step.done .fop-tl-h-dot {
+  background: #10b981;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+.fop-tl-h-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-align: center;
+}
+
+.fop-tl-h-step.done .fop-tl-h-label {
+  color: #334155;
+}
+
+.fop-tl-h-date {
+  font-size: 10px;
+  color: #94a3b8;
+  text-align: center;
+  margin-top: 2px;
+  min-height: 14px;
+}
+
+.fop-tl-h-line {
+  flex: 1;
+  height: 3px;
+  background: #e2e8f0;
+  margin-top: 8px;
+  min-width: 20px;
+  border-radius: 2px;
+}
+
+.fop-tl-h-line.done {
+  background: #10b981;
+}
+
+.fop-tl-cancelled {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  color: #ef4444;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* Tabela de itens — wrapper direto (sem card) */
+.fop-items-table-wrapper {
+  border: 2px solid #94a3b8;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+/* Tabela de itens — bordas externas e internas verticais */
+.fop-layout .entity-table-wrapper {
+  border: 1.5px solid #cbd5e1;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.fop-layout table th,
+.fop-layout table td {
+  border-right: 1.5px solid #94a3b8 !important;
+  border-bottom: 1.5px solid #94a3b8 !important;
+}
+
+.fop-layout table th:last-child,
+.fop-layout table td:last-child {
+  border-right: none !important;
+}
+
+.fop-layout table tr:last-child td {
+  border-bottom: none !important;
+}
+
+.fop-notes-input {
+  color: #b45309 !important;
+  font-style: italic;
+  background: #fef3c7 !important;
+}
+
+/* Dark mode override */
+@media (prefers-color-scheme: dark) {
+  .fop-card { background: #1e293b; border-color: #475569; }
+  .fop-card h3 { color: #e2e8f0; border-color: #475569; }
+  .fop-form-value { background: #0f172a; border-color: #334155; color: #e2e8f0; }
+  .fop-form-field label { color: #94a3b8; }
+  .fop-card .entity-table-wrapper { border-color: #475569; }
+  .fop-tfoot-row td { background: #0f172a; }
+  .fop-tfoot-total td { background: #422006; }
+  .fop-layout table th, .fop-layout table td { border-color: #475569 !important; }
+  .fop-tl-h-dot { background: #334155; border-color: #334155; }
+  .fop-tl-h-line { background: #334155; }
+  .fop-tl-h-step.done .fop-tl-h-label { color: #e2e8f0; }
+  .fop-notes { background: #422006; color: #fbbf24 !important; }
+  .fop-tl-cancelled { background: #450a0a; border-color: #7f1d1d; }
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .fop-layout { flex-direction: column; }
+  .fop-sidebar { flex-direction: row; width: 100%; overflow-x: auto; }
+  .fop-status-btn { min-width: 80px; height: 64px; }
+  .fop-grid { grid-template-columns: 1fr; }
+}

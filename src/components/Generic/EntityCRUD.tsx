@@ -458,7 +458,10 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
   if (customEditComponent && viewMode === "edit") {
     return (
       <div className="entity-crud-container">
-        {customEditComponent(selectedEntityId, viewMode, handleBackToTable)}
+        <Breadcrumb mode={viewMode} />
+        <div className="entity-crud-form-wrapper" style={{ marginBottom: "4rem" }}>
+          {customEditComponent(selectedEntityId, viewMode, handleBackToTable)}
+        </div>
       </div>
     );
   }
