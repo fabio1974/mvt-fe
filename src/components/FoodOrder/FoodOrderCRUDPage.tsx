@@ -1,8 +1,6 @@
 import React from "react";
 import EntityCRUD from "../Generic/EntityCRUD";
 import FoodOrderEditPanel from "./FoodOrderEditPanel";
-import { getUserRole } from "../../utils/auth";
-
 /**
  * Página de CRUD para Pedidos (Zapi-Food)
  *
@@ -12,7 +10,6 @@ import { getUserRole } from "../../utils/auth";
  * - Edit: Componente customizado com botões de status
  */
 const FoodOrderCRUDPage: React.FC = () => {
-  const userRole = getUserRole();
 
   return (
     <EntityCRUD

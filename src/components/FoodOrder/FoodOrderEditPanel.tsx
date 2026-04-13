@@ -57,14 +57,14 @@ const STATUS_LABELS: Record<string, { label: string; color: string; icon: string
   CANCELLED: { label: "Cancelado", color: "#ef4444", icon: "❌" },
 };
 
-const FoodOrderEditPanel: React.FC<Props> = ({ orderId, viewMode, onBack }) => {
+const FoodOrderEditPanel: React.FC<Props> = ({ orderId, viewMode }) => {
   const [order, setOrder] = useState<FoodOrder | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
 
   const fetchOrder = async () => {
     try {
-      const res = await api.get(`/api/orders/${orderId}`);
+      const res = await api.get<FoodOrder>(`/api/orders/${orderId}`);
       setOrder(res.data);
     } catch (e) {
       console.error("Erro ao carregar pedido:", e);
