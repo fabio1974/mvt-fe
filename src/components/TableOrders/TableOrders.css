@@ -1,0 +1,207 @@
+/* ================================================================
+   TABLE ORDERS MODULE — Mesas e Garçons
+   ================================================================ */
+
+.to-page {
+  padding: 0;
+}
+
+.to-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.to-header h2 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.to-loading {
+  text-align: center;
+  padding: 40px;
+  color: #64748b;
+}
+
+.to-empty {
+  text-align: center;
+  padding: 40px;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.to-hint {
+  font-size: 12px;
+  color: #94a3b8;
+  margin: 8px 0 0;
+}
+
+/* Buttons */
+.to-btn {
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fff;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.to-btn:hover { background: #f1f5f9; }
+
+.to-btn-primary { background: #3b82f6; color: #fff; border-color: #3b82f6; }
+.to-btn-primary:hover { background: #2563eb; }
+
+.to-btn-warn { background: #f59e0b; color: #fff; border-color: #f59e0b; }
+.to-btn-warn:hover { background: #d97706; }
+
+.to-btn-danger { background: transparent; color: #ef4444; border-color: #ef4444; }
+.to-btn-danger:hover { background: #ef4444; color: #fff; }
+
+.to-btn-sm { padding: 3px 8px; font-size: 11px; }
+
+/* Batch form */
+.to-batch-form {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.to-batch-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.to-batch-row label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.to-batch-row input {
+  padding: 6px 10px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 13px;
+  width: 120px;
+}
+
+.to-batch-row input[type="email"] {
+  width: 240px;
+}
+
+/* Grid de mesas */
+.to-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.to-table-card {
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px;
+  text-align: center;
+  background: #fff;
+  transition: all 0.15s;
+}
+
+.to-table-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.to-table-card.inactive {
+  opacity: 0.5;
+  background: #f8fafc;
+}
+
+.to-table-number {
+  font-size: 22px;
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.to-table-label {
+  font-size: 11px;
+  color: #8b5cf6;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.to-table-seats {
+  font-size: 11px;
+  color: #94a3b8;
+  margin-bottom: 8px;
+}
+
+.to-table-actions {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.to-table-edit input {
+  width: 100%;
+  padding: 4px 8px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 4px;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+/* Status badge */
+.to-status-badge {
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.to-status-badge.active {
+  background: #dcfce7;
+  color: #16a34a;
+}
+
+.to-status-badge.inactive {
+  background: #fee2e2;
+  color: #ef4444;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .to-table-card { background: #1e293b; border-color: #334155; }
+  .to-table-card.inactive { background: #0f172a; }
+  .to-table-number { color: #e2e8f0; }
+  .to-batch-form { background: #1e293b; border-color: #334155; }
+  .to-batch-row label { color: #94a3b8; }
+  .to-batch-row input { background: #0f172a; border-color: #334155; color: #e2e8f0; }
+  .to-btn { background: #1e293b; color: #e2e8f0; border-color: #475569; }
+  .to-btn:hover { background: #334155; }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .to-grid {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  }
+  .to-batch-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .to-batch-row input {
+    width: 100%;
+  }
+}

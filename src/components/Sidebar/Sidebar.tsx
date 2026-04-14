@@ -16,6 +16,8 @@ import {
   FiCreditCard,
   FiTrendingUp,
   FiHome,
+  FiGrid,
+  FiUser,
 } from "react-icons/fi";
 import "./Sidebar.css";
 
@@ -91,6 +93,18 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
     label: "Pedidos",
     icon: <FiShoppingBag size={22} color="#f59e0b" />,
     path: "/pedidos",
+    roles: ["ROLE_ADMIN", "ROLE_CLIENT", "CLIENT"],
+  },
+  {
+    label: "Mesas",
+    icon: <FiGrid size={22} color="#8b5cf6" />,
+    path: "/mesas",
+    roles: ["ROLE_ADMIN", "ROLE_CLIENT", "CLIENT"],
+  },
+  {
+    label: "Garçons",
+    icon: <FiUser size={22} color="#06b6d4" />,
+    path: "/garcons",
     roles: ["ROLE_ADMIN", "ROLE_CLIENT", "CLIENT"],
   },
   {
