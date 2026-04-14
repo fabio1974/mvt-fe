@@ -57,10 +57,71 @@ const STATUS_LABELS: Record<string, { label: string; color: string; icon: string
   CANCELLED: { label: "Cancelado", color: "#ef4444", icon: "❌" },
 };
 
+const PRINT_PREF_KEY = "fop_skip_print_prompt";
+
+const printKitchenOrder = (order: FoodOrder) => {
+  const fmtTime = (d: string) =>
+    new Date(d).toLocaleString("pt-BR", {
+      day: "2-digit", month: "2-digit", year: "2-digit",
+      hour: "2-digit", minute: "2-digit",
+    });
+
+  const itemsHtml = order.items
+    ?.map(
+      (item) =>
+        `<tr>
+          <td style="font-size:18px;font-weight:bold;padding:6px 4px;border-bottom:1px dashed #999">${item.quantity}x</td>
+          <td style="font-size:18px;padding:6px 4px;border-bottom:1px dashed #999">
+            ${item.productName || "Item"}
+            ${item.notes ? `<div style="font-size:14px;font-style:italic;color:#666;margin-top:2px">Obs: ${item.notes}</div>` : ""}
+          </td>
+        </tr>`
+    )
+    .join("");
+
+  const html = `<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<title>Pedido #${order.id}</title>
+<style>
+  @page { margin: 4mm; }
+  body { font-family: 'Courier New', monospace; margin: 0; padding: 8px; max-width: 300px; }
+  h1 { font-size: 22px; text-align: center; margin: 4px 0; border-bottom: 2px solid #000; padding-bottom: 6px; }
+  .info { font-size: 14px; margin: 6px 0; }
+  .info b { display: inline-block; min-width: 70px; }
+  table { width: 100%; border-collapse: collapse; margin: 8px 0; }
+  .obs-geral { font-size: 16px; font-style: italic; border: 1px solid #000; padding: 6px; margin: 8px 0; }
+  .footer { text-align: center; font-size: 12px; margin-top: 12px; border-top: 2px solid #000; padding-top: 6px; }
+  .destaque { font-size: 20px; font-weight: bold; text-align: center; margin: 8px 0; }
+</style>
+</head><body>
+<h1>PEDIDO #${order.id}</h1>
+<div class="info"><b>Hora:</b> ${fmtTime(order.createdAt)}</div>
+<div class="info"><b>Cliente:</b> ${order.customerName || "---"}</div>
+<div class="info"><b>Tel:</b> ${order.customerPhone || "---"}</div>
+${order.deliveryAddress ? `<div class="info"><b>Entrega:</b> ${order.deliveryAddress}</div>` : ""}
+<table>${itemsHtml}</table>
+${order.notes ? `<div class="obs-geral">OBS: ${order.notes}</div>` : ""}
+<div class="destaque">TOTAL: R$ ${order.total.toFixed(2).replace(".", ",")}</div>
+<div class="footer">Aceito em: ${fmtTime(new Date().toISOString())}</div>
+</body></html>`;
+
+  const printWindow = window.open("", "_blank", "width=350,height=600");
+  if (printWindow) {
+    printWindow.document.write(html);
+    printWindow.document.close();
+    printWindow.onload = () => {
+      printWindow.print();
+      printWindow.onafterprint = () => printWindow.close();
+    };
+  }
+};
+
 const FoodOrderEditPanel: React.FC<Props> = ({ orderId, viewMode }) => {
   const [order, setOrder] = useState<FoodOrder | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [showPrintModal, setShowPrintModal] = useState(false);
+  const [dontAskPrint, setDontAskPrint] = useState(false);
 
   const fetchOrder = async () => {
     try {
@@ -75,7 +136,47 @@ const FoodOrderEditPanel: React.FC<Props> = ({ orderId, viewMode }) => {
 
   useEffect(() => { fetchOrder(); }, [orderId]);
 
+  const doAccept = async () => {
+    setUpdating(true);
+    try {
+      await api.patch(`/api/orders/${orderId}/accept`);
+      await fetchOrder();
+    } catch (e: any) {
+      alert(e?.response?.data?.message || "Erro ao aceitar pedido");
+      setUpdating(false);
+      return;
+    }
+    setUpdating(false);
+  };
+
+  const handleAcceptClick = async () => {
+    const pref = localStorage.getItem(PRINT_PREF_KEY);
+    if (pref === "true") {
+      await doAccept();
+      if (order) printKitchenOrder(order);
+      return;
+    }
+    if (pref === "skip") {
+      await doAccept();
+      return;
+    }
+    setShowPrintModal(true);
+  };
+
+  const handlePrintModalConfirm = async (shouldPrint: boolean) => {
+    if (dontAskPrint) {
+      localStorage.setItem(PRINT_PREF_KEY, shouldPrint ? "true" : "skip");
+    }
+    setShowPrintModal(false);
+    await doAccept();
+    if (shouldPrint && order) printKitchenOrder(order);
+  };
+
   const handleAction = async (action: string) => {
+    if (action === "accept") {
+      await handleAcceptClick();
+      return;
+    }
     setUpdating(true);
     try {
       if (action === "cancel") {
@@ -114,6 +215,40 @@ const FoodOrderEditPanel: React.FC<Props> = ({ orderId, viewMode }) => {
 
   return (
     <div className="fop-layout">
+      {/* Modal de impressão no aceite */}
+      {showPrintModal && (
+        <div className="fop-modal-overlay">
+          <div className="fop-modal">
+            <div className="fop-modal-title">Imprimir pedido?</div>
+            <p className="fop-modal-text">
+              Deseja imprimir o pedido para a cozinha ao aceitar?
+            </p>
+            <label className="fop-modal-checkbox">
+              <input
+                type="checkbox"
+                checked={dontAskPrint}
+                onChange={(e) => setDontAskPrint(e.target.checked)}
+              />
+              Não perguntar isso novamente
+            </label>
+            <div className="fop-modal-actions">
+              <button
+                className="fop-modal-btn fop-modal-btn-secondary"
+                onClick={() => handlePrintModalConfirm(false)}
+              >
+                Apenas aceitar
+              </button>
+              <button
+                className="fop-modal-btn fop-modal-btn-primary"
+                onClick={() => handlePrintModalConfirm(true)}
+              >
+                Aceitar e imprimir
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Coluna esquerda — botões de status */}
       {viewMode === "edit" && !isTerminal && (
         <div className="fop-sidebar">
@@ -163,6 +298,15 @@ const FoodOrderEditPanel: React.FC<Props> = ({ orderId, viewMode }) => {
       <div className="fop-content">
         <div className="fop-header">
           <h2>Pedido #{order.id}</h2>
+          {order.status !== "PLACED" && order.status !== "CANCELLED" && (
+            <button
+              className="fop-print-btn"
+              onClick={() => printKitchenOrder(order)}
+              title="Reimprimir pedido para cozinha"
+            >
+              Imprimir
+            </button>
+          )}
           <span className="fop-badge" style={{ backgroundColor: statusInfo.color }}>
             {statusInfo.icon} {statusInfo.label}
           </span>
