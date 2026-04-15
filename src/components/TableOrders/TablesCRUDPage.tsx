@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { FiPlus, FiEdit2, FiPower, FiTrash2, FiCheck, FiX } from "react-icons/fi";
 import { api } from "../../services/api";
+import PageContainer from "../Generic/PageContainer";
 import "./TableOrders.css";
 
 interface RestaurantTable {
@@ -18,8 +20,25 @@ interface CreateBatchRequest {
   seats: number | null;
 }
 
+const STATUS_LABELS: Record<string, string> = {
+  PLACED: "Aguardando",
+  ACCEPTED: "Aceito",
+  PREPARING: "Preparando",
+  READY: "Pronto",
+  DELIVERING: "Servindo",
+};
+
+const STATUS_COLORS: Record<string, string> = {
+  PLACED: "#94a3b8",
+  ACCEPTED: "#3b82f6",
+  PREPARING: "#f59e0b",
+  READY: "#22c55e",
+  DELIVERING: "#8b5cf6",
+};
+
 const TablesCRUDPage: React.FC = () => {
   const [tables, setTables] = useState<RestaurantTable[]>([]);
+  const [orderStatusMap, setOrderStatusMap] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState(true);
   const [showBatchForm, setShowBatchForm] = useState(false);
   const [batchFrom, setBatchFrom] = useState(1);
@@ -31,10 +50,12 @@ const TablesCRUDPage: React.FC = () => {
 
   const fetchTables = async () => {
     try {
-      const res = await api.get<RestaurantTable[]>("/api/tables", {
-        params: { activeOnly: false },
-      });
-      setTables(res.data);
+      const [tablesRes, statusRes] = await Promise.all([
+        api.get<RestaurantTable[]>("/api/tables", { params: { activeOnly: false } }),
+        api.get<Record<number, string>>("/api/tables/order-status"),
+      ]);
+      setTables(tablesRes.data);
+      setOrderStatusMap(statusRes.data);
     } catch (e) {
       console.error("Erro ao carregar mesas:", e);
     } finally {
@@ -45,6 +66,8 @@ const TablesCRUDPage: React.FC = () => {
   useEffect(() => {
     fetchTables();
   }, []);
+
+  const GRID_COLS = 6;
 
   const handleCreateBatch = async () => {
     try {
@@ -95,14 +118,24 @@ const TablesCRUDPage: React.FC = () => {
   if (loading) return <div className="to-loading">Carregando...</div>;
 
   return (
-    <div className="to-page">
-      <div className="to-header">
-        <h2>Mesas</h2>
-        <button className="to-btn to-btn-primary" onClick={() => setShowBatchForm(!showBatchForm)}>
-          + Criar Mesas
-        </button>
-      </div>
-
+    <PageContainer
+      title="Mesas"
+      headerActions={
+        <>
+          <div className="to-grid-stats">
+            <span><span className="stat-dot active" /> {tables.filter(t => t.active).length} ativas</span>
+            <span><span className="stat-dot inactive" /> {tables.filter(t => !t.active).length} inativas</span>
+          </div>
+          <button
+            className="breadcrumb-action-btn btn-create"
+            onClick={() => setShowBatchForm(!showBatchForm)}
+          >
+            <FiPlus />
+            <span>Criar Mesas</span>
+          </button>
+        </>
+      }
+    >
       {showBatchForm && (
         <div className="to-batch-form">
           <div className="to-batch-row">
@@ -124,68 +157,95 @@ const TablesCRUDPage: React.FC = () => {
         </div>
       )}
 
-      <div className="to-grid">
-        {tables.map((table) => (
-          <div
-            key={table.id}
-            className={`to-table-card ${table.active ? "" : "inactive"}`}
-          >
-            <div className="to-table-number">#{table.number}</div>
-            {editingId === table.id ? (
-              <div className="to-table-edit">
-                <input
-                  placeholder="Label (ex: VIP)"
-                  value={editLabel}
-                  onChange={(e) => setEditLabel(e.target.value)}
-                />
-                <input
-                  type="number"
-                  placeholder="Lugares"
-                  value={editSeats}
-                  onChange={(e) => setEditSeats(+e.target.value || "")}
-                />
-                <div className="to-table-actions">
-                  <button className="to-btn to-btn-sm to-btn-primary" onClick={() => handleSaveEdit(table)}>Salvar</button>
-                  <button className="to-btn to-btn-sm" onClick={() => setEditingId(null)}>X</button>
-                </div>
-              </div>
-            ) : (
-              <>
-                {table.label && <div className="to-table-label">{table.label}</div>}
-                {table.seats && <div className="to-table-seats">{table.seats} lugares</div>}
-                <div className="to-table-actions">
-                  <button
-                    className="to-btn to-btn-sm"
-                    onClick={() => {
-                      setEditingId(table.id);
-                      setEditLabel(table.label || "");
-                      setEditSeats(table.seats || 0);
-                    }}
-                  >
-                    Editar
-                  </button>
-                  <button
-                    className={`to-btn to-btn-sm ${table.active ? "to-btn-warn" : "to-btn-primary"}`}
-                    onClick={() => handleToggle(table)}
-                  >
-                    {table.active ? "Desativar" : "Ativar"}
-                  </button>
-                  <button className="to-btn to-btn-sm to-btn-danger" onClick={() => handleDelete(table)}>
-                    Remover
-                  </button>
-                </div>
-              </>
-            )}
+      <div className="to-grid-wrapper">
+        {tables.length === 0 ? (
+          <div className="to-empty">
+            Nenhuma mesa cadastrada. Clique em "Criar Mesas" para começar.
           </div>
-        ))}
+        ) : (
+          <div className="to-grid" style={{ gridTemplateColumns: `repeat(${GRID_COLS}, 1fr)` }}>
+            {tables.map((table) => (
+              <div
+                key={table.id}
+                className={`to-table-card ${table.active ? "" : "inactive"}`}
+              >
+                <div className="to-table-header">
+                  <div className="to-table-number-badge">{table.number}</div>
+                  {table.seats && <div className="to-table-seats">{table.seats} lugares</div>}
+                </div>
+                {editingId === table.id ? (
+                  <>
+                    <div className="to-table-edit">
+                      <input
+                        placeholder="Label (ex: VIP)"
+                        value={editLabel}
+                        onChange={(e) => setEditLabel(e.target.value)}
+                      />
+                      <input
+                        type="number"
+                        placeholder="Lugares"
+                        value={editSeats}
+                        onChange={(e) => setEditSeats(+e.target.value || "")}
+                      />
+                    </div>
+                    <div className="to-table-actions">
+                      <button className="to-icon-btn" title="Salvar" onClick={() => handleSaveEdit(table)}>
+                        <FiCheck size={16} color="#22c55e" />
+                      </button>
+                      <button className="to-icon-btn" title="Cancelar" onClick={() => setEditingId(null)}>
+                        <FiX size={16} color="#ef4444" />
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="to-table-info">
+                      {orderStatusMap[table.id] ? (
+                        <div
+                          className="to-table-status"
+                          style={{ background: STATUS_COLORS[orderStatusMap[table.id]] || "#94a3b8" }}
+                        >
+                          {STATUS_LABELS[orderStatusMap[table.id]] || orderStatusMap[table.id]}
+                        </div>
+                      ) : table.label ? (
+                        <div className="to-table-label">{table.label}</div>
+                      ) : null}
+                    </div>
+                    <div className="to-table-actions">
+                      <button
+                        className="to-icon-btn"
+                        title="Editar"
+                        onClick={() => {
+                          setEditingId(table.id);
+                          setEditLabel(table.label || "");
+                          setEditSeats(table.seats || 0);
+                        }}
+                      >
+                        <FiEdit2 size={16} color="#64748b" />
+                      </button>
+                      <button
+                        className="to-icon-btn"
+                        title={table.active ? "Desativar" : "Ativar"}
+                        onClick={() => handleToggle(table)}
+                      >
+                        <FiPower size={16} color={table.active ? "#f59e0b" : "#3b82f6"} />
+                      </button>
+                      <button
+                        className="to-icon-btn"
+                        title="Remover"
+                        onClick={() => handleDelete(table)}
+                      >
+                        <FiTrash2 size={16} color="#ef4444" />
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
-
-      {tables.length === 0 && (
-        <div className="to-empty">
-          Nenhuma mesa cadastrada. Clique em "Criar Mesas" para começar.
-        </div>
-      )}
-    </div>
+    </PageContainer>
   );
 };
 

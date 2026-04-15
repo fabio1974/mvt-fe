@@ -102,12 +102,6 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
     roles: ["ROLE_ADMIN", "ROLE_CLIENT", "CLIENT"],
   },
   {
-    label: "Garçons",
-    icon: <FiUser size={22} color="#06b6d4" />,
-    path: "/garcons",
-    roles: ["ROLE_ADMIN", "ROLE_CLIENT", "CLIENT"],
-  },
-  {
     label: "Pagamentos",
     icon: <FiDollarSign size={22} color="#06b6d4" />,
     path: "/pagamentos",

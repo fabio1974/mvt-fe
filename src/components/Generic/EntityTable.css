@@ -217,6 +217,16 @@
   transform: translateY(-1px);
 }
 
+.btn-print {
+  background: #e0e7ff;
+  color: #4338ca;
+}
+
+.btn-print:hover {
+  background: #c7d2fe;
+  transform: translateY(-1px);
+}
+
 /* Table Footer com Paginação */
 .table-footer {
   display: flex;
