@@ -1,6 +1,6 @@
 // Tipos para o sistema de metadata do backend
 
-export type FieldType = 'string' | 'integer' | 'long' | 'double' | 'boolean' | 'date' | 'datetime' | 'enum' | 'select' | 'nested' | 'entity' | 'actions';
+export type FieldType = 'string' | 'integer' | 'long' | 'double' | 'boolean' | 'date' | 'datetime' | 'enum' | 'select' | 'nested' | 'nested-one' | 'entity' | 'actions';
 export type Alignment = 'left' | 'center' | 'right';
 export type FilterType = 'text' | 'select' | 'date' | 'number' | 'boolean' | 'entity';
 
@@ -130,6 +130,7 @@ export type FormFieldType =
   | 'city'
   | 'address'
   | 'array'
+  | 'nested-one'
   | 'currency';
 
 /**
@@ -185,6 +186,10 @@ export interface FormFieldMetadata {
   entityConfig?: EntityFilterConfig;
   /** Configuração para campos de array (listas dinâmicas) */
   arrayConfig?: ArrayFieldConfig;
+  /** Configuração para campos OneToOne nested (inline, sem add/remove) */
+  nestedOneConfig?: {
+    fields: FormFieldMetadata[];
+  };
   /** Informações de relacionamento (para transformar payload) */
   relationship?: RelationshipMetadata;
   /** Validação customizada */

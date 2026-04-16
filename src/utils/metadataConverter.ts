@@ -21,6 +21,7 @@ function mapFieldType(backendType: string): FormFieldMetadata['type'] {
     'city': 'city', // Tipo especial para cidades
     'entity': 'entity', // ← Adiciona entity
     'nested': 'array', // ← Adiciona nested
+    'nested-one': 'nested-one', // ← OneToOne inline (sem add/remove)
   };
 
   return typeMap[backendType] || 'text';
@@ -94,7 +95,36 @@ function convertFieldToFormField(field: FieldMetadata): FormFieldMetadata | null
         },
       };
     }
-    // Outros tipos de relacionamento (ONE_TO_ONE, MANY_TO_MANY) não são suportados ainda
+    // Outros tipos de relacionamento (MANY_TO_MANY) não são suportados ainda
+    return null;
+  }
+
+  // Detecta campos OneToOne nested (tipo 'nested-one' com relationship ONE_TO_ONE)
+  if (field.type === 'nested-one' && field.relationship) {
+    if (field.relationship.type === 'ONE_TO_ONE') {
+      const alwaysHiddenInNested = ['currentParticipants', 'createdAt', 'updatedAt', 'id', 'user'];
+
+      const relatedFields: FormFieldMetadata[] = field.relationship.fields
+        ? field.relationship.fields
+            .filter(f => {
+              if (alwaysHiddenInNested.includes(f.name)) return false;
+              if (f.visible === false) return false;
+              return true;
+            })
+            .map(convertFieldToFormField)
+            .filter((f): f is FormFieldMetadata => f !== null)
+        : [];
+
+      return {
+        name: field.name,
+        label: field.label,
+        type: 'nested-one',
+        required: false,
+        nestedOneConfig: {
+          fields: relatedFields,
+        },
+      };
+    }
     return null;
   }
 
@@ -248,14 +278,14 @@ export function convertEntityMetadataToFormMetadata(
   const relationshipFields: FormFieldMetadata[] = [];
 
   sourceFields.forEach(field => {
-    // Se o campo tem tipo 'nested' e includeRelationships é true, é um relacionamento
+    // Se o campo tem tipo 'nested' ou 'nested-one' e includeRelationships é true, é um relacionamento
     // Campos nested sempre são incluídos se includeRelationships for true, independente de visible
-    if (field.type === 'nested' && field.relationship && includeRelationships) {
+    if ((field.type === 'nested' || field.type === 'nested-one') && field.relationship && includeRelationships) {
       const relationshipField = convertFieldToFormField(field);
       if (relationshipField) {
         relationshipFields.push(relationshipField);
       }
-    } else if (field.type !== 'nested') {
+    } else if (field.type !== 'nested' && field.type !== 'nested-one') {
       // Para campos normais (não nested), ignora campos marcados como não visíveis
       if (field.visible === false) {
         // console.log(`[convertEntityMetadataToFormMetadata] Skipping hidden field: ${field.name}`);

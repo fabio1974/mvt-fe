@@ -1705,7 +1705,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
 
     // Separa campos por tipo para organização
     const regularFields = section.fields.filter(
-      (f) => f.type !== "array" && f.type !== "textarea"
+      (f) => f.type !== "array" && f.type !== "textarea" && f.type !== "nested-one"
     );
     const textareaFields = section.fields.filter((f) => f.type === "textarea");
     const arrayFields = hideArrayFields
@@ -2086,6 +2086,95 @@ const EntityForm: React.FC<EntityFormProps> = ({
 
       {/* Renderiza ArrayFields como containers separados */}
       {metadata.sections.map((section) => renderArrayFieldContainers(section))}
+
+      {/* Renderiza NestedOne fields (OneToOne) como containers separados */}
+      {metadata.sections.map((section) =>
+        section.fields
+          .filter((f) => f.type === "nested-one" && f.nestedOneConfig && !hiddenFields.includes(f.name))
+          .map((field) => {
+            const nestedData = (formData[field.name] as Record<string, unknown>) ?? {};
+            const nestedFields = field.nestedOneConfig!.fields.filter((f) => {
+              const parentEntityName = metadata.entityName;
+              return f.name !== parentEntityName && f.name !== `${parentEntityName}Id`;
+            });
+
+            return (
+              <FormContainer key={`nested-one-${field.name}`} title={field.label}>
+                <div className="form-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "16px" }}>
+                  {nestedFields.map((nestedField) => {
+                    const nestedValue = nestedData[nestedField.name] as string | number | boolean | undefined;
+                    const nestedError = errors[`${field.name}.${nestedField.name}`];
+
+                    if (nestedField.type === "boolean") {
+                      return (
+                        <label key={nestedField.name} style={{ display: "flex", alignItems: "center", gap: "8px", cursor: readonly || formMode === "view" ? "default" : "pointer" }}>
+                          <input
+                            type="checkbox"
+                            checked={!!nestedValue}
+                            onChange={(e) => {
+                              const updated = { ...nestedData, [nestedField.name]: e.target.checked };
+                              handleChange(field.name, updated);
+                            }}
+                            disabled={readonly || formMode === "view" || loading}
+                            style={{ width: "18px", height: "18px" }}
+                          />
+                          <span>{nestedField.label}</span>
+                        </label>
+                      );
+                    }
+
+                    if (nestedField.type === "select" && nestedField.options) {
+                      return (
+                        <div key={nestedField.name}>
+                          <label style={{ display: "block", marginBottom: "4px", fontSize: "14px", fontWeight: 500 }}>
+                            {nestedField.label}
+                          </label>
+                          <select
+                            className="form-input"
+                            value={(nestedValue as string) ?? ""}
+                            onChange={(e) => {
+                              const updated = { ...nestedData, [nestedField.name]: e.target.value };
+                              handleChange(field.name, updated);
+                            }}
+                            disabled={readonly || formMode === "view" || loading}
+                          >
+                            <option value="">Selecione...</option>
+                            {nestedField.options.map((opt) => (
+                              <option key={opt.value} value={opt.value}>{opt.label}</option>
+                            ))}
+                          </select>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div key={nestedField.name}>
+                        <label style={{ display: "block", marginBottom: "4px", fontSize: "14px", fontWeight: 500 }}>
+                          {nestedField.label}{nestedField.required && <span style={{ color: "red" }}>*</span>}
+                        </label>
+                        <input
+                          className="form-input"
+                          type={nestedField.type === "number" || nestedField.type === "currency" ? "number" : "text"}
+                          value={(nestedValue as string | number) ?? ""}
+                          onChange={(e) => {
+                            const val = nestedField.type === "number" || nestedField.type === "currency"
+                              ? e.target.value === "" ? null : Number(e.target.value)
+                              : e.target.value;
+                            const updated = { ...nestedData, [nestedField.name]: val };
+                            handleChange(field.name, updated);
+                          }}
+                          disabled={readonly || formMode === "view" || loading}
+                          placeholder={nestedField.placeholder || `Digite ${nestedField.label.toLowerCase()}`}
+                        />
+                        {nestedError && <span style={{ color: "red", fontSize: "12px" }}>{nestedError}</span>}
+                      </div>
+                    );
+                  })}
+                </div>
+              </FormContainer>
+            );
+          })
+      )}
 
       {/* Mensagem de erro geral */}
       {Object.keys(errors).length > 0 && (

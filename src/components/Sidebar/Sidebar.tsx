@@ -99,7 +99,7 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
     label: "Mesas",
     icon: <FiGrid size={22} color="#8b5cf6" />,
     path: "/mesas",
-    roles: ["ROLE_ADMIN", "ROLE_CLIENT", "CLIENT"],
+    roles: ["ROLE_CLIENT", "CLIENT"],
   },
   {
     label: "Pagamentos",

@@ -7,9 +7,9 @@ import "./TableOrders.css";
 interface RestaurantTable {
   id: number;
   number: number;
-  label: string | null;
   seats: number | null;
   active: boolean;
+  status: 'AVAILABLE' | 'RESERVED' | 'OCCUPIED' | 'UNAVAILABLE';
   clientId: string;
 }
 
@@ -20,20 +20,36 @@ interface CreateBatchRequest {
   seats: number | null;
 }
 
-const STATUS_LABELS: Record<string, string> = {
+const ORDER_STATUS_LABELS: Record<string, string> = {
   PLACED: "Aguardando",
   ACCEPTED: "Aceito",
   PREPARING: "Preparando",
   READY: "Pronto",
   DELIVERING: "Servindo",
+  AWAITING_PAYMENT: "Aguardando Pgto",
 };
 
-const STATUS_COLORS: Record<string, string> = {
+const ORDER_STATUS_COLORS: Record<string, string> = {
   PLACED: "#94a3b8",
   ACCEPTED: "#3b82f6",
   PREPARING: "#f59e0b",
   READY: "#22c55e",
   DELIVERING: "#8b5cf6",
+  AWAITING_PAYMENT: "#f97316",
+};
+
+const TABLE_STATUS_LABELS: Record<string, string> = {
+  AVAILABLE: "Livre",
+  RESERVED: "Reservada",
+  OCCUPIED: "Ocupada",
+  UNAVAILABLE: "Indisponível",
+};
+
+const TABLE_STATUS_COLORS: Record<string, string> = {
+  AVAILABLE: "#22c55e",
+  RESERVED: "#f59e0b",
+  OCCUPIED: "#8b5cf6",
+  UNAVAILABLE: "#ef4444",
 };
 
 const TablesCRUDPage: React.FC = () => {
@@ -45,7 +61,6 @@ const TablesCRUDPage: React.FC = () => {
   const [batchTo, setBatchTo] = useState(10);
   const [batchSeats, setBatchSeats] = useState<number | "">(4);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [editLabel, setEditLabel] = useState("");
   const [editSeats, setEditSeats] = useState<number | "">(0);
 
   const fetchTables = async () => {
@@ -95,7 +110,6 @@ const TablesCRUDPage: React.FC = () => {
   const handleSaveEdit = async (table: RestaurantTable) => {
     try {
       await api.put(`/api/tables/${table.id}`, {
-        label: editLabel || null,
         seats: editSeats || null,
       });
       setEditingId(null);
@@ -177,11 +191,6 @@ const TablesCRUDPage: React.FC = () => {
                   <>
                     <div className="to-table-edit">
                       <input
-                        placeholder="Label (ex: VIP)"
-                        value={editLabel}
-                        onChange={(e) => setEditLabel(e.target.value)}
-                      />
-                      <input
                         type="number"
                         placeholder="Lugares"
                         value={editSeats}
@@ -203,12 +212,17 @@ const TablesCRUDPage: React.FC = () => {
                       {orderStatusMap[table.id] ? (
                         <div
                           className="to-table-status"
-                          style={{ background: STATUS_COLORS[orderStatusMap[table.id]] || "#94a3b8" }}
+                          style={{ background: ORDER_STATUS_COLORS[orderStatusMap[table.id]] || "#94a3b8" }}
                         >
-                          {STATUS_LABELS[orderStatusMap[table.id]] || orderStatusMap[table.id]}
+                          {ORDER_STATUS_LABELS[orderStatusMap[table.id]] || orderStatusMap[table.id]}
                         </div>
-                      ) : table.label ? (
-                        <div className="to-table-label">{table.label}</div>
+                      ) : table.status !== 'AVAILABLE' ? (
+                        <div
+                          className="to-table-status"
+                          style={{ background: TABLE_STATUS_COLORS[table.status] || "#94a3b8" }}
+                        >
+                          {TABLE_STATUS_LABELS[table.status] || table.status}
+                        </div>
                       ) : null}
                     </div>
                     <div className="to-table-actions">
@@ -217,7 +231,6 @@ const TablesCRUDPage: React.FC = () => {
                         title="Editar"
                         onClick={() => {
                           setEditingId(table.id);
-                          setEditLabel(table.label || "");
                           setEditSeats(table.seats || 0);
                         }}
                       >

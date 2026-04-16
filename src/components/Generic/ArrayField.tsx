@@ -652,13 +652,8 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
               <CityTypeahead
                 value={stringValue}
                 onCitySelect={(city) => {
-                  // Salva o ID da cidade
-                  const cityIdField = field.name.endsWith("Id")
-                    ? field.name
-                    : `${field.name}Id`;
-                  handleFieldChange(itemIndex, cityIdField, String(city.id));
-                  // Salva o nome da cidade para exibição
-                  handleFieldChange(itemIndex, field.name, city.name);
+                  // Salva o objeto completo da cidade {id, name, state, stateCode}
+                  handleFieldChange(itemIndex, field.name, city);
                 }}
                 placeholder={getPlaceholder(field) || "Digite o nome da cidade"}
                 disabled={field.disabled || disabled}
