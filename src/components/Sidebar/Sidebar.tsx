@@ -18,7 +18,6 @@ import {
   FiTrendingUp,
   FiHome,
   FiGrid,
-  FiUser,
 } from "react-icons/fi";
 import "./Sidebar.css";
 
@@ -194,7 +193,7 @@ export default function Sidebar({
       if (userId) {
         api.get(`/api/users/${userId}`)
           .then((res) => {
-            setTableOrdersEnabled(Boolean(res.data?.storeProfile?.tableOrdersEnabled));
+            setTableOrdersEnabled(Boolean((res.data as any)?.storeProfile?.tableOrdersEnabled));
           })
           .catch(() => {});
       }

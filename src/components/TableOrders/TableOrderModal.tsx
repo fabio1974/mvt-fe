@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { FiX, FiMinus, FiPlus, FiTrash2, FiMessageSquare } from "react-icons/fi";
+import { useState, useEffect } from "react";
+import { FiMinus, FiPlus, FiTrash2, FiMessageSquare } from "react-icons/fi";
 import { api } from "../../services/api";
 import { getUserId, getUserName } from "../../utils/auth";
 import { printRoundReceipt } from "./receiptPrinter";
@@ -117,13 +117,14 @@ export default function TableOrderModal({ table, onClose, onUpdated }: Props) {
         api.get("/api/tables", { params: { activeOnly: false } }),
       ]);
 
-      const prods = productRes.data.filter((p: Product) => p.available);
+      const prods = (productRes.data as Product[]).filter((p: Product) => p.available);
       setProducts(prods);
 
-      const order = ordersRes.data.length > 0 ? ordersRes.data[0] : null;
+      const ordersData = ordersRes.data as any[];
+      const order = ordersData.length > 0 ? ordersData[0] : null;
       setExistingOrder(order);
 
-      const currentTable = tablesRes.data.find((t: RestaurantTable) => t.id === table.id);
+      const currentTable = (tablesRes.data as RestaurantTable[]).find((t: RestaurantTable) => t.id === table.id);
       if (currentTable) setTableStatus(currentTable.status);
 
       // Inicializar quantidades do pedido existente
@@ -281,7 +282,7 @@ export default function TableOrderModal({ table, onClose, onUpdated }: Props) {
     }
   };
 
-  const handleChangeStatus = async (newStatus: string) => {
+  const _handleChangeStatus = async (newStatus: string) => {
     try {
       await api.patch(`/api/tables/${table.id}/status`, { status: newStatus });
       setTableStatus(newStatus as any);

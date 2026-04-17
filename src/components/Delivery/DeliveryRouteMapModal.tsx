@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { api } from "../../services/api";
 import DeliveryRouteMap, { type DeliveryStop } from "./DeliveryRouteMap";
-import { FiX, FiRefreshCw } from "react-icons/fi";
+import { FiRefreshCw } from "react-icons/fi";
 
 interface DeliveryRouteMapModalProps {
   deliveryId: string | number;
