@@ -34,38 +34,14 @@ const EntityTypeahead: React.FC<EntityTypeaheadProps> = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedLabel, setSelectedLabel] = useState("");
-  const [dropdownPosition, setDropdownPosition] = useState<{
-    top: number;
-    left: number;
-    width: number;
-  } | null>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
 
-  // Atualiza posição do dropdown quando mostra ou quando scroll/resize
+  // Fecha dropdown automaticamente após 3s sem interação
   useEffect(() => {
-    const updatePosition = () => {
-      if (showDropdown && inputRef.current) {
-        const rect = inputRef.current.getBoundingClientRect();
-        setDropdownPosition({
-          top: rect.bottom + 4, // 4px de margem
-          left: rect.left,
-          width: rect.width,
-        });
-      }
-    };
-
-    if (showDropdown) {
-      updatePosition();
-      window.addEventListener("scroll", updatePosition, true);
-      window.addEventListener("resize", updatePosition);
-    }
-
-    return () => {
-      window.removeEventListener("scroll", updatePosition, true);
-      window.removeEventListener("resize", updatePosition);
-    };
-  }, [showDropdown]);
+    if (!showDropdown || loading) return;
+    const timer = setTimeout(() => setShowDropdown(false), 3000);
+    return () => clearTimeout(timer);
+  }, [showDropdown, loading, options]);
 
   // Fecha dropdown ao clicar fora
   useEffect(() => {
@@ -207,7 +183,6 @@ const EntityTypeahead: React.FC<EntityTypeaheadProps> = ({
     <div className="entity-typeahead-wrapper" ref={wrapperRef}>
       <div style={{ position: "relative" }}>
         <input
-          ref={inputRef}
           type="text"
           placeholder={disabled ? "" : (config.searchPlaceholder || "Digite para buscar...")}
           value={selectedLabel || searchTerm}
@@ -219,6 +194,7 @@ const EntityTypeahead: React.FC<EntityTypeaheadProps> = ({
             }
           }}
           onFocus={() => !disabled && setShowDropdown(true)}
+          onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
           className="form-input"
           disabled={disabled}
           readOnly={disabled}
@@ -236,26 +212,14 @@ const EntityTypeahead: React.FC<EntityTypeaheadProps> = ({
           </button>
         )}
 
-        {/* Dropdown de opções */}
+        {/* Dropdown de opções — só mostra quando há resultados ou carregando */}
         {!disabled &&
           showDropdown &&
           searchTerm.length >= 2 &&
-          dropdownPosition && (
-            <div
-              className="entity-typeahead-dropdown"
-              style={{
-                position: "fixed",
-                top: `${dropdownPosition.top}px`,
-                left: `${dropdownPosition.left}px`,
-                width: `${dropdownPosition.width}px`,
-              }}
-            >
+          (loading || options.length > 0) && (
+            <div className="entity-typeahead-dropdown">
               {loading ? (
                 <div className="entity-typeahead-message">Carregando...</div>
-              ) : options.length === 0 ? (
-                <div className="entity-typeahead-message">
-                  Nenhum resultado encontrado
-                </div>
               ) : (
                 options.map((option) => (
                   <div

@@ -8,24 +8,27 @@
   z-index: 10; /* Garante que o wrapper fique acima do form-container */
 }
 
-/* Garante que o dropdown não seja cortado pelo overflow do form-container */
+/* Contém o stacking context — dropdown não sobrepõe elementos fora do wrapper */
 .entity-typeahead-wrapper {
-  /* Permite que elementos filhos absolutos escapem do overflow do pai */
-  isolation: auto;
+  position: relative;
+  isolation: isolate;
 }
 
 /* Dropdown do Typeahead */
 .entity-typeahead-dropdown {
-  /* Posicionamento via inline style (position: fixed) */
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
   background-color: white;
   border: 1px solid #d1d5db;
   border-radius: 6px;
-  margin-top: 0; /* Margem controlada pelo cálculo de posição */
+  margin-top: 4px;
   max-height: 200px;
   overflow-y: auto;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  z-index: 99999; /* Valor muito alto para garantir que apareça sobre qualquer elemento */
-  min-width: 200px; /* Largura mínima */
+  z-index: 50;
+  min-width: 200px;
 }
 
 /* Item do dropdown */
