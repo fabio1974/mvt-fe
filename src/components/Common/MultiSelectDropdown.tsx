@@ -57,16 +57,11 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
     : `${selectedValues.length} selecionados`;
 
   return (
-    <div ref={ref} style={{ position: "relative" }}>
+    <div ref={ref} style={{ position: "relative", width: "100%" }}>
       <button
         type="button"
         onClick={() => setOpen(!open)}
-        style={{
-          width: "100%", minWidth: "220px", display: "flex", justifyContent: "space-between", alignItems: "center",
-          padding: "8px 12px", border: "1px solid #d1d5db", borderRadius: "6px",
-          backgroundColor: "#fff", cursor: "pointer", fontSize: "14px", color: "#374151",
-          minHeight: "38px", whiteSpace: "nowrap",
-        }}
+        className="multi-select-trigger"
       >
         <span>{summary}</span>
         <FiChevronDown size={16} style={{ transform: open ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />

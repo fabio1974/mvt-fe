@@ -32,10 +32,75 @@
   font-size: 18px;
 }
 
+/* Collapsible header */
+.form-header-collapsible {
+  cursor: pointer;
+  user-select: none;
+  transition: margin-bottom 0.2s;
+}
+
+.form-header-collapsible:hover .form-title {
+  color: #4f46e5;
+}
+
+.form-header-collapsed,
+.form-condensed .form-header-collapsed {
+  margin-bottom: 0 !important;
+  border-bottom: none !important;
+  padding-bottom: 0 !important;
+  padding-top: 0 !important;
+}
+
+/* Container com header collapsed — compacto e centralizado */
+.form-container:has(.form-header-collapsed) {
+  padding: 10px 14px !important;
+  margin-bottom: 8px !important;
+  display: flex;
+  align-items: center;
+}
+
+/* Header e title ocupam toda a largura quando collapsed para o chevron ir pra direita */
+.form-header-collapsed {
+  width: 100%;
+}
+
+.form-header-collapsed .form-title {
+  width: 100%;
+}
+
+.form-collapse-icon {
+  margin-left: auto;
+  color: #9ca3af;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s;
+}
+
+.form-header-collapsible:hover .form-collapse-icon {
+  color: #4f46e5;
+}
+
 .form-content {
   display: flex;
   flex-direction: column;
   gap: 0px;
+}
+
+/* Form Actions (botões Salvar/Cancelar/Limpar) */
+.form-actions {
+  display: flex;
+  flex-direction: column;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid #e0e0e0;
+  gap: 16px;
+}
+
+.form-condensed .form-actions {
+  margin-top: 8px;
+  padding-top: 8px;
+  gap: 8px;
 }
 
 /* Form Rows - Flexible Grid System baseado em 12 colunas */
@@ -392,6 +457,156 @@
   .form-row {
     gap: 12px;
   }
+}
+
+/* ================================================================
+   CONDENSED MODE — mesma estrutura, tamanhos menores
+   ================================================================ */
+.form-condensed .form-container {
+  padding: 10px 14px;
+  margin-bottom: 8px;
+}
+
+.form-condensed .form-header {
+  margin-bottom: 6px;
+  padding-bottom: 6px;
+}
+
+.form-condensed .form-title {
+  font-size: 0.8rem;
+}
+
+.form-condensed .form-icon {
+  font-size: 14px;
+}
+
+.form-condensed .form-row {
+  margin-bottom: 4px;
+}
+
+.form-condensed .form-field {
+  gap: 1px;
+  margin-top: 0;
+}
+
+.form-condensed .form-label {
+  font-size: 11px;
+}
+
+.form-condensed .form-input,
+.form-condensed .form-select,
+.form-condensed .form-textarea {
+  height: 28px;
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 4px;
+}
+
+.form-condensed .form-textarea {
+  height: auto;
+  min-height: 48px;
+}
+
+.form-condensed .form-button {
+  padding: 5px 12px;
+  font-size: 12px;
+  min-height: 28px;
+  gap: 5px;
+}
+
+.form-condensed .form-button-icon {
+  font-size: 13px;
+}
+
+.form-condensed .form-error-message {
+  font-size: 10px;
+}
+
+.form-condensed .form-input-icon-wrapper {
+  font-size: 13px;
+  left: 8px;
+}
+
+.form-condensed .form-input-with-icon input {
+  padding-left: 28px;
+}
+
+.form-condensed .form-filters-grid {
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+/* MultiSelect Dropdown — trigger button */
+.multi-select-trigger {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background-color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  color: #374151;
+  min-height: 38px;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.form-condensed .multi-select-trigger {
+  padding: 4px 8px;
+  font-size: 12px;
+  min-height: 28px;
+  min-width: 0;
+  border-radius: 4px;
+}
+
+/* ================================================================
+   CHECKBOX FIELDS (boolean) — estilo base
+   ================================================================ */
+.array-field-checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  padding-top: 18px;
+}
+
+.array-field-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.array-field-checkbox {
+  width: 18px;
+  height: 18px;
+}
+
+.array-field-checkbox-text {
+  font-size: 14px;
+  color: #374151;
+}
+
+/* Condensed checkboxes */
+.form-condensed .array-field-checkbox-wrapper {
+  min-height: 28px;
+  padding-top: 10px;
+}
+
+.form-condensed .array-field-checkbox-label {
+  gap: 5px;
+}
+
+.form-condensed .array-field-checkbox {
+  width: 14px;
+  height: 14px;
+}
+
+.form-condensed .array-field-checkbox-text {
+  font-size: 11px;
 }
 
 /* Loading State */

@@ -59,6 +59,8 @@ interface EntityFormProps {
   additionalData?: Record<string, unknown>;
   /** Renderiza conteúdo customizado antes dos botões de ação */
   renderBeforeButtons?: () => React.ReactNode;
+  /** Modo condensado: inputs e fontes menores, mesma estrutura */
+  condensed?: boolean;
 }
 
 /**
@@ -86,6 +88,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
   hiddenFields = [],
   additionalData = {},
   renderBeforeButtons,
+  condensed = false,
 }) => {
   const navigate = useNavigate();
   const { organizationId } = useOrganization();
@@ -1408,40 +1411,24 @@ const EntityForm: React.FC<EntityFormProps> = ({
 
       case "boolean":
         fieldContent = (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              minHeight: "40px",
-              paddingTop: "18px", // Alinha verticalmente com os outros campos que têm label acima
-            }}
-          >
-            <label
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                cursor: "pointer",
-                userSelect: "none",
-              }}
-            >
+          <div className="array-field-checkbox-wrapper">
+            <label className="array-field-checkbox-label">
               <input
                 type="checkbox"
+                className="array-field-checkbox"
                 checked={!!value}
                 onChange={(e) => handleChange(field.name, e.target.checked)}
                 disabled={
                   field.disabled || field.readonly || loading || readonly
                 }
                 style={{
-                  width: "18px",
-                  height: "18px",
                   cursor:
                     field.disabled || field.readonly || loading || readonly
                       ? "not-allowed"
                       : "pointer",
                 }}
               />
-              <span style={{ fontSize: "14px", color: "#374151" }}>
+              <span className="array-field-checkbox-text">
                 {translateLabel(field.label)}
               </span>
             </label>
@@ -1832,8 +1819,8 @@ const EntityForm: React.FC<EntityFormProps> = ({
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-              gap: "16px",
+              gridTemplateColumns: `repeat(auto-fit, minmax(${condensed ? "160px" : "250px"}, 1fr))`,
+              gap: condensed ? "6px 10px" : "16px",
               marginBottom:
                 textareaFields.length > 0 || arrayFields.length > 0
                   ? "16px"
@@ -1863,8 +1850,8 @@ const EntityForm: React.FC<EntityFormProps> = ({
                     key={`ddd-phone-${index}`}
                     style={{
                       display: "grid",
-                      gridTemplateColumns: "80px 1fr",
-                      gap: "0.75rem",
+                      gridTemplateColumns: condensed ? "52px 1fr" : "80px 1fr",
+                      gap: condensed ? "0.4rem" : "0.75rem",
                       alignItems: "end",
                     }}
                   >
@@ -1916,8 +1903,8 @@ const EntityForm: React.FC<EntityFormProps> = ({
                     key={`${groupType}-digit-${index}`}
                     style={{
                       display: "grid",
-                      gridTemplateColumns: "1fr 60px",
-                      gap: "0.75rem",
+                      gridTemplateColumns: condensed ? "1fr 42px" : "1fr 60px",
+                      gap: condensed ? "0.4rem" : "0.75rem",
                       alignItems: "end",
                     }}
                   >
@@ -1980,8 +1967,8 @@ const EntityForm: React.FC<EntityFormProps> = ({
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-              gap: "16px",
+              gridTemplateColumns: `repeat(auto-fit, minmax(${condensed ? "160px" : "250px"}, 1fr))`,
+              gap: condensed ? "6px 10px" : "16px",
               marginBottom: arrayFields.length > 0 ? "16px" : "0",
             }}
           >
@@ -2080,7 +2067,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className={condensed ? "form-condensed" : ""}>
       {/* Renderiza todas as seções */}
       {metadata.sections.map((section, index) => renderSection(section, index))}
 
@@ -2095,42 +2082,43 @@ const EntityForm: React.FC<EntityFormProps> = ({
             const nestedData = (formData[field.name] as Record<string, unknown>) ?? {};
             const nestedFields = field.nestedOneConfig!.fields.filter((f) => {
               const parentEntityName = metadata.entityName;
-              return f.name !== parentEntityName && f.name !== `${parentEntityName}Id`;
+              // Filtra referência ao parent e campos não visíveis no form
+              if (f.name === parentEntityName || f.name === `${parentEntityName}Id`) return false;
+              if (f.visible === false) return false;
+              return true;
             });
 
             return (
               <FormContainer key={`nested-one-${field.name}`} title={field.label}>
-                <div className="form-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "16px" }}>
+                <div className="form-grid" style={{ display: "grid", gridTemplateColumns: `repeat(auto-fill, minmax(${condensed ? "140px" : "200px"}, 1fr))`, gap: condensed ? "6px 10px" : "16px" }}>
                   {nestedFields.map((nestedField) => {
                     const nestedValue = nestedData[nestedField.name] as string | number | boolean | undefined;
                     const nestedError = errors[`${field.name}.${nestedField.name}`];
 
                     if (nestedField.type === "boolean") {
                       return (
-                        <label key={nestedField.name} style={{ display: "flex", alignItems: "center", gap: "8px", cursor: readonly || formMode === "view" ? "default" : "pointer" }}>
-                          <input
-                            type="checkbox"
-                            checked={!!nestedValue}
-                            onChange={(e) => {
-                              const updated = { ...nestedData, [nestedField.name]: e.target.checked };
-                              handleChange(field.name, updated);
-                            }}
-                            disabled={readonly || formMode === "view" || loading}
-                            style={{ width: "18px", height: "18px" }}
-                          />
-                          <span>{nestedField.label}</span>
-                        </label>
+                        <div key={nestedField.name} className="array-field-checkbox-wrapper">
+                          <label className="array-field-checkbox-label" style={{ cursor: readonly || formMode === "view" ? "default" : "pointer" }}>
+                            <input
+                              type="checkbox"
+                              className="array-field-checkbox"
+                              checked={!!nestedValue}
+                              onChange={(e) => {
+                                const updated = { ...nestedData, [nestedField.name]: e.target.checked };
+                                handleChange(field.name, updated);
+                              }}
+                              disabled={readonly || formMode === "view" || loading}
+                            />
+                            <span className="array-field-checkbox-text">{nestedField.label}</span>
+                          </label>
+                        </div>
                       );
                     }
 
                     if (nestedField.type === "select" && nestedField.options) {
                       return (
-                        <div key={nestedField.name}>
-                          <label style={{ display: "block", marginBottom: "4px", fontSize: "14px", fontWeight: 500 }}>
-                            {nestedField.label}
-                          </label>
-                          <select
-                            className="form-input"
+                        <FormField key={nestedField.name} label={nestedField.label} required={nestedField.required} error={nestedError}>
+                          <FormSelect
                             value={(nestedValue as string) ?? ""}
                             onChange={(e) => {
                               const updated = { ...nestedData, [nestedField.name]: e.target.value };
@@ -2142,18 +2130,35 @@ const EntityForm: React.FC<EntityFormProps> = ({
                             {nestedField.options.map((opt) => (
                               <option key={opt.value} value={opt.value}>{opt.label}</option>
                             ))}
-                          </select>
-                        </div>
+                          </FormSelect>
+                        </FormField>
+                      );
+                    }
+
+                    if (nestedField.type === "date") {
+                      const dateVal = nestedValue ? new Date(String(nestedValue)) : null;
+                      const validDate = dateVal && !isNaN(dateVal.getTime()) ? dateVal : null;
+                      return (
+                        <FormField key={nestedField.name} label={nestedField.label} required={nestedField.required} error={nestedError}>
+                          <FormDatePicker
+                            selected={validDate}
+                            onChange={(date) => {
+                              const val = date ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}` : "";
+                              const updated = { ...nestedData, [nestedField.name]: val };
+                              handleChange(field.name, updated);
+                            }}
+                            showTimeSelect={false}
+                            dateFormat="dd/MM/yyyy"
+                            disabled={readonly || formMode === "view" || loading}
+                            placeholder={nestedField.placeholder || `Selecione ${nestedField.label.toLowerCase()}`}
+                          />
+                        </FormField>
                       );
                     }
 
                     return (
-                      <div key={nestedField.name}>
-                        <label style={{ display: "block", marginBottom: "4px", fontSize: "14px", fontWeight: 500 }}>
-                          {nestedField.label}{nestedField.required && <span style={{ color: "red" }}>*</span>}
-                        </label>
-                        <input
-                          className="form-input"
+                      <FormField key={nestedField.name} label={nestedField.label} required={nestedField.required} error={nestedError}>
+                        <FormInput
                           type={nestedField.type === "number" || nestedField.type === "currency" ? "number" : "text"}
                           value={(nestedValue as string | number) ?? ""}
                           onChange={(e) => {
@@ -2166,8 +2171,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
                           disabled={readonly || formMode === "view" || loading}
                           placeholder={nestedField.placeholder || `Digite ${nestedField.label.toLowerCase()}`}
                         />
-                        {nestedError && <span style={{ color: "red", fontSize: "12px" }}>{nestedError}</span>}
-                      </div>
+                      </FormField>
                     );
                   })}
                 </div>

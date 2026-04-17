@@ -53,7 +53,7 @@ const PersonalDataPage: React.FC = () => {
       showEditButton={true}
       pageTitle="Meus Dados Pessoais"
       pageDescription="Visualize e edite suas informações pessoais"
-      hiddenFields={[...hiddenFieldsForContractUsers, ...booleanAdminFields, ...vehicleFields]}
+      hiddenFields={[...hiddenFieldsForContractUsers, ...booleanAdminFields, ...vehicleFields, "bankAccount", "storeProfile"]}
       onModeChange={(mode) => {
         // Só atualiza se for view ou edit (ignora table e create)
         if (mode === "view" || mode === "edit") {

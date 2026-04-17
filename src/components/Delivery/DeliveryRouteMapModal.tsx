@@ -203,10 +203,10 @@ const DeliveryRouteMapModal: React.FC<DeliveryRouteMapModalProps> = ({
             </button>
             <button
               onClick={onClose}
-              style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", display: "flex", alignItems: "center", justifyContent: "center" }}
+              style={{ background: "none", border: "none", cursor: "pointer", padding: "0", fontSize: "28px", fontWeight: "300", lineHeight: "1", color: "#6b7280", transition: "color 0.15s" }}
               title="Fechar"
             >
-              <FiX size={24} color="#000" strokeWidth={2} />
+              ×
             </button>
           </div>
         </div>

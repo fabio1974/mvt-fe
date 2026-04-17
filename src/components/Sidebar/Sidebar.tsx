@@ -1,6 +1,7 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import React, { useState } from "react";
-import { getUserRole } from "../../utils/auth";
+import React, { useState, useEffect } from "react";
+import { getUserRole, getUserId } from "../../utils/auth";
+import { api } from "../../services/api";
 import LOGO_PATH from "../../config/logo";
 import {
   FiSettings,
@@ -184,6 +185,21 @@ export default function Sidebar({
   const navigate = useNavigate();
   const location = useLocation();
   const userRole = getUserRole();
+  const [tableOrdersEnabled, setTableOrdersEnabled] = useState(false);
+
+  // Buscar store profile do CLIENT para saber se módulo de mesas está ativo
+  useEffect(() => {
+    if (userRole === "ROLE_CLIENT" || userRole === "CLIENT") {
+      const userId = getUserId();
+      if (userId) {
+        api.get(`/api/users/${userId}`)
+          .then((res) => {
+            setTableOrdersEnabled(Boolean(res.data?.storeProfile?.tableOrdersEnabled));
+          })
+          .catch(() => {});
+      }
+    }
+  }, [userRole]);
 
   // Estado para controlar grupos expandidos
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(
@@ -193,7 +209,10 @@ export default function Sidebar({
   // Verifica se item tem permissão
   const hasPermission = (item: MenuItem | MenuGroup): boolean => {
     if (!item.roles || item.roles.length === 0) return true;
-    return item.roles.includes(userRole || "");
+    if (!item.roles.includes(userRole || "")) return false;
+    // "Mesas" só aparece se tableOrdersEnabled
+    if ("path" in item && item.path === "/mesas" && !tableOrdersEnabled) return false;
+    return true;
   };
 
   // Verifica se grupo tem pelo menos um item com permissão

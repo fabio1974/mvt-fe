@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import EntityForm from "../Generic/EntityForm";
 import { useFormMetadata } from "../../hooks/useFormMetadata";
-import { FiCreditCard, FiX, FiCalendar } from "react-icons/fi";
+import { FiCreditCard, FiCalendar } from "react-icons/fi";
 import { api } from "../../services/api";
 import "./BankAccountModal.css";
 
@@ -134,8 +134,8 @@ const BankAccountModal: React.FC<BankAccountModalProps> = ({
             <FiCreditCard size={24} style={{ marginRight: "10px" }} />
             {userName || "Conta Bancária"}
           </h2>
-          <button className="bank-account-modal-close" onClick={onClose}>
-            <FiX size={24} />
+          <button className="bank-account-modal-close" onClick={onClose} title="Fechar">
+            ×
           </button>
         </div>
         <div className="bank-account-modal-body">

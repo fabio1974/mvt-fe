@@ -1,8 +1,97 @@
+/* ArrayField wrapper */
+.array-field-wrapper {
+  margin-bottom: 16px;
+}
+
+.form-condensed .array-field-wrapper {
+  margin-bottom: 4px;
+}
+
 /* ArrayField - Grid Layout Horizontal */
 .array-field-grid {
   display: grid !important;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
   gap: 16px 12px !important;
+}
+
+/* Header de cada item do array */
+.array-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: #f9fafb;
+}
+
+.array-item-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.array-item-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  flex: 1;
+}
+
+/* Conteúdo do item */
+.array-item-content {
+  padding: 16px;
+}
+
+/* Info de limite */
+.array-field-info {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #6b7280;
+  text-align: right;
+}
+
+/* ================================================================
+   CONDENSED MODE — ArrayField menor
+   ================================================================ */
+.form-condensed .array-item-header {
+  padding: 6px 10px;
+}
+
+.form-condensed .array-item-title {
+  font-size: 11px;
+}
+
+.form-condensed .array-item-content {
+  padding: 8px 10px;
+}
+
+.form-condensed .array-field-grid {
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) !important;
+  gap: 6px 8px !important;
+}
+
+/* Campos que ocupam 2 colunas (rua com mapa, cidade+estado) */
+.form-condensed .array-field-grid .array-field-span2 {
+  grid-column: span 2;
+}
+
+/* Cidade + Estado lado a lado */
+.array-field-city-state {
+  display: grid;
+  grid-template-columns: 2fr 100px;
+  gap: 1rem;
+  align-items: end;
+}
+
+.form-condensed .array-field-city-state {
+  grid-template-columns: 1fr 70px;
+  gap: 0.4rem;
+}
+
+.form-condensed .array-field-info {
+  margin-top: 4px;
+  font-size: 10px;
 }
 
 /* Responsivo - mobile */

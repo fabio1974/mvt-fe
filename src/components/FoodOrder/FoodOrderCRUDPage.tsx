@@ -30,6 +30,7 @@ const FoodOrderCRUDPage: React.FC = () => {
       hideCreateButton={true}
       disableView={true}
       hiddenFields={["deliveryLatitude", "deliveryLongitude", "items"]}
+      hideFields={["subtotal", "deliveryFee", "total", "estimatedPreparationMinutes"]}
       customActions={(row: any) => (
         <button
           className="btn-action btn-print"

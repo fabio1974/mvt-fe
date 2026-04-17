@@ -1,5 +1,4 @@
 import React, { useEffect } from "react";
-import { FiX } from "react-icons/fi";
 import "./Modal.css";
 
 interface ModalProps {
@@ -60,8 +59,9 @@ export const Modal: React.FC<ModalProps> = ({
               className="modal-close-button"
               onClick={onClose}
               aria-label="Fechar modal"
+              title="Fechar"
             >
-              <FiX size={24} />
+              ×
             </button>
           </div>
         </div>

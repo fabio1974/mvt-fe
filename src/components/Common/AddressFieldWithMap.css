@@ -57,6 +57,33 @@
   transform: scale(0.98);
 }
 
+/* ================================================================
+   CONDENSED MODE
+   ================================================================ */
+.form-condensed .address-input-container {
+  gap: 4px;
+}
+
+.form-condensed .address-input {
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 4px;
+  height: 28px;
+  box-sizing: border-box;
+}
+
+.form-condensed .address-map-button {
+  padding: 4px 6px;
+  min-width: 28px;
+  height: 28px;
+  border-radius: 4px;
+}
+
+.form-condensed .address-map-button svg {
+  width: 14px;
+  height: 14px;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .address-input-container {

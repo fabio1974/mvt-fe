@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { FiHome, FiChevronRight, FiArrowLeft } from "react-icons/fi";
+import { FiHome, FiChevronRight, FiArrowLeft, FiChevronDown } from "react-icons/fi";
+import { getUserRole } from "../../utils/auth";
 import "./EntityCRUD.css";
 
 interface PageContainerProps {
@@ -36,10 +37,30 @@ const PageContainer: React.FC<PageContainerProps> = ({
 }) => {
   const navigate = useNavigate();
 
+  const userRole = getUserRole();
+  const isClient = userRole === "ROLE_CLIENT" || userRole === "CLIENT";
+
+  const isHeaderCollapsed = () => isClient && localStorage.getItem("headerCollapsed") === "true";
+
+  const toggleHeader = () => {
+    const next = !isHeaderCollapsed();
+    localStorage.setItem("headerCollapsed", String(next));
+    window.dispatchEvent(new Event("storage"));
+  };
+
   return (
     <div className="entity-crud-container">
       <div className="entity-crud-breadcrumb">
         <div className="breadcrumb-content">
+          {isHeaderCollapsed() && (
+            <button
+              className="breadcrumb-expand-header-btn"
+              onClick={toggleHeader}
+              title="Mostrar header"
+            >
+              <FiChevronDown size={16} />
+            </button>
+          )}
           <button
             className="breadcrumb-item breadcrumb-link"
             onClick={() => navigate("/")}

@@ -241,6 +241,31 @@
   font-size: 13px;
 }
 
+/* ================================================================
+   CONDENSED MODE — date pickers menores
+   ================================================================ */
+.form-condensed .form-datepicker {
+  height: 28px;
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 4px;
+}
+
+.form-condensed .react-datepicker__input-container input {
+  height: 28px !important;
+  padding: 4px 8px !important;
+  font-size: 12px !important;
+  border-radius: 4px !important;
+}
+
+.form-condensed .form-date-range {
+  gap: 8px;
+}
+
+.form-condensed .date-range-separator {
+  font-size: 11px;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .form-date-range {

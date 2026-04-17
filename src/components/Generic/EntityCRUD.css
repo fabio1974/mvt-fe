@@ -89,6 +89,33 @@ button.breadcrumb-item.breadcrumb-link:hover {
   flex-shrink: 0;
 }
 
+/* Botão para expandir o header (aparece no breadcrumb quando header está oculto) */
+.breadcrumb-expand-header-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 6px;
+  cursor: pointer;
+  color: white;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.breadcrumb-expand-header-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Quando o header está oculto, breadcrumb sobe para o topo */
+.header-hidden .entity-crud-breadcrumb {
+  top: 0;
+}
+
 /* Botões de ação no breadcrumb (Criar/Voltar) */
 .breadcrumb-action-btn {
   display: flex;

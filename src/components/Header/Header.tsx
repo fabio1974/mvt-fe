@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiSettings } from "react-icons/fi";
+import { FiSettings, FiChevronUp } from "react-icons/fi";
 import { getUserName, getUserRole, isAdmin } from "../../utils/auth";
 import LOGO_PATH from "../../config/logo";
 import "./Header.css";
@@ -11,6 +11,8 @@ interface HeaderProps {
   onToggleSidebar?: () => void;
   sidebarVisible?: boolean;
   sidebarCollapsed?: boolean;
+  headerCollapsed?: boolean;
+  onToggleHeader?: () => void;
 }
 
 export default function Header({
@@ -18,6 +20,7 @@ export default function Header({
   isLoggedIn: propIsLoggedIn,
   sidebarVisible,
   sidebarCollapsed,
+  onToggleHeader,
 }: HeaderProps = {}) {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const navigate = useNavigate();
@@ -554,6 +557,17 @@ export default function Header({
             >
               <FiSettings size={28} color="#64748b" />
             </button>
+            )}
+
+            {/* Botão de colapsar header — só para CLIENT (estabelecimento) */}
+            {isLoggedIn && onToggleHeader && (userRole === "ROLE_CLIENT" || userRole === "CLIENT") && (
+              <button
+                className="header-collapse-btn"
+                onClick={onToggleHeader}
+                title="Ocultar header"
+              >
+                <FiChevronUp size={20} />
+              </button>
             )}
           </div>
         )}

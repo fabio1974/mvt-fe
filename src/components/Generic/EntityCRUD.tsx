@@ -6,6 +6,7 @@ import {
   FiChevronRight,
   FiArrowLeft,
   FiEdit,
+  FiChevronDown,
 } from "react-icons/fi";
 import EntityTable from "./EntityTable";
 import EntityForm from "./EntityForm";
@@ -14,6 +15,7 @@ import { useMetadata } from "../../hooks/useMetadata";
 import { useFormMetadata } from "../../hooks/useFormMetadata";
 import { api } from "../../services/api";
 import { showToast } from "../../utils/toast";
+import { getUserRole } from "../../utils/auth";
 import "./EntityCRUD.css";
 
 type ViewMode = "table" | "view" | "create" | "edit";
@@ -97,6 +99,8 @@ interface EntityCRUDProps {
   tableHideFields?: string[];
   /** Componente customizado para modo edit (substitui EntityForm no edit) */
   customEditComponent?: (entityId: number | string | undefined, viewMode: string, onBack: () => void) => React.ReactNode;
+  /** Modo condensado: inputs e fontes menores, mesma estrutura */
+  condensed?: boolean;
 }
 
 /**
@@ -157,6 +161,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
   customEditComponent,
   // transformData, // Unused parameter
   pageTitle,
+  condensed = false,
 }) => {
   // Determina o modo inicial baseado nas props
   const getInitialMode = (): ViewMode => {
@@ -294,6 +299,18 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
     );
   }
 
+  // Header collapse — só para CLIENT (estabelecimento)
+  const userRole = getUserRole();
+  const isClient = userRole === "ROLE_CLIENT" || userRole === "CLIENT";
+
+  const isHeaderCollapsed = () => isClient && localStorage.getItem("headerCollapsed") === "true";
+
+  const toggleHeader = () => {
+    const next = !isHeaderCollapsed();
+    localStorage.setItem("headerCollapsed", String(next));
+    window.dispatchEvent(new Event("storage"));
+  };
+
   // Componente de Breadcrumb
   const Breadcrumb = ({ mode }: { mode: ViewMode }) => {
     const getModeLabel = () => {
@@ -315,6 +332,15 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
     return (
       <div className="entity-crud-breadcrumb">
         <div className="breadcrumb-content">
+          {isHeaderCollapsed() && (
+            <button
+              className="breadcrumb-expand-header-btn"
+              onClick={toggleHeader}
+              title="Mostrar header"
+            >
+              <FiChevronDown size={16} />
+            </button>
+          )}
           <button
             className="breadcrumb-item breadcrumb-link"
             onClick={() => navigate("/")}
@@ -482,6 +508,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
           initialValues={viewMode === "create" ? defaultValues : initialValues}
           readonlyFields={readonlyFields}
           hiddenFields={hiddenFields}
+          condensed={condensed}
         />
       </div>
     );
@@ -511,6 +538,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
           initialValues={viewMode === "create" ? defaultValues : initialValues}
           readonlyFields={readonlyFields}
           hiddenFields={hiddenFields}
+          condensed={condensed}
         />
 
         {/* Renderiza componente customizado depois do formulário (ex: mapa de rota) */}

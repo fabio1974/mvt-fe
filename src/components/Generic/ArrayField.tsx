@@ -594,38 +594,22 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
 
       case "boolean":
         return (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              minHeight: "40px",
-              paddingTop: "18px",
-            }}
-          >
-            <label
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                cursor: "pointer",
-                userSelect: "none",
-              }}
-            >
+          <div className="array-field-checkbox-wrapper">
+            <label className="array-field-checkbox-label">
               <input
                 type="checkbox"
+                className="array-field-checkbox"
                 checked={!!fieldValue}
                 onChange={(e) =>
                   handleFieldChange(itemIndex, field.name, e.target.checked)
                 }
                 disabled={field.disabled || disabled}
                 style={{
-                  width: "18px",
-                  height: "18px",
                   cursor:
                     field.disabled || disabled ? "not-allowed" : "pointer",
                 }}
               />
-              <span style={{ fontSize: "14px", color: "#374151" }}>
+              <span className="array-field-checkbox-text">
                 {field.label}
               </span>
             </label>
@@ -641,12 +625,7 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
         
         return (
           <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "2fr 100px",
-              gap: "1rem",
-              alignItems: "end",
-            }}
+            className="array-field-city-state"
           >
             <FormField label={field.label} required={field.required}>
               <CityTypeahead
@@ -930,7 +909,7 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
   }
 
   return (
-    <div style={{ marginBottom: "16px" }}>
+    <div className="array-field-wrapper">
       {/* Removido: Header do ArrayField - apenas mostra os itens e botão adicionar inline */}
       
       {!disabled && value.length < maxItems && (
@@ -1005,23 +984,12 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
               >
                 {/* Header do item */}
                 <div
+                  className="array-item-header"
                   style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    padding: "12px 16px",
-                    backgroundColor: "#f9fafb",
                     borderBottom: isCollapsed ? "none" : "1px solid #e5e7eb",
                   }}
                 >
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "8px",
-                      flex: 1,
-                    }}
-                  >
+                  <div className="array-item-header-left">
                     {/* Drag handle */}
                     <FiMenu
                       size={14}
@@ -1029,15 +997,7 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
                     />
 
                     {/* Label do item */}
-                    <h4
-                      style={{
-                        margin: "0",
-                        fontSize: "14px",
-                        fontWeight: "500",
-                        color: "#374151",
-                        flex: 1,
-                      }}
-                    >
+                    <h4 className="array-item-title">
                       {getItemLabel(index, itemData)}
                     </h4>
                   </div>
@@ -1096,12 +1056,14 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
 
                 {/* Conteúdo do item */}
                 {!isCollapsed && (
-                  <div style={{ padding: "16px" }}>
+                  <div className="array-item-content">
                     <div className="array-field-grid">
                       {fields.map((field) => {
-                        console.log(`🔍 [ArrayField] Renderizando campo ${field.name}:`, itemData[field.name]);
+                        const isStreet = field.name === 'street' || field.name === 'logradouro' || field.name === 'rua';
+                        const isCity = field.type === 'city' || field.name === 'city' || field.name === 'cidade';
+                        const spanClass = (isStreet || isCity) ? "array-field-span2" : undefined;
                         return (
-                          <div key={field.name}>
+                          <div key={field.name} className={spanClass}>
                             {renderItemField(field, itemData, index)}
                           </div>
                         );
@@ -1117,16 +1079,9 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
 
       {/* Informações de limite */}
       {(minItems > 0 || maxItems < 100) && (
-        <div
-          style={{
-            marginTop: "8px",
-            fontSize: "12px",
-            color: "#6b7280",
-            textAlign: "right",
-          }}
-        >
-          {maxItems === 1 
-            ? (value.length === 1 ? "✓ Cadastrado" : "Nenhum cadastrado") 
+        <div className="array-field-info">
+          {maxItems === 1
+            ? (value.length === 1 ? "✓ Cadastrado" : "Nenhum cadastrado")
             : `${value.length} / ${maxItems} itens`}
           {minItems > 0 && maxItems > 1 && ` (mínimo: ${minItems})`}
         </div>

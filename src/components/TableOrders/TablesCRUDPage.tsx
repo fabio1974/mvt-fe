@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { FiPlus, FiEdit2, FiPower, FiTrash2, FiCheck, FiX } from "react-icons/fi";
+import { FiBookmark, FiXCircle, FiUnlock, FiLock, FiMinus, FiPlus } from "react-icons/fi";
 import { api } from "../../services/api";
 import PageContainer from "../Generic/PageContainer";
+import TableOrderModal from "./TableOrderModal";
 import "./TableOrders.css";
 
 interface RestaurantTable {
@@ -54,20 +55,36 @@ const TABLE_STATUS_COLORS: Record<string, string> = {
 
 const TablesCRUDPage: React.FC = () => {
   const [tables, setTables] = useState<RestaurantTable[]>([]);
-  const [orderStatusMap, setOrderStatusMap] = useState<Record<number, string>>({});
+  const [orderStatusMap, setOrderStatusMap] = useState<Record<number, { status: string; orderId: number }>>({});
   const [loading, setLoading] = useState(true);
-  const [showBatchForm, setShowBatchForm] = useState(false);
-  const [batchFrom, setBatchFrom] = useState(1);
-  const [batchTo, setBatchTo] = useState(10);
-  const [batchSeats, setBatchSeats] = useState<number | "">(4);
-  const [editingId, setEditingId] = useState<number | null>(null);
-  const [editSeats, setEditSeats] = useState<number | "">(0);
+  const [initialCount, setInitialCount] = useState(10);
+  const [adjusting, setAdjusting] = useState(false);
+  const [selectedTable, setSelectedTable] = useState<RestaurantTable | null>(null);
+
+  const handleChangeStatus = async (tableId: number, status: string) => {
+    try {
+      await api.patch(`/api/tables/${tableId}/status`, { status });
+      fetchTables();
+    } catch (e: any) {
+      alert(e?.response?.data?.error || "Erro ao trocar status");
+    }
+  };
+
+  const handleAdjustSeats = async (table: RestaurantTable, delta: number) => {
+    const newSeats = Math.max(1, (table.seats || 1) + delta);
+    try {
+      await api.put(`/api/tables/${table.id}`, { seats: newSeats });
+      fetchTables();
+    } catch (e: any) {
+      alert(e?.response?.data?.message || "Erro ao atualizar lugares");
+    }
+  };
 
   const fetchTables = async () => {
     try {
       const [tablesRes, statusRes] = await Promise.all([
         api.get<RestaurantTable[]>("/api/tables", { params: { activeOnly: false } }),
-        api.get<Record<number, string>>("/api/tables/order-status"),
+        api.get<Record<number, { status: string; orderId: number }>>("/api/tables/order-status"),
       ]);
       setTables(tablesRes.data);
       setOrderStatusMap(statusRes.data);
@@ -80,54 +97,74 @@ const TablesCRUDPage: React.FC = () => {
 
   useEffect(() => {
     fetchTables();
+    const interval = setInterval(fetchTables, 30_000);
+    return () => clearInterval(interval);
   }, []);
 
   const GRID_COLS = 6;
 
-  const handleCreateBatch = async () => {
+  const handleCreateInitial = async () => {
+    if (initialCount < 1) return;
+    setAdjusting(true);
     try {
       await api.post("/api/tables/batch", {
-        from: batchFrom,
-        to: batchTo,
-        seats: batchSeats || null,
+        from: 1,
+        to: initialCount,
+        seats: 4,
       } as CreateBatchRequest);
-      setShowBatchForm(false);
       fetchTables();
     } catch (e: any) {
       alert(e?.response?.data?.message || "Erro ao criar mesas");
+    } finally {
+      setAdjusting(false);
     }
   };
 
-  const handleToggle = async (table: RestaurantTable) => {
+  const handleAddTables = async (count: number) => {
+    const maxNumber = tables.length > 0 ? Math.max(...tables.map(t => t.number)) : 0;
+    setAdjusting(true);
     try {
-      await api.put(`/api/tables/${table.id}`, { active: !table.active });
+      await api.post("/api/tables/batch", {
+        from: maxNumber + 1,
+        to: maxNumber + count,
+        seats: 4,
+      } as CreateBatchRequest);
       fetchTables();
     } catch (e: any) {
-      alert(e?.response?.data?.message || "Erro ao atualizar mesa");
+      alert(e?.response?.data?.message || "Erro ao criar mesas");
+    } finally {
+      setAdjusting(false);
     }
   };
 
-  const handleSaveEdit = async (table: RestaurantTable) => {
+  const handleRemoveTables = async (count: number) => {
+    const sorted = [...tables].sort((a, b) => b.number - a.number);
+    const toRemove = sorted.slice(0, count);
+    const occupied = toRemove.filter(t => orderStatusMap[t.id]);
+    if (occupied.length > 0) {
+      alert(`Não é possível remover: mesa(s) #${occupied.map(t => t.number).join(", #")} tem pedido ativo.`);
+      return;
+    }
+    if (!window.confirm(`Remover ${toRemove.length} mesa(s) (#${toRemove.map(t => t.number).join(", #")})?`)) return;
+    setAdjusting(true);
     try {
-      await api.put(`/api/tables/${table.id}`, {
-        seats: editSeats || null,
-      });
-      setEditingId(null);
+      const results = await Promise.allSettled(toRemove.map(t => api.delete(`/api/tables/${t.id}`)));
+      const failed = results.filter(r => r.status === "rejected");
+      if (failed.length > 0) {
+        const msg = failed.length === toRemove.length
+          ? "Nenhuma mesa pôde ser removida — todas possuem pedidos vinculados."
+          : `${toRemove.length - failed.length} mesa(s) removida(s), mas ${failed.length} não pôde(m) ser removida(s) por ter(em) pedidos vinculados.`;
+        alert(msg);
+      }
       fetchTables();
     } catch (e: any) {
-      alert(e?.response?.data?.message || "Erro ao atualizar mesa");
+      alert("Erro ao remover mesas");
+    } finally {
+      setAdjusting(false);
     }
   };
 
-  const handleDelete = async (table: RestaurantTable) => {
-    if (!window.confirm(`Remover mesa #${table.number}?`)) return;
-    try {
-      await api.delete(`/api/tables/${table.id}`);
-      fetchTables();
-    } catch (e: any) {
-      alert(e?.response?.data?.message || "Erro ao remover mesa");
-    }
-  };
+
 
   if (loading) return <div className="to-loading">Carregando...</div>;
 
@@ -135,48 +172,59 @@ const TablesCRUDPage: React.FC = () => {
     <PageContainer
       title="Mesas"
       headerActions={
-        <>
-          <div className="to-grid-stats">
-            <span><span className="stat-dot active" /> {tables.filter(t => t.active).length} ativas</span>
-            <span><span className="stat-dot inactive" /> {tables.filter(t => !t.active).length} inativas</span>
+        tables.length > 0 ? (
+          <div className="to-adj-group">
+            {[-10, -5, -1].map(n => (
+              <button
+                key={n}
+                className="to-adj-btn to-adj-minus"
+                disabled={adjusting || tables.length < Math.abs(n)}
+                onClick={() => handleRemoveTables(Math.abs(n))}
+              >
+                {n}
+              </button>
+            ))}
+            <div className="to-adj-count">
+              <strong>{tables.length}</strong>
+              <span>mesas</span>
+            </div>
+            {[1, 5, 10].map(n => (
+              <button
+                key={n}
+                className="to-adj-btn to-adj-plus"
+                disabled={adjusting}
+                onClick={() => handleAddTables(n)}
+              >
+                +{n}
+              </button>
+            ))}
           </div>
-          <button
-            className="breadcrumb-action-btn btn-create"
-            onClick={() => setShowBatchForm(!showBatchForm)}
-          >
-            <FiPlus />
-            <span>Criar Mesas</span>
-          </button>
-        </>
+        ) : undefined
       }
     >
-      {showBatchForm && (
-        <div className="to-batch-form">
-          <div className="to-batch-row">
+      {tables.length === 0 && !loading && (
+        <div className="to-initial-setup">
+          <h3>Configuração inicial</h3>
+          <p>Quantas mesas o estabelecimento possui?</p>
+          <div className="to-initial-row">
             <label>
-              De:
-              <input type="number" min={1} value={batchFrom} onChange={(e) => setBatchFrom(+e.target.value)} />
+              Mesas:
+              <input
+                type="number"
+                min={1}
+                value={initialCount}
+                onChange={(e) => setInitialCount(+e.target.value || 1)}
+              />
             </label>
-            <label>
-              Até:
-              <input type="number" min={1} value={batchTo} onChange={(e) => setBatchTo(+e.target.value)} />
-            </label>
-            <label>
-              Lugares:
-              <input type="number" min={1} value={batchSeats} onChange={(e) => setBatchSeats(+e.target.value || "")} />
-            </label>
-            <button className="to-btn to-btn-primary" onClick={handleCreateBatch}>Criar</button>
-            <button className="to-btn" onClick={() => setShowBatchForm(false)}>Cancelar</button>
+            <button className="to-btn to-btn-primary" onClick={handleCreateInitial} disabled={adjusting}>
+              {adjusting ? "Criando..." : "Criar Mesas"}
+            </button>
           </div>
         </div>
       )}
 
+      {tables.length > 0 && (
       <div className="to-grid-wrapper">
-        {tables.length === 0 ? (
-          <div className="to-empty">
-            Nenhuma mesa cadastrada. Clique em "Criar Mesas" para começar.
-          </div>
-        ) : (
           <div className="to-grid" style={{ gridTemplateColumns: `repeat(${GRID_COLS}, 1fr)` }}>
             {tables.map((table) => (
               <div
@@ -185,79 +233,70 @@ const TablesCRUDPage: React.FC = () => {
               >
                 <div className="to-table-header">
                   <div className="to-table-number-badge">{table.number}</div>
-                  {table.seats && <div className="to-table-seats">{table.seats} lugares</div>}
+                  <div className="to-seats-control">
+                    <button
+                      className="to-seats-btn"
+                      title="Remover lugar"
+                      disabled={(table.seats || 1) <= 1}
+                      onClick={() => handleAdjustSeats(table, -1)}
+                    ><FiMinus size={10} /></button>
+                    <span className="to-seats-value">{table.seats || 0}</span>
+                    <button
+                      className="to-seats-btn"
+                      title="Adicionar lugar"
+                      onClick={() => handleAdjustSeats(table, 1)}
+                    ><FiPlus size={10} /></button>
+                  </div>
                 </div>
-                {editingId === table.id ? (
-                  <>
-                    <div className="to-table-edit">
-                      <input
-                        type="number"
-                        placeholder="Lugares"
-                        value={editSeats}
-                        onChange={(e) => setEditSeats(+e.target.value || "")}
-                      />
+                <div className="to-table-info" onClick={() => setSelectedTable(table)} style={{ cursor: "pointer" }}>
+                  <div
+                    className="to-table-status"
+                    style={{ background: TABLE_STATUS_COLORS[table.status] || "#94a3b8" }}
+                  >
+                    {TABLE_STATUS_LABELS[table.status] || table.status}
+                  </div>
+                  {orderStatusMap[table.id] && (
+                    <div
+                      className="to-table-status"
+                      style={{ background: ORDER_STATUS_COLORS[orderStatusMap[table.id].status] || "#94a3b8", marginTop: 4 }}
+                    >
+                      {ORDER_STATUS_LABELS[orderStatusMap[table.id].status] || orderStatusMap[table.id].status} #{orderStatusMap[table.id].orderId}
                     </div>
-                    <div className="to-table-actions">
-                      <button className="to-icon-btn" title="Salvar" onClick={() => handleSaveEdit(table)}>
-                        <FiCheck size={16} color="#22c55e" />
-                      </button>
-                      <button className="to-icon-btn" title="Cancelar" onClick={() => setEditingId(null)}>
-                        <FiX size={16} color="#ef4444" />
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="to-table-info">
-                      {orderStatusMap[table.id] ? (
-                        <div
-                          className="to-table-status"
-                          style={{ background: ORDER_STATUS_COLORS[orderStatusMap[table.id]] || "#94a3b8" }}
-                        >
-                          {ORDER_STATUS_LABELS[orderStatusMap[table.id]] || orderStatusMap[table.id]}
-                        </div>
-                      ) : table.status !== 'AVAILABLE' ? (
-                        <div
-                          className="to-table-status"
-                          style={{ background: TABLE_STATUS_COLORS[table.status] || "#94a3b8" }}
-                        >
-                          {TABLE_STATUS_LABELS[table.status] || table.status}
-                        </div>
-                      ) : null}
-                    </div>
-                    <div className="to-table-actions">
-                      <button
-                        className="to-icon-btn"
-                        title="Editar"
-                        onClick={() => {
-                          setEditingId(table.id);
-                          setEditSeats(table.seats || 0);
-                        }}
-                      >
-                        <FiEdit2 size={16} color="#64748b" />
-                      </button>
-                      <button
-                        className="to-icon-btn"
-                        title={table.active ? "Desativar" : "Ativar"}
-                        onClick={() => handleToggle(table)}
-                      >
-                        <FiPower size={16} color={table.active ? "#f59e0b" : "#3b82f6"} />
-                      </button>
-                      <button
-                        className="to-icon-btn"
-                        title="Remover"
-                        onClick={() => handleDelete(table)}
-                      >
-                        <FiTrash2 size={16} color="#ef4444" />
-                      </button>
-                    </div>
-                  </>
-                )}
+                  )}
+                </div>
+                <div className="to-table-actions">
+                  {(table.status === "AVAILABLE") && (
+                    <>
+                      <button className="to-action-icon to-action-reserve" title="Reservar" onClick={() => handleChangeStatus(table.id, "RESERVED")}><FiBookmark size={14} /></button>
+                      <button className="to-action-icon to-action-unavail" title="Indisponível" onClick={() => handleChangeStatus(table.id, "UNAVAILABLE")}><FiXCircle size={14} /></button>
+                    </>
+                  )}
+                  {(table.status === "RESERVED") && (
+                    <>
+                      <button className="to-action-icon to-action-free" title="Liberar" onClick={() => handleChangeStatus(table.id, "AVAILABLE")}><FiUnlock size={14} /></button>
+                      <button className="to-action-icon to-action-unavail" title="Indisponível" onClick={() => handleChangeStatus(table.id, "UNAVAILABLE")}><FiXCircle size={14} /></button>
+                    </>
+                  )}
+                  {(table.status === "UNAVAILABLE") && (
+                    <button className="to-action-icon to-action-free" title="Liberar" onClick={() => handleChangeStatus(table.id, "AVAILABLE")}><FiUnlock size={14} /></button>
+                  )}
+                  {(table.status === "OCCUPIED") && (
+                    <span className="to-action-occupied"><FiLock size={12} /></span>
+                  )}
+                </div>
               </div>
             ))}
           </div>
-        )}
       </div>
+      )}
+
+      {selectedTable && (
+        <TableOrderModal
+          table={selectedTable}
+          onClose={() => setSelectedTable(null)}
+          onUpdated={fetchTables}
+        />
+      )}
     </PageContainer>
   );
 };

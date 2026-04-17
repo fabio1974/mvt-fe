@@ -252,20 +252,22 @@ const EntityFilters: React.FC<EntityFiltersProps> = ({
   };
 
   return (
-    <FormContainer title="Filtros" icon={<FiSearch />}>
-      <div className="form-filters-grid">{filters.map(renderFilter)}</div>
+    <div className="form-condensed">
+      <FormContainer title="Filtros" icon={<FiSearch />} collapsible storageKey="filtersCollapsed">
+        <div className="form-filters-grid">{filters.map(renderFilter)}</div>
 
-      <FormActions>
-        <FormButton
-          type="button"
-          variant="secondary"
-          onClick={onClear}
-          icon={<FiRefreshCw />}
-        >
-          Limpar Filtros
-        </FormButton>
-      </FormActions>
-    </FormContainer>
+        <FormActions>
+          <FormButton
+            type="button"
+            variant="secondary"
+            onClick={onClear}
+            icon={<FiRefreshCw />}
+          >
+            Limpar Filtros
+          </FormButton>
+        </FormActions>
+      </FormContainer>
+    </div>
   );
 };
 

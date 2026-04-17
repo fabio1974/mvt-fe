@@ -51,12 +51,13 @@ const STEPS = [
   { key: "READY", action: "ready", label: "Pronto", icon: "📦", color: "#06b6d4" },
 ];
 
-const STATUS_ORDER = ["PLACED", "ACCEPTED", "PREPARING", "READY", "DELIVERING", "COMPLETED"];
+const STATUS_ORDER = ["PLACED", "ACCEPTED", "PREPARING", "READY", "AWAITING_PAYMENT", "DELIVERING", "COMPLETED"];
 const STATUS_LABELS: Record<string, { label: string; color: string; icon: string }> = {
   PLACED: { label: "Novo Pedido", color: "#f59e0b", icon: "🔔" },
   ACCEPTED: { label: "Aceito", color: "#3b82f6", icon: "✅" },
   PREPARING: { label: "Em Preparo", color: "#8b5cf6", icon: "👨‍🍳" },
   READY: { label: "Pronto", color: "#06b6d4", icon: "📦" },
+  AWAITING_PAYMENT: { label: "Aguardando Pgto", color: "#f97316", icon: "💳" },
   DELIVERING: { label: "Entregando", color: "#10b981", icon: "🏍️" },
   COMPLETED: { label: "Entregue", color: "#10b981", icon: "✔️" },
   CANCELLED: { label: "Cancelado", color: "#ef4444", icon: "❌" },
@@ -226,6 +227,21 @@ const FoodOrderEditPanel: React.FC<Props> = ({ orderId, viewMode }) => {
               </button>
             );
           })}
+          {order.status === "AWAITING_PAYMENT" && (
+            <button
+              className="fop-status-btn next"
+              style={{
+                borderColor: "#10b981",
+                backgroundColor: "transparent",
+                color: "#10b981",
+              }}
+              disabled={updating}
+              onClick={() => handleAction("confirm-payment")}
+            >
+              <span className="fop-btn-icon">💰</span>
+              <span className="fop-btn-label">Confirmar Pgto</span>
+            </button>
+          )}
           <button
             className="fop-status-btn"
             style={{

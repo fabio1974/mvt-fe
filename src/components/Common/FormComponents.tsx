@@ -1,5 +1,5 @@
 import React, { useState, forwardRef } from "react";
-import { FiEye, FiEyeOff } from "react-icons/fi";
+import { FiEye, FiEyeOff, FiChevronDown, FiChevronRight } from "react-icons/fi";
 import "./FormComponents.css";
 
 interface FormContainerProps {
@@ -7,6 +7,10 @@ interface FormContainerProps {
   icon?: React.ReactNode;
   children: React.ReactNode;
   className?: string;
+  /** Permite colapsar/expandir o conteúdo clicando no header */
+  collapsible?: boolean;
+  /** Chave para persistir o estado collapsed no localStorage (ex: "filters_foodOrder") */
+  storageKey?: string;
 }
 
 export const FormContainer: React.FC<FormContainerProps> = ({
@@ -14,18 +18,39 @@ export const FormContainer: React.FC<FormContainerProps> = ({
   icon,
   children,
   className = "",
+  collapsible = false,
+  storageKey,
 }) => {
+  const [collapsed, setCollapsed] = useState(() => {
+    if (!collapsible || !storageKey) return false;
+    return localStorage.getItem(storageKey) === "true";
+  });
+
+  const toggleCollapsed = () => {
+    const next = !collapsed;
+    setCollapsed(next);
+    if (storageKey) localStorage.setItem(storageKey, String(next));
+  };
+
   return (
     <div className={`form-container ${className}`}>
       {title && (
-        <div className="form-header">
+        <div
+          className={`form-header ${collapsible ? "form-header-collapsible" : ""} ${collapsed ? "form-header-collapsed" : ""}`}
+          onClick={collapsible ? toggleCollapsed : undefined}
+        >
           <div className="form-title">
             {icon && <span className="form-icon">{icon}</span>}
             {title}
+            {collapsible && (
+              <span className="form-collapse-icon">
+                {collapsed ? <FiChevronRight /> : <FiChevronDown />}
+              </span>
+            )}
           </div>
         </div>
       )}
-      <div className="form-content">{children}</div>
+      {!collapsed && <div className="form-content">{children}</div>}
     </div>
   );
 };
@@ -193,17 +218,8 @@ export const FormActions: React.FC<FormActionsProps> = ({
   className = "",
 }) => {
   return (
-    <div
-      className={className}
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        marginTop: 24,
-        paddingTop: 24,
-        borderTop: "1px solid #e0e0e0",
-        gap: 16,
-      }}
-    >
+    <div className={`form-actions ${className}`}>
+
       {/* Linha dos botões - alinhados à esquerda */}
       <div
         style={{

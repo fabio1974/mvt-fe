@@ -9,6 +9,7 @@ import { MetadataProvider } from "./contexts/MetadataContext";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { registerToast } from "./utils/toast";
+import { getUserRole } from "./utils/auth";
 
 // Página pública de rastreamento (sem layout autenticado)
 const TrackingPage = lazy(() => import("./components/Tracking/TrackingPage"));
@@ -86,9 +87,37 @@ function App() {
   // Estados do sidebar
   const [isMobile, setIsMobile] = useState(() => window.innerWidth <= 600);
   const [sidebarVisible, setSidebarVisible] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(
-    () => window.innerWidth <= 1024 // collapsed em mobile e telas médias
-  );
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    const saved = localStorage.getItem("sidebarCollapsed");
+    if (saved !== null) return saved === "true";
+    return window.innerWidth <= 1024;
+  });
+
+  // Persistir estado do sidebar no localStorage
+  useEffect(() => {
+    localStorage.setItem("sidebarCollapsed", String(sidebarCollapsed));
+  }, [sidebarCollapsed]);
+
+  // Estado do header (collapse/expand) — só para CLIENT (estabelecimento)
+  const userRole = getUserRole();
+  const isClientRole = userRole === "ROLE_CLIENT" || userRole === "CLIENT";
+  const [headerCollapsed, setHeaderCollapsed] = useState(() => {
+    return localStorage.getItem("headerCollapsed") === "true";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("headerCollapsed", String(headerCollapsed));
+  }, [headerCollapsed]);
+
+  // Sincronizar headerCollapsed com localStorage (quando breadcrumb muda o valor)
+  useEffect(() => {
+    const onStorage = () => {
+      const val = localStorage.getItem("headerCollapsed") === "true";
+      setHeaderCollapsed(val);
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
 
   // Estado do toast
   const [toast, setToast] = useState<ToastState | null>(null);
@@ -162,6 +191,7 @@ function App() {
             />
           )}
           <div
+            className={isLoggedIn && isClientRole && headerCollapsed ? "header-hidden" : ""}
             style={{
               display: "flex",
               flexDirection: "column",
@@ -174,12 +204,16 @@ function App() {
               transition: "margin-left 0.3s ease, width 0.3s ease",
             }}
           >
-            <Header
-              isMobile={isMobile}
-              isLoggedIn={isLoggedIn}
-              sidebarVisible={sidebarVisible}
-              sidebarCollapsed={sidebarCollapsed}
-            />
+            {(!isLoggedIn || !isClientRole || !headerCollapsed) && (
+              <Header
+                isMobile={isMobile}
+                isLoggedIn={isLoggedIn}
+                sidebarVisible={sidebarVisible}
+                sidebarCollapsed={sidebarCollapsed}
+                headerCollapsed={headerCollapsed}
+                onToggleHeader={() => setHeaderCollapsed(!headerCollapsed)}
+              />
+            )}
             <Suspense fallback={<PageLoader />}>
               <Routes>
                 <Route path="/" element={isLoggedIn ? <Dashboard /> : <LandingPage />} />

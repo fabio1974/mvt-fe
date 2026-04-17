@@ -216,6 +216,28 @@
   }
 }
 
+/* Botão de colapsar header */
+.header-collapse-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: rgba(100, 116, 139, 0.12);
+  border: 1px solid rgba(100, 116, 139, 0.2);
+  border-radius: 8px;
+  cursor: pointer;
+  color: #64748b;
+  transition: all 0.2s ease;
+}
+
+.header-collapse-btn:hover {
+  background: rgba(100, 116, 139, 0.2);
+  color: #475569;
+  border-color: rgba(100, 116, 139, 0.3);
+}
+
 /* Logout Button Styles */
 .btn.logout-btn {
   display: flex;
