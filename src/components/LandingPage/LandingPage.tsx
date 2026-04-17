@@ -2,6 +2,7 @@ import Hero from "./Hero";
 import Benefits from "./Benefits";
 import Impact from "./Impact";
 import HowItWorks from "./HowItWorks";
+import Franchise from "./Franchise";
 import CTA from "./CTA";
 import LandingFooter from "./LandingFooter";
 
@@ -48,6 +49,7 @@ const LandingPage = () => {
         <Benefits />
         <Impact />
         <HowItWorks />
+        <Franchise />
         <CTA />
         <LandingFooter />
       </div>

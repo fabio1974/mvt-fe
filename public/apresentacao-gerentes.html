@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zapi10 — Modelo de Negócio para Gerentes</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #0f172a;
+    color: #e2e8f0;
+    overflow: hidden;
+    height: 100vh;
+  }
+
+  .slide {
+    display: none;
+    width: 100vw;
+    height: 100vh;
+    padding: 60px 80px;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .slide.active { display: flex; }
+
+  .slide-cover {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 50%, #1e1b4b 100%);
+    align-items: center;
+    text-align: center;
+  }
+
+  .slide-cover .logo {
+    font-size: 5rem;
+    font-weight: 800;
+    background: linear-gradient(90deg, #3b82f6, #f59e0b);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 16px;
+  }
+
+  .slide-cover .subtitle {
+    font-size: 1.5rem;
+    color: #94a3b8;
+    margin-bottom: 48px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  .slide-cover .title {
+    font-size: 2.8rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 16px;
+  }
+
+  .slide-cover .desc {
+    font-size: 1.3rem;
+    color: #94a3b8;
+  }
+
+  .slide-content {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  }
+
+  .slide-content h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 40px;
+    background: linear-gradient(90deg, #3b82f6, #60a5fa);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .slide-content p {
+    font-size: 1.3rem;
+    line-height: 1.8;
+    color: #cbd5e1;
+    margin-bottom: 16px;
+  }
+
+  .slide-content .highlight { color: #f59e0b; font-weight: 600; }
+  .slide-content .blue { color: #60a5fa; font-weight: 600; }
+  .slide-content .green { color: #4ade80; font-weight: 600; }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 24px;
+    margin-top: 16px;
+  }
+
+  .card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 28px;
+  }
+
+  .card .card-icon { font-size: 2.5rem; margin-bottom: 12px; }
+  .card h3 { font-size: 1.2rem; font-weight: 600; color: #f1f5f9; margin-bottom: 8px; }
+  .card p { font-size: 1rem; color: #94a3b8; line-height: 1.6; margin-bottom: 0; }
+
+  .table-wrap { overflow: auto; margin-top: 16px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 1.05rem; }
+  th {
+    background: rgba(59, 130, 246, 0.2);
+    color: #93c5fd;
+    padding: 14px 18px;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid rgba(59, 130, 246, 0.3);
+  }
+  td {
+    padding: 12px 18px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    color: #cbd5e1;
+  }
+  tr:hover td { background: rgba(255,255,255,0.03); }
+
+  .badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .badge-amber { background: rgba(245,158,11,0.2); color: #fbbf24; }
+  .badge-green { background: rgba(74,222,128,0.2); color: #4ade80; }
+  .badge-purple { background: rgba(168,85,247,0.2); color: #c084fc; }
+
+  .split-bar {
+    display: flex;
+    height: 48px;
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 12px 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  .split-bar > div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  }
+
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 16px 0;
+    flex-wrap: wrap;
+  }
+
+  .flow-step {
+    background: rgba(59,130,246,0.15);
+    border: 1px solid rgba(59,130,246,0.3);
+    border-radius: 12px;
+    padding: 14px 20px;
+    font-size: 1rem;
+    color: #93c5fd;
+    font-weight: 500;
+  }
+
+  .flow-arrow {
+    font-size: 1.5rem;
+    color: #475569;
+    padding: 0 8px;
+  }
+
+  .two-cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+    align-items: start;
+  }
+
+  .cta-fixed {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 28px;
+    background: linear-gradient(90deg, #8b5cf6, #f59e0b);
+    color: white;
+    font-size: 0.95rem;
+    font-weight: 700;
+    border-radius: 24px;
+    text-decoration: none;
+    z-index: 100;
+    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.5);
+    transition: transform 0.2s, box-shadow 0.2s;
+    white-space: nowrap;
+  }
+
+  .cta-fixed:hover {
+    transform: translateX(-50%) scale(1.05);
+    box-shadow: 0 8px 30px rgba(139, 92, 246, 0.7);
+  }
+
+  .nav {
+    position: fixed;
+    bottom: 24px;
+    right: 32px;
+    display: flex;
+    gap: 12px;
+    z-index: 100;
+  }
+
+  .nav button {
+    background: rgba(59,130,246,0.3);
+    border: 1px solid rgba(59,130,246,0.5);
+    color: white;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .nav button:hover {
+    background: rgba(59,130,246,0.5);
+    transform: scale(1.1);
+  }
+
+  .progress {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #3b82f6, #f59e0b);
+    transition: width 0.3s;
+  }
+
+  .slide-number {
+    position: fixed;
+    bottom: 32px;
+    left: 32px;
+    font-size: 0.9rem;
+    color: #475569;
+  }
+</style>
+</head>
+<body>
+
+<!-- SLIDE 1: Capa -->
+<div class="slide slide-cover active" id="slide-1">
+  <div class="logo">Zapi10</div>
+  <div class="subtitle">Mobilidade com Propósito Social</div>
+  <div class="title">Seu Modelo de Negócio</div>
+  <div class="desc">Como você ganha com a plataforma</div>
+</div>
+
+<!-- SLIDE 2: O que é -->
+<div class="slide slide-content" id="slide-2">
+  <h1>O que é o Zapi10?</h1>
+  <p>Uma <span class="highlight">plataforma de mobilidade e food service</span> que conecta estabelecimentos, motoboys e clientes na <span class="blue">sua região</span>.</p>
+  <p>Como gerente, você <span class="green">coordena motoboys e estabelecimentos</span> e ganha uma participação em cada operação do seu grupo.</p>
+  <div class="cards" style="margin-top: 24px;">
+    <div class="card">
+      <div class="card-icon">🍔</div>
+      <h3>Zapi-Food</h3>
+      <p>Delivery de comida e atendimento de mesa para restaurantes e bares</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🏍️</div>
+      <h3>Corridas de Entrega</h3>
+      <p>Motoboys do seu grupo realizando entregas para estabelecimentos</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">💰</div>
+      <h3>Receita Passiva</h3>
+      <p>Você ganha automaticamente em cada operação, sem precisar estar presente</p>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 3: Seus 3 produtos -->
+<div class="slide slide-content" id="slide-3">
+  <h1>Seus 3 Produtos</h1>
+  <p>Estes são os serviços nos quais você <span class="green">participa da receita</span>:</p>
+  <div class="cards" style="margin-top: 16px;">
+    <div class="card">
+      <div class="card-icon">🍕</div>
+      <h3>Zapi-Food (Delivery)</h3>
+      <p>Cliente pede comida pelo app, restaurante prepara, motoboy do seu grupo entrega</p>
+      <p style="margin-top: 8px;"><span class="badge badge-purple">Você ganha 5% do total</span></p>
+    </div>
+    <div class="card">
+      <div class="card-icon">📦</div>
+      <h3>Corrida Avulsa</h3>
+      <p>Estabelecimento recebe pedido externo e gera corrida de entrega no Zapi10</p>
+      <p style="margin-top: 8px;"><span class="badge badge-purple">Você ganha 5% do frete</span></p>
+    </div>
+    <div class="card">
+      <div class="card-icon">🍽️</div>
+      <h3>Serviço de Mesa</h3>
+      <p>Garçom atende mesas no estabelecimento com o sistema Zapi10</p>
+      <p style="margin-top: 8px;"><span class="badge badge-green">Você ganha 35% da fatura mensal</span></p>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 4: Zapi-Food -->
+<div class="slide slide-content" id="slide-4">
+  <h1>Zapi-Food (Food Delivery)</h1>
+  <p>O cliente pede comida pelo app e paga <span class="highlight">comida + frete</span> numa única cobrança.</p>
+  <div class="flow">
+    <div class="flow-step">Cliente pede no app</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Paga tudo (PIX/Cartão)</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Restaurante prepara</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Motoboy entrega</div>
+  </div>
+  <div class="two-cols" style="margin-top: 32px;">
+    <div>
+      <p style="font-size: 1rem; color: #94a3b8; margin-bottom: 8px;">Valor da <strong>comida</strong>:</p>
+      <div class="split-bar">
+        <div style="width: 87%; background: linear-gradient(90deg, #10b981, #059669);">87% Estabelecimento</div>
+        <div style="width: 5%; background: #8b5cf6; font-size: 0.75rem;">5%</div>
+        <div style="width: 8%; background: #f59e0b; font-size: 0.75rem;">8%</div>
+      </div>
+    </div>
+    <div>
+      <p style="font-size: 1rem; color: #94a3b8; margin-bottom: 8px;">Valor do <strong>frete</strong>:</p>
+      <div class="split-bar">
+        <div style="width: 87%; background: linear-gradient(90deg, #3b82f6, #2563eb);">87% Motoboy</div>
+        <div style="width: 5%; background: #8b5cf6; font-size: 0.75rem;">5%</div>
+        <div style="width: 8%; background: #f59e0b; font-size: 0.75rem;">8%</div>
+      </div>
+    </div>
+  </div>
+  <p style="margin-top: 16px; font-size: 1.1rem;">
+    <span class="badge badge-purple" style="margin-right: 8px;">5% Gerente</span>
+    <span class="badge badge-amber">8% Zapi10</span>
+    — sobre o <strong>total</strong> (comida + frete)
+  </p>
+</div>
+
+<!-- SLIDE 5: Corrida Avulsa -->
+<div class="slide slide-content" id="slide-5">
+  <h1>Corrida Avulsa do Estabelecimento</h1>
+  <p>O estabelecimento recebe pedido por <span class="blue">outra fonte</span> (telefone, WhatsApp, iFood) e usa o Zapi10 para gerar a <span class="highlight">corrida de entrega</span>.</p>
+  <div class="flow">
+    <div class="flow-step">Pedido externo</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Estabelecimento cria corrida</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Paga o frete (PIX/Cartão)</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Motoboy entrega</div>
+  </div>
+  <p style="margin-top: 32px; font-size: 1.1rem; color: #94a3b8;">Divisão do frete:</p>
+  <div class="split-bar">
+    <div style="width: 87%; background: linear-gradient(90deg, #3b82f6, #2563eb);">87% Motoboy</div>
+    <div style="width: 5%; background: #8b5cf6;">5% Gerente</div>
+    <div style="width: 8%; background: linear-gradient(90deg, #f59e0b, #d97706);">8% Zapi10</div>
+  </div>
+</div>
+
+<!-- SLIDE 6: Servico de Mesa -->
+<div class="slide slide-content" id="slide-6">
+  <h1>Serviço de Mesa</h1>
+  <p>Sistema de <span class="highlight">atendimento de mesa</span> para restaurantes e bares. Garçom gerencia pedidos, rodadas e fecha conta.</p>
+  <div class="flow">
+    <div class="flow-step">Garçom abre mesa</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Rodadas de itens</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Fecha conta</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">Cliente paga presencial</div>
+  </div>
+  <div style="margin-top: 32px;">
+    <p style="font-size: 1.1rem; color: #94a3b8; margin-bottom: 8px;">Estabelecimento paga <strong>fatura mensal</strong> pelo serviço:</p>
+    <div class="split-bar">
+      <div style="width: 35%; background: linear-gradient(90deg, #8b5cf6, #7c3aed);">35% Gerente</div>
+      <div style="width: 65%; background: linear-gradient(90deg, #f59e0b, #d97706);">65% Zapi10</div>
+    </div>
+  </div>
+  <p style="margin-top: 16px; font-size: 1rem; color: #64748b;">O pagamento do cliente na mesa <strong>não passa</strong> pelo Zapi10 — é direto ao estabelecimento.</p>
+</div>
+
+<!-- SLIDE 7: Resumo -->
+<div class="slide slide-content" id="slide-7">
+  <h1>Resumo — Como Você Ganha</h1>
+  <div class="table-wrap">
+    <table>
+      <tr>
+        <th>Produto</th>
+        <th>Sua Participação</th>
+        <th>Como Recebe</th>
+      </tr>
+      <tr>
+        <td>Zapi-Food (Delivery)</td>
+        <td><span class="green">5% do total</span> (comida + frete)</td>
+        <td>Automático via Pagar.me</td>
+      </tr>
+      <tr>
+        <td>Corrida Avulsa</td>
+        <td><span class="green">5% do frete</span></td>
+        <td>Automático via Pagar.me</td>
+      </tr>
+      <tr>
+        <td>Serviço de Mesa</td>
+        <td><span class="green">35% da fatura mensal</span></td>
+        <td>Fatura mensal do estabelecimento</td>
+      </tr>
+    </table>
+  </div>
+  <p style="margin-top: 32px; font-size: 1.3rem;">Você ganha <span class="highlight">de forma passiva</span> — quanto mais estabelecimentos e motoboys no seu grupo, maior a sua receita.</p>
+</div>
+
+<!-- SLIDE 8: Motivacional -->
+<div class="slide slide-content" id="slide-8">
+  <h1>Seu Grupo, Sua Receita</h1>
+  <p style="font-size: 1.5rem; margin-bottom: 32px;">Quanto maior o seu grupo, maior o seu ganho. <span class="highlight">Sem limite.</span></p>
+  <div class="cards">
+    <div class="card" style="text-align: center; border-color: rgba(59,130,246,0.3);">
+      <div class="card-icon">🏪</div>
+      <h3>Mais Estabelecimentos</h3>
+      <p>Cada restaurante, bar ou loja que entra no seu grupo gera receita em <strong>cada pedido</strong> e na <strong>fatura mensal</strong> do serviço de mesa</p>
+    </div>
+    <div class="card" style="text-align: center; border-color: rgba(139,92,246,0.3);">
+      <div class="card-icon">🏍️</div>
+      <h3>Mais Motoboys</h3>
+      <p>Cada motoboy no seu grupo gera receita em <strong>cada corrida</strong> realizada para os estabelecimentos</p>
+    </div>
+    <div class="card" style="text-align: center; border-color: rgba(74,222,128,0.3);">
+      <div class="card-icon">📈</div>
+      <h3>Mais Operações</h3>
+      <p>Você ganha <strong>automaticamente</strong> em cada operação — dia e noite, sem precisar estar presente</p>
+    </div>
+  </div>
+  <p style="margin-top: 32px; font-size: 1.2rem; text-align: center; color: #94a3b8;">Você constrói a rede. A plataforma faz o resto. <span class="green">Seu ganho é proporcional ao seu esforço.</span></p>
+</div>
+
+<!-- SLIDE 9: Estimativa de ganhos - 3 cenários -->
+<div class="slide slide-content" id="slide-9">
+  <h1>Estimativa de Ganhos Mensais</h1>
+
+  <div class="table-wrap" style="margin-top: 8px;">
+    <table style="font-size: 0.95rem;">
+      <tr>
+        <th></th>
+        <th style="text-align: center; color: #94a3b8;">Pessimista</th>
+        <th style="text-align: center; color: #fbbf24;">Moderado</th>
+        <th style="text-align: center; color: #4ade80;">Promissor</th>
+        <th style="text-align: center; color: #c084fc;">Sucesso</th>
+      </tr>
+      <tr>
+        <td style="color: #94a3b8;">Estabelecimentos</td>
+        <td style="text-align: center;">10</td>
+        <td style="text-align: center; font-weight: 600;">14</td>
+        <td style="text-align: center;">22</td>
+        <td style="text-align: center;">38</td>
+      </tr>
+      <tr>
+        <td style="color: #94a3b8;">Motoboys no grupo</td>
+        <td style="text-align: center;">25</td>
+        <td style="text-align: center; font-weight: 600;">45</td>
+        <td style="text-align: center;">70</td>
+        <td style="text-align: center;">120</td>
+      </tr>
+      <tr>
+        <td style="color: #94a3b8;">Pedidos Zapi-Food/dia por estab.</td>
+        <td style="text-align: center;">7</td>
+        <td style="text-align: center; font-weight: 600;">12</td>
+        <td style="text-align: center;">18</td>
+        <td style="text-align: center;">22</td>
+      </tr>
+      <tr>
+        <td style="color: #94a3b8;">Corridas avulsas/dia por estab.</td>
+        <td style="text-align: center;">1</td>
+        <td style="text-align: center; font-weight: 600;">5</td>
+        <td style="text-align: center;">15</td>
+        <td style="text-align: center;">20</td>
+      </tr>
+      <tr>
+        <td style="color: #94a3b8;">Ticket médio (comida + frete)</td>
+        <td style="text-align: center;">R$ 38</td>
+        <td style="text-align: center; font-weight: 600;">R$ 43</td>
+        <td style="text-align: center;">R$ 48</td>
+        <td style="text-align: center;">R$ 50</td>
+      </tr>
+      <tr>
+        <td style="color: #94a3b8;">Frete médio (avulsa)</td>
+        <td style="text-align: center;">R$ 8</td>
+        <td style="text-align: center; font-weight: 600;">R$ 10</td>
+        <td style="text-align: center;">R$ 12</td>
+        <td style="text-align: center;">R$ 13</td>
+      </tr>
+      <tr>
+        <td style="color: #94a3b8;">Fatura mensal mesa/estab.</td>
+        <td style="text-align: center;">R$ 199</td>
+        <td style="text-align: center; font-weight: 600;">R$ 199</td>
+        <td style="text-align: center;">R$ 199</td>
+        <td style="text-align: center;">R$ 199</td>
+      </tr>
+      <tr style="border-top: 1px solid rgba(255,255,255,0.15);">
+        <td><strong>Zapi-Food</strong> <span style="color:#64748b; font-size:0.8rem;">(5% do total)</span></td>
+        <td style="text-align: center; color: #94a3b8;">R$ 3.990</td>
+        <td style="text-align: center; color: #fbbf24; font-weight: 600;">R$ 10.836</td>
+        <td style="text-align: center; color: #4ade80; font-weight: 600;">R$ 28.512</td>
+        <td style="text-align: center; color: #c084fc; font-weight: 600;">R$ 62.700</td>
+      </tr>
+      <tr>
+        <td><strong>Corrida Avulsa</strong> <span style="color:#64748b; font-size:0.8rem;">(5% do frete)</span></td>
+        <td style="text-align: center; color: #94a3b8;">R$ 120</td>
+        <td style="text-align: center; color: #fbbf24; font-weight: 600;">R$ 1.050</td>
+        <td style="text-align: center; color: #4ade80; font-weight: 600;">R$ 5.940</td>
+        <td style="text-align: center; color: #c084fc; font-weight: 600;">R$ 14.820</td>
+      </tr>
+      <tr>
+        <td><strong>Serviço de Mesa</strong> <span style="color:#64748b; font-size:0.8rem;">(35% da fatura)</span></td>
+        <td style="text-align: center; color: #94a3b8;">R$ 697</td>
+        <td style="text-align: center; color: #fbbf24; font-weight: 600;">R$ 977</td>
+        <td style="text-align: center; color: #4ade80; font-weight: 600;">R$ 1.533</td>
+        <td style="text-align: center; color: #c084fc; font-weight: 600;">R$ 2.647</td>
+      </tr>
+      <tr style="border-top: 2px solid rgba(59,130,246,0.4);">
+        <td style="font-size: 1.1rem; font-weight: 700; color: #f1f5f9;">TOTAL / MÊS</td>
+        <td style="text-align: center; font-size: 1.2rem; font-weight: 800; color: #94a3b8;">R$ 4.807</td>
+        <td style="text-align: center; font-size: 1.2rem; font-weight: 800; color: #fbbf24;">R$ 12.863</td>
+        <td style="text-align: center; font-size: 1.3rem; font-weight: 800; color: #4ade80;">R$ 35.985</td>
+        <td style="text-align: center; font-size: 1.3rem; font-weight: 800; color: #c084fc;">R$ 80.167</td>
+      </tr>
+    </table>
+  </div>
+  <p style="font-size: 0.85rem; color: #64748b; margin-top: 12px;">* Valores estimados para 30 dias. Ganhos reais dependem do volume de operações na sua região.</p>
+</div>
+
+<!-- SLIDE 10: Encerramento -->
+<div class="slide slide-cover" id="slide-10">
+  <div class="logo">Zapi10</div>
+  <div class="subtitle">Mobilidade com Propósito Social</div>
+  <div class="title" style="margin-top: 32px;">Vamos juntos!</div>
+  <div class="desc" style="max-width: 600px; margin: 0 auto;">
+    Cadastre-se como <strong style="color: #c084fc;">Líder de Associação</strong> e comece agora a formar seu grupo de motoboys e estabelecimentos.
+  </div>
+  <div style="margin-top: 40px; display: flex; flex-direction: column; align-items: center; gap: 16px;">
+    <a href="/login?tab=register&role=ORGANIZER&lockRole=true" style="
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 14px 32px; border-radius: 12px;
+      background: linear-gradient(90deg, #8b5cf6, #f59e0b);
+      color: white; font-size: 1.1rem; font-weight: 700;
+      text-decoration: none; box-shadow: 0 4px 20px rgba(139,92,246,0.4);
+      transition: transform 0.2s, box-shadow 0.2s;
+    " onmouseover="this.style.transform='scale(1.05)';this.style.boxShadow='0 8px 30px rgba(139,92,246,0.6)'" onmouseout="this.style.transform='scale(1)';this.style.boxShadow='0 4px 20px rgba(139,92,246,0.4)'">
+      Cadastre-se Agora
+    </a>
+    <p style="font-size: 1rem; color: #94a3b8;">
+      Dúvidas? Fale conosco: <a href="mailto:suporte@zapi10.com.br" style="color: #60a5fa; text-decoration: none; font-weight: 600;">suporte@zapi10.com.br</a>
+    </p>
+  </div>
+</div>
+
+<!-- Navegacao -->
+<div class="nav">
+  <button onclick="prevSlide()" title="Anterior">&#8592;</button>
+  <button onclick="nextSlide()" title="Próximo">&#8594;</button>
+</div>
+<a href="/login?tab=register&role=ORGANIZER&lockRole=true" class="cta-fixed" id="cta-fixed">
+  Quero me Cadastrar
+</a>
+<div class="progress" id="progress"></div>
+<div class="slide-number" id="slide-number"></div>
+
+<script>
+  let current = 1;
+  const total = document.querySelectorAll('.slide').length;
+
+  function showSlide(n) {
+    document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+    document.getElementById('slide-' + n).classList.add('active');
+    document.getElementById('progress').style.width = ((n / total) * 100) + '%';
+    document.getElementById('slide-number').textContent = n + ' / ' + total;
+    document.getElementById('cta-fixed').style.display = n === total ? 'none' : 'block';
+  }
+
+  function nextSlide() { if (current < total) { current++; showSlide(current); } }
+  function prevSlide() { if (current > 1) { current--; showSlide(current); } }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); prevSlide(); }
+  });
+
+  let touchStartX = 0;
+  document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; });
+  document.addEventListener('touchend', (e) => {
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) { diff > 0 ? nextSlide() : prevSlide(); }
+  });
+
+  showSlide(1);
+</script>
+</body>
+</html>

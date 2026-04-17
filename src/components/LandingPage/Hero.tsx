@@ -450,7 +450,7 @@ const Hero = () => {
               style={secondaryButtonStyle}
               onMouseEnter={() => setIsSecondaryHovered(true)}
               onMouseLeave={() => setIsSecondaryHovered(false)}
-              onClick={() => openModal("partner")}
+              onClick={() => window.open("/apresentacao-gerentes.html", "_blank")}
             >
               Seja um Parceiro
             </button>
