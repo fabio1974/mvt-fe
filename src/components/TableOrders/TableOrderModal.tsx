@@ -282,15 +282,6 @@ export default function TableOrderModal({ table, onClose, onUpdated }: Props) {
     }
   };
 
-  const _handleChangeStatus = async (newStatus: string) => {
-    try {
-      await api.patch(`/api/tables/${table.id}/status`, { status: newStatus });
-      setTableStatus(newStatus as any);
-      onUpdated();
-    } catch (e: any) {
-      alert(e?.response?.data?.message || "Erro ao alterar status");
-    }
-  };
 
   // Agrupar produtos por categoria
   const categories = [...new Set(products.map((p) => p.categoryName || "Outros"))];
