@@ -173,24 +173,25 @@ button.breadcrumb-item.breadcrumb-link:hover {
   background: #1d4ed8;
 }
 
-/* Botão Editar - azul com ícone branco em contorno */
-.btn-edit {
+/* Botão Editar no breadcrumb — azul sólido com ícone branco.
+   Restrito a .breadcrumb-action-btn pra não vazar no botão da tabela (.btn-action.btn-edit). */
+.breadcrumb-action-btn.btn-edit {
   background: #3b82f6;
   color: white;
 }
 
-.btn-edit svg {
+.breadcrumb-action-btn.btn-edit svg {
   stroke: white;
   fill: none;
 }
 
-.btn-edit:hover {
+.breadcrumb-action-btn.btn-edit:hover {
   background: #2563eb;
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
 }
 
-.btn-edit:active {
+.breadcrumb-action-btn.btn-edit:active {
   transform: translateY(0);
   background: #1d4ed8;
 }

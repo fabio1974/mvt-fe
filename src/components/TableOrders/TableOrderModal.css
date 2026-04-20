@@ -91,6 +91,17 @@
   border-radius: 6px;
 }
 
+.tom-order-link {
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: filter 0.15s;
+}
+
+.tom-order-link:hover {
+  filter: brightness(1.1);
+}
+
 .tom-header-right {
   display: flex;
   align-items: center;
@@ -182,6 +193,22 @@
 
 .tom-action-btn.confirm:hover:not(:disabled) {
   background: #059669;
+}
+
+.tom-show-cmds-btn {
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: none;
+  background: #dbeafe;
+  color: #1e3a8a;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.tom-show-cmds-btn:hover {
+  background: #bfdbfe;
 }
 
 /* Order summary table */
@@ -291,8 +318,9 @@
   letter-spacing: 1px;
   color: #6d28d9;
   background: #f1f5f9;
-  border-bottom: 2px solid #cbd5e1;
-  border-top: 2px solid #cbd5e1;
+  border: 2px solid #cbd5e1;
+  border-left-width: 1.5px;
+  border-right-width: 1.5px;
   position: sticky;
   top: 0;
   z-index: 1;
@@ -304,6 +332,8 @@
   gap: 12px;
   padding: 14px 24px;
   border-bottom: 1.5px solid #e2e8f0;
+  border-left: 1.5px solid #e2e8f0;
+  border-right: 1.5px solid #e2e8f0;
   transition: all 0.15s;
 }
 
@@ -430,6 +460,7 @@
 
 .tom-notes-input {
   width: 100%;
+  box-sizing: border-box;
   padding: 8px 12px;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
@@ -572,36 +603,265 @@
   color: #64748b;
 }
 
-/* Dark mode */
-@media (prefers-color-scheme: dark) {
-  .tom-panel { background: #0f172a; }
-  .tom-header { border-color: #475569; }
-  .tom-header h2 { color: #f1f5f9; }
-  .tom-close-btn { color: #94a3b8; }
-  .tom-close-btn:hover { color: #f1f5f9; }
-  .tom-status-bar { background: #1e293b; border-color: #475569; }
-  .tom-status-info strong { color: #e2e8f0; }
-  .tom-order-summary { background: #0f172a; border-color: #475569; }
-  .tom-order-summary th { color: #94a3b8; border-color: #475569; background: #1e293b; }
-  .tom-order-summary td { color: #e2e8f0; border-color: #475569; }
-  .tom-order-summary .col-qty { color: #a78bfa; }
-  .tom-order-summary .col-price { color: #94a3b8; }
-  .tom-order-summary .total-row td { border-color: #64748b; }
-  .tom-order-summary .total-row .col-price strong { color: #f1f5f9; }
-  .tom-table-status-section { border-color: #475569; }
-  .tom-category-header { background: #1e293b; color: #a78bfa; border-color: #475569; }
-  .tom-product { border-color: #334155; }
-  .tom-product.active { background: rgba(139, 92, 246, 0.08); }
-  .tom-product-name { color: #f1f5f9; }
-  .tom-product-price { color: #c4b5fd; }
-  .tom-product-desc { color: #94a3b8; }
-  .tom-qty-value { color: #f1f5f9; }
-  .tom-footer { background: #0f172a; border-color: #475569; }
-  .tom-footer-info strong { color: #f1f5f9; }
-  .tom-notes-input { background: #1e293b; border-color: #475569; color: #f1f5f9; }
-  .tom-payment-modal { background: #1e293b; }
-  .tom-payment-modal h3 { color: #f1f5f9; }
-  .tom-payment-modal p { color: #94a3b8; }
-  .tom-payment-btn { background: #334155; color: #f1f5f9; }
-  .tom-payment-btn:hover { background: #475569; }
+/* ============================================================
+ * COMANDAS (split de conta por pessoa)
+ * ============================================================ */
+.tom-commands-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 18px 20px 14px;
+  margin-top: 4px;
+  margin-bottom: 8px;
+  overflow-x: auto;
+  background: #f8fafc;
+}
+
+.tom-cmd-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 14px;
+  border: 1px solid #cbd5e1;
+  border-radius: 16px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  white-space: nowrap;
+  line-height: 1;
+  transition: all 0.15s;
+  box-sizing: border-box;
+}
+
+.tom-cmd-tab:hover {
+  border-color: #8b5cf6;
+  color: #8b5cf6;
+}
+
+.tom-cmd-tab.active {
+  background: #8b5cf6;
+  border-color: #8b5cf6;
+  color: #fff;
+  box-shadow: 0 1px 4px rgba(139, 92, 246, 0.3);
+}
+
+.tom-cmd-tab-del {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  border-radius: 50%;
+  background: rgba(100, 116, 139, 0.12);
+  color: inherit;
+  margin-left: 2px;
+  margin-right: -6px;
+  transition: all 0.15s;
+}
+
+.tom-cmd-tab.active .tom-cmd-tab-del {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.tom-cmd-tab-del:hover {
+  background: #ef4444 !important;
+  color: #fff !important;
+}
+
+.tom-cmd-add {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: #8b5cf6;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.tom-cmd-add:hover {
+  background: #7c3aed;
+  color: #fff;
+  border-color: transparent;
+  transform: scale(1.05);
+}
+
+/* Tab de comanda/mesa paga */
+.tom-cmd-tab.paid {
+  background: #f1f5f9;
+  color: #94a3b8;
+  border-color: #cbd5e1;
+  text-decoration: line-through;
+  opacity: 0.75;
+}
+
+.tom-cmd-tab.paid.active {
+  background: #64748b;
+  color: #fff;
+  border-color: #64748b;
+  text-decoration: line-through;
+  opacity: 1;
+  box-shadow: none;
+}
+
+.tom-cmd-paid-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #10b981;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  margin-left: 4px;
+}
+
+/* Spacer pra empurrar o botão "Fechar" pra direita */
+.tom-cmd-spacer {
+  flex: 1;
+  min-width: 12px;
+}
+
+/* Botão "Fechar Comanda/Mesa" */
+.tom-cmd-close-btn {
+  height: 32px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 16px;
+  background: #f97316;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.tom-cmd-close-btn:hover:not(:disabled) {
+  background: #ea580c;
+}
+
+.tom-cmd-close-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Breakdown row paga */
+.tom-breakdown-row.paid {
+  opacity: 0.6;
+}
+
+.tom-breakdown-row.paid .tom-breakdown-name,
+.tom-breakdown-row.paid .tom-breakdown-total {
+  text-decoration: line-through;
+}
+
+.tom-breakdown-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  background: #10b981;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 10px;
+  text-decoration: none;
+}
+
+.tom-empty-cmd {
+  padding: 16px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+/* Coluna de mover */
+.tom-order-summary th.col-move,
+.tom-order-summary td.col-move {
+  width: 110px;
+  padding: 6px 10px;
+  text-align: center;
+}
+
+.tom-move-btn {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fff;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.tom-move-btn:hover {
+  background: #8b5cf6;
+  border-color: #8b5cf6;
+  color: #fff;
+}
+
+/* Breakdown modal */
+.tom-breakdown-modal {
+  max-width: 480px;
+}
+
+.tom-breakdown-list {
+  margin: 16px 0;
+  border-top: 1px solid #e2e8f0;
+}
+
+.tom-breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 8px;
+  border-bottom: 1px solid #e2e8f0;
+  gap: 12px;
+}
+
+.tom-breakdown-name {
+  font-weight: 600;
+  color: #1e293b;
+  flex-shrink: 0;
+  min-width: 100px;
+}
+
+.tom-breakdown-detail {
+  flex: 1;
+  font-size: 12px;
+  color: #64748b;
+  text-align: right;
+}
+
+.tom-breakdown-total {
+  min-width: 100px;
+  text-align: right;
+  color: #1e293b;
+}
+
+.tom-breakdown-grand {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 8px;
+  margin-top: 8px;
+  border-top: 2px solid #8b5cf6;
+  font-size: 16px;
+  color: #1e293b;
 }

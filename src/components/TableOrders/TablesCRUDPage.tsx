@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FiBookmark, FiXCircle, FiUnlock, FiLock, FiMinus, FiPlus } from "react-icons/fi";
+import { useSearchParams } from "react-router-dom";
 import { api } from "../../services/api";
 import PageContainer from "../Generic/PageContainer";
 import TableOrderModal from "./TableOrderModal";
@@ -95,11 +96,26 @@ const TablesCRUDPage: React.FC = () => {
     }
   };
 
+  const [searchParams, setSearchParams] = useSearchParams();
+  const openTableParam = searchParams.get("openTable");
+
   useEffect(() => {
     fetchTables();
     const interval = setInterval(fetchTables, 30_000);
     return () => clearInterval(interval);
   }, []);
+
+  // Ao carregar a lista, se houver ?openTable=N na URL, abre o popup daquela mesa e limpa o param
+  useEffect(() => {
+    if (!openTableParam || tables.length === 0) return;
+    const num = Number(openTableParam);
+    const target = tables.find((t) => t.number === num);
+    if (target) {
+      setSelectedTable(target);
+      searchParams.delete("openTable");
+      setSearchParams(searchParams, { replace: true });
+    }
+  }, [openTableParam, tables]);
 
   const GRID_COLS = 6;
 

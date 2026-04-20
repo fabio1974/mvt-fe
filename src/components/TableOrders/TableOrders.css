@@ -370,18 +370,18 @@
 
 
 .to-table-number-badge {
-  min-width: 28px;
-  height: 28px;
+  min-width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
+  font-size: 20px;
   font-weight: 800;
   color: #334155;
   background: #f1f5f9;
   border: 1.5px solid #cbd5e1;
-  border-radius: 6px;
-  padding: 0 6px;
+  border-radius: 8px;
+  padding: 0 8px;
   line-height: 1;
 }
 
@@ -730,48 +730,6 @@
 .to-status-badge.inactive {
   background: #fee2e2;
   color: #ef4444;
-}
-
-/* Dark mode */
-@media (prefers-color-scheme: dark) {
-  .to-grid-wrapper { background: #1e293b; border-color: #334155; }
-  .to-table-card { background: #1e293b; border-color: #334155; }
-  .to-table-header { background: linear-gradient(135deg, #1e293b 0%, #1a2332 100%); border-color: #334155; }
-  .to-table-card:hover { border-color: #667eea; }
-  .to-table-card { border-color: #64748b; }
-  .to-table-card.inactive { background: #0f172a; }
-  .to-table-number-badge { background: #334155; color: #e2e8f0; border-color: #475569; }
-  .to-table-actions { background: linear-gradient(135deg, #1e293b 0%, #1a2332 100%); border-color: #334155; }
-  .to-action-occupied { color: #a78bfa; }
-  .to-table-label { background: #2d2250; color: #a78bfa; }
-  .to-initial-setup { background: #1e293b; border-color: #334155; }
-  .to-initial-setup h3 { color: #e2e8f0; }
-  .to-initial-setup p { color: #94a3b8; }
-  .to-initial-row label { color: #94a3b8; }
-  .to-initial-row input { background: #0f172a; border-color: #334155; color: #e2e8f0; }
-  .to-table-adjuster { background: #1e293b; border-color: #334155; }
-  .to-adj-seats { border-color: #334155; }
-  .to-adj-btn { background: #0f172a; border-color: #475569; }
-  .to-adj-minus { color: #f87171; border-color: #7f1d1d; }
-  .to-adj-minus:hover:not(:disabled) { background: #1c1917; border-color: #f87171; }
-  .to-adj-plus { color: #4ade80; border-color: #14532d; }
-  .to-adj-plus:hover:not(:disabled) { background: #0a1e0f; border-color: #4ade80; }
-  .to-adj-count strong { color: #e2e8f0; }
-  .to-table-seats-badge { color: #94a3b8; }
-  .to-seats-btn { background: #334155; border-color: #475569; color: #94a3b8; }
-  .to-seats-btn:hover:not(:disabled) { background: #475569; color: #e2e8f0; border-color: #64748b; }
-  .to-seats-value { color: #e2e8f0; }
-  .to-modal { background: #1e293b; }
-  .to-modal-header { border-color: #334155; }
-  .to-modal-header h3 { color: #e2e8f0; }
-  .to-modal-status { border-color: #334155; }
-  .to-modal-section { border-color: #334155; }
-  .to-modal-seats .to-seats-btn { background: #0f172a; border-color: #475569; color: #e2e8f0; }
-  .to-modal-seats .to-seats-btn:hover:not(:disabled) { background: #334155; border-color: #64748b; }
-  .to-modal-seats .to-seats-value { color: #e2e8f0; }
-  .to-modal-btn:hover { background: rgba(255, 255, 255, 0.05); }
-  .to-btn { background: #1e293b; color: #e2e8f0; border-color: #475569; }
-  .to-btn:hover { background: #334155; }
 }
 
 /* Responsive */

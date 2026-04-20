@@ -37,6 +37,12 @@ const USER_TYPE_OPTIONS: UserTypeOption[] = [
     description: "Represento uma associação de motoboys",
     icon: "👥",
   },
+  {
+    value: "WAITER",
+    label: "Garçom",
+    description: "Trabalho como garçom em um estabelecimento",
+    icon: "🧑‍🍳",
+  },
 ];
 
 export default function AuthTabs() {

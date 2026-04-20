@@ -198,12 +198,16 @@
 }
 
 .btn-edit {
-  background: #fef3c7;
-  color: #92400e;
+  background: #dbeafe;
+  color: #1e3a8a;
+}
+
+.btn-edit svg {
+  stroke-width: 2.5;
 }
 
 .btn-edit:hover {
-  background: #fde68a;
+  background: #bfdbfe;
   transform: translateY(-1px);
 }
 

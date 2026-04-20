@@ -1,17 +1,22 @@
 /**
- * Impressão de recibos térmicos via window.print() com iframe oculto.
- * Formata para papel de 80mm (padrão de impressoras térmicas).
- * Mesmo layout do mobile (ESC/POS) mas usando HTML/CSS.
+ * Impressão de recibos térmicos de rodada (novos itens / cancelamentos).
+ * Usa o cabeçalho compartilhado (buildStoreHeader) + PRINT_STYLES pra manter consistência
+ * com as outras impressões do módulo (pedido geral, embalar).
  */
+
+import { buildStoreHeader, escapeHtml, PRINT_STYLES } from "../FoodOrder/printHeader";
 
 interface RoundReceiptData {
   orderId: number | null;
   tableNumber: number;
-  establishmentName: string;
+  storeName?: string | null;
+  storeDocument?: string | null;
+  storePhone?: string | null;
+  storeAddress?: string | null;
   authorName: string;
   roundNumber?: number;
-  newItems: Array<{ productName: string; quantity: number; unitPrice: number }>;
-  cancelledItems: Array<{ productName: string; quantity: number }>;
+  newItems: Array<{ productName: string; quantity: number; unitPrice: number; commandLabel?: string | null }>;
+  cancelledItems: Array<{ productName: string; quantity: number; commandLabel?: string | null }>;
   notes?: string | null;
 }
 
@@ -20,140 +25,84 @@ function formatMoney(value: number): string {
 }
 
 function buildRoundReceiptHTML(data: RoundReceiptData): string {
-  const now = new Date().toLocaleString("pt-BR", {
-    day: "2-digit", month: "2-digit", year: "2-digit",
-    hour: "2-digit", minute: "2-digit",
+  const headerHtml = buildStoreHeader({
+    storeName: data.storeName,
+    storeDocument: data.storeDocument,
+    storePhone: data.storePhone,
+    storeAddress: data.storeAddress,
+    tableNumber: data.tableNumber,
   });
 
-  let itemsHTML = "";
-
-  if (data.newItems.length > 0) {
-    itemsHTML += `<tr><td colspan="3" class="section-header">NOVO</td></tr>`;
-    for (const item of data.newItems) {
-      itemsHTML += `
-        <tr>
-          <td class="col-qty">${item.quantity}x</td>
-          <td class="col-name">${item.productName}</td>
-          <td class="col-price">${formatMoney(item.unitPrice * item.quantity)}</td>
-        </tr>`;
+  // Agrupa por comanda (Mesa primeiro, depois alfabético)
+  const groupByCommand = <T extends { commandLabel?: string | null }>(items: T[]): Map<string, T[]> => {
+    const groups = new Map<string, T[]>();
+    for (const item of items) {
+      const key = item.commandLabel || "Mesa";
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key)!.push(item);
     }
-  }
+    return new Map([...groups.entries()].sort((a, b) => {
+      if (a[0] === "Mesa") return -1;
+      if (b[0] === "Mesa") return 1;
+      return a[0].localeCompare(b[0]);
+    }));
+  };
 
-  if (data.cancelledItems.length > 0) {
-    itemsHTML += `<tr><td colspan="3" class="section-header cancelled">CANCELAR</td></tr>`;
-    for (const item of data.cancelledItems) {
-      itemsHTML += `
-        <tr class="cancelled-item">
-          <td class="col-qty">${item.quantity}x</td>
-          <td class="col-name">${item.productName}</td>
-          <td class="col-price">—</td>
-        </tr>`;
+  const renderSection = (title: string, items: typeof data.newItems | typeof data.cancelledItems, cancelled: boolean): string => {
+    if (items.length === 0) return "";
+    let html = `<div class="rr-section-header${cancelled ? " cancelled" : ""}">${title}</div>`;
+    const groups = groupByCommand(items);
+    for (const [cmdLabel, groupItems] of groups) {
+      if (groups.size > 1 || cmdLabel !== "Mesa") {
+        html += `<div class="rr-cmd-header">» ${escapeHtml(cmdLabel)}</div>`;
+      }
+      html += `<table class="rr-items">`;
+      for (const item of groupItems) {
+        const priceCell = cancelled ? "—" : formatMoney(("unitPrice" in item ? (item as any).unitPrice : 0) * item.quantity);
+        const rowClass = cancelled ? "rr-cancelled" : "";
+        html += `<tr class="${rowClass}"><td class="rr-qty"><strong>${item.quantity}x</strong></td><td>${escapeHtml(item.productName)}</td><td class="rr-price">${priceCell}</td></tr>`;
+      }
+      html += `</table>`;
     }
-  }
+    return html;
+  };
+
+  // Título principal + divisor (mesmo padrão do PEDIDO #56 / EMPACOTAR #56)
+  const orderLabel = data.orderId ? `PEDIDO #${data.orderId}` : "PEDIDO";
+  const roundLine = data.roundNumber && data.roundNumber > 1
+    ? `<div class="ph-order-meta">Rodada ${data.roundNumber}</div>`
+    : "";
+  const body = `
+    <div class="ph-section-title">${orderLabel}</div>
+    ${roundLine}
+    <div class="ph-divider"></div>
+    ${renderSection("NOVO", data.newItems, false)}
+    ${renderSection("CANCELAR", data.cancelledItems, true)}
+    ${data.notes ? `<div class="rr-notes"><span class="rr-label">OBS:</span> ${escapeHtml(data.notes)}</div>` : ""}
+    <div class="rr-footer">${escapeHtml(data.authorName)}</div>
+  `;
 
   return `<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
 <style>
-  @page {
-    size: 80mm auto;
-    margin: 0;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: 'Courier New', monospace;
-    font-size: 12px;
-    width: 80mm;
-    padding: 4mm;
-    color: #000;
-  }
-  .header {
-    text-align: center;
-    font-size: 22px;
-    font-weight: 900;
-    padding: 6px 0;
-    border-bottom: 2px dashed #000;
-    margin-bottom: 6px;
-  }
-  .round {
-    text-align: center;
-    font-weight: 700;
-    font-size: 14px;
-    margin-bottom: 4px;
-  }
-  .info {
-    padding: 4px 0;
-    border-bottom: 1px dashed #000;
-    margin-bottom: 6px;
-  }
-  .info-row {
-    display: flex;
-    gap: 4px;
-  }
-  .info-row .label {
-    font-weight: 700;
-    min-width: 55px;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 6px;
-  }
-  .section-header {
-    font-weight: 900;
-    font-size: 14px;
-    padding: 6px 0 3px;
-    border-bottom: 1px solid #000;
-  }
-  .section-header.cancelled {
-    color: #000;
-  }
-  .col-qty {
-    width: 30px;
-    font-weight: 700;
-    vertical-align: top;
-    padding: 2px 0;
-  }
-  .col-name {
-    padding: 2px 4px;
-    vertical-align: top;
-  }
-  .col-price {
-    width: 70px;
-    text-align: right;
-    vertical-align: top;
-    padding: 2px 0;
-  }
-  .cancelled-item td {
-    text-decoration: line-through;
-    opacity: 0.7;
-  }
-  .notes {
-    padding: 4px 0;
-    border-top: 1px dashed #000;
-    margin-top: 4px;
-  }
-  .notes .label { font-weight: 700; }
-  .footer {
-    text-align: center;
-    padding-top: 6px;
-    border-top: 2px dashed #000;
-    margin-top: 6px;
-    font-size: 11px;
-  }
+  ${PRINT_STYLES}
+  .rr-section-header { font-weight: 900; font-size: 14px; padding: 6px 0 3px; border-bottom: 1px solid #000; margin-top: 4px; }
+  .rr-cmd-header { font-weight: 700; font-size: 12px; padding: 4px 0 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .rr-items { width: 100%; border-collapse: collapse; margin-bottom: 4px; }
+  .rr-items td { padding: 2px 0; vertical-align: top; font-size: 13px; }
+  .rr-qty { width: 30px; }
+  .rr-price { width: 70px; text-align: right; }
+  .rr-cancelled td { text-decoration: line-through; opacity: 0.7; }
+  .rr-notes { padding: 4px 0; border-top: 1px dashed #000; margin-top: 4px; }
+  .rr-notes .rr-label { font-weight: 700; }
+  .rr-footer { text-align: center; padding-top: 6px; border-top: 2px dashed #000; margin-top: 6px; font-size: 11px; }
 </style>
 </head>
 <body>
-  <div class="header">MESA #${data.tableNumber}</div>
-  ${data.roundNumber && data.roundNumber > 1 ? `<div class="round">RODADA ${data.roundNumber}</div>` : ""}
-  <div class="info">
-    ${data.orderId ? `<div class="info-row"><span class="label">Pedido:</span> #${data.orderId}</div>` : ""}
-    <div class="info-row"><span class="label">Hora:</span> ${now}</div>
-  </div>
-  <table>${itemsHTML}</table>
-  ${data.notes ? `<div class="notes"><span class="label">OBS:</span> ${data.notes}</div>` : ""}
-  <div class="footer">${data.authorName}</div>
+  ${headerHtml}
+  ${body}
 </body>
 </html>`;
 }

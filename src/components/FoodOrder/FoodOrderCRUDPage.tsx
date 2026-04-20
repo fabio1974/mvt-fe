@@ -1,14 +1,20 @@
 import React from "react";
 import { FiPrinter } from "react-icons/fi";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import EntityCRUD from "../Generic/EntityCRUD";
 import FoodOrderEditPanel from "./FoodOrderEditPanel";
 import printKitchenOrder from "./printKitchenOrder";
 import { api } from "../../services/api";
 
+const FINAL_STATUSES = new Set(["COMPLETED", "CANCELLED"]);
+
 const handlePrint = async (orderId: number) => {
   try {
-    const res = await api.get<any>(`/api/orders/${orderId}`);
-    printKitchenOrder(res.data);
+    const [orderRes, cmdsRes] = await Promise.all([
+      api.get<any>(`/api/orders/${orderId}`),
+      api.get<any[]>(`/api/orders/${orderId}/commands`).catch(() => ({ data: [] })),
+    ]);
+    printKitchenOrder({ ...orderRes.data, commands: cmdsRes.data || [] });
   } catch (e) {
     console.error("Erro ao carregar pedido para impressão:", e);
   }
@@ -23,10 +29,18 @@ const handlePrint = async (orderId: number) => {
  * - Edit: Componente customizado com botões de status
  */
 const FoodOrderCRUDPage: React.FC = () => {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const orderIdParam = searchParams.get("orderId");
+  const entityId = orderIdParam ? Number(orderIdParam) : undefined;
 
   return (
     <EntityCRUD
+      // Remonta quando o orderId da URL muda (ex.: usuário clica no link "Pedidos" do sidebar sem param)
+      key={entityId ?? "list"}
       entityName="foodOrder"
+      entityId={entityId}
+      initialMode={entityId ? "edit" : undefined}
       hideCreateButton={true}
       disableView={true}
       hiddenFields={["deliveryLatitude", "deliveryLongitude", "items"]}
@@ -40,6 +54,25 @@ const FoodOrderCRUDPage: React.FC = () => {
           <FiPrinter />
         </button>
       )}
+      customRenderers={{
+        tableNumber: (value, row: any) => {
+          if (value == null) return <span style={{ display: "inline-block", width: 90 }}>—</span>;
+          const canOpenTable = !FINAL_STATUSES.has(row.status);
+          if (!canOpenTable) {
+            return <span style={{ display: "inline-block", width: 90 }}>{String(value)}</span>;
+          }
+          return (
+            <button
+              className="btn-action btn-open-table"
+              onClick={() => navigate(`/mesas?openTable=${value}`)}
+              title={`Abrir Mesa #${value}`}
+              style={{ width: 90 }}
+            >
+              Mesa #{String(value)}
+            </button>
+          );
+        },
+      }}
       customEditComponent={(entityId, viewMode, onBack) => (
         <FoodOrderEditPanel
           orderId={entityId as number}

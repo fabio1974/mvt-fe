@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { api } from "../../services/api";
 import { FormContainer, FormField, FormInput } from "../Common/FormComponents";
 import printKitchenOrder from "./printKitchenOrder";
+import { buildStoreHeader, escapeHtml as escapeHtmlShared, PRINT_STYLES } from "./printHeader";
 import "./FoodOrderEditPanel.css";
 
 interface OrderItem {
@@ -11,6 +13,14 @@ interface OrderItem {
   notes: string | null;
   productName: string | null;
   productId: number | null;
+  commandId: number | null;
+  packaged: boolean;
+}
+
+interface OrderCommand {
+  id: number;
+  displayNumber: number;
+  name: string | null;
 }
 
 interface FoodOrder {
@@ -29,6 +39,10 @@ interface FoodOrder {
   tableNumber: number | null;
   tableLabel: string | null;
   waiterName: string | null;
+  storeName: string | null;
+  storeDocument: string | null;
+  storePhone: string | null;
+  storeAddress: string | null;
   createdAt: string;
   acceptedAt: string | null;
   preparingAt: string | null;
@@ -67,16 +81,23 @@ const PRINT_PREF_KEY = "fop_skip_print_prompt";
 
 
 const FoodOrderEditPanel: React.FC<Props> = ({ orderId, viewMode }) => {
+  const navigate = useNavigate();
   const [order, setOrder] = useState<FoodOrder | null>(null);
+  const [commands, setCommands] = useState<OrderCommand[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [showPrintModal, setShowPrintModal] = useState(false);
   const [dontAskPrint, setDontAskPrint] = useState(false);
+  const [packagingItemId, setPackagingItemId] = useState<number | null>(null);
 
   const fetchOrder = async () => {
     try {
-      const res = await api.get<FoodOrder>(`/api/orders/${orderId}`);
-      setOrder(res.data);
+      const [orderRes, cmdsRes] = await Promise.all([
+        api.get<FoodOrder>(`/api/orders/${orderId}`),
+        api.get<OrderCommand[]>(`/api/orders/${orderId}/commands`).catch(() => ({ data: [] as OrderCommand[] })),
+      ]);
+      setOrder(orderRes.data);
+      setCommands(cmdsRes.data || []);
     } catch (e) {
       console.error("Erro ao carregar pedido:", e);
     } finally {
@@ -85,6 +106,78 @@ const FoodOrderEditPanel: React.FC<Props> = ({ orderId, viewMode }) => {
   };
 
   useEffect(() => { fetchOrder(); }, [orderId]);
+
+  const togglePackaged = async (itemId: number, packaged: boolean) => {
+    setPackagingItemId(itemId);
+    // Atualização otimista pra UI responder imediatamente
+    setOrder((prev) => prev ? {
+      ...prev,
+      items: prev.items.map((i) => i.id === itemId ? { ...i, packaged } : i),
+    } : prev);
+    try {
+      await api.patch(`/api/orders/${orderId}/items/${itemId}/packaged`, { packaged });
+    } catch (e: any) {
+      alert(e?.response?.data?.error || "Erro ao marcar item");
+      // Reverte em caso de erro
+      setOrder((prev) => prev ? {
+        ...prev,
+        items: prev.items.map((i) => i.id === itemId ? { ...i, packaged: !packaged } : i),
+      } : prev);
+    } finally {
+      setPackagingItemId(null);
+    }
+  };
+
+  const handlePrintPackaging = () => {
+    if (!order) return;
+    const packed = (order.items || []).filter((i) => i.packaged);
+    if (packed.length === 0) return;
+    const cmdLabel = (commandId: number | null) => {
+      if (commandId == null) return "Mesa";
+      const c = commands.find((x) => x.id === commandId);
+      return c ? (c.name || `Comanda #${c.displayNumber}`) : `#${commandId}`;
+    };
+    const orderForCommand = (commandId: number | null): number => {
+      if (commandId == null) return -1;
+      const c = commands.find((x) => x.id === commandId);
+      return c ? c.displayNumber : Number.MAX_SAFE_INTEGER;
+    };
+    const sorted = [...packed].sort((a, b) => orderForCommand(a.commandId) - orderForCommand(b.commandId));
+    // Monta groups
+    const groups = new Map<number | null, OrderItem[]>();
+    for (const it of sorted) {
+      const k = it.commandId ?? null;
+      if (!groups.has(k)) groups.set(k, []);
+      groups.get(k)!.push(it);
+    }
+    const headerHtml = buildStoreHeader({
+      storeName: order.storeName,
+      storeDocument: order.storeDocument,
+      storePhone: order.storePhone,
+      storeAddress: order.storeAddress,
+      tableNumber: order.tableNumber,
+    });
+    let html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Embalagem — Pedido #${order.id}</title>`;
+    html += `<style>${PRINT_STYLES}</style></head><body>`;
+    html += headerHtml;
+    html += `<div class="ph-section-title">📦 EMPACOTAR #${order.id}</div>`;
+    html += `<div class="ph-divider"></div>`;
+    for (const [cmdId, items] of groups) {
+      html += `<div class="ph-cmd-title">${escapeHtmlShared(cmdLabel(cmdId))}</div>`;
+      html += `<table class="ph-items">`;
+      for (const it of items) {
+        html += `<tr><td class="ph-qty"><strong>${it.quantity}x</strong></td><td>${escapeHtmlShared(it.productName || "Item")}</td></tr>`;
+        if (it.notes) html += `<tr><td colspan="2" class="ph-note">📝 ${escapeHtmlShared(it.notes)}</td></tr>`;
+      }
+      html += `</table>`;
+    }
+    html += `</body></html>`;
+    const w = window.open("", "_blank", "width=420,height=640");
+    if (!w) return;
+    w.document.write(html);
+    w.document.close();
+    setTimeout(() => { w.focus(); w.print(); }, 100);
+  };
 
   const doAccept = async () => {
     setUpdating(true);
@@ -103,7 +196,7 @@ const FoodOrderEditPanel: React.FC<Props> = ({ orderId, viewMode }) => {
     const pref = localStorage.getItem(PRINT_PREF_KEY);
     if (pref === "true") {
       await doAccept();
-      if (order) printKitchenOrder(order);
+      if (order) printKitchenOrder({ ...order, commands });
       return;
     }
     if (pref === "skip") {
@@ -119,7 +212,7 @@ const FoodOrderEditPanel: React.FC<Props> = ({ orderId, viewMode }) => {
     }
     setShowPrintModal(false);
     await doAccept();
-    if (shouldPrint && order) printKitchenOrder(order);
+    if (shouldPrint && order) printKitchenOrder({ ...order, commands });
   };
 
   const handleAction = async (action: string) => {
@@ -266,7 +359,7 @@ const FoodOrderEditPanel: React.FC<Props> = ({ orderId, viewMode }) => {
           {order.status !== "PLACED" && order.status !== "CANCELLED" && (
             <button
               className="fop-print-btn"
-              onClick={() => printKitchenOrder(order)}
+              onClick={() => printKitchenOrder({ ...order, commands })}
               title="Reimprimir pedido para cozinha"
             >
               Imprimir
@@ -283,11 +376,25 @@ const FoodOrderEditPanel: React.FC<Props> = ({ orderId, viewMode }) => {
             <FormField label="Tipo do Pedido">
               <FormInput value={order.orderType === "DELIVERY" ? "Entrega" : "Mesa"} disabled />
             </FormField>
-            {order.tableNumber != null && (
-              <FormField label="Mesa">
-                <FormInput value={`#${order.tableNumber}${order.tableLabel ? ` — ${order.tableLabel}` : ""}`} disabled />
-              </FormField>
-            )}
+            {order.tableNumber != null && (() => {
+              const isFinal = order.status === "COMPLETED" || order.status === "CANCELLED";
+              const label = `#${order.tableNumber}${order.tableLabel ? ` — ${order.tableLabel}` : ""}`;
+              return (
+                <FormField label="Mesa">
+                  {isFinal ? (
+                    <FormInput value={label} disabled />
+                  ) : (
+                    <div
+                      className="fop-table-link"
+                      onClick={() => navigate(`/mesas?openTable=${order.tableNumber}`)}
+                      title="Abrir popup da mesa"
+                    >
+                      {label}
+                    </div>
+                  )}
+                </FormField>
+              );
+            })()}
             {order.waiterName && (
               <FormField label="Garçom">
                 <FormInput value={order.waiterName} disabled />
@@ -330,43 +437,120 @@ const FoodOrderEditPanel: React.FC<Props> = ({ orderId, viewMode }) => {
 
         {/* Itens — tabela direta sem card wrapper */}
         <div className="fop-items-table-wrapper">
+            {(() => {
+              const isTableOrder = order.tableNumber != null;
+              const cmdLabel = (commandId: number | null) => {
+                if (commandId == null) return "Mesa";
+                const c = commands.find((x) => x.id === commandId);
+                return c ? (c.name || `Comanda #${c.displayNumber}`) : `#${commandId}`;
+              };
+              // Ordena os itens: Mesa (commandId null) primeiro; depois comandas por displayNumber
+              const orderForCommand = (commandId: number | null): number => {
+                if (commandId == null) return -1;
+                const c = commands.find((x) => x.id === commandId);
+                return c ? c.displayNumber : Number.MAX_SAFE_INTEGER;
+              };
+              const sortedItems = [...(order.items || [])].sort((a, b) => {
+                const oa = orderForCommand(a.commandId);
+                const ob = orderForCommand(b.commandId);
+                if (oa !== ob) return oa - ob;
+                return a.id - b.id;
+              });
+              // Mapa commandId → subtotal
+              const subtotalByCmd = new Map<number | null, number>();
+              for (const it of sortedItems) {
+                const k = it.commandId ?? null;
+                subtotalByCmd.set(k, (subtotalByCmd.get(k) || 0) + it.unitPrice * it.quantity);
+              }
+              const colCount = isTableOrder ? 6 : 4;
+              return (
             <table className="entity-table">
               <thead>
                 <tr>
                   <th style={{ width: 60 }}>Qtd</th>
                   <th>Item</th>
+                  {isTableOrder && <th style={{ width: 140 }}>Comanda</th>}
                   <th style={{ width: 120, textAlign: "right" }}>Preço Unit.</th>
                   <th style={{ width: 120, textAlign: "right" }}>Total</th>
+                  {isTableOrder && <th style={{ width: 100, textAlign: "center" }}>Empacotar</th>}
                 </tr>
               </thead>
               <tbody>
-                {order.items?.map((item) => (
-                  <tr key={item.id}>
-                    <td><strong>{item.quantity}x</strong></td>
-                    <td>
-                      {item.productName || "Item"}
-                      {item.notes && <div style={{ fontSize: "12px", color: "#94a3b8", marginTop: 2 }}>📝 {item.notes}</div>}
-                    </td>
-                    <td style={{ textAlign: "right" }}>{fmtMoney(item.unitPrice)}</td>
-                    <td style={{ textAlign: "right" }}>{fmtMoney(item.unitPrice * item.quantity)}</td>
-                  </tr>
-                ))}
+                {sortedItems.map((item, idx) => {
+                  const prev = idx > 0 ? sortedItems[idx - 1] : null;
+                  const cmdChanged = !prev || prev.commandId !== item.commandId;
+                  const next = idx < sortedItems.length - 1 ? sortedItems[idx + 1] : null;
+                  const lastOfGroup = !next || next.commandId !== item.commandId;
+                  return (
+                    <React.Fragment key={item.id}>
+                      <tr className={cmdChanged && isTableOrder ? "fop-cmd-first" : ""}>
+                        <td><strong>{item.quantity}x</strong></td>
+                        <td>
+                          {item.productName || "Item"}
+                          {item.notes && <div style={{ fontSize: "12px", color: "#94a3b8", marginTop: 2 }}>📝 {item.notes}</div>}
+                        </td>
+                        {isTableOrder && <td>{cmdLabel(item.commandId)}</td>}
+                        <td style={{ textAlign: "right" }}>{fmtMoney(item.unitPrice)}</td>
+                        <td style={{ textAlign: "right" }}>{fmtMoney(item.unitPrice * item.quantity)}</td>
+                        {isTableOrder && (
+                          <td style={{ textAlign: "center" }}>
+                            <input
+                              type="checkbox"
+                              checked={!!item.packaged}
+                              onChange={(e) => togglePackaged(item.id, e.target.checked)}
+                              disabled={packagingItemId === item.id}
+                              title="Empacotar pra viagem"
+                            />
+                          </td>
+                        )}
+                      </tr>
+                      {isTableOrder && lastOfGroup && (
+                        <tr className="fop-cmd-subtotal">
+                          <td colSpan={colCount - 2} style={{ textAlign: "right", fontWeight: 600 }}>
+                            Subtotal {cmdLabel(item.commandId)}
+                          </td>
+                          <td style={{ textAlign: "right", fontWeight: 700 }}>
+                            {fmtMoney(subtotalByCmd.get(item.commandId) || 0)}
+                          </td>
+                          <td />
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
               </tbody>
               <tfoot>
                 <tr className="fop-tfoot-row">
-                  <td colSpan={3} style={{ textAlign: "right" }}>Subtotal</td>
+                  <td colSpan={isTableOrder ? colCount - 2 : colCount - 1} style={{ textAlign: "right" }}>Subtotal</td>
                   <td style={{ textAlign: "right" }}>{fmtMoney(order.subtotal)}</td>
+                  {isTableOrder && (
+                    <td style={{ textAlign: "center" }}>
+                      <button
+                        type="button"
+                        className="fop-pack-btn"
+                        onClick={handlePrintPackaging}
+                        disabled={!(order.items || []).some((i) => i.packaged)}
+                        title="Imprimir etiqueta dos itens marcados pra viagem"
+                      >
+                        📦 Empacotar
+                      </button>
+                    </td>
+                  )}
                 </tr>
                 <tr className="fop-tfoot-row">
-                  <td colSpan={3} style={{ textAlign: "right" }}>Taxa de entrega</td>
+                  <td colSpan={isTableOrder ? colCount - 2 : colCount - 1} style={{ textAlign: "right" }}>Taxa de entrega</td>
                   <td style={{ textAlign: "right" }}>{fmtMoney(order.deliveryFee || 0)}</td>
+                  {isTableOrder && <td />}
                 </tr>
                 <tr className="fop-tfoot-total">
-                  <td colSpan={3} style={{ textAlign: "right" }}>Total</td>
+                  <td colSpan={isTableOrder ? colCount - 2 : colCount - 1} style={{ textAlign: "right" }}>Total</td>
                   <td style={{ textAlign: "right" }}>{fmtMoney(order.total)}</td>
+                  {isTableOrder && <td />}
                 </tr>
               </tfoot>
             </table>
+              );
+            })()}
           </div>
 
         {/* Timeline horizontal */}
