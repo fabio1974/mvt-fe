@@ -18,6 +18,10 @@ import {
   FiTrendingUp,
   FiHome,
   FiGrid,
+  FiBarChart2,
+  FiFileText,
+  FiInbox,
+  FiAlertCircle,
 } from "react-icons/fi";
 import "./Sidebar.css";
 
@@ -102,6 +106,25 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
     roles: ["ROLE_CLIENT", "CLIENT"],
   },
   {
+    label: "Caixa",
+    icon: <FiInbox size={22} color="#16a34a" />,
+    path: "/caixa",
+    roles: ["ROLE_CLIENT", "CLIENT"],
+  },
+  {
+    label: "Relatórios",
+    icon: <FiBarChart2 size={22} color="#10b981" />,
+    roles: ["ROLE_CLIENT", "CLIENT"],
+    items: [
+      {
+        label: "Relatório de Caixa",
+        icon: <FiFileText size={22} color="#10b981" />,
+        path: "/relatorios/caixa",
+        roles: ["ROLE_CLIENT", "CLIENT"],
+      },
+    ],
+  },
+  {
     label: "Pagamentos",
     icon: <FiDollarSign size={22} color="#06b6d4" />,
     path: "/pagamentos",
@@ -147,6 +170,12 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
     label: "Processar Pagamentos",
     icon: <FiDollarSign size={22} color="#8b5cf6" />,
     path: "/processar-pagamentos",
+    roles: ["ROLE_ADMIN"],
+  },
+  {
+    label: "Dívidas com Couriers",
+    icon: <FiAlertCircle size={22} color="#f97316" />,
+    path: "/dividas-couriers",
     roles: ["ROLE_ADMIN"],
   },
   {
@@ -211,6 +240,11 @@ export default function Sidebar({
     if (!item.roles.includes(userRole || "")) return false;
     // "Mesas" só aparece se tableOrdersEnabled
     if ("path" in item && item.path === "/mesas" && !tableOrdersEnabled) return false;
+    // "Caixa" só aparece se tableOrdersEnabled
+    if ("path" in item && item.path === "/caixa" && !tableOrdersEnabled) return false;
+    // "Relatórios" e seus subitens só aparecem se tableOrdersEnabled
+    if (item.label === "Relatórios" && !tableOrdersEnabled) return false;
+    if ("path" in item && item.path.startsWith("/relatorios") && !tableOrdersEnabled) return false;
     return true;
   };
 
