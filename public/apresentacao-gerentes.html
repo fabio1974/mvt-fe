@@ -248,6 +248,104 @@
     font-size: 0.9rem;
     color: #475569;
   }
+
+  @media (max-width: 768px) {
+    body { height: 100dvh; }
+
+    .slide {
+      padding: 28px 16px 108px;
+      height: 100dvh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      justify-content: flex-start;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .slide-cover { justify-content: center; }
+    .slide-cover .logo { font-size: 3rem; margin-bottom: 12px; }
+    .slide-cover .subtitle { font-size: 0.9rem; letter-spacing: 2px; margin-bottom: 28px; }
+    .slide-cover .title { font-size: 1.7rem; }
+    .slide-cover .desc { font-size: 1rem; padding: 0 8px; }
+
+    .slide-content h1 { font-size: 1.5rem; margin-bottom: 20px; }
+    .slide-content p { font-size: 0.95rem; line-height: 1.6; margin-bottom: 12px; }
+
+    .cards { grid-template-columns: 1fr; gap: 12px; margin-top: 12px; }
+    .card { padding: 16px; border-radius: 12px; }
+    .card .card-icon { font-size: 1.8rem; margin-bottom: 8px; }
+    .card h3 { font-size: 1rem; }
+    .card p { font-size: 0.9rem; }
+
+    .two-cols { grid-template-columns: 1fr; gap: 20px; }
+
+    .flow {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 6px;
+      margin: 12px 0;
+    }
+    .flow-step {
+      text-align: center;
+      padding: 10px 12px;
+      font-size: 0.9rem;
+    }
+    .flow-arrow {
+      text-align: center;
+      padding: 0;
+      font-size: 1.2rem;
+      transform: rotate(90deg);
+      align-self: center;
+    }
+
+    .split-bar { height: 40px; }
+    .split-bar > div {
+      font-size: 0.7rem;
+      padding: 0 4px;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    table { font-size: 0.8rem; }
+    th { padding: 10px 8px; font-size: 0.85rem; }
+    td { padding: 8px; }
+
+    .badge { font-size: 0.75rem; padding: 3px 10px; }
+
+    .cta-fixed {
+      bottom: 78px;
+      padding: 8px 18px;
+      font-size: 0.82rem;
+    }
+
+    .nav {
+      bottom: 18px;
+      right: 14px;
+      gap: 8px;
+    }
+    .nav button {
+      width: 44px;
+      height: 44px;
+      font-size: 1.1rem;
+    }
+
+    .slide-number {
+      bottom: 28px;
+      left: 14px;
+      font-size: 0.78rem;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .slide { padding: 24px 12px 108px; }
+    .slide-cover .logo { font-size: 2.4rem; }
+    .slide-cover .title { font-size: 1.5rem; }
+    .slide-content h1 { font-size: 1.3rem; }
+    table { font-size: 0.72rem; }
+    th { padding: 8px 6px; font-size: 0.78rem; }
+    td { padding: 6px; }
+    .flow-step { font-size: 0.85rem; padding: 8px 10px; }
+    .cta-fixed { font-size: 0.76rem; padding: 7px 14px; }
+  }
 </style>
 </head>
 <body>
