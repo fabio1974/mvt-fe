@@ -53,6 +53,7 @@ interface FoodOrder {
   storeDocument: string | null;
   storePhone: string | null;
   storeAddress: string | null;
+  storeAutoPrintEnabled?: boolean;
   createdAt: string;
   acceptedAt: string | null;
   preparingAt: string | null;
@@ -203,6 +204,11 @@ const FoodOrderEditPanel: React.FC<Props> = ({ orderId, viewMode }) => {
   };
 
   const handleAcceptClick = async () => {
+    // Flag do estabelecimento: se false, aceita sem modal nem impressão automática.
+    if (order?.storeAutoPrintEnabled === false) {
+      await doAccept();
+      return;
+    }
     const pref = localStorage.getItem(PRINT_PREF_KEY);
     if (pref === "true") {
       await doAccept();

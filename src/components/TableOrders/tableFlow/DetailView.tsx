@@ -161,27 +161,31 @@ export default function DetailView(props: FlowViewProps) {
         .map((p) => `${p.quantity}x ${p.productName}: ${p.observation!.trim()}`);
       const receiptNotes = obsLines.length > 0 ? obsLines.join("\n") : null;
       const printSource = workingOrder ?? created;
-      printRoundReceipt({
-        orderId: printSource?.id ?? null,
-        tableNumber: table.number,
-        storeName: printSource?.storeName ?? null,
-        storeDocument: printSource?.storeDocument ?? null,
-        storePhone: printSource?.storePhone ?? null,
-        storeAddress: printSource?.storeAddress ?? null,
-        authorName: getUserName() || "Balcão",
-        newItems: pendingItems.map((p) => ({
-          productName: p.productName,
-          quantity: p.quantity,
-          unitPrice: p.unitPrice,
-          commandLabel: labelForCommand(p.commandId),
-        })),
-        cancelledItems: cancelledMeta.map((it) => ({
-          productName: it.productName,
-          quantity: it.quantity,
-          commandLabel: labelForCommand(it.commandId),
-        })),
-        notes: receiptNotes,
-      });
+      // Flag do estabelecimento: se false, pula toda impressão automática.
+      const autoPrintEnabled = (printSource as { storeAutoPrintEnabled?: boolean })?.storeAutoPrintEnabled !== false;
+      if (autoPrintEnabled) {
+        printRoundReceipt({
+          orderId: printSource?.id ?? null,
+          tableNumber: table.number,
+          storeName: printSource?.storeName ?? null,
+          storeDocument: printSource?.storeDocument ?? null,
+          storePhone: printSource?.storePhone ?? null,
+          storeAddress: printSource?.storeAddress ?? null,
+          authorName: getUserName() || "Balcão",
+          newItems: pendingItems.map((p) => ({
+            productName: p.productName,
+            quantity: p.quantity,
+            unitPrice: p.unitPrice,
+            commandLabel: labelForCommand(p.commandId),
+          })),
+          cancelledItems: cancelledMeta.map((it) => ({
+            productName: it.productName,
+            quantity: it.quantity,
+            commandLabel: labelForCommand(it.commandId),
+          })),
+          notes: receiptNotes,
+        });
+      }
 
       // 4. Reset + refresh
       setPendingItems([]);
