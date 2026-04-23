@@ -6,11 +6,21 @@ import printKitchenOrder from "./printKitchenOrder";
 import { buildStoreHeader, escapeHtml as escapeHtmlShared, PRINT_STYLES } from "./printHeader";
 import "./FoodOrderEditPanel.css";
 
+interface OrderItemAddon {
+  id: number;
+  productId: number;
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+}
+
 interface OrderItem {
   id: number;
   quantity: number;
   unitPrice: number;
   notes: string | null;
+  observation?: string | null;
+  addons?: OrderItemAddon[];
   productName: string | null;
   productId: number | null;
   commandId: number | null;
@@ -481,17 +491,30 @@ const FoodOrderEditPanel: React.FC<Props> = ({ orderId, viewMode }) => {
                   const cmdChanged = !prev || prev.commandId !== item.commandId;
                   const next = idx < sortedItems.length - 1 ? sortedItems[idx + 1] : null;
                   const lastOfGroup = !next || next.commandId !== item.commandId;
+                  const addons = item.addons ?? [];
+                  const addonsTotal = addons.reduce((s, a) => s + a.unitPrice * a.quantity, 0);
+                  const lineTotal = item.unitPrice * item.quantity + addonsTotal;
+                  const obsText = item.observation || item.notes;
                   return (
                     <React.Fragment key={item.id}>
                       <tr className={cmdChanged && isTableOrder ? "fop-cmd-first" : ""}>
                         <td><strong>{item.quantity}x</strong></td>
                         <td>
                           {item.productName || "Item"}
-                          {item.notes && <div style={{ fontSize: "12px", color: "#94a3b8", marginTop: 2 }}>📝 {item.notes}</div>}
+                          {addons.map((a) => (
+                            <div key={a.id} style={{ fontSize: "12px", color: "#64748b", marginTop: 2 }}>
+                              + {a.quantity}x {a.productName} (+{fmtMoney(a.unitPrice * a.quantity)})
+                            </div>
+                          ))}
+                          {obsText && (
+                            <div style={{ fontSize: "12px", color: "#94a3b8", marginTop: 2, fontStyle: "italic" }}>
+                              📝 {obsText}
+                            </div>
+                          )}
                         </td>
                         {isTableOrder && <td>{cmdLabel(item.commandId)}</td>}
                         <td style={{ textAlign: "right" }}>{fmtMoney(item.unitPrice)}</td>
-                        <td style={{ textAlign: "right" }}>{fmtMoney(item.unitPrice * item.quantity)}</td>
+                        <td style={{ textAlign: "right" }}>{fmtMoney(lineTotal)}</td>
                         {isTableOrder && (
                           <td style={{ textAlign: "center" }}>
                             <input
