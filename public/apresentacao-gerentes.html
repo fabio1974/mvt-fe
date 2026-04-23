@@ -183,29 +183,6 @@
     align-items: start;
   }
 
-  .cta-fixed {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    padding: 10px 28px;
-    background: linear-gradient(90deg, #8b5cf6, #f59e0b);
-    color: white;
-    font-size: 0.95rem;
-    font-weight: 700;
-    border-radius: 24px;
-    text-decoration: none;
-    z-index: 100;
-    box-shadow: 0 4px 20px rgba(139, 92, 246, 0.5);
-    transition: transform 0.2s, box-shadow 0.2s;
-    white-space: nowrap;
-  }
-
-  .cta-fixed:hover {
-    transform: translateX(-50%) scale(1.05);
-    box-shadow: 0 8px 30px rgba(139, 92, 246, 0.7);
-  }
-
   .nav {
     position: fixed;
     bottom: 24px;
@@ -311,12 +288,6 @@
 
     .badge { font-size: 0.75rem; padding: 3px 10px; }
 
-    .cta-fixed {
-      bottom: 78px;
-      padding: 8px 18px;
-      font-size: 0.82rem;
-    }
-
     .nav {
       bottom: 18px;
       right: 14px;
@@ -344,7 +315,6 @@
     th { padding: 8px 6px; font-size: 0.78rem; }
     td { padding: 6px; }
     .flow-step { font-size: 0.85rem; padding: 8px 10px; }
-    .cta-fixed { font-size: 0.76rem; padding: 7px 14px; }
   }
 </style>
 </head>
@@ -669,9 +639,6 @@
   <button onclick="prevSlide()" title="Anterior">&#8592;</button>
   <button onclick="nextSlide()" title="Próximo">&#8594;</button>
 </div>
-<a href="/login?tab=register&role=ORGANIZER&lockRole=true" class="cta-fixed" id="cta-fixed">
-  Quero me Cadastrar
-</a>
 <div class="progress" id="progress"></div>
 <div class="slide-number" id="slide-number"></div>
 
@@ -684,7 +651,6 @@
     document.getElementById('slide-' + n).classList.add('active');
     document.getElementById('progress').style.width = ((n / total) * 100) + '%';
     document.getElementById('slide-number').textContent = n + ' / ' + total;
-    document.getElementById('cta-fixed').style.display = n === total ? 'none' : 'block';
   }
 
   function nextSlide() { if (current < total) { current++; showSlide(current); } }
