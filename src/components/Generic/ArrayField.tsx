@@ -475,11 +475,7 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
               disabled={field.disabled || disabled}
               readOnly={isReadonly}
               required={field.required}
-              style={isReadonly ? { 
-                backgroundColor: "#f3f4f6", 
-                cursor: "not-allowed",
-                color: "#6b7280"
-              } : undefined}
+              className={isReadonly ? "array-field-readonly-input" : undefined}
             />
           </FormField>
         );
@@ -646,11 +642,8 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
                 readOnly
                 disabled
                 placeholder={getPlaceholder(field) || "--"}
-                style={{
-                  backgroundColor: "#f3f4f6",
-                  cursor: "not-allowed",
-                  textAlign: "center",
-                }}
+                className="array-field-readonly-input"
+                style={{ textAlign: "center" }}
               />
             </FormField>
           </div>
@@ -693,11 +686,8 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
                   readOnly
                   disabled
                   placeholder="--"
-                  style={{
-                    backgroundColor: "#f3f4f6",
-                    cursor: "not-allowed",
-                    textAlign: "center",
-                  }}
+                  className="array-field-readonly-input"
+                  style={{ textAlign: "center" }}
                 />
               </FormField>
             </div>
@@ -893,16 +883,7 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
   // Se não há campos configurados, renderiza mensagem
   if (!fields || fields.length === 0) {
     return (
-      <div
-        style={{
-          padding: "20px",
-          backgroundColor: "#f9fafb",
-          border: "1px solid #e5e7eb",
-          borderRadius: "8px",
-          textAlign: "center",
-          color: "#6b7280",
-        }}
-      >
+      <div className="array-field-empty">
         <p>Nenhum campo configurado para este array.</p>
       </div>
     );
@@ -945,16 +926,7 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
 
       {/* Lista de itens */}
       {value.length === 0 ? (
-        <div
-          style={{
-            padding: "40px 20px",
-            backgroundColor: "#f9fafb",
-            border: "2px dashed #d1d5db",
-            borderRadius: "8px",
-            textAlign: "center",
-            color: "#6b7280",
-          }}
-        >
+        <div className="array-field-empty array-field-empty--dashed">
           <p style={{ margin: "0", fontSize: "14px" }}>
             Nenhum item adicionado ainda.
           </p>
@@ -975,19 +947,11 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
             return (
               <div
                 key={itemKey}
-                style={{
-                  border: "1px solid #e5e7eb",
-                  borderRadius: "8px",
-                  backgroundColor: "#ffffff",
-                  overflow: "hidden",
-                }}
+                className="array-item-container"
               >
                 {/* Header do item */}
                 <div
-                  className="array-item-header"
-                  style={{
-                    borderBottom: isCollapsed ? "none" : "1px solid #e5e7eb",
-                  }}
+                  className={`array-item-header${isCollapsed ? "" : " array-item-header--expanded"}`}
                 >
                   <div className="array-item-header-left">
                     {/* Drag handle */}

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiSettings, FiChevronUp } from "react-icons/fi";
 import { getUserName, getUserRole, isAdmin } from "../../utils/auth";
+import { useDarkMode } from "../../hooks/useDarkMode";
 import LOGO_PATH from "../../config/logo";
 import "./Header.css";
 
@@ -31,6 +32,7 @@ export default function Header({
     propIsLoggedIn ?? Boolean(localStorage.getItem("authToken"));
   const userName = getUserName();
   const userRole = getUserRole();
+  const { isDark, toggle: toggleDark } = useDarkMode(isLoggedIn);
 
   // Determinar classes do header baseado no sidebar
   const headerClasses = [
@@ -420,6 +422,68 @@ export default function Header({
                         />
                       </svg>
                       <span>Alterar Senha</span>
+                    </button>
+
+                    {/* Toggle Modo Escuro */}
+                    <button
+                      style={{
+                        width: "100%",
+                        padding: "12px 16px",
+                        border: "none",
+                        backgroundColor: "transparent",
+                        textAlign: "left",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 12,
+                        fontSize: "0.95rem",
+                        color: "var(--text-strong)",
+                        transition: "background-color 0.15s ease",
+                      }}
+                      onClick={toggleDark}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = "var(--sidebar-item-hover-bg, #f3f4f6)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = "transparent";
+                      }}
+                    >
+                      {isDark ? (
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <circle cx="12" cy="12" r="4" stroke="#3b82f6" strokeWidth="2" />
+                          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" />
+                        </svg>
+                      ) : (
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      )}
+                      <span style={{ flex: 1 }}>Modo {isDark ? "claro" : "escuro"}</span>
+                      <span
+                        aria-hidden
+                        style={{
+                          width: 32,
+                          height: 18,
+                          borderRadius: 9,
+                          backgroundColor: isDark ? "#3b82f6" : "#cbd5e1",
+                          position: "relative",
+                          transition: "background-color 0.15s ease",
+                          flexShrink: 0,
+                        }}
+                      >
+                        <span
+                          style={{
+                            position: "absolute",
+                            top: 2,
+                            left: isDark ? 16 : 2,
+                            width: 14,
+                            height: 14,
+                            borderRadius: "50%",
+                            backgroundColor: "#ffffff",
+                            transition: "left 0.15s ease",
+                          }}
+                        />
+                      </span>
                     </button>
 
                     {/* Dados Bancários — couriers e customers (não CLIENT) */}

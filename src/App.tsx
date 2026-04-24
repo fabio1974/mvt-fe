@@ -10,6 +10,7 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { registerToast } from "./utils/toast";
 import { getUserRole } from "./utils/auth";
+import { useDarkMode } from "./hooks/useDarkMode";
 
 // Página pública de rastreamento (sem layout autenticado)
 const TrackingPage = lazy(() => import("./components/Tracking/TrackingPage"));
@@ -108,15 +109,7 @@ function App() {
     return localStorage.getItem("headerCollapsed") === "true";
   });
 
-  // Dark theme apenas para CLIENT (estabelecimento) logado — melhora contraste em computador de restaurante
-  useEffect(() => {
-    const shouldUseDark = isLoggedIn && isClientRole;
-    if (shouldUseDark) {
-      document.documentElement.setAttribute("data-theme", "dark");
-    } else {
-      document.documentElement.removeAttribute("data-theme");
-    }
-  }, [isLoggedIn, isClientRole]);
+  useDarkMode(isLoggedIn);
 
   useEffect(() => {
     localStorage.setItem("headerCollapsed", String(headerCollapsed));
