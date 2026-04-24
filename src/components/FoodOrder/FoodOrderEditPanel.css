@@ -463,3 +463,128 @@
 .btn-action.btn-open-table:hover {
   background: #bfdbfe;
 }
+
+/* ================================================================
+   DARK THEME OVERRIDES — pedido e comanda (tfoot, subtotal, timeline)
+   ================================================================ */
+[data-theme="dark"] .fop-tfoot-row td {
+  color: hsl(220, 15%, 75%);
+  background: hsl(220, 25%, 15%);
+  border-top: 1.5px solid rgba(0, 153, 255, 0.3) !important;
+}
+
+[data-theme="dark"] .fop-tfoot-total td {
+  color: #f59e0b;
+  background: hsl(220, 25%, 18%);
+  border-top: 1.5px solid rgba(0, 153, 255, 0.5) !important;
+}
+
+[data-theme="dark"] .fop-items-table-wrapper table thead th {
+  background: hsl(220, 25%, 18%) !important;
+  color: hsl(0, 0%, 95%) !important;
+}
+
+[data-theme="dark"] .fop-items-table-wrapper table td {
+  color: hsl(0, 0%, 90%) !important;
+}
+
+[data-theme="dark"] .fop-items-table-wrapper .fop-tfoot-row td,
+[data-theme="dark"] .fop-items-table-wrapper .fop-tfoot-total td {
+  color: hsl(0, 0%, 92%) !important;
+}
+
+[data-theme="dark"] .fop-items-table-wrapper .fop-tfoot-total td {
+  color: #fbbf24 !important;
+}
+
+[data-theme="dark"] .fop-items-table-wrapper {
+  border: 2px solid rgba(0, 153, 255, 0.3);
+}
+
+[data-theme="dark"] .fop-layout .entity-table-wrapper {
+  border: 1.5px solid rgba(0, 153, 255, 0.25);
+}
+
+[data-theme="dark"] .fop-layout table th,
+[data-theme="dark"] .fop-layout table td {
+  border-right: 1.5px solid rgba(0, 153, 255, 0.18) !important;
+  border-bottom: 1.5px solid rgba(0, 153, 255, 0.18) !important;
+}
+
+[data-theme="dark"] .fop-items-table-wrapper tr.fop-cmd-first td {
+  border-top: 2px solid rgba(0, 153, 255, 0.4);
+}
+
+[data-theme="dark"] .fop-items-table-wrapper tr.fop-cmd-subtotal td {
+  background: hsl(220, 25%, 16%);
+  color: hsl(220, 15%, 80%);
+  border-top: 1px dashed rgba(0, 153, 255, 0.4);
+}
+
+/* Timeline dots/lines */
+[data-theme="dark"] .fop-tl-h-dot {
+  background: hsl(220, 25%, 20%);
+  border-color: hsl(220, 25%, 25%);
+}
+
+[data-theme="dark"] .fop-tl-h-label {
+  color: hsl(220, 15%, 60%);
+}
+
+[data-theme="dark"] .fop-tl-h-step.done .fop-tl-h-label {
+  color: hsl(0, 0%, 92%);
+}
+
+[data-theme="dark"] .fop-tl-h-date {
+  color: hsl(220, 15%, 60%);
+}
+
+[data-theme="dark"] .fop-tl-h-line {
+  background: hsl(220, 25%, 20%);
+}
+
+[data-theme="dark"] .fop-tl-cancelled {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+}
+
+/* Notes (inline) */
+[data-theme="dark"] .fop-notes {
+  color: #fbbf24 !important;
+  background: rgba(251, 191, 36, 0.12);
+}
+
+[data-theme="dark"] .fop-notes-input {
+  color: #fbbf24 !important;
+  background: rgba(251, 191, 36, 0.12) !important;
+}
+
+/* Pack button (fica com destaque azul) */
+[data-theme="dark"] .fop-pack-btn,
+[data-theme="dark"] .btn-action.btn-open-table {
+  background: rgba(0, 153, 255, 0.2);
+  color: #93c5fd;
+}
+
+[data-theme="dark"] .fop-pack-btn:hover:not(:disabled),
+[data-theme="dark"] .btn-action.btn-open-table:hover {
+  background: rgba(0, 153, 255, 0.35);
+}
+
+/* Link da mesa — mesmo fundo dos outros inputs, só sublinhado identifica que é clicável */
+[data-theme="dark"] .fop-table-link {
+  background: hsl(220, 25%, 10%);
+  border: 1.5px solid rgba(0, 153, 255, 0.28);
+  color: #93c5fd;
+}
+[data-theme="dark"] .fop-table-link:hover {
+  background: hsl(220, 25%, 12%);
+  border-color: rgba(0, 153, 255, 0.5);
+}
+
+/* Print button */
+[data-theme="dark"] .fop-print-btn {
+  border: 1.5px solid rgba(0, 153, 255, 0.4);
+  color: hsl(0, 0%, 90%);
+}

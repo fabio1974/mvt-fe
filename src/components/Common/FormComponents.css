@@ -672,3 +672,133 @@
     grid-column: span 1;
   }
 }
+
+/* ================================================================
+   DARK THEME OVERRIDES — forms, inputs, botões
+   ================================================================ */
+[data-theme="dark"] .form-container {
+  background: hsl(220, 25%, 13%);
+  border: 1px solid rgba(0, 153, 255, 0.22);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  color: hsl(0, 0%, 92%);
+}
+
+[data-theme="dark"] .form-header {
+  border-bottom: 1px solid rgba(0, 153, 255, 0.18);
+}
+
+[data-theme="dark"] .form-title {
+  color: hsl(0, 0%, 95%);
+}
+
+[data-theme="dark"] .form-icon {
+  color: hsl(220, 15%, 75%);
+}
+
+[data-theme="dark"] .form-header-collapsible:hover .form-title {
+  color: #0099ff;
+}
+
+[data-theme="dark"] .form-collapse-icon {
+  color: hsl(220, 15%, 60%);
+}
+[data-theme="dark"] .form-header-collapsible:hover .form-collapse-icon {
+  color: #0099ff;
+}
+
+[data-theme="dark"] .form-label {
+  color: hsl(0, 0%, 90%);
+}
+
+[data-theme="dark"] .form-input,
+[data-theme="dark"] .form-select,
+[data-theme="dark"] .form-textarea {
+  background-color: hsl(220, 25%, 10%);
+  border: 1px solid rgba(0, 153, 255, 0.28);
+  color: hsl(0, 0%, 92%);
+}
+
+[data-theme="dark"] .form-input:focus,
+[data-theme="dark"] .form-select:focus,
+[data-theme="dark"] .form-textarea:focus {
+  border-color: #0099ff;
+  box-shadow: 0 0 0 3px rgba(0, 153, 255, 0.2);
+}
+
+[data-theme="dark"] .form-input:hover,
+[data-theme="dark"] .form-select:hover,
+[data-theme="dark"] .form-textarea:hover {
+  border-color: rgba(0, 153, 255, 0.5);
+}
+
+[data-theme="dark"] .form-input:disabled,
+[data-theme="dark"] .form-select:disabled,
+[data-theme="dark"] .form-textarea:disabled,
+[data-theme="dark"] .form-input:read-only,
+[data-theme="dark"] .form-select:read-only,
+[data-theme="dark"] .form-textarea:read-only {
+  background-color: hsl(220, 25%, 8%);
+  color: hsl(220, 15%, 60%);
+  border-color: rgba(0, 153, 255, 0.15);
+}
+
+[data-theme="dark"] .form-input-icon-wrapper {
+  color: hsl(220, 15%, 70%);
+}
+
+[data-theme="dark"] .form-password-toggle {
+  color: hsl(220, 15%, 70%);
+}
+[data-theme="dark"] .form-password-toggle:hover {
+  color: hsl(0, 0%, 95%);
+  background-color: rgba(0, 153, 255, 0.15);
+}
+
+[data-theme="dark"] .form-button-primary {
+  background-color: #0099ff;
+  color: #ffffff;
+}
+[data-theme="dark"] .form-button-primary:hover {
+  background-color: #00bbff;
+}
+[data-theme="dark"] .form-button-primary:disabled {
+  background-color: hsl(220, 25%, 25%);
+  color: hsl(220, 15%, 55%);
+}
+
+[data-theme="dark"] .form-button-secondary {
+  background-color: hsl(220, 25%, 17%);
+  color: hsl(0, 0%, 90%);
+  border: 1px solid rgba(0, 153, 255, 0.3);
+}
+[data-theme="dark"] .form-button-secondary:hover {
+  background-color: hsl(220, 25%, 22%);
+  border-color: rgba(0, 153, 255, 0.5);
+}
+
+[data-theme="dark"] .form-actions {
+  border-top: 1px solid rgba(0, 153, 255, 0.18);
+}
+
+[data-theme="dark"] .multi-select-trigger {
+  background-color: hsl(220, 25%, 10%);
+  border: 1px solid rgba(0, 153, 255, 0.28);
+  color: hsl(0, 0%, 92%);
+}
+
+[data-theme="dark"] .array-field-checkbox-text {
+  color: hsl(0, 0%, 90%);
+}
+
+[data-theme="dark"] .form-loading .form-input,
+[data-theme="dark"] .form-loading .form-select,
+[data-theme="dark"] .form-loading .form-textarea {
+  background-color: hsl(220, 25%, 8%);
+}
+
+[data-theme="dark"] .form-input-disabled .react-datepicker__input-container input,
+[data-theme="dark"] .form-input-disabled .form-input,
+[data-theme="dark"] .form-input-disabled input {
+  background-color: hsl(220, 25%, 8%) !important;
+  color: hsl(220, 15%, 55%) !important;
+}

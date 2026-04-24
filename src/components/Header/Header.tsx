@@ -293,13 +293,13 @@ export default function Header({
                     position: "absolute",
                     top: "calc(100% + 8px)",
                     right: 0,
-                    backgroundColor: "#ffffff",
+                    backgroundColor: "var(--card-bg)",
                     borderRadius: 12,
-                    boxShadow: "0 4px 16px rgba(0, 0, 0, 0.15)",
+                    boxShadow: "var(--card-shadow)",
                     minWidth: 220,
                     zIndex: 1000,
                     overflow: "hidden",
-                    border: "1px solid #e5e7eb",
+                    border: "1px solid var(--card-border)",
                   }}
                 >
                   <div
@@ -319,7 +319,7 @@ export default function Header({
                         alignItems: "center",
                         gap: 12,
                         fontSize: "0.95rem",
-                        color: "#374151",
+                        color: "var(--text-strong)",
                         transition: "background-color 0.15s ease",
                       }}
                       onClick={() => {
@@ -327,7 +327,7 @@ export default function Header({
                         navigate("/dados-pessoais");
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = "#f3f4f6";
+                        e.currentTarget.style.backgroundColor = "var(--sidebar-item-hover-bg, #f3f4f6)";
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.backgroundColor = "transparent";
@@ -373,7 +373,7 @@ export default function Header({
                         alignItems: "center",
                         gap: 12,
                         fontSize: "0.95rem",
-                        color: "#374151",
+                        color: "var(--text-strong)",
                         transition: "background-color 0.15s ease",
                       }}
                       onClick={() => {
@@ -381,7 +381,7 @@ export default function Header({
                         navigate("/alterar-senha");
                       }}
                       onMouseEnter={(e) => {
-                        e.currentTarget.style.backgroundColor = "#f3f4f6";
+                        e.currentTarget.style.backgroundColor = "var(--sidebar-item-hover-bg, #f3f4f6)";
                       }}
                       onMouseLeave={(e) => {
                         e.currentTarget.style.backgroundColor = "transparent";
@@ -459,7 +459,7 @@ export default function Header({
                     <div
                       style={{
                         height: 1,
-                        backgroundColor: "#e5e7eb",
+                        backgroundColor: "var(--card-border)",
                         margin: "4px 0",
                       }}
                     />

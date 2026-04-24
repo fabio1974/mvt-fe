@@ -277,3 +277,62 @@
   transform: translateX(3px);
 }
 
+/* ================================================================
+   DARK THEME OVERRIDES — quando CLIENT logado (data-theme="dark")
+   ================================================================ */
+[data-theme="dark"] .serra-header.modern.theme-light {
+  background: linear-gradient(90deg, hsl(220, 25%, 13%), hsl(220, 25%, 10%), hsl(220, 25%, 13%));
+  border-bottom: 1px solid rgba(0, 153, 255, 0.25);
+  box-shadow: 0 2px 16px -4px rgba(0, 153, 255, 0.2);
+}
+
+[data-theme="dark"] .theme-light .brand-title {
+  background: linear-gradient(90deg, #0099ff, #f59e0b);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+[data-theme="dark"] .theme-light .brand-sub {
+  color: #93c5fd;
+}
+
+[data-theme="dark"] .theme-light .modern-nav a {
+  color: hsl(220, 15%, 75%);
+}
+[data-theme="dark"] .theme-light .modern-nav a:hover {
+  color: #0099ff;
+}
+[data-theme="dark"] .theme-light .modern-nav a:after {
+  background: linear-gradient(90deg, #0099ff, #f59e0b);
+}
+
+[data-theme="dark"] .theme-light .btn.header-cta {
+  background: linear-gradient(90deg, #0099ff, #f59e0b);
+  box-shadow: 0 8px 22px -6px rgba(0, 153, 255, 0.6);
+}
+[data-theme="dark"] .theme-light .btn.header-cta:hover {
+  box-shadow: 0 12px 26px -6px rgba(0, 153, 255, 0.8);
+}
+
+[data-theme="dark"] .theme-light .btn.header-ghost {
+  background: rgba(0, 153, 255, 0.15);
+  border: 1px solid rgba(0, 153, 255, 0.35);
+  color: #93c5fd;
+}
+[data-theme="dark"] .theme-light .btn.header-ghost:hover {
+  background: rgba(0, 153, 255, 0.25);
+  border-color: #0099ff;
+  color: #bfdbfe;
+}
+
+[data-theme="dark"] .header-collapse-btn {
+  background: rgba(0, 153, 255, 0.12);
+  border: 1px solid rgba(0, 153, 255, 0.3);
+  color: #93c5fd;
+}
+[data-theme="dark"] .header-collapse-btn:hover {
+  background: rgba(0, 153, 255, 0.22);
+  color: #bfdbfe;
+  border-color: rgba(0, 153, 255, 0.5);
+}

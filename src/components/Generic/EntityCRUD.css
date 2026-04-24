@@ -326,3 +326,77 @@ button.breadcrumb-item.breadcrumb-link:hover {
     padding: 1rem;
   }
 }
+
+/* ================================================================
+   DARK THEME OVERRIDES — breadcrumb + form wrapper em harmonia
+   ================================================================ */
+[data-theme="dark"] .entity-crud-breadcrumb {
+  background: linear-gradient(135deg, hsl(220, 25%, 15%) 0%, hsl(220, 30%, 22%) 100%);
+  box-shadow: 0 2px 12px rgba(0, 153, 255, 0.2);
+  border-bottom: 1px solid rgba(0, 153, 255, 0.3);
+}
+
+[data-theme="dark"] .entity-crud-breadcrumb::after {
+  background: linear-gradient(to bottom, rgba(0, 153, 255, 0.15), transparent);
+}
+
+[data-theme="dark"] .breadcrumb-item {
+  color: rgba(255, 255, 255, 0.85);
+}
+[data-theme="dark"] .breadcrumb-item:hover {
+  color: #ffffff;
+}
+[data-theme="dark"] .breadcrumb-current {
+  color: #ffffff;
+}
+[data-theme="dark"] .breadcrumb-separator {
+  color: rgba(0, 153, 255, 0.6);
+}
+
+[data-theme="dark"] .breadcrumb-expand-header-btn {
+  background: rgba(0, 153, 255, 0.2);
+  border: 1px solid rgba(0, 153, 255, 0.4);
+}
+[data-theme="dark"] .breadcrumb-expand-header-btn:hover {
+  background: rgba(0, 153, 255, 0.35);
+  border-color: #0099ff;
+}
+
+[data-theme="dark"] .breadcrumb-action-btn,
+[data-theme="dark"] .btn-create,
+[data-theme="dark"] .btn-back,
+[data-theme="dark"] .breadcrumb-action-btn.btn-edit {
+  background: #0099ff;
+  box-shadow: 0 2px 4px rgba(0, 153, 255, 0.3);
+}
+
+[data-theme="dark"] .btn-create:hover,
+[data-theme="dark"] .btn-back:hover,
+[data-theme="dark"] .breadcrumb-action-btn.btn-edit:hover {
+  background: #00bbff;
+  box-shadow: 0 4px 8px rgba(0, 153, 255, 0.4);
+}
+[data-theme="dark"] .btn-create:active,
+[data-theme="dark"] .btn-back:active,
+[data-theme="dark"] .breadcrumb-action-btn.btn-edit:active {
+  background: #0077cc;
+}
+
+[data-theme="dark"] .entity-crud-form-wrapper {
+  background: hsl(220, 25%, 13%);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(0, 153, 255, 0.15);
+  color: hsl(0, 0%, 92%);
+}
+
+[data-theme="dark"] .entity-crud-loading .loading-spinner {
+  border-color: rgba(0, 153, 255, 0.15);
+  border-top-color: #0099ff;
+}
+
+[data-theme="dark"] .entity-crud-loading p {
+  color: hsl(220, 15%, 75%);
+}
+
+[data-theme="dark"] .entity-crud-error {
+  color: #fca5a5;
+}

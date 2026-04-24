@@ -1,11 +1,11 @@
-/* Modern Sidebar - Light Theme harmonized */
+/* Modern Sidebar - Tokenized (light default, dark via [data-theme="dark"]) */
 .sidebar {
   width: 280px;
-  background: linear-gradient(180deg, hsl(220, 20%, 98%), hsl(220, 20%, 96%));
+  background: var(--sidebar-bg);
   backdrop-filter: blur(24px) saturate(1.8);
   -webkit-backdrop-filter: blur(24px) saturate(1.8);
-  border-right: 1px solid rgba(59, 130, 246, 0.15);
-  box-shadow: 4px 0 16px -4px rgba(0,0,0,0.08);
+  border-right: 1px solid var(--sidebar-border);
+  box-shadow: var(--sidebar-shadow);
   height: 100vh;
   display: flex;
   flex-direction: column;
@@ -83,7 +83,7 @@
   padding: 24px 16px;
   overflow-y: auto;
   scrollbar-width: thin;
-  scrollbar-color: rgba(0,153,255,0.3) transparent;
+  scrollbar-color: var(--sidebar-border-strong) transparent;
 }
 
 .sidebar-nav::-webkit-scrollbar {
@@ -91,7 +91,7 @@
 }
 
 .sidebar-nav::-webkit-scrollbar-thumb {
-  background: rgba(0,153,255,0.3);
+  background: var(--sidebar-border-strong);
   border-radius: 8px;
 }
 
@@ -103,9 +103,9 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba(59, 130, 246, 0.06);
-  border: 1px solid rgba(59, 130, 246, 0.15);
-  color: hsl(220, 20%, 30%);
+  background: var(--sidebar-item-bg);
+  border: 1px solid var(--sidebar-border);
+  color: var(--sidebar-text);
   font-size: 0.9rem;
   font-weight: 500;
   letter-spacing: 0.3px;
@@ -126,18 +126,18 @@
   top: 0;
   height: 100%;
   width: 4px;
-  background: linear-gradient(180deg, #3b82f6, #f59e0b);
+  background: linear-gradient(180deg, var(--sidebar-accent), var(--sidebar-accent-2));
   transform: scaleY(0);
   transition: transform 0.3s ease;
   border-radius: 0 4px 4px 0;
 }
 
 .sidebar-menu-item:hover {
-  background: rgba(59, 130, 246, 0.12);
-  border-color: rgba(59, 130, 246, 0.3);
-  color: #3b82f6;
+  background: var(--sidebar-item-hover-bg);
+  border-color: var(--sidebar-border-strong);
+  color: var(--sidebar-text-hover);
   transform: translateX(4px);
-  box-shadow: 0 4px 12px -4px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 12px -4px var(--sidebar-border-strong);
 }
 
 .sidebar-menu-item:hover::before {
@@ -184,13 +184,13 @@
 
 .sidebar-group-header {
   font-weight: 600;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(245, 158, 11, 0.1));
-  border-color: rgba(59, 130, 246, 0.3);
+  background: var(--sidebar-group-header-bg);
+  border-color: var(--sidebar-border-strong);
   position: relative;
 }
 
 .sidebar-group-header:hover {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(245, 158, 11, 0.15));
+  background: var(--sidebar-group-header-hover-bg);
 }
 
 .sidebar-group-chevron {
@@ -223,24 +223,24 @@
 .sidebar-sub-item {
   font-size: 0.85rem;
   padding: 8px 14px;
-  background: rgba(59, 130, 246, 0.05);
-  border-left: 3px solid rgba(59, 130, 246, 0.4);
+  background: var(--sidebar-sub-item-bg);
+  border-left: 3px solid var(--sidebar-border-strong);
   margin-left: 12px;
-  color: hsl(220, 20%, 35%);
+  color: var(--sidebar-text-sub);
   font-weight: 500;
 }
 
 .sidebar-sub-item:hover {
-  background: rgba(59, 130, 246, 0.15);
-  border-left-color: #3b82f6;
+  background: var(--sidebar-sub-item-hover-bg);
+  border-left-color: var(--sidebar-accent);
   transform: translateX(6px);
-  color: #2563eb;
+  color: var(--sidebar-accent-strong);
 }
 
 .sidebar-sub-item.active {
-  background: rgba(59, 130, 246, 0.2);
-  border-left-color: #f59e0b;
-  color: #3b82f6;
+  background: var(--sidebar-sub-item-active-bg);
+  border-left-color: var(--sidebar-accent-2);
+  color: var(--sidebar-accent);
   font-weight: 600;
 }
 
@@ -251,9 +251,9 @@
 
 /* Item ativo (primeiro nível) */
 .sidebar-menu-item.active {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(245, 158, 11, 0.08));
-  border-color: rgba(59, 130, 246, 0.4);
-  color: #3b82f6;
+  background: var(--sidebar-item-active-bg);
+  border-color: var(--sidebar-border-strong);
+  color: var(--sidebar-text-hover);
   font-weight: 600;
 }
 
@@ -326,7 +326,7 @@
 
 /* Footer com toggle button estiloso */
 .sidebar-footer {
-  background: linear-gradient(180deg, transparent, hsl(220, 20%, 95%));
+  background: var(--sidebar-footer-bg);
   backdrop-filter: blur(12px);
   width: 280px;
   min-height: 50px;
@@ -334,7 +334,7 @@
   align-items: center;
   justify-content: flex-end;
   padding: 0 16px;
-  border-top: 1px solid rgba(59, 130, 246, 0.15);
+  border-top: 1px solid var(--sidebar-border);
   position: fixed;
   left: 0;
   bottom: 0;
@@ -353,21 +353,26 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(245, 158, 11, 0.1));
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  background: var(--sidebar-group-header-bg);
+  border: 1px solid var(--sidebar-border-strong);
   border-radius: 10px;
   width: 32px;
   height: 32px;
   padding: 0;
+  color: #0099ff;
   transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
-  box-shadow: 0 2px 8px -2px rgba(59, 130, 246, 0.3);
+  box-shadow: 0 2px 8px -2px var(--sidebar-border-strong);
+}
+
+[data-theme="dark"] .sidebar-close-btn {
+  color: #ffffff;
 }
 
 .sidebar-close-btn:hover {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(245, 158, 11, 0.15));
-  border-color: rgba(59, 130, 246, 0.5);
+  background: var(--sidebar-group-header-hover-bg);
+  border-color: var(--sidebar-border-strong);
   transform: scale(1.08);
-  box-shadow: 0 8px 20px -4px rgba(59, 130, 246, 0.6);
+  box-shadow: 0 8px 20px -4px var(--sidebar-border-strong);
 }
 
 .sidebar-close-btn:active {

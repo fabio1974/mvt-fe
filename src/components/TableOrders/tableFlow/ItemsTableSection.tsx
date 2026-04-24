@@ -210,12 +210,12 @@ export default function ItemsTableSection({
                 <td className="col-name" style={{ textDecoration: willCancel ? "line-through" : "none" }}>
                   {it.productName}
                   {addons.map((a) => (
-                    <div key={a.id} style={{ fontSize: "12px", color: "#64748b", marginTop: 2 }}>
+                    <div key={a.id} className="tfe-item-addon-line">
                       + {a.quantity}x {a.productName} (+R$ {(a.unitPrice * a.quantity).toFixed(2).replace(".", ",")})
                     </div>
                   ))}
                   {obsText && (
-                    <div style={{ fontSize: "12px", color: "#94a3b8", marginTop: 2, fontStyle: "italic" }}>
+                    <div className="tfe-item-obs-line">
                       📝 {obsText}
                     </div>
                   )}
@@ -265,20 +265,15 @@ export default function ItemsTableSection({
 
       {hasPackaged && (
         <button
-          className="tfe-pack-btn"
+          className="tfe-print-packed-btn"
           onClick={handlePrintPackaging}
-          style={{
-            marginTop: 12, padding: "10px 14px", background: "#dbeafe",
-            color: "#1d4ed8", border: "none", borderRadius: 8, fontWeight: 700, cursor: "pointer",
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%",
-          }}
         >
           <FiPackage size={16} /> Imprimir empacotados
         </button>
       )}
 
       {cancelledItemIds.size > 0 && (
-        <div style={{ marginTop: 10, fontSize: 12, color: "#94a3b8", textAlign: "center", fontStyle: "italic" }}>
+        <div className="tfe-cancel-hint">
           {cancelledItemIds.size} cancelamento(s) marcado(s) — use "Enviar Atualização" pra confirmar.
         </div>
       )}

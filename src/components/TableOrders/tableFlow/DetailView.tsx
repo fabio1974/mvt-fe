@@ -272,17 +272,13 @@ export default function DetailView(props: FlowViewProps) {
 
       {/* Status bar: ênfase em Pedido #N + badge de status */}
       {order && (
-        <div className="tfe-status-bar" style={{
-          background: order.status === "AWAITING_PAYMENT" ? "#fff7ed" : "#eff6ff",
-        }}>
+        <div
+          className={`tfe-status-bar ${order.status === "AWAITING_PAYMENT" ? "awaiting-payment" : "in-progress"}`}
+        >
           <div style={{ flex: 1 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <span
-                style={{
-                  fontWeight: 800, fontSize: 18,
-                  color: order.status === "AWAITING_PAYMENT" ? "#7c2d12" : "#1e40af",
-                  cursor: "pointer", textDecoration: "underline",
-                }}
+                className={`tfe-status-order-link ${order.status === "AWAITING_PAYMENT" ? "awaiting" : "progress"}`}
                 onClick={() => { const id = order.id; onExit(); routerNav(`/pedidos?orderId=${id}`); }}
                 title="Abrir detalhes do pedido"
               >
@@ -296,7 +292,7 @@ export default function DetailView(props: FlowViewProps) {
                 {ORDER_STATUS_LABELS[order.status] || order.status}
               </span>
             </div>
-            <div style={{ fontSize: 12, color: "#64748b", marginTop: 3 }}>
+            <div className="tfe-status-subline">
               {itemCount} itens — R$ {total.toFixed(2).replace(".", ",")}
             </div>
           </div>
@@ -383,12 +379,12 @@ export default function DetailView(props: FlowViewProps) {
                   onClick={() => navigate({ kind: "product", productId: p.productId, editingDraftId: p.draftId })}
                   title="Editar rascunho"
                 >
-                  <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                    <span style={{ color: "#7c3aed", fontWeight: 700, minWidth: 28 }}>{p.quantity}x</span>
-                    <div style={{ flex: 1 }}>
-                      <span style={{ fontSize: 14 }}>{p.productName}</span>
+                  <div className="tfe-pending-main">
+                    <span className="tfe-pending-qty">{p.quantity}x</span>
+                    <div className="tfe-pending-name">
+                      {p.productName}
                     </div>
-                    <span style={{ fontSize: 13, color: "#64748b" }}>
+                    <span className="tfe-pending-price">
                       R$ {itemTotal.toFixed(2).replace(".", ",")}
                     </span>
                     <FiEdit2 size={16} color="#94a3b8" />
@@ -404,16 +400,16 @@ export default function DetailView(props: FlowViewProps) {
                     </button>
                   </div>
                   {p.addons.length > 0 && (
-                    <div style={{ marginLeft: 40, marginTop: 2 }}>
+                    <div className="tfe-pending-addons">
                       {p.addons.map((a) => (
-                        <div key={a.productId} style={{ color: "#64748b", fontSize: 11 }}>
+                        <div key={a.productId} className="tfe-pending-addon-line">
                           + {a.quantity}x {a.productName} (+R$ {(a.unitPrice * a.quantity).toFixed(2).replace(".", ",")})
                         </div>
                       ))}
                     </div>
                   )}
                   {p.observation && (
-                    <div style={{ marginLeft: 40, marginTop: 2, color: "#94a3b8", fontSize: 11, fontStyle: "italic" }}>
+                    <div className="tfe-pending-obs">
                       Obs: {p.observation}
                     </div>
                   )}

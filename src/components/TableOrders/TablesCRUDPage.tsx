@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FiBookmark, FiXCircle, FiUnlock, FiLock, FiMinus, FiPlus } from "react-icons/fi";
+import { FiBookmark, FiXCircle, FiUnlock, FiLock, FiMaximize2, FiMinimize2 } from "react-icons/fi";
 import { useSearchParams } from "react-router-dom";
 import { api } from "../../services/api";
 import PageContainer from "../Generic/PageContainer";
@@ -61,6 +61,24 @@ const TablesCRUDPage: React.FC = () => {
   const [initialCount, setInitialCount] = useState(10);
   const [adjusting, setAdjusting] = useState(false);
   const [selectedTable, setSelectedTable] = useState<RestaurantTable | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const sync = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", sync);
+    return () => document.removeEventListener("fullscreenchange", sync);
+  }, []);
+
+  useEffect(() => {
+    if (isFullscreen) document.body.classList.add("fullscreen-mesas");
+    else document.body.classList.remove("fullscreen-mesas");
+    return () => document.body.classList.remove("fullscreen-mesas");
+  }, [isFullscreen]);
+
+  const toggleFullscreen = async () => {
+    if (document.fullscreenElement) await document.exitFullscreen();
+    else await document.documentElement.requestFullscreen();
+  };
 
   const handleChangeStatus = async (tableId: number, status: string) => {
     try {
@@ -68,16 +86,6 @@ const TablesCRUDPage: React.FC = () => {
       fetchTables();
     } catch (e: any) {
       alert(e?.response?.data?.error || "Erro ao trocar status");
-    }
-  };
-
-  const handleAdjustSeats = async (table: RestaurantTable, delta: number) => {
-    const newSeats = Math.max(1, (table.seats || 1) + delta);
-    try {
-      await api.put(`/api/tables/${table.id}`, { seats: newSeats });
-      fetchTables();
-    } catch (e: any) {
-      alert(e?.response?.data?.message || "Erro ao atualizar lugares");
     }
   };
 
@@ -117,7 +125,7 @@ const TablesCRUDPage: React.FC = () => {
     }
   }, [openTableParam, tables]);
 
-  const GRID_COLS = 6;
+  const GRID_COLS = 5;
 
   const handleCreateInitial = async () => {
     if (initialCount < 1) return;
@@ -185,6 +193,14 @@ const TablesCRUDPage: React.FC = () => {
   if (loading) return <div className="to-loading">Carregando...</div>;
 
   return (
+    <>
+    <button
+      className="to-fullscreen-btn"
+      onClick={toggleFullscreen}
+      title={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
+    >
+      {isFullscreen ? <FiMinimize2 size={30} strokeWidth={3} /> : <FiMaximize2 size={30} strokeWidth={3} />}
+    </button>
     <PageContainer
       title="Mesas"
       headerActions={
@@ -247,23 +263,7 @@ const TablesCRUDPage: React.FC = () => {
                 key={table.id}
                 className={`to-table-card ${table.active ? "" : "inactive"}`}
               >
-                <div className="to-table-header">
-                  <div className="to-table-number-badge">{table.number}</div>
-                  <div className="to-seats-control">
-                    <button
-                      className="to-seats-btn"
-                      title="Remover lugar"
-                      disabled={(table.seats || 1) <= 1}
-                      onClick={() => handleAdjustSeats(table, -1)}
-                    ><FiMinus size={10} /></button>
-                    <span className="to-seats-value">{table.seats || 0}</span>
-                    <button
-                      className="to-seats-btn"
-                      title="Adicionar lugar"
-                      onClick={() => handleAdjustSeats(table, 1)}
-                    ><FiPlus size={10} /></button>
-                  </div>
-                </div>
+                <div className="to-table-number-badge">{table.number}</div>
                 <div className="to-table-info" onClick={() => setSelectedTable(table)} style={{ cursor: "pointer" }}>
                   <div
                     className="to-table-status"
@@ -314,6 +314,7 @@ const TablesCRUDPage: React.FC = () => {
         />
       )}
     </PageContainer>
+    </>
   );
 };
 

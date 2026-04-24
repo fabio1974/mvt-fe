@@ -378,7 +378,7 @@ export default function Sidebar({
               >
                 <path
                   d="M12 8L20 16L12 24"
-                  stroke="#0099ff"
+                  stroke="currentColor"
                   strokeWidth="3"
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -394,7 +394,7 @@ export default function Sidebar({
               >
                 <path
                   d="M20 8L12 16L20 24"
-                  stroke="#0099ff"
+                  stroke="currentColor"
                   strokeWidth="3"
                   strokeLinecap="round"
                   strokeLinejoin="round"

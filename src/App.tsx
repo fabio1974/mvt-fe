@@ -108,6 +108,16 @@ function App() {
     return localStorage.getItem("headerCollapsed") === "true";
   });
 
+  // Dark theme apenas para CLIENT (estabelecimento) logado — melhora contraste em computador de restaurante
+  useEffect(() => {
+    const shouldUseDark = isLoggedIn && isClientRole;
+    if (shouldUseDark) {
+      document.documentElement.setAttribute("data-theme", "dark");
+    } else {
+      document.documentElement.removeAttribute("data-theme");
+    }
+  }, [isLoggedIn, isClientRole]);
+
   useEffect(() => {
     localStorage.setItem("headerCollapsed", String(headerCollapsed));
   }, [headerCollapsed]);

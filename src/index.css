@@ -109,6 +109,89 @@ button:focus-visible {
     --shadow-accent-glow: 0 0 40px hsl(32 95% 55% / 0.3);
     
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Dashboard/Sidebar tokens — default (light) */
+    --app-bg: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    --app-bg-solid: #f8fafc;
+    --sidebar-bg: linear-gradient(180deg, hsl(220, 20%, 98%), hsl(220, 20%, 96%));
+    --sidebar-footer-bg: linear-gradient(180deg, transparent, hsl(220, 20%, 95%));
+    --sidebar-border: rgba(59, 130, 246, 0.15);
+    --sidebar-border-strong: rgba(59, 130, 246, 0.3);
+    --sidebar-item-bg: rgba(59, 130, 246, 0.06);
+    --sidebar-item-hover-bg: rgba(59, 130, 246, 0.12);
+    --sidebar-item-active-bg: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(245, 158, 11, 0.08));
+    --sidebar-sub-item-bg: rgba(59, 130, 246, 0.05);
+    --sidebar-sub-item-hover-bg: rgba(59, 130, 246, 0.15);
+    --sidebar-sub-item-active-bg: rgba(59, 130, 246, 0.2);
+    --sidebar-group-header-bg: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(245, 158, 11, 0.1));
+    --sidebar-group-header-hover-bg: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(245, 158, 11, 0.15));
+    --sidebar-text: hsl(220, 20%, 30%);
+    --sidebar-text-sub: hsl(220, 20%, 35%);
+    --sidebar-text-hover: #3b82f6;
+    --sidebar-accent: #3b82f6;
+    --sidebar-accent-strong: #2563eb;
+    --sidebar-accent-2: #f59e0b;
+    --sidebar-shadow: 4px 0 16px -4px rgba(0,0,0,0.08);
+
+    /* Card/surface tokens (light) */
+    --card-bg: #ffffff;
+    --card-border: #e2e8f0;
+    --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    --card-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
+    --text-strong: #1e293b;
+    --text-label: #475569;
+    --text-muted: #64748b;
+    --surface-inset: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  }
+
+  /* Dark theme body/html background (aplica sempre que data-theme="dark") */
+  :root[data-theme="dark"],
+  :root[data-theme="dark"] body {
+    background-color: hsl(220, 25%, 10%);
+  }
+
+  /* Dark theme — inspirado na landing page (deep navy + cyan vibrante) */
+  :root[data-theme="dark"] {
+    --app-bg: linear-gradient(135deg, hsl(220, 25%, 10%) 0%, hsl(220, 25%, 14%) 100%);
+    --app-bg-solid: hsl(220, 25%, 10%);
+    --sidebar-bg: linear-gradient(180deg, hsl(220, 25%, 13%), hsl(220, 25%, 10%));
+    --sidebar-footer-bg: linear-gradient(180deg, transparent, hsl(220, 25%, 9%));
+    --sidebar-border: rgba(0, 153, 255, 0.25);
+    --sidebar-border-strong: rgba(0, 153, 255, 0.5);
+    --sidebar-item-bg: rgba(0, 153, 255, 0.08);
+    --sidebar-item-hover-bg: rgba(0, 153, 255, 0.18);
+    --sidebar-item-active-bg: linear-gradient(135deg, rgba(0, 153, 255, 0.25), rgba(245, 158, 11, 0.15));
+    --sidebar-sub-item-bg: rgba(0, 153, 255, 0.06);
+    --sidebar-sub-item-hover-bg: rgba(0, 153, 255, 0.2);
+    --sidebar-sub-item-active-bg: rgba(0, 153, 255, 0.28);
+    --sidebar-group-header-bg: linear-gradient(135deg, rgba(0, 153, 255, 0.2), rgba(245, 158, 11, 0.12));
+    --sidebar-group-header-hover-bg: linear-gradient(135deg, rgba(0, 153, 255, 0.32), rgba(245, 158, 11, 0.18));
+    --sidebar-text: hsl(0, 0%, 95%);
+    --sidebar-text-sub: hsl(220, 15%, 78%);
+    --sidebar-text-hover: #0099ff;
+    --sidebar-accent: #0099ff;
+    --sidebar-accent-strong: #00bbff;
+    --sidebar-accent-2: #f59e0b;
+    --sidebar-shadow: 4px 0 24px -4px rgba(0, 153, 255, 0.15);
+
+    /* Modal glow — usado em todas as modais no dark theme */
+    --modal-glow:
+      0 0 0 1px rgba(0, 153, 255, 0.4),
+      0 0 24px rgba(0, 153, 255, 0.35),
+      0 0 48px rgba(0, 153, 255, 0.22),
+      0 20px 60px rgba(0, 0, 0, 0.6);
+
+    /* Card/surface tokens (dark) */
+    --card-bg: hsl(220, 25%, 13%);
+    --card-border: rgba(0, 153, 255, 0.22);
+    --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    --card-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --text-strong: hsl(0, 0%, 95%);
+    --text-label: hsl(0, 0%, 90%);
+    --text-muted: hsl(220, 15%, 75%);
+    --surface-inset: linear-gradient(135deg, rgba(0, 153, 255, 0.15) 0%, rgba(0, 153, 255, 0.25) 100%);
+
+    color-scheme: dark;
   }
 }
 

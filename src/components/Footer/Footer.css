@@ -312,3 +312,59 @@
     gap: 12px;
   }
 }
+
+/* ================================================================
+   FOOTER compacto — 3 cenários: logged-out, logged-in light, dark
+   ================================================================ */
+
+/* Logged-out (landing) — escuro nativo */
+.serra-footer.compact.logged-out {
+  background: hsl(220, 20%, 15%);
+  color: hsl(0, 0%, 70%);
+  border-top: 1px solid hsl(220, 15%, 25%);
+}
+
+.serra-footer.compact.logged-out .compact-copyright,
+.serra-footer.compact.logged-out .compact-links a {
+  color: hsl(0, 0%, 70%);
+}
+
+.serra-footer.compact.logged-out .compact-links a:hover {
+  color: #60a5fa;
+}
+
+/* Logged-in light (default) */
+.serra-footer.compact.logged-in {
+  background: hsl(220, 20%, 96%);
+  color: hsl(220, 20%, 40%);
+  border-top: 1px solid rgba(59, 130, 246, 0.15);
+}
+
+.serra-footer.compact.logged-in .compact-copyright,
+.serra-footer.compact.logged-in .compact-links a {
+  color: hsl(220, 20%, 40%);
+}
+
+.serra-footer.compact.logged-in .compact-links a:hover {
+  color: #3b82f6;
+}
+
+/* Logged-in DARK (CLIENT) — integra com fundo da página */
+[data-theme="dark"] .serra-footer.compact.logged-in {
+  background: hsl(220, 25%, 10%);
+  color: hsl(220, 15%, 65%);
+  border-top: 1px solid rgba(0, 153, 255, 0.15);
+}
+
+[data-theme="dark"] .serra-footer.compact.logged-in .compact-copyright,
+[data-theme="dark"] .serra-footer.compact.logged-in .compact-links a {
+  color: hsl(220, 15%, 65%);
+}
+
+[data-theme="dark"] .serra-footer.compact.logged-in .compact-links a:hover {
+  color: #0099ff;
+}
+
+[data-theme="dark"] .serra-footer.compact.logged-in .compact-links a:after {
+  background: linear-gradient(90deg, #0099ff, #ffffff);
+}

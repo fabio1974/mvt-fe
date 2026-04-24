@@ -865,3 +865,319 @@
   font-size: 16px;
   color: #1e293b;
 }
+
+/* ================================================================
+   DARK THEME OVERRIDES — TableOrderModal (popup completo)
+   ================================================================ */
+[data-theme="dark"] .tom-overlay {
+  background: rgba(0, 0, 0, 0.78);
+}
+
+[data-theme="dark"] .tom-panel {
+  background: hsl(220, 25%, 12%);
+  box-shadow: var(--modal-glow);
+  color: hsl(0, 0%, 92%);
+}
+
+[data-theme="dark"] .tom-loading {
+  color: hsl(220, 15%, 70%);
+}
+
+[data-theme="dark"] .tom-header {
+  border-bottom: 2px solid rgba(0, 153, 255, 0.3);
+}
+
+[data-theme="dark"] .tom-header h2 {
+  color: hsl(0, 0%, 95%);
+}
+
+[data-theme="dark"] .tom-order-badge {
+  background: rgba(59, 130, 246, 0.22);
+  color: #93c5fd;
+}
+
+[data-theme="dark"] .tom-close-btn {
+  color: hsl(220, 15%, 70%);
+}
+[data-theme="dark"] .tom-close-btn:hover {
+  color: hsl(0, 0%, 95%);
+  background: rgba(0, 153, 255, 0.15);
+}
+
+[data-theme="dark"] .tom-status-bar {
+  border-bottom: 1px solid rgba(0, 153, 255, 0.22);
+}
+
+[data-theme="dark"] .tom-status-info strong {
+  color: hsl(0, 0%, 95%);
+}
+[data-theme="dark"] .tom-status-info span {
+  color: hsl(220, 15%, 70%);
+}
+
+[data-theme="dark"] .tom-show-cmds-btn {
+  background: rgba(0, 153, 255, 0.18);
+  color: #93c5fd;
+  border: 1px solid rgba(0, 153, 255, 0.35);
+}
+[data-theme="dark"] .tom-show-cmds-btn:hover {
+  background: rgba(0, 153, 255, 0.3);
+}
+
+[data-theme="dark"] .tom-order-summary table {
+  background: hsl(220, 25%, 13%);
+  color: hsl(0, 0%, 90%);
+}
+
+[data-theme="dark"] .tom-order-summary th {
+  background: hsl(220, 25%, 17%);
+  color: hsl(0, 0%, 95%);
+  border-bottom: 1px solid rgba(0, 153, 255, 0.25);
+}
+
+[data-theme="dark"] .tom-order-summary td {
+  border-bottom: 1px solid rgba(0, 153, 255, 0.12);
+}
+
+[data-theme="dark"] .tom-order-summary .total-row td {
+  background: hsl(220, 25%, 17%);
+}
+
+[data-theme="dark"] .tom-section-label {
+  color: hsl(220, 15%, 75%);
+}
+
+[data-theme="dark"] .tom-status-change-btn {
+  background: hsl(220, 25%, 17%);
+  color: hsl(0, 0%, 92%);
+  border: 1px solid rgba(0, 153, 255, 0.3);
+}
+[data-theme="dark"] .tom-status-change-btn:hover {
+  background: hsl(220, 25%, 22%);
+  border-color: rgba(0, 153, 255, 0.5);
+}
+
+[data-theme="dark"] .tom-category-header {
+  background: hsl(220, 25%, 15%);
+  color: hsl(0, 0%, 92%);
+  border-bottom: 1px solid rgba(0, 153, 255, 0.18);
+}
+
+[data-theme="dark"] .tom-product {
+  background: hsl(220, 25%, 13%);
+  border: 1px solid rgba(0, 153, 255, 0.15);
+  color: hsl(0, 0%, 92%);
+}
+
+[data-theme="dark"] .tom-product:hover {
+  background: hsl(220, 25%, 16%);
+  border-color: rgba(0, 153, 255, 0.35);
+}
+
+[data-theme="dark"] .tom-product.active {
+  border-color: #8b5cf6;
+  background: rgba(139, 92, 246, 0.15);
+}
+
+[data-theme="dark"] .tom-product-name {
+  color: hsl(0, 0%, 95%);
+}
+
+[data-theme="dark"] .tom-product-price {
+  color: #c4b5fd;
+}
+
+[data-theme="dark"] .tom-product-desc {
+  color: hsl(220, 15%, 70%);
+}
+
+[data-theme="dark"] .tom-qty-btn.minus {
+  background: rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+}
+[data-theme="dark"] .tom-qty-btn.minus:hover {
+  background: rgba(239, 68, 68, 0.4);
+}
+[data-theme="dark"] .tom-qty-btn.plus {
+  background: #8b5cf6;
+  color: #fff;
+}
+[data-theme="dark"] .tom-qty-btn.plus:hover {
+  background: #7c3aed;
+}
+
+[data-theme="dark"] .tom-qty-value {
+  color: hsl(0, 0%, 95%);
+}
+
+[data-theme="dark"] .tom-empty {
+  color: hsl(220, 15%, 65%);
+  background: hsl(220, 25%, 13%);
+  border: 1px dashed rgba(0, 153, 255, 0.3);
+}
+
+[data-theme="dark"] .tom-footer {
+  background: hsl(220, 25%, 13%);
+  border-top: 1px solid rgba(0, 153, 255, 0.22);
+}
+
+[data-theme="dark"] .tom-notes-toggle {
+  background: hsl(220, 25%, 17%);
+  color: hsl(0, 0%, 90%);
+  border: 1px solid rgba(0, 153, 255, 0.3);
+}
+[data-theme="dark"] .tom-notes-toggle:hover {
+  background: hsl(220, 25%, 22%);
+}
+
+[data-theme="dark"] .tom-notes-input {
+  background: hsl(220, 25%, 10%);
+  color: hsl(0, 0%, 92%);
+  border: 1px solid rgba(0, 153, 255, 0.28);
+}
+[data-theme="dark"] .tom-notes-input:focus {
+  border-color: #0099ff;
+  box-shadow: 0 0 0 3px rgba(0, 153, 255, 0.2);
+}
+
+[data-theme="dark"] .tom-footer-info {
+  color: hsl(220, 15%, 75%);
+}
+[data-theme="dark"] .tom-footer-info strong {
+  color: hsl(0, 0%, 95%);
+}
+
+[data-theme="dark"] .tom-payment-overlay {
+  background: rgba(0, 0, 0, 0.78);
+}
+
+[data-theme="dark"] .tom-payment-modal {
+  background: hsl(220, 25%, 13%);
+  color: hsl(0, 0%, 92%);
+  box-shadow: var(--modal-glow);
+}
+
+[data-theme="dark"] .tom-payment-modal h3 {
+  color: hsl(0, 0%, 95%);
+}
+[data-theme="dark"] .tom-payment-modal p {
+  color: hsl(220, 15%, 75%);
+}
+
+[data-theme="dark"] .tom-breakdown-total,
+[data-theme="dark"] .tom-breakdown-grand {
+  color: hsl(0, 0%, 92%);
+}
+
+[data-theme="dark"] .tom-breakdown-grand {
+  border-top: 2px solid #8b5cf6;
+}
+
+/* === Dark overrides adicionais — commands bar + summary wrapper + move/close === */
+[data-theme="dark"] .tom-order-summary {
+  background: hsl(220, 25%, 13%);
+  border-bottom: 2px solid rgba(0, 153, 255, 0.22);
+}
+
+[data-theme="dark"] .tom-order-summary th {
+  background: hsl(220, 25%, 17%);
+  color: hsl(0, 0%, 90%);
+  border: 1.5px solid rgba(0, 153, 255, 0.18);
+}
+
+[data-theme="dark"] .tom-order-summary td {
+  border: 1.5px solid rgba(0, 153, 255, 0.18);
+  color: hsl(0, 0%, 92%);
+}
+
+[data-theme="dark"] .tom-order-summary .col-price {
+  color: hsl(220, 15%, 75%);
+}
+
+[data-theme="dark"] .tom-order-summary .total-row td {
+  border-top: 3px solid rgba(0, 153, 255, 0.4);
+}
+
+[data-theme="dark"] .tom-order-summary .total-row .col-price strong {
+  color: hsl(0, 0%, 98%);
+}
+
+[data-theme="dark"] .tom-table-status-section {
+  border-bottom: 2px solid rgba(0, 153, 255, 0.22);
+}
+
+/* Commands bar (Mesa / Comandas / Fechar) */
+[data-theme="dark"] .tom-commands-tabs {
+  background: hsl(220, 25%, 13%);
+  border-bottom: 1px solid rgba(0, 153, 255, 0.2);
+}
+
+[data-theme="dark"] .tom-cmd-tab {
+  background: hsl(220, 25%, 17%);
+  border: 1px solid rgba(0, 153, 255, 0.3);
+  color: hsl(0, 0%, 90%);
+}
+
+[data-theme="dark"] .tom-cmd-tab:hover {
+  border-color: #8b5cf6;
+  color: #c4b5fd;
+}
+
+[data-theme="dark"] .tom-cmd-tab.active {
+  background: #8b5cf6;
+  border-color: #8b5cf6;
+  color: #fff;
+}
+
+[data-theme="dark"] .tom-cmd-tab.paid {
+  background: hsl(220, 25%, 15%);
+  color: hsl(220, 15%, 60%);
+  border-color: rgba(0, 153, 255, 0.15);
+}
+
+[data-theme="dark"] .tom-cmd-tab.paid.active {
+  background: hsl(220, 15%, 40%);
+  color: #fff;
+  border-color: hsl(220, 15%, 40%);
+}
+
+[data-theme="dark"] .tom-empty-cmd {
+  color: hsl(220, 15%, 65%);
+}
+
+/* Move button */
+[data-theme="dark"] .tom-move-btn {
+  background: hsl(220, 25%, 17%);
+  border: 1px solid rgba(0, 153, 255, 0.3);
+  color: hsl(220, 15%, 80%);
+}
+[data-theme="dark"] .tom-move-btn:hover {
+  background: #8b5cf6;
+  border-color: #8b5cf6;
+  color: #fff;
+}
+
+/* Table status section (labels) */
+[data-theme="dark"] .tom-section-label {
+  color: hsl(220, 15%, 70%);
+}
+
+/* Payment option buttons (Fechar Mesa modal) */
+[data-theme="dark"] .tom-payment-btn {
+  background: hsl(220, 25%, 17%);
+  color: hsl(0, 0%, 92%);
+  border: 1px solid rgba(0, 153, 255, 0.2);
+}
+
+[data-theme="dark"] .tom-payment-btn:hover {
+  background: hsl(220, 25%, 22%);
+  border-color: rgba(0, 153, 255, 0.45);
+}
+
+[data-theme="dark"] .tom-payment-cancel {
+  color: hsl(220, 15%, 65%);
+}
+
+[data-theme="dark"] .tom-payment-cancel:hover {
+  color: hsl(0, 0%, 92%);
+}

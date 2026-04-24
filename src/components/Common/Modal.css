@@ -122,3 +122,31 @@
     padding: 10px;
   }
 }
+
+/* ================================================================
+   DARK THEME OVERRIDES
+   ================================================================ */
+[data-theme="dark"] .modal-overlay {
+  background-color: rgba(0, 0, 0, 0.75);
+}
+
+[data-theme="dark"] .modal-content {
+  background-color: hsl(220, 25%, 13%);
+  box-shadow: var(--modal-glow);
+  color: hsl(0, 0%, 92%);
+}
+
+[data-theme="dark"] .modal-header {
+  border-bottom: 1px solid rgba(0, 153, 255, 0.2);
+}
+
+[data-theme="dark"] .modal-title {
+  color: hsl(0, 0%, 95%);
+}
+
+[data-theme="dark"] .modal-close-button {
+  color: hsl(220, 15%, 70%);
+}
+[data-theme="dark"] .modal-close-button:hover {
+  color: hsl(0, 0%, 95%);
+}

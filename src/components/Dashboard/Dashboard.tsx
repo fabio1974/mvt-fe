@@ -119,7 +119,7 @@ const Dashboard: React.FC = () => {
       style={{
         flex: 1,
         padding: "32px 24px",
-        background: "linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)",
+        background: "var(--app-bg)",
         minHeight: "calc(100vh - 120px)",
       }}
     >
@@ -182,20 +182,20 @@ const Dashboard: React.FC = () => {
         {!isMobile && (
         <div
           style={{
-            background: "white",
+            background: "var(--card-bg)",
             borderRadius: "16px",
             padding: "24px 32px",
             marginBottom: "32px",
-            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
+            boxShadow: "var(--card-shadow)",
             display: "flex",
             alignItems: "center",
             gap: "20px",
-            border: "1px solid #e2e8f0",
+            border: "1px solid var(--card-border)",
           }}
         >
           <div
             style={{
-              background: "linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)",
+              background: "var(--surface-inset)",
               borderRadius: "12px",
               padding: "16px",
               display: "flex",
@@ -210,7 +210,7 @@ const Dashboard: React.FC = () => {
               style={{
                 fontSize: "1.25rem",
                 fontWeight: 600,
-                color: "#1e293b",
+                color: "var(--text-strong)",
                 marginBottom: "8px",
               }}
             >
@@ -218,7 +218,7 @@ const Dashboard: React.FC = () => {
             </h2>
             <p
               style={{
-                color: "#64748b",
+                color: "var(--text-muted)",
                 fontSize: "1rem",
                 lineHeight: 1.5,
               }}
@@ -238,7 +238,7 @@ const Dashboard: React.FC = () => {
           style={{
             fontSize: "1.1rem",
             fontWeight: 600,
-            color: "#475569",
+            color: "var(--text-label)",
             marginBottom: "16px",
           }}
         >
@@ -258,8 +258,8 @@ const Dashboard: React.FC = () => {
               style={{
                 background: action.highlight
                   ? "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)"
-                  : "white",
-                border: action.highlight ? "none" : "1px solid #e2e8f0",
+                  : "var(--card-bg)",
+                border: action.highlight ? "none" : "1px solid var(--card-border)",
                 borderRadius: "12px",
                 padding: "20px 24px",
                 display: "flex",
@@ -270,26 +270,26 @@ const Dashboard: React.FC = () => {
                 textAlign: "left",
                 boxShadow: action.highlight
                   ? "0 4px 14px rgba(59, 130, 246, 0.4)"
-                  : "0 2px 8px rgba(0, 0, 0, 0.04)",
+                  : "var(--card-shadow-sm)",
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = "translateY(-2px)";
                 e.currentTarget.style.boxShadow = action.highlight
                   ? "0 8px 24px rgba(59, 130, 246, 0.5)"
-                  : "0 8px 24px rgba(0, 0, 0, 0.1)";
+                  : "var(--card-shadow)";
                 if (!action.highlight) e.currentTarget.style.borderColor = action.color;
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = "translateY(0)";
                 e.currentTarget.style.boxShadow = action.highlight
                   ? "0 4px 14px rgba(59, 130, 246, 0.4)"
-                  : "0 2px 8px rgba(0, 0, 0, 0.04)";
-                if (!action.highlight) e.currentTarget.style.borderColor = "#e2e8f0";
+                  : "var(--card-shadow-sm)";
+                if (!action.highlight) e.currentTarget.style.borderColor = "var(--card-border)";
               }}
             >
               <div
                 style={{
-                  background: action.highlight ? "rgba(255,255,255,0.2)" : `${action.color}15`,
+                  background: action.highlight ? "rgba(255,255,255,0.2)" : `${action.color}25`,
                   borderRadius: "10px",
                   padding: "12px",
                   color: action.highlight ? "white" : action.color,
@@ -305,7 +305,7 @@ const Dashboard: React.FC = () => {
                   style={{
                     fontSize: "1rem",
                     fontWeight: 600,
-                    color: action.highlight ? "white" : "#1e293b",
+                    color: action.highlight ? "white" : "var(--text-strong)",
                     marginBottom: "4px",
                   }}
                 >
@@ -314,7 +314,7 @@ const Dashboard: React.FC = () => {
                 <p
                   style={{
                     fontSize: "0.875rem",
-                    color: action.highlight ? "rgba(255,255,255,0.8)" : "#64748b",
+                    color: action.highlight ? "rgba(255,255,255,0.8)" : "var(--text-muted)",
                   }}
                 >
                   {action.description}

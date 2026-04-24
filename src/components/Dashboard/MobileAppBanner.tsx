@@ -55,7 +55,7 @@ const MobileAppBanner: React.FC<MobileAppBannerProps> = ({ userName }) => {
           Seja {getGenderedGreeting().toLowerCase()} ao <strong>Zapi10</strong>!
         </p>
         <p className="mobile-app-banner-text">
-          Para criar corridas, visualizar histórico e muito mais, baixe nosso aplicativo:
+          ...para uma melhor experiência, baixe nosso aplicativo:
         </p>
       </div>
 
@@ -74,15 +74,19 @@ const MobileAppBanner: React.FC<MobileAppBannerProps> = ({ userName }) => {
           </div>
         </a>
 
-        {/* Apple Store - Desabilitado (Em Breve) */}
-        <div className="store-button app-store disabled">
-          <div className="coming-soon-badge">Em breve</div>
+        {/* Apple Store */}
+        <a
+          href="https://apps.apple.com/br/app/zapi10-entregas-e-corridas/id6759847860"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="store-button app-store"
+        >
           <FaApple size={24} />
           <div className="store-button-text">
             <span className="store-label">Baixar na</span>
             <span className="store-name">App Store</span>
           </div>
-        </div>
+        </a>
       </div>
     </div>
   );
