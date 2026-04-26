@@ -60,7 +60,7 @@
 .retry-button {
   margin-top: 24px;
   padding: 12px 32px;
-  background: white;
+  background: var(--card-bg);
   color: #dc2626;
   border: none;
   border-radius: 8px;

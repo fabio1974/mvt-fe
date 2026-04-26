@@ -332,7 +332,7 @@ const Footer = () => {
             color: "hsl(0, 0%, 70%)",
           }}
         >
-          <p>© 2024 Zapi10. Todos os direitos reservados.</p>
+          <p>© 2025 Moveltrack Sistemas. Todos os direitos reservados.</p>
         </div>
       </div>
     </footer>

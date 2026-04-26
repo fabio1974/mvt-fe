@@ -100,6 +100,21 @@ const EntityTable: React.FC<EntityTableProps> = ({
   const filtersRef = useRef<Record<string, string>>(initialFilters);
   const [filterClearKey, setFilterClearKey] = useState(0);
   const debounceRef = useRef<number | null>(null);
+  // Sort: clicar no header de uma coluna sortable cicla asc → desc → unset
+  const [sortBy, setSortBy] = useState<string | null>(null);
+  const [sortDir, setSortDir] = useState<'asc' | 'desc' | null>(null);
+  const handleHeaderSort = (fieldName: string) => {
+    if (sortBy !== fieldName) {
+      setSortBy(fieldName);
+      setSortDir('asc');
+    } else if (sortDir === 'asc') {
+      setSortDir('desc');
+    } else {
+      setSortBy(null);
+      setSortDir(null);
+    }
+    setCurrentPage(1);
+  };
 
   // Carrega metadata do contexto
   useEffect(() => {
@@ -158,6 +173,9 @@ const EntityTable: React.FC<EntityTableProps> = ({
             return acc;
           }, {} as Record<string, string>),
         });
+        if (sortBy && sortDir) {
+          params.append('sort', `${sortBy},${sortDir}`);
+        }
 
         const response = await api.get(`${endpoint}?${params}`);
         const responseData = response.data as any[] | EntityResponse<any>;
@@ -179,14 +197,14 @@ const EntityTable: React.FC<EntityTableProps> = ({
         setLoading(false);
       }
     },
-    [metadata, currentPage, itemsPerPage, apiEndpoint]
+    [metadata, currentPage, itemsPerPage, apiEndpoint, sortBy, sortDir]
   );
 
   useEffect(() => {
     if (metadata) {
       fetchData(filters);
     }
-  }, [metadata, currentPage, itemsPerPage, fetchData, filters]);
+  }, [metadata, currentPage, itemsPerPage, fetchData, filters, sortBy, sortDir]);
 
   // Reseta para página 1 quando os filtros mudarem
   useEffect(() => {
@@ -515,14 +533,25 @@ const EntityTable: React.FC<EntityTableProps> = ({
                       Número
                     </th>
                   )}
-                  {visibleFields.map((field) => (
-                    <th
-                      key={field.name}
-                      style={{ textAlign: getAlignment(field.align) }}
-                    >
-                      {translateLabel(field.label)}
-                    </th>
-                  ))}
+                  {visibleFields.map((field) => {
+                    const isSortable = field.sortable !== false;
+                    const isActive = sortBy === field.name;
+                    const arrow = !isActive ? '' : sortDir === 'asc' ? ' ▲' : sortDir === 'desc' ? ' ▼' : '';
+                    return (
+                      <th
+                        key={field.name}
+                        style={{
+                          textAlign: getAlignment(field.align),
+                          cursor: isSortable ? 'pointer' : 'default',
+                          userSelect: 'none',
+                        }}
+                        onClick={isSortable ? () => handleHeaderSort(field.name) : undefined}
+                        title={isSortable ? 'Clique pra ordenar' : undefined}
+                      >
+                        {translateLabel(field.label)}{arrow}
+                      </th>
+                    );
+                  })}
                 </tr>
               </thead>
               <tbody>

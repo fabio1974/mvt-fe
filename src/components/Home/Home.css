@@ -1,5 +1,5 @@
 .section-container {
-  background: #fff;
+  background: var(--card-bg);
   border-radius: 16px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   padding: 40px 24px;
@@ -19,7 +19,7 @@
   flex-direction: column;
   gap: 0;
   padding: 0;
-  background: #ffffff;
+  background: var(--card-bg);
 }
 
 /* Wrapper para afastar hero das sections com fundo diferenciado */

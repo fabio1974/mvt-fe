@@ -1,10 +1,77 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FiSettings, FiChevronUp } from "react-icons/fi";
+import { FiSettings, FiChevronUp, FiMessageSquare } from "react-icons/fi";
 import { getUserName, getUserRole, isAdmin } from "../../utils/auth";
 import { useDarkMode } from "../../hooks/useDarkMode";
+import { supportService } from "../../services/supportService";
 import LOGO_PATH from "../../config/logo";
 import "./Header.css";
+
+/**
+ * Ícone de "Fale Conosco" no header com badge de não-lidas.
+ * Para ADMIN: count de conversas com mensagens novas. Para outros: count de respostas
+ * do admin não lidas. Polling a cada 30s.
+ */
+function SupportHeaderIcon() {
+  const navigate = useNavigate();
+  const role = getUserRole();
+  const isAdminUser = role === "ROLE_ADMIN";
+  const [unread, setUnread] = useState<number>(0);
+
+  useEffect(() => {
+    const fetch = async () => {
+      const c = isAdminUser
+        ? await supportService.getAdminUnreadCount()
+        : await supportService.getMyUnreadCount();
+      setUnread(c);
+    };
+    fetch();
+    const t = setInterval(fetch, 30_000);
+    return () => clearInterval(t);
+  }, [isAdminUser]);
+
+  return (
+    <button
+      onClick={() => navigate("/suporte")}
+      title="Fale Conosco"
+      style={{
+        position: "relative",
+        background: "transparent",
+        border: "none",
+        cursor: "pointer",
+        padding: 8,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        color: "var(--text-strong)",
+      }}
+    >
+      <FiMessageSquare size={22} />
+      {unread > 0 && (
+        <span
+          style={{
+            position: "absolute",
+            top: 2,
+            right: 2,
+            background: "#ef4444",
+            color: "#fff",
+            borderRadius: 10,
+            minWidth: 18,
+            height: 18,
+            fontSize: 10,
+            fontWeight: 700,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "0 4px",
+          }}
+        >
+          {unread > 9 ? "9+" : unread}
+        </span>
+      )}
+    </button>
+  );
+}
 
 interface HeaderProps {
   isMobile?: boolean;
@@ -192,6 +259,8 @@ export default function Header({
         {/* Informações do usuário logado - sempre na extrema direita */}
         {isLoggedIn && userName && (
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginLeft: "auto", marginRight: "16px" }}>
+            {/* Ícone "Fale Conosco" — sempre visível após login. Badge de não-lidas. */}
+            <SupportHeaderIcon />
             {/* Dropdown do usuário */}
             <div style={{ position: "relative" }}>
             <div

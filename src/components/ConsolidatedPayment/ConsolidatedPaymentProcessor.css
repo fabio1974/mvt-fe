@@ -56,7 +56,7 @@
 
 /* Task Status Container */
 .task-status-container {
-  background: white;
+  background: var(--card-bg);
   border-radius: 12px;
   padding: 1.5rem;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);

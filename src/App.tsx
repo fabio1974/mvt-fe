@@ -42,6 +42,8 @@ const PersonalDataPage = lazy(() => import("./components/User/PersonalDataPage")
 const AddressPage = lazy(() => import("./components/User/AddressPage"));
 const ConsolidatedPaymentProcessor = lazy(() => import("./components/ConsolidatedPayment/ConsolidatedPaymentProcessor"));
 const SiteConfigurationCRUDPage = lazy(() => import("./components/SiteConfiguration/SiteConfigurationCRUDPage"));
+const AnnouncementCRUDPage = lazy(() => import("./components/Announcement/AnnouncementCRUDPage"));
+const MobileVersionReportPage = lazy(() => import("./components/Reports/MobileVersionReportPage"));
 const SpecialZonesMapPage = lazy(() => import("./components/SpecialZones/SpecialZonesMapPage"));
 const BankAccountPage = lazy(() => import("./components/User/BankAccountPage"));
 const CourierEarningsPage = lazy(() => import("./components/Courier/CourierEarningsPage"));
@@ -52,7 +54,8 @@ const FoodOrderCRUDPage = lazy(() => import("./components/FoodOrder/FoodOrderCRU
 const TablesCRUDPage = lazy(() => import("./components/TableOrders/TablesCRUDPage"));
 const CashReportPage = lazy(() => import("./components/Reports/CashReportPage"));
 const CashRegisterPage = lazy(() => import("./components/CashRegister/CashRegisterPage"));
-const CourierDebtsPage = lazy(() => import("./components/CourierDebts/CourierDebtsPage"));
+const RepassesPage = lazy(() => import("./components/Repasses/RepassesPage"));
+const SupportPage = lazy(() => import("./components/Support/SupportPage"));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -246,7 +249,8 @@ function App() {
                 <Route path="/mesas" element={<TablesCRUDPage />} />
                 <Route path="/relatorios/caixa" element={<CashReportPage />} />
                 <Route path="/caixa" element={<CashRegisterPage />} />
-                <Route path="/dividas-couriers" element={<CourierDebtsPage />} />
+                <Route path="/repasses" element={<RepassesPage />} />
+                <Route path="/suporte" element={<SupportPage />} />
                 <Route path="/pagamentos" element={<PaymentCRUDPage />} />
                 <Route path="/balanco-financeiro" element={<OrganizerFinancialPage />} />
                 <Route path="/dados-pessoais" element={<PersonalDataPage />} />
@@ -254,6 +258,8 @@ function App() {
                 <Route path="/dados-endereco" element={<AddressPage />} />
                 <Route path="/processar-pagamentos" element={<ConsolidatedPaymentProcessor />} />
                 <Route path="/configuracoes" element={<SiteConfigurationCRUDPage />} />
+                <Route path="/anuncios" element={<AnnouncementCRUDPage />} />
+                <Route path="/versoes-mobile" element={<MobileVersionReportPage />} />
                 <Route path="/zonas-especiais" element={<SpecialZonesMapPage />} />
                 <Route path="/payment/success" element={<PaymentSuccessPage />} />
                 <Route path="/payment/cancel" element={<PaymentCancelPage />} />

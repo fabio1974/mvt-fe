@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { FiSend, FiCheckCircle, FiXCircle, FiRefreshCw, FiCopy } from "react-icons/fi";
 import { api } from "../../services/api";
 import PageContainer from "../Generic/PageContainer";
-import "./CourierDebts.css";
+import "./Repasses.css";
 
 interface TransferSummary {
   id: number;
@@ -12,9 +12,10 @@ interface TransferSummary {
   createdAt: string;
 }
 
-interface CourierDebt {
-  courierId: string;
-  courierName: string;
+interface RecipientDebt {
+  recipientId: string;
+  recipientName: string;
+  role: "COURIER" | "ORGANIZER" | string | null;
   pixKey: string | null;
   pixKeyType: "CPF" | "CNPJ" | "EMAIL" | "PHONE" | "EVP" | null;
   totalCents: number;
@@ -24,8 +25,13 @@ interface CourierDebt {
 const fmtBRL = (cents: number) =>
   (cents / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-const CourierDebtsPage: React.FC = () => {
-  const [debts, setDebts] = useState<CourierDebt[]>([]);
+const roleLabel = (role: string | null | undefined): string => {
+  if (role === "ORGANIZER") return "Gerente";
+  return "Motoboy";
+};
+
+const RepassesPage: React.FC = () => {
+  const [debts, setDebts] = useState<RecipientDebt[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [working, setWorking] = useState<Set<number>>(new Set());
@@ -34,10 +40,10 @@ const CourierDebtsPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.get<CourierDebt[]>("/api/pagarme-transfers/by-courier");
+      const res = await api.get<RecipientDebt[]>("/api/pagarme-transfers/by-recipient");
       setDebts(res.data);
     } catch (e: any) {
-      setError(e?.response?.data?.error || e?.message || "Falha ao carregar dívidas");
+      setError(e?.response?.data?.error || e?.message || "Falha ao carregar repasses");
     } finally {
       setLoading(false);
     }
@@ -52,8 +58,8 @@ const CourierDebtsPage: React.FC = () => {
     setWorking((s) => { const n = new Set(s); n.delete(id); return n; });
   };
 
-  const handleSendPix = async (t: TransferSummary, courierName: string) => {
-    if (!window.confirm(`Disparar PIX de ${fmtBRL(t.amountCents)} para ${courierName}?`)) return;
+  const handleSendPix = async (t: TransferSummary, recipientName: string) => {
+    if (!window.confirm(`Disparar PIX de ${fmtBRL(t.amountCents)} para ${recipientName}?`)) return;
     mark(t.id);
     try {
       await api.post(`/api/pagarme-transfers/${t.id}/send-pix`);
@@ -101,22 +107,22 @@ const CourierDebtsPage: React.FC = () => {
 
   return (
     <PageContainer
-      title="Dívidas com Couriers"
+      title="Repasses"
       headerActions={
-        <button className="courier-debts-refresh" onClick={fetch} disabled={loading}>
+        <button className="repasses-refresh" onClick={fetch} disabled={loading}>
           <FiRefreshCw className={loading ? "spinning" : ""} />
           Atualizar
         </button>
       }
     >
-      <div className="courier-debts-container">
+      <div className="repasses-container">
         <div className="summary-bar">
           <div>
             <span>Total PENDING</span>
             <strong>{fmtBRL(totalAll)}</strong>
           </div>
           <div>
-            <span>Couriers</span>
+            <span>Colaboradores</span>
             <strong>{debts.length}</strong>
           </div>
           <div>
@@ -125,16 +131,16 @@ const CourierDebtsPage: React.FC = () => {
           </div>
         </div>
 
-        {error && <div className="courier-debts-error">{error}</div>}
+        {error && <div className="repasses-error">{error}</div>}
 
         {debts.length === 0 && !loading ? (
-          <div className="courier-debts-empty">Nenhuma dívida pendente. 👏</div>
+          <div className="repasses-empty">Nenhum repasse pendente. 👏</div>
         ) : (
           debts.map((d) => (
-            <div key={d.courierId} className="courier-card">
-              <div className="courier-card-header">
+            <div key={d.recipientId} className="repasses-card">
+              <div className="repasses-card-header">
                 <div>
-                  <h3>{d.courierName || d.courierId}</h3>
+                  <h3>{d.recipientName || d.recipientId}</h3>
                   {d.pixKey ? (
                     <div className="pix-key">
                       <span className="pix-key-type">{d.pixKeyType}</span>
@@ -144,10 +150,10 @@ const CourierDebtsPage: React.FC = () => {
                       </button>
                     </div>
                   ) : (
-                    <div className="pix-key-missing">⚠️ Courier não cadastrou chave PIX</div>
+                    <div className="pix-key-missing">⚠️ {roleLabel(d.role)} não cadastrou chave PIX</div>
                   )}
                 </div>
-                <div className="courier-total">
+                <div className="repasses-total">
                   <span>Total a pagar</span>
                   <strong>{fmtBRL(d.totalCents)}</strong>
                 </div>
@@ -177,9 +183,9 @@ const CourierDebtsPage: React.FC = () => {
                         <td className="actions">
                           <button
                             className="btn-send"
-                            onClick={() => handleSendPix(t, d.courierName)}
+                            onClick={() => handleSendPix(t, d.recipientName)}
                             disabled={busy || !d.pixKey}
-                            title={!d.pixKey ? "Courier sem chave PIX" : "Disparar PIX via provider"}
+                            title={!d.pixKey ? `${roleLabel(d.role)} sem chave PIX` : "Disparar PIX via provider"}
                           >
                             <FiSend /> Enviar PIX
                           </button>
@@ -213,4 +219,4 @@ const CourierDebtsPage: React.FC = () => {
   );
 };
 
-export default CourierDebtsPage;
+export default RepassesPage;

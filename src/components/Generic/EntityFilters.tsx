@@ -161,6 +161,41 @@ const EntityFilters: React.FC<EntityFiltersProps> = ({
         );
       }
 
+      case "daterange": {
+        // Filtro de range: persistido como dois valores compostos
+        // `<filter.name>From` e `<filter.name>To`. Os dois caem no
+        // URLSearchParams do EntityTable e batem com a convenção do BE.
+        const fromKey = `${filter.name}From`;
+        const toKey = `${filter.name}To`;
+        const fromValue = values[fromKey] ? new Date(values[fromKey]) : null;
+        const toValue = values[toKey] ? new Date(values[toKey]) : null;
+        return (
+          <FormField key={filter.name} label={filter.label}>
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <FormDatePicker
+                selected={fromValue}
+                onChange={(date) => {
+                  onChange(fromKey, date ? date.toISOString().split("T")[0] : "");
+                }}
+                placeholder="Início"
+                showTimeSelect={false}
+                dateFormat="dd/MM/yyyy"
+              />
+              <span style={{ color: "var(--text-secondary, #64748b)" }}>até</span>
+              <FormDatePicker
+                selected={toValue}
+                onChange={(date) => {
+                  onChange(toKey, date ? date.toISOString().split("T")[0] : "");
+                }}
+                placeholder="Fim"
+                showTimeSelect={false}
+                dateFormat="dd/MM/yyyy"
+              />
+            </div>
+          </FormField>
+        );
+      }
+
       case "boolean":
         return (
           <FormField key={filter.name} label={filter.label}>

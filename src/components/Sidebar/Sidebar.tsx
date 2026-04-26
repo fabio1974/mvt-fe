@@ -22,6 +22,9 @@ import {
   FiFileText,
   FiInbox,
   FiAlertCircle,
+  FiBell,
+  FiMessageSquare,
+  FiSmartphone,
 } from "react-icons/fi";
 import "./Sidebar.css";
 
@@ -173,9 +176,9 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
     roles: ["ROLE_ADMIN"],
   },
   {
-    label: "Dívidas com Couriers",
+    label: "Repasses",
     icon: <FiAlertCircle size={22} color="#f97316" />,
-    path: "/dividas-couriers",
+    path: "/repasses",
     roles: ["ROLE_ADMIN"],
   },
   {
@@ -183,6 +186,24 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
     icon: <FiMapPin size={22} color="#ef4444" />,
     path: "/zonas-especiais",
     roles: ["ROLE_ADMIN"],
+  },
+  {
+    label: "Anúncios",
+    icon: <FiBell size={22} color="#3b82f6" />,
+    path: "/anuncios",
+    roles: ["ROLE_ADMIN"],
+  },
+  {
+    label: "Versões Mobile",
+    icon: <FiSmartphone size={22} color="#06b6d4" />,
+    path: "/versoes-mobile",
+    roles: ["ROLE_ADMIN"],
+  },
+  // Fale Conosco / Suporte — visível pra todos os roles autenticados
+  {
+    label: "Fale Conosco",
+    icon: <FiMessageSquare size={22} color="#3b82f6" />,
+    path: "/suporte",
   },
 ].sort((a, b) => {
   // "Início" sempre no topo absoluto

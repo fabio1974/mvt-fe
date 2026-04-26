@@ -228,9 +228,10 @@ test.describe('Logout', () => {
     const token = await page.evaluate(() => localStorage.getItem('authToken'));
     expect(token).toBeTruthy();
 
-    // Clica no nome/avatar do header para abrir dropdown
-    const headerUser = page.locator('header, [class*="header"]').locator('button, [class*="user"], [class*="dropdown"], [class*="avatar"]').first();
-    await headerUser.click();
+    // Clica no avatar/nome do usuário (classe `user-info-button` em Header.tsx)
+    // pra abrir o dropdown. Usar a classe específica é mais robusto do que
+    // pegar o primeiro botão do header (que pode mudar de ordem com features novas).
+    await page.locator('.user-info-button').click();
     await page.waitForTimeout(500);
 
     // Clica em "Sair" no dropdown

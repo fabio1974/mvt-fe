@@ -28,7 +28,7 @@ export default function Footer({
             v{VERSION}
           </span>
           {' • '}
-          © 2025 Zapi10. Todos os direitos reservados.
+          © 2025 Moveltrack Sistemas. Todos os direitos reservados.
         </p>
         <div className="compact-links">
           <a href="#">TERMOS</a>

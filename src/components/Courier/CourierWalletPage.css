@@ -121,7 +121,7 @@
 
 /* Detail card */
 .wallet-detail-card {
-  background: white;
+  background: var(--card-bg);
   border: 1px solid #e5e7eb;
   border-radius: 14px;
   padding: 16px;
