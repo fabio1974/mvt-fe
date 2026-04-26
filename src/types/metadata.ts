@@ -115,16 +115,18 @@ export interface MetadataResponse {
 
 // ==================== FORM METADATA ====================
 
-export type FormFieldType = 
-  | 'text' 
-  | 'textarea' 
-  | 'number' 
-  | 'email' 
+export type FormFieldType =
+  | 'text'
+  | 'textarea'
+  | 'number'
+  | 'email'
   | 'password'
-  | 'date' 
+  | 'date'
   | 'datetime'
   | 'daterange'
-  | 'select' 
+  | 'select'
+  | 'multiselect'
+  | 'markdown'
   | 'boolean'
   | 'entity'
   | 'city'

@@ -59,6 +59,23 @@ const EntityFilters: React.FC<EntityFiltersProps> = ({
           </FormField>
         );
 
+      case "multiselect": {
+        const selected = (values[filter.name] || "").split(",").filter(Boolean);
+        const opts = filter.options
+          ?.slice()
+          .filter((option) => !(excludeOptions[filter.name]?.includes(option.value)))
+          .sort((a, b) => a.label.localeCompare(b.label, "pt-BR")) || [];
+        return (
+          <FormField key={filter.name} label={filter.label}>
+            <MultiSelectDropdown
+              options={opts}
+              selectedValues={selected}
+              onChange={(newSelected) => onChange(filter.name, newSelected.join(","))}
+            />
+          </FormField>
+        );
+      }
+
       case "select": {
         // Multi-select com dropdown de checkboxes
         if (multiSelectFilters.includes(filter.name)) {

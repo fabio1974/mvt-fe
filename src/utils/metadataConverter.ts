@@ -18,6 +18,8 @@ function mapFieldType(backendType: string): FormFieldMetadata['type'] {
     'datetime': 'date',
     'enum': 'select',
     'select': 'select', // Backend já envia "select" para enums
+    'multiselect': 'multiselect', // ← Multi-seleção com checkboxes (CSV)
+    'markdown': 'markdown', // ← Editor de markdown com toolbar
     'city': 'city', // Tipo especial para cidades
     'entity': 'entity', // ← Adiciona entity
     'nested': 'array', // ← Adiciona nested
@@ -159,15 +161,19 @@ function convertFieldToFormField(field: FieldMetadata): FormFieldMetadata | null
     field.name.toLowerCase() === 'latitude' ||
     field.name.toLowerCase() === 'longitude';
   
-  // Se é MANY_TO_ONE, força o tipo para 'entity'
-  // Se é campo de endereço COMPLETO, força o tipo para 'address'
-  const mappedType = hasOptions 
-    ? 'select' 
-    : isManyToOneRelationship 
-      ? 'entity' 
-      : isAddressField
-        ? 'address'
-        : mapFieldType(field.type);
+  // Se o backend já enviou um tipo explícito como "multiselect" ou "markdown", respeita;
+  // caso contrário, hasOptions cai para 'select' (enum). MANY_TO_ONE → 'entity'; address → 'address'.
+  const explicitType = mapFieldType(field.type);
+  const isExplicitFormType = explicitType === 'multiselect' || explicitType === 'markdown' || explicitType === 'textarea';
+  const mappedType = isExplicitFormType
+    ? explicitType
+    : hasOptions
+      ? 'select'
+      : isManyToOneRelationship
+        ? 'entity'
+        : isAddressField
+          ? 'address'
+          : explicitType;
 
   const formField: FormFieldMetadata = {
     name: field.name,

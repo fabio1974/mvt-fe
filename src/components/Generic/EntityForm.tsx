@@ -13,6 +13,8 @@ import type {
 } from "../../types/metadata";
 import EntitySelect from "../Common/EntitySelect";
 import EntityTypeahead from "../Common/EntityTypeahead";
+import MultiSelectDropdown from "../Common/MultiSelectDropdown";
+import MarkdownField from "../Common/MarkdownField";
 import {
   FormContainer,
   FormField,
@@ -1319,6 +1321,48 @@ const EntityForm: React.FC<EntityFormProps> = ({
         break;
       }
 
+      case "multiselect": {
+        // Valor de string (CSV "A,B,C") ↔ array (["A","B","C"]) pra UI multiselect.
+        // Usado em rolesCsv do Announcement: BE armazena CSV mas form mostra checkboxes.
+        const csvValue = typeof stringValue === "string" ? stringValue : "";
+        const arrayValue = csvValue
+          ? csvValue.split(",").map((s) => s.trim()).filter(Boolean)
+          : [];
+        const opts = (field.options || []).map((o) => ({ label: o.label, value: o.value }));
+        fieldContent = (
+          <FormField
+            label={translateLabel(field.label)}
+            required={field.required}
+            error={error}
+          >
+            <MultiSelectDropdown
+              options={opts}
+              selectedValues={arrayValue}
+              onChange={(selected) => handleChange(field.name, selected.join(","))}
+              placeholder="Selecione..."
+            />
+          </FormField>
+        );
+        break;
+      }
+
+      case "markdown": {
+        fieldContent = (
+          <FormField
+            label={translateLabel(field.label)}
+            required={field.required}
+            error={error}
+          >
+            <MarkdownField
+              value={stringValue}
+              onChange={(v) => handleChange(field.name, v)}
+              placeholder={field.placeholder || undefined}
+            />
+          </FormField>
+        );
+        break;
+      }
+
       case "date": {
         // 🎂 Detecta se é campo de data de nascimento
         const isBirthDate =
@@ -1692,9 +1736,9 @@ const EntityForm: React.FC<EntityFormProps> = ({
 
     // Separa campos por tipo para organização
     const regularFields = section.fields.filter(
-      (f) => f.type !== "array" && f.type !== "textarea" && f.type !== "nested-one"
+      (f) => f.type !== "array" && f.type !== "textarea" && f.type !== "markdown" && f.type !== "nested-one"
     );
-    const textareaFields = section.fields.filter((f) => f.type === "textarea");
+    const textareaFields = section.fields.filter((f) => f.type === "textarea" || f.type === "markdown");
     const arrayFields = hideArrayFields
       ? []
       : section.fields.filter((f) => f.type === "array" && !hiddenFields.includes(f.name)); // Filtra também por hiddenFields
