@@ -30,10 +30,24 @@ import { FiX, FiPackage, FiUsers, FiDollarSign } from "react-icons/fi";
 interface SplitItem {
   recipientId: string;
   recipientName: string;
-  recipientRole: "COURIER" | "ORGANIZER" | "PLATFORM";
+  recipientRole: "COURIER" | "ORGANIZER" | "PLATFORM" | "CLIENT";
   amount: number;
   percentage: number;
   liable: boolean;
+}
+
+interface OrderItemDetail {
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+}
+
+interface OrderItem {
+  orderId: number;
+  subtotal: number;
+  clientName: string;
+  items: OrderItemDetail[];
+  splits: SplitItem[];
 }
 
 interface DeliveryItem {
@@ -55,6 +69,8 @@ interface PaymentReportResponse {
   pixQrCode: string | null;
   pixQrCodeUrl: string | null;
   expiresAt: string | null;
+  /** Pedidos (food) — só populado em pagamentos ZAPI_FOOD */
+  orders?: OrderItem[];
   deliveries: DeliveryItem[];
   consolidatedSplits: SplitItem[];
 }
@@ -84,6 +100,7 @@ const PaymentReportModal: React.FC<PaymentReportModalProps> = ({
       COURIER: "Motoboy",
       ORGANIZER: "Gerente",
       PLATFORM: "Plataforma",
+      CLIENT: "Estabelecimento",
     };
     return labels[role] || role;
   };
@@ -379,6 +396,117 @@ const PaymentReportModal: React.FC<PaymentReportModalProps> = ({
               </table>
             </div>
           </div>
+
+          {/* Pedidos (food) — só pra ZAPI_FOOD */}
+          {report.orders && report.orders.length > 0 && (
+            <div style={{ marginBottom: "20px" }}>
+              <h3
+                style={{
+                  fontSize: "18px",
+                  fontWeight: 600,
+                  color: "#111827",
+                  marginBottom: "12px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
+                <FiPackage /> Pedidos Incluídos ({report.orders.length})
+              </h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                {report.orders.map((order, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      border: "1px solid #e5e7eb",
+                      borderRadius: "8px",
+                      padding: "16px",
+                      backgroundColor: "#fafafa",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: "12px",
+                      }}
+                    >
+                      <h4 style={{ fontSize: "16px", fontWeight: 600, color: "#111827", margin: 0 }}>
+                        Pedido #{order.orderId}
+                      </h4>
+                      <div style={{ fontSize: "16px", fontWeight: 700, color: "#10b981" }}>
+                        {formatCurrency(order.subtotal)}
+                      </div>
+                    </div>
+
+                    {order.clientName && (
+                      <div style={{ marginBottom: "12px" }}>
+                        <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "4px" }}>
+                          Restaurante
+                        </div>
+                        <div style={{ fontSize: "14px", color: "#111827" }}>
+                          {order.clientName}
+                        </div>
+                      </div>
+                    )}
+
+                    {order.items && order.items.length > 0 && (
+                      <div style={{ marginBottom: "12px" }}>
+                        <div style={{ fontSize: "12px", color: "#6b7280", marginBottom: "4px" }}>
+                          Itens
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                          {order.items.map((it, i) => (
+                            <div key={i} style={{ fontSize: "13px", color: "#111827" }}>
+                              {it.quantity}x {it.productName} — {formatCurrency(it.unitPrice)}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid #e5e7eb" }}>
+                      <div
+                        style={{
+                          fontSize: "12px",
+                          color: "#6b7280",
+                          marginBottom: "8px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "4px",
+                        }}
+                      >
+                        <FiUsers /> Divisão deste pedido
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                        {order.splits.map((split, splitIndex) => (
+                          <div
+                            key={splitIndex}
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              padding: "6px 8px",
+                              backgroundColor: "white",
+                              borderRadius: "4px",
+                              fontSize: "13px",
+                            }}
+                          >
+                            <span style={{ color: "#6b7280" }}>
+                              {split.recipientName} ({getRoleLabel(split.recipientRole)})
+                            </span>
+                            <span style={{ fontWeight: 600, color: "#111827" }}>
+                              {formatCurrency(split.amount)} ({split.percentage}%)
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Entregas */}
           <div>
