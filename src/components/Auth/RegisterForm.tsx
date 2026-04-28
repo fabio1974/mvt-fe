@@ -51,59 +51,15 @@ export default function RegisterForm({ onSuccess, preselectedRole }: RegisterFor
   }, [preselectedRole, setValue]);
 
   const password = watch("password");
-  const currentRole = watch("role");
 
-  // Determina se é estabelecimento (precisa aceitar CPF ou CNPJ)
-  // Usa o role atual do formulário, ou o preselectedRole se existir
-  const effectiveRole = currentRole || preselectedRole || "COURIER";
-  const isEstabelecimento = effectiveRole === "CLIENT";
-
-  // Função para formatar CPF
+  // Apenas CPF é aceito — Pessoa Jurídica não é suportada
+  // (Pagar.me exige KYC corporativo completo que não capturamos).
   const formatCPF = (value: string) => {
-    const numbers = value.replace(/\D/g, "");
-    if (numbers.length <= 11) {
-      return numbers
-        .replace(/(\d{3})(\d)/, "$1.$2")
-        .replace(/(\d{3})(\d)/, "$1.$2")
-        .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-    }
-    return value;
-  };
-
-  // Função para formatar CPF ou CNPJ (detecta automaticamente pelo tamanho)
-  const formatCPFOrCNPJ = (value: string) => {
-    const numbers = value.replace(/\D/g, "");
-    
-    if (numbers.length <= 11) {
-      // Formato CPF: 000.000.000-00
-      return numbers
-        .replace(/(\d{3})(\d)/, "$1.$2")
-        .replace(/(\d{3})(\d)/, "$1.$2")
-        .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
-    } else {
-      // Formato CNPJ: 00.000.000/0000-00
-      return numbers
-        .substring(0, 14)
-        .replace(/(\d{2})(\d)/, "$1.$2")
-        .replace(/(\d{3})(\d)/, "$1.$2")
-        .replace(/(\d{3})(\d)/, "$1/$2")
-        .replace(/(\d{4})(\d{1,2})$/, "$1-$2");
-    }
-  };
-
-  // Validação para CPF ou CNPJ
-  const validateCPFOrCNPJ = (value: string) => {
-    const numbers = value.replace(/\D/g, "");
-    
-    if (numbers.length === 11) {
-      // Valida formato CPF
-      return /^\d{3}\.\d{3}\.\d{3}-\d{2}$/.test(value) || "CPF inválido";
-    } else if (numbers.length === 14) {
-      // Valida formato CNPJ
-      return /^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/.test(value) || "CNPJ inválido";
-    }
-    
-    return "Informe um CPF (11 dígitos) ou CNPJ (14 dígitos) válido";
+    const numbers = value.replace(/\D/g, "").slice(0, 11);
+    return numbers
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d)/, "$1.$2")
+      .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
   };
 
   const onSubmit = async (data: RegisterFormData) => {
@@ -225,22 +181,19 @@ export default function RegisterForm({ onSuccess, preselectedRole }: RegisterFor
           />
         </FormField>
 
-        <FormField label={isEstabelecimento ? "CPF ou CNPJ" : "CPF"} required error={errors.cpf?.message}>
+        <FormField label="CPF" required error={errors.cpf?.message}>
           <FormInput
             type="text"
             placeholder="000.000.000-00"
-            maxLength={isEstabelecimento ? 18 : 14}
+            maxLength={14}
             {...register("cpf", {
-              required: isEstabelecimento ? "CPF ou CNPJ é obrigatório" : "CPF é obrigatório",
-              validate: isEstabelecimento ? validateCPFOrCNPJ : undefined,
-              pattern: isEstabelecimento ? undefined : {
+              required: "CPF é obrigatório",
+              pattern: {
                 value: /^\d{3}\.\d{3}\.\d{3}-\d{2}$/,
                 message: "CPF inválido",
               },
               onChange: (e) => {
-                e.target.value = isEstabelecimento 
-                  ? formatCPFOrCNPJ(e.target.value)
-                  : formatCPF(e.target.value);
+                e.target.value = formatCPF(e.target.value);
               },
             })}
           />

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect } from "react";
 import IMask from "imask";
 
 interface DynamicDocumentInputProps {
@@ -12,15 +12,17 @@ interface DynamicDocumentInputProps {
 }
 
 /**
- * Input com máscara dinâmica para CPF/CNPJ
- * - CPF: 11 dígitos → 999.999.999-99
- * - CNPJ: 14 dígitos → 99.999.999/9999-99
- * Detecta automaticamente baseado na quantidade de dígitos
+ * Input com máscara de CPF (000.000.000-00).
+ *
+ * CNPJ não é mais suportado: o cadastro de Pessoa Jurídica falha no
+ * Pagar.me sem KYC corporativo completo (campos que não capturamos).
+ * Mantemos o nome "DynamicDocumentInput" pra preservar compatibilidade
+ * com a metadata `autoMask: "cpf-cnpj-dynamic"` exposta pelo backend.
  */
 export const DynamicDocumentInput: React.FC<DynamicDocumentInputProps> = ({
   value,
   onChange,
-  placeholder = "CPF ou CNPJ",
+  placeholder = "CPF",
   disabled = false,
   required = false,
   className = "",
@@ -28,44 +30,29 @@ export const DynamicDocumentInput: React.FC<DynamicDocumentInputProps> = ({
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const maskRef = useRef<any>(null);
-  const [currentMask, setCurrentMask] = useState<string>("999.999.999-99");
 
   useEffect(() => {
     if (!inputRef.current) return;
 
-    // Conta apenas dígitos para decidir a máscara
-    const digitsOnly = (value || "").replace(/\D/g, "");
-    const newMask = digitsOnly.length > 11 ? "99.999.999/9999-99" : "999.999.999-99";
-
-    if (newMask !== currentMask) {
-      setCurrentMask(newMask);
-    }
-
-    // Cria ou atualiza o IMask
     if (maskRef.current) {
-      maskRef.current.updateOptions({
-        mask: newMask.replace(/9/g, "0"),
-      });
       maskRef.current.value = value;
-    } else {
-      maskRef.current = IMask(inputRef.current, {
-        mask: newMask.replace(/9/g, "0"),
-        lazy: false,
-      });
-      
-      // ✅ Usa on("accept") para capturar mudanças do IMask
-      maskRef.current.on("accept", () => {
-        const event = {
-          target: {
-            value: maskRef.current.value,
-          },
-        } as React.ChangeEvent<HTMLInputElement>;
-        onChange(event);
-      });
-      
-      maskRef.current.value = value;
+      return;
     }
-  }, [value, currentMask, onChange]);
+
+    maskRef.current = IMask(inputRef.current, {
+      mask: "000.000.000-00",
+      lazy: false,
+    });
+
+    maskRef.current.on("accept", () => {
+      const event = {
+        target: { value: maskRef.current.value },
+      } as React.ChangeEvent<HTMLInputElement>;
+      onChange(event);
+    });
+
+    maskRef.current.value = value;
+  }, [value, onChange]);
 
   useEffect(() => {
     return () => {
