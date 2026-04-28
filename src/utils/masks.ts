@@ -64,9 +64,10 @@ export const getAutoMask = (fieldName: string): string | null => {
     return "99.999.999/9999-99";
   }
 
-  // Campo "document" aceita CPF OU CNPJ dinamicamente
+  // Campo "document" aceita apenas CPF (Pessoa Jurídica não suportada —
+  // Pagar.me exige KYC corporativo completo que não capturamos).
   if (name.includes("document")) {
-    return "cpf-cnpj-dynamic"; // Máscara especial detectada no componente
+    return "999.999.999-99";
   }
   
   if (isPhoneField(fieldName)) {
@@ -321,10 +322,8 @@ export const unmaskFormData = (data: Record<string, unknown>): Record<string, un
         // CNPJ tem exatamente 14 dígitos
         unmasked[key] = numbersOnly.substring(0, 14);
       } else if (key.toLowerCase().includes("document")) {
-        // DocumentNumber: detecta automaticamente CPF (11) ou CNPJ (14)
-        unmasked[key] = numbersOnly.length > 11 
-          ? numbersOnly.substring(0, 14) 
-          : numbersOnly.substring(0, 11);
+        // DocumentNumber: aceita apenas CPF (11 dígitos)
+        unmasked[key] = numbersOnly.substring(0, 11);
       } else if (isCEPField(key)) {
         unmasked[key] = numbersOnly.substring(0, 8);
       } else if (isPhoneField(key)) {

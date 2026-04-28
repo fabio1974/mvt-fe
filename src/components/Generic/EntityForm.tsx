@@ -26,8 +26,7 @@ import {
   FormDatePicker,
 } from "../Common/FormComponents";
 import { MaskedInput } from "../Common/MaskedInput";
-import { DynamicDocumentInput } from "../Common/DynamicDocumentInput";
-import { getAutoMask, unmaskFormData, isValidCPF, isValidCNPJ } from "../../utils/masks";
+import { getAutoMask, unmaskFormData, isValidCPF } from "../../utils/masks";
 import { ArrayField } from "./ArrayField";
 import { CityTypeahead } from "../Common/CityTypeahead";
 import { AddressFieldWithMap } from "../Common/AddressFieldWithMap";
@@ -461,8 +460,8 @@ const EntityForm: React.FC<EntityFormProps> = ({
 
   const sanitizeDocumentValue = (value: unknown): string => {
     const digitsOnly = String(value ?? "").replace(/\D/g, "");
-    // Permite CPF (11) ou CNPJ (14) — corta acima de 14
-    return digitsOnly.substring(0, 14);
+    // Aceita apenas CPF (11 dígitos) — CNPJ não é mais suportado.
+    return digitsOnly.substring(0, 11);
   };
 
   const isBankAccountAgencyField = (fieldName: string): boolean => {
@@ -571,20 +570,16 @@ const EntityForm: React.FC<EntityFormProps> = ({
       return `${field.label} é obrigatório`;
     }
 
-    // Validação específica para Documento (CPF/CNPJ)
+    // Validação específica para Documento — apenas CPF é aceito
     if (isDocumentField(field.name) && value) {
       const digits = sanitizeDocumentValue(value);
 
-      if (digits.length !== 11 && digits.length !== 14) {
-        return "CPF/CNPJ deve ter 11 ou 14 dígitos";
+      if (digits.length !== 11) {
+        return "CPF deve ter 11 dígitos";
       }
 
-      if (digits.length === 11 && !isValidCPF(digits)) {
+      if (!isValidCPF(digits)) {
         return "CPF inválido";
-      }
-
-      if (digits.length === 14 && !isValidCNPJ(digits)) {
-        return "CNPJ inválido";
       }
     }
 
@@ -1149,18 +1144,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
             required={field.required}
             error={error}
           >
-            {autoMask === "cpf-cnpj-dynamic" ? (
-              <DynamicDocumentInput
-                value={stringValue}
-                onChange={(e) => handleChange(field.name, e.target.value)}
-                placeholder={readonly || field.readonly || isFieldReadonly ? "" : field.placeholder}
-                disabled={
-                  field.disabled || field.readonly || isFieldReadonly || loading || readonly
-                }
-                required={field.required}
-                readOnly={readonly || field.readonly}
-              />
-            ) : autoMask ? (
+            {autoMask ? (
               <MaskedInput
                 mask={autoMask}
                 value={stringValue}

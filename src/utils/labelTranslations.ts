@@ -20,15 +20,13 @@ export const LABEL_TRANSLATIONS: Record<string, string> = {
   "Addresses": "Endereços",
   "Address": "Endereço",
 
-  // Document
-  "document_number": "CPF/CNPJ",
-  "documentNumber": "CPF/CNPJ",
-  "Document Number": "CPF/CNPJ",
-
-  // CPF only labels (antigos) -> exibir como CPF/CNPJ
-  "CPF": "CPF/CNPJ",
-  "cpf": "CPF/CNPJ",
-  "Cpf": "CPF/CNPJ",
+  // Document — apenas CPF (CNPJ não é suportado)
+  "document_number": "CPF",
+  "documentNumber": "CPF",
+  "Document Number": "CPF",
+  "CPF": "CPF",
+  "cpf": "CPF",
+  "Cpf": "CPF",
 
   // Payment fields
   "Payment Date": "Pago Em",
