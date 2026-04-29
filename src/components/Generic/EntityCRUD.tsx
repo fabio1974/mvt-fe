@@ -101,6 +101,8 @@ interface EntityCRUDProps {
   customEditComponent?: (entityId: number | string | undefined, viewMode: string, onBack: () => void) => React.ReactNode;
   /** Modo condensado: inputs e fontes menores, mesma estrutura */
   condensed?: boolean;
+  /** Oculta a coluna "Número" (id) na tabela */
+  hideIdColumn?: boolean;
 }
 
 /**
@@ -162,6 +164,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
   // transformData, // Unused parameter
   pageTitle,
   condensed = false,
+  hideIdColumn = false,
 }) => {
   // Determina o modo inicial baseado nas props
   const getInitialMode = (): ViewMode => {
@@ -453,6 +456,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
             multiSelectFilters={multiSelectFilters}
             canDelete={canDelete}
             canEdit={canEdit}
+            hideIdColumn={hideIdColumn}
           />
         </ErrorBoundary>
       </div>

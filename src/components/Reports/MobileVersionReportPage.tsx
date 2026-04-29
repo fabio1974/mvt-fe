@@ -23,6 +23,7 @@ const MobileVersionReportPage: React.FC = () => {
       disableDelete
       disableView
       hideArrayFields
+      hideIdColumn
     />
   );
 };

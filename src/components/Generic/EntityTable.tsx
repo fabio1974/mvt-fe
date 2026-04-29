@@ -60,6 +60,7 @@ interface EntityTableProps {
   canEdit?: (row: any) => boolean; // Opcional - função que determina se uma linha pode ser editada
   excludeFilterOptions?: Record<string, string[]>; // Opcional - exclui opções de filtros select
   multiSelectFilters?: string[]; // Opcional - filtros select que usam multi-seleção com checkboxes
+  hideIdColumn?: boolean; // Opcional - oculta a coluna "Número" (id) da tabela
 }
 
 const EntityTable: React.FC<EntityTableProps> = ({
@@ -81,6 +82,7 @@ const EntityTable: React.FC<EntityTableProps> = ({
   showFields = [],
   excludeFilterOptions = {},
   multiSelectFilters = [],
+  hideIdColumn = false,
 }) => {
   const {
     getEntityMetadata,
@@ -479,8 +481,8 @@ const EntityTable: React.FC<EntityTableProps> = ({
     f.visible || showFields.includes(f.name)
   ) || []).filter((f) => !hideFields.includes(f.name));
 
-  // Determina se deve mostrar coluna ID (todas entidades exceto 'user')
-  const showIdColumn = entityName.toLowerCase() !== "user";
+  // Determina se deve mostrar coluna ID (todas entidades exceto 'user' ou se prop hideIdColumn=true)
+  const showIdColumn = !hideIdColumn && entityName.toLowerCase() !== "user";
 
   // Função para formatar ID com zeros à esquerda (8 dígitos)
   const formatId = (id: number | string): string => {
