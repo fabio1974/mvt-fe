@@ -3,13 +3,17 @@
  */
 const isPhoneField = (fieldName: string): boolean => {
   const name = fieldName.toLowerCase();
+  // "mobile" casa com mobileAppVersion / mobilePlatform / mobileVersionUpdatedAt — não são telefones
+  const nonPhoneMobileFields = ["mobileappversion", "mobileplatform", "mobileversionupdatedat"];
+  if (nonPhoneMobileFields.includes(name)) return false;
+
   const phoneKeywords = [
     "phone", "telefone", "fone", "tel",
     "celular", "cellphone", "cellular",
     "móvel", "movel", "mobile",
     "whatsapp", "whats", "zap"
   ];
-  
+
   return phoneKeywords.some(keyword => name.includes(keyword));
 };
 
