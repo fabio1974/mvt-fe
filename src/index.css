@@ -138,6 +138,7 @@ button:focus-visible {
     --card-border: #94a3b8;
     --card-shadow: 0 10px 28px rgba(15, 23, 42, 0.18), 0 3px 8px rgba(15, 23, 42, 0.10);
     --card-shadow-sm: 0 3px 10px rgba(15, 23, 42, 0.08);
+    --table-strip-bg: #f1f5f9;
     --text-strong: #1e293b;
     --text-label: #475569;
     --text-muted: #64748b;
@@ -186,6 +187,7 @@ button:focus-visible {
     --card-border: rgba(0, 153, 255, 0.22);
     --card-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
     --card-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+    --table-strip-bg: hsl(220, 25%, 16%);
     --text-strong: hsl(0, 0%, 95%);
     --text-label: hsl(0, 0%, 90%);
     --text-muted: hsl(220, 15%, 75%);

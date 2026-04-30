@@ -113,14 +113,14 @@
 }
 
 .entity-table th {
-  background: #f8fafc;
+  background: var(--table-strip-bg, #f1f5f9);
   padding: 10px 8px;
   text-align: center;
   font-size: 0.875rem;
   font-weight: 600;
-  color: #374151;
-  border-bottom: 2px solid #e5e7eb;
-  border-right: 1px solid #e5e7eb;
+  color: var(--text-strong, #374151);
+  border-bottom: 2px solid var(--card-border, #cbd5e1);
+  border-right: 1px solid var(--card-border, #cbd5e1);
   white-space: nowrap;
 }
 
@@ -233,15 +233,15 @@
   transform: translateY(-1px);
 }
 
-/* Table Footer com Paginação */
+/* Table Footer com Paginação — mesma cor do header da tabela pra consistência */
 .table-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 10px 16px;
-  background: var(--card-bg, #ffffff);
+  background: var(--table-strip-bg, #f1f5f9);
   border: 1px solid var(--card-border, #cbd5e1);
-  border-top: 1px solid var(--card-border, #cbd5e1);
+  border-top: none;
   border-bottom-left-radius: 12px;
   border-bottom-right-radius: 12px;
   gap: 16px;
