@@ -9,9 +9,13 @@ import {
   FiArrowRight,
   FiPlus,
   FiShoppingBag,
+  FiHome,
+  FiChevronDown,
 } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import MobileAppBanner from "./MobileAppBanner";
+import { useHeaderCollapsed } from "../../hooks/useHeaderCollapsed";
+import "../Generic/EntityCRUD.css";
 
 /**
  * Dashboard - Página inicial para usuários logados
@@ -23,6 +27,7 @@ const Dashboard: React.FC = () => {
   const userRole = getUserRole();
   const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [headerCollapsed, toggleHeader] = useHeaderCollapsed();
 
   const canUseWizard = isClient() || userRole === "ROLE_CUSTOMER" || userRole === "CUSTOMER";
 
@@ -115,14 +120,37 @@ const Dashboard: React.FC = () => {
   });
 
   return (
-    <div
-      style={{
-        flex: 1,
-        padding: "32px 24px",
-        background: "var(--app-bg)",
-        minHeight: "calc(100vh - 120px)",
-      }}
-    >
+    <div className="entity-crud-container">
+      {/* Breadcrumb mínimo — só "Início" + botão de expandir header (quando colapsado) */}
+      <div className="entity-crud-breadcrumb">
+        <div className="breadcrumb-content">
+          <div className="breadcrumb-item breadcrumb-current">
+            <FiHome className="breadcrumb-icon" />
+            <span>Início</span>
+          </div>
+        </div>
+        {headerCollapsed && (
+          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <button
+              className="breadcrumb-expand-header-btn"
+              onClick={toggleHeader}
+              title="Mostrar header"
+            >
+              <FiChevronDown size={16} />
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Conteúdo do Dashboard */}
+      <div
+        style={{
+          flex: 1,
+          padding: "32px 24px",
+          background: "var(--app-bg)",
+          minHeight: "calc(100vh - 180px)",
+        }}
+      >
       {/* Header de boas-vindas */}
       <div
         style={{
@@ -329,6 +357,7 @@ const Dashboard: React.FC = () => {
 
       </div>
 
+      </div>
     </div>
   );
 };
