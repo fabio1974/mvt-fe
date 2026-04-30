@@ -13,9 +13,9 @@ import EntityForm from "./EntityForm";
 import ErrorBoundary from "../Common/ErrorBoundary";
 import { useMetadata } from "../../hooks/useMetadata";
 import { useFormMetadata } from "../../hooks/useFormMetadata";
+import { useHeaderCollapsed } from "../../hooks/useHeaderCollapsed";
 import { api } from "../../services/api";
 import { showToast } from "../../utils/toast";
-import { getUserRole } from "../../utils/auth";
 import "./EntityCRUD.css";
 
 type ViewMode = "table" | "view" | "create" | "edit";
@@ -302,17 +302,9 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
     );
   }
 
-  // Header collapse — só para CLIENT (estabelecimento)
-  const userRole = getUserRole();
-  const isClient = userRole === "ROLE_CLIENT" || userRole === "CLIENT";
-
-  const isHeaderCollapsed = () => isClient && localStorage.getItem("headerCollapsed") === "true";
-
-  const toggleHeader = () => {
-    const next = !isHeaderCollapsed();
-    localStorage.setItem("headerCollapsed", String(next));
-    window.dispatchEvent(new Event("storage"));
-  };
+  // Header collapse — só para CLIENT (estabelecimento). Hook reativo
+  // pra atualizar o botão "expand" no breadcrumb sem precisar trocar de rota.
+  const [headerCollapsed, toggleHeader] = useHeaderCollapsed();
 
   // Componente de Breadcrumb
   const Breadcrumb = ({ mode }: { mode: ViewMode }) => {
@@ -332,18 +324,19 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
     const entityLabel = pageTitle || metadata.label || entityName;
     const isInTable = mode === "table";
 
+    const ExpandHeaderBtn = headerCollapsed ? (
+      <button
+        className="breadcrumb-expand-header-btn"
+        onClick={toggleHeader}
+        title="Mostrar header"
+      >
+        <FiChevronDown size={16} />
+      </button>
+    ) : null;
+
     return (
       <div className="entity-crud-breadcrumb">
         <div className="breadcrumb-content">
-          {isHeaderCollapsed() && (
-            <button
-              className="breadcrumb-expand-header-btn"
-              onClick={toggleHeader}
-              title="Mostrar header"
-            >
-              <FiChevronDown size={16} />
-            </button>
-          )}
           <button
             className="breadcrumb-item breadcrumb-link"
             onClick={() => navigate("/")}
@@ -372,59 +365,58 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
           )}
         </div>
 
-        {mode === "table" ? (
-          // Modo table: mostra ações extras + botão "Criar Novo" se permitido
-          <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-            {extraHeaderActions}
-            {!disableCreate && !hideCreateButton && (
+        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+          {ExpandHeaderBtn}
+          {mode === "table" ? (
+            <>
+              {extraHeaderActions}
+              {!disableCreate && !hideCreateButton && (
+                <button
+                  className="breadcrumb-action-btn btn-create"
+                  onClick={handleCreate}
+                >
+                  <FiPlus />
+                  <span>Criar Novo</span>
+                </button>
+              )}
+            </>
+          ) : mode === "view" && showEditButton ? (
+            <>
               <button
-                className="breadcrumb-action-btn btn-create"
-                onClick={handleCreate}
+                className="breadcrumb-action-btn btn-edit"
+                onClick={() => setViewMode("edit")}
               >
-                <FiPlus />
-                <span>Criar Novo</span>
+                <FiEdit />
+                <span>Editar</span>
               </button>
-            )}
-          </div>
-        ) : mode === "view" && showEditButton ? (
-          // Modo view com botão editar: mostra ambos os botões
-          <div style={{ display: "flex", gap: "0.5rem" }}>
+              {!hideTable && (
+                <button
+                  className="breadcrumb-action-btn btn-back"
+                  onClick={handleBackToTable}
+                >
+                  <FiArrowLeft />
+                  <span>Voltar</span>
+                </button>
+              )}
+            </>
+          ) : mode === "view" && !hideTable ? (
             <button
-              className="breadcrumb-action-btn btn-edit"
-              onClick={() => setViewMode("edit")}
+              className="breadcrumb-action-btn btn-back"
+              onClick={handleBackToTable}
             >
-              <FiEdit />
-              <span>Editar</span>
+              <FiArrowLeft />
+              <span>Voltar</span>
             </button>
-            {!hideTable && (
-              <button
-                className="breadcrumb-action-btn btn-back"
-                onClick={handleBackToTable}
-              >
-                <FiArrowLeft />
-                <span>Voltar</span>
-              </button>
-            )}
-          </div>
-        ) : mode === "view" && !hideTable ? (
-          // Modo view sem botão editar: mostra apenas botão voltar
-          <button
-            className="breadcrumb-action-btn btn-back"
-            onClick={handleBackToTable}
-          >
-            <FiArrowLeft />
-            <span>Voltar</span>
-          </button>
-        ) : mode !== "view" && !hideTable ? (
-          // Modos create/edit: mostra botão voltar
-          <button
-            className="breadcrumb-action-btn btn-back"
-            onClick={handleBackToTable}
-          >
-            <FiArrowLeft />
-            <span>Voltar</span>
-          </button>
-        ) : null}
+          ) : mode !== "view" && !hideTable ? (
+            <button
+              className="breadcrumb-action-btn btn-back"
+              onClick={handleBackToTable}
+            >
+              <FiArrowLeft />
+              <span>Voltar</span>
+            </button>
+          ) : null}
+        </div>
       </div>
     );
   };
