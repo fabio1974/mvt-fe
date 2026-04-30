@@ -4,6 +4,7 @@ import {
   getSavedBridgeUrl,
   saveBridgeUrl,
   checkBridgeHealth,
+  tryAutoDetectLocalhost,
   printOrder,
   type BridgeHealth,
 } from "../../services/printBridge";
@@ -30,13 +31,19 @@ export default function BridgePrintButton({ orderId, paperWidth = "80mm", label 
   const [testResult, setTestResult] = useState<BridgeHealth | { error: string } | null>(null);
 
   const handlePrint = async () => {
-    const saved = getSavedBridgeUrl();
-    if (!saved) {
-      setShowConfig(true);
-      return;
-    }
     setPrinting(true);
     try {
+      // Zero-config: se não tem nada salvo, tenta detectar bridge em localhost.
+      // Cobre o caso típico: browser e bridge no MESMO PC (lanchonete).
+      if (!getSavedBridgeUrl()) {
+        const auto = await tryAutoDetectLocalhost();
+        if (!auto) {
+          // Não achou em localhost — abre modal pra digitar IP da rede
+          setPrinting(false);
+          setShowConfig(true);
+          return;
+        }
+      }
       const r = await printOrder(orderId, paperWidth);
       if (!r.ok) {
         alert(`Falha ao imprimir:\n\n${r.error}`);

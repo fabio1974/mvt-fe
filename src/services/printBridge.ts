@@ -40,6 +40,24 @@ export function clearBridgeUrl(): void {
   localStorage.removeItem(BRIDGE_URL_KEY);
 }
 
+/**
+ * Detecta automaticamente uma bridge rodando em localhost.
+ * Útil pra zero-config: se o user abrir zapi10.com no mesmo PC onde a bridge
+ * está instalada, a gente acha sozinho e salva.
+ *
+ * Retorna a URL salva (http://localhost:9101) se achou, senão null.
+ */
+export async function tryAutoDetectLocalhost(): Promise<string | null> {
+  if (getSavedBridgeUrl()) return getSavedBridgeUrl();
+  const candidate = "http://localhost:9101";
+  const health = await checkBridgeHealth(candidate);
+  if (health && health.ok) {
+    saveBridgeUrl(candidate);
+    return candidate;
+  }
+  return null;
+}
+
 /** Faz GET /health pra confirmar que o bridge tá rodando e retorna metadata. */
 export async function checkBridgeHealth(url: string): Promise<BridgeHealth | null> {
   const target = normalizeUrl(url);
@@ -121,6 +139,10 @@ export async function printOrder(
   orderId: number,
   paperWidth: "58mm" | "80mm" = "80mm",
 ): Promise<PrintResult> {
+  // Zero-config: tenta detectar bridge em localhost se não tem nada salvo
+  if (!getSavedBridgeUrl()) {
+    await tryAutoDetectLocalhost();
+  }
   if (!getSavedBridgeUrl()) {
     return { ok: false, error: "Bridge não configurado. Configure o IP da Print Bridge primeiro." };
   }
@@ -165,6 +187,10 @@ export async function printRound(
   data: RoundReceiptData,
   paperWidth: "58mm" | "80mm" = "80mm",
 ): Promise<PrintResult> {
+  // Zero-config: tenta detectar bridge em localhost se não tem nada salvo
+  if (!getSavedBridgeUrl()) {
+    await tryAutoDetectLocalhost();
+  }
   if (!getSavedBridgeUrl()) {
     return { ok: false, error: "Bridge não configurado." };
   }
@@ -201,6 +227,10 @@ export async function printPackaging(
   data: PackagingReceiptData,
   paperWidth: "58mm" | "80mm" = "80mm",
 ): Promise<PrintResult> {
+  // Zero-config: tenta detectar bridge em localhost se não tem nada salvo
+  if (!getSavedBridgeUrl()) {
+    await tryAutoDetectLocalhost();
+  }
   if (!getSavedBridgeUrl()) {
     return { ok: false, error: "Bridge não configurado." };
   }
