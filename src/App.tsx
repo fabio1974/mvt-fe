@@ -56,6 +56,7 @@ const CashReportPage = lazy(() => import("./components/Reports/CashReportPage"))
 const CashRegisterPage = lazy(() => import("./components/CashRegister/CashRegisterPage"));
 const RepassesPage = lazy(() => import("./components/Repasses/RepassesPage"));
 const SupportPage = lazy(() => import("./components/Support/SupportPage"));
+const DownloadsPage = lazy(() => import("./components/Downloads/DownloadsPage"));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -251,6 +252,7 @@ function App() {
                 <Route path="/caixa" element={<CashRegisterPage />} />
                 <Route path="/repasses" element={<RepassesPage />} />
                 <Route path="/suporte" element={<SupportPage />} />
+                <Route path="/downloads" element={<DownloadsPage />} />
                 <Route path="/pagamentos" element={<PaymentCRUDPage />} />
                 <Route path="/balanco-financeiro" element={<OrganizerFinancialPage />} />
                 <Route path="/dados-pessoais" element={<PersonalDataPage />} />

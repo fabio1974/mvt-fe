@@ -692,6 +692,33 @@ export default function Header({
             </button>
             )}
 
+            {/* Botão de Configurações - Apenas para CLIENT (estabelecimento) */}
+            {(userRole === "ROLE_CLIENT" || userRole === "CLIENT") && (
+              <button
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: 8,
+                  backgroundColor: "transparent",
+                  border: "none",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+                onClick={() => navigate("/downloads")}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.opacity = "0.7";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.opacity = "1";
+                }}
+                aria-label="Downloads de software"
+                title="Downloads de software"
+              >
+                <FiSettings size={28} color="#64748b" />
+              </button>
+            )}
+
             {/* Botão de colapsar header — só para CLIENT (estabelecimento) */}
             {isLoggedIn && onToggleHeader && (userRole === "ROLE_CLIENT" || userRole === "CLIENT") && (
               <button
