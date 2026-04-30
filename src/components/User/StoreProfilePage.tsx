@@ -1,25 +1,16 @@
-import React, { useState } from "react";
+import React from "react";
 import EntityCRUD from "../Generic/EntityCRUD";
 import { getUserRole } from "../../utils/auth";
 
 /**
- * Página "Dados do Estabelecimento" — só pra CLIENT.
+ * Página "Dados do Estabelecimento" — APENAS LEITURA pra CLIENT.
  *
- * Edita o StoreProfile do CLIENT logado via /api/store-profile/me.
- * Mesmo padrão de PersonalDataPage (EntityCRUD em modo view/edit).
- *
- * Campos editáveis (do StoreProfile):
- *   - tradeName (nome fantasia)
- *   - cnpj (CNPJ — separado do User.documentNumber que é CPF do dono)
- *   - logoUrl (logo que aparece no recibo térmico)
- *   - description, openingHours, etc.
- *
- * Pagar.me / dados pessoais ficam em "Dados Pessoais" (User).
+ * Mostra o StoreProfile do CLIENT logado via /api/store-profile/me em modo view.
+ * Edição é feita pelo ADMIN via tabela /clientes (action button → AdminStoreProfilePage).
  */
 const StoreProfilePage: React.FC = () => {
   const userRole = getUserRole();
   const isClient = userRole === "ROLE_CLIENT" || userRole === "CLIENT";
-  const [, setCurrentMode] = useState<"view" | "edit">("view");
 
   if (!isClient) {
     return (
@@ -36,13 +27,10 @@ const StoreProfilePage: React.FC = () => {
       apiEndpoint="/api/store-profile"
       initialMode="view"
       hideTable={true}
-      showEditButton={true}
+      showEditButton={false}
       pageTitle="Dados do Estabelecimento"
-      pageDescription="Logo, CNPJ, nome fantasia e configurações do seu estabelecimento (aparecem no recibo térmico)"
+      pageDescription="Visualização do seu perfil de estabelecimento. Para alterações, contate o suporte."
       hiddenFields={["user", "createdAt", "updatedAt", "tableOrdersEnabledAt"]}
-      onModeChange={(mode) => {
-        if (mode === "view" || mode === "edit") setCurrentMode(mode);
-      }}
     />
   );
 };
