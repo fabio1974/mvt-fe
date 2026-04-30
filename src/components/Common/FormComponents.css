@@ -1,11 +1,11 @@
 /* Form Container Base */
 .form-container {
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--card-border, #cbd5e1);
+  border-radius: 12px;
   padding: 24px;
   margin-bottom: 24px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--card-shadow, 0 4px 12px rgba(15, 23, 42, 0.08));
   max-width: 100%;
   font-family: 'Inter', system-ui, sans-serif;
 }

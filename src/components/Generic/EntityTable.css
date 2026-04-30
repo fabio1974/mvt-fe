@@ -74,9 +74,11 @@
 .entity-table-scroll {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  border-radius: 16px 16px 0 0;
-  background: #ffffff;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  border-radius: 12px 12px 0 0;
+  background: var(--card-bg, #ffffff);
+  border: 1px solid var(--card-border, #cbd5e1);
+  border-bottom: none;
+  box-shadow: var(--card-shadow, 0 6px 18px rgba(15, 23, 42, 0.10));
   /* scrollbar sempre visível para indicar que há mais conteúdo */
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 #f1f5f9;
