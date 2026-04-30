@@ -3,7 +3,7 @@ import { FiArrowLeft, FiEdit2, FiPlus, FiSend, FiX } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../../services/api";
 import { getUserId, getUserName } from "../../../utils/auth";
-import { printRoundReceipt } from "../receiptPrinter";
+import { printRound, getSavedBridgeUrl } from "../../../services/printBridge";
 import ItemsTableSection from "./ItemsTableSection";
 import {
   ORDER_STATUS_COLORS,
@@ -161,17 +161,17 @@ export default function DetailView(props: FlowViewProps) {
         .map((p) => `${p.quantity}x ${p.productName}: ${p.observation!.trim()}`);
       const receiptNotes = obsLines.length > 0 ? obsLines.join("\n") : null;
       const printSource = workingOrder ?? created;
-      // Flag do estabelecimento: se false, pula toda impressão automática.
+      // Flag do estabelecimento (server-side): se false, pula toda impressão automática.
       const autoPrintEnabled = (printSource as { storeAutoPrintEnabled?: boolean })?.storeAutoPrintEnabled !== false;
-      if (autoPrintEnabled) {
-        printRoundReceipt({
+      if (autoPrintEnabled && getSavedBridgeUrl()) {
+        const r = await printRound({
           orderId: printSource?.id ?? null,
           tableNumber: table.number,
-          storeName: printSource?.storeName ?? null,
+          establishmentName: printSource?.storeName ?? "",
           storeDocument: printSource?.storeDocument ?? null,
           storePhone: printSource?.storePhone ?? null,
           storeAddress: printSource?.storeAddress ?? null,
-          authorName: getUserName() || "Balcão",
+          waiterName: getUserName() || "Balcão",
           newItems: pendingItems.map((p) => ({
             productName: p.productName,
             quantity: p.quantity,
@@ -185,6 +185,7 @@ export default function DetailView(props: FlowViewProps) {
           })),
           notes: receiptNotes,
         });
+        if (!r.ok) console.warn("[BridgePrint] round print falhou:", r.error);
       }
 
       // 4. Reset + refresh

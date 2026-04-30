@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { FiPackage, FiRefreshCw, FiRotateCcw, FiTrash2 } from "react-icons/fi";
 import { api } from "../../../services/api";
 import { commandLabel } from "./types";
+import { printPackaging } from "../../../services/printBridge";
 import type { OrderInfo, RestaurantTable, TableFlowData } from "./types";
 
 type MoveMode =
@@ -144,16 +145,31 @@ export default function ItemsTableSection({
     }
   };
 
-  const handlePrintPackaging = () => {
-    // FE: usa print nativo com window.print() após abrir uma janela com HTML do recibo.
-    // Por enquanto, delegamos ao receiptPrinter existente (se houver) ou caímos em window.print.
+  const handlePrintPackaging = async () => {
     const packed = order.items.filter((i) => i.packaged);
     if (packed.length === 0) return;
-    const lines = packed.map((it) => {
-      const cmdName = it.commandId ? (data.commands.find((c) => c.id === it.commandId) ? commandLabel(data.commands.find((c) => c.id === it.commandId)!) : `Comanda #${it.commandId}`) : "Mesa";
-      return `${cmdName} — ${it.quantity}x ${it.productName}${it.notes ? ` (${it.notes})` : ""}`;
+
+    // Agrupa por comanda
+    type Group = { commandLabel: string; items: Array<{ productName: string; quantity: number; notes?: string | null }> };
+    const map = new Map<string, Group>();
+    for (const it of packed) {
+      const cmd = it.commandId ? data.commands.find((c) => c.id === it.commandId) : null;
+      const key = cmd ? commandLabel(cmd) : "Mesa";
+      if (!map.has(key)) map.set(key, { commandLabel: key, items: [] });
+      map.get(key)!.items.push({ productName: it.productName, quantity: it.quantity, notes: it.notes });
+    }
+    const groups = Array.from(map.values());
+
+    const r = await printPackaging({
+      orderId: order.id,
+      tableNumber: table.number,
+      establishmentName: order.storeName ?? "",
+      storeDocument: (order as { storeDocument?: string | null }).storeDocument ?? null,
+      storePhone: (order as { storePhone?: string | null }).storePhone ?? null,
+      storeAddress: (order as { storeAddress?: string | null }).storeAddress ?? null,
+      groups,
     });
-    alert(`Empacotar — Mesa #${table.number}\n\n${lines.join("\n")}`);
+    if (!r.ok) alert(`Falha ao imprimir empacotamento: ${r.error}`);
   };
 
   return (

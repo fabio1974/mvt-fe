@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../services/api";
 import { FormContainer, FormField, FormInput } from "../Common/FormComponents";
-import printKitchenOrder from "./printKitchenOrder";
 import { buildStoreHeader, escapeHtml as escapeHtmlShared, PRINT_STYLES } from "./printHeader";
+import BridgePrintButton from "../Common/BridgePrintButton";
+import { printOrder as printOrderViaBridge, getSavedBridgeUrl } from "../../services/printBridge";
 import "./FoodOrderEditPanel.css";
 
 interface OrderItemAddon {
@@ -212,7 +213,7 @@ const FoodOrderEditPanel: React.FC<Props> = ({ orderId, viewMode }) => {
     const pref = localStorage.getItem(PRINT_PREF_KEY);
     if (pref === "true") {
       await doAccept();
-      if (order) printKitchenOrder({ ...order, commands });
+      if (order) silentPrintViaBridge(order.id);
       return;
     }
     if (pref === "skip") {
@@ -228,7 +229,14 @@ const FoodOrderEditPanel: React.FC<Props> = ({ orderId, viewMode }) => {
     }
     setShowPrintModal(false);
     await doAccept();
-    if (shouldPrint && order) printKitchenOrder({ ...order, commands });
+    if (shouldPrint && order) silentPrintViaBridge(order.id);
+  };
+
+  /** Auto-print silencioso via bridge (sem alert se falhar). */
+  const silentPrintViaBridge = async (id: number) => {
+    if (!getSavedBridgeUrl()) return;
+    const r = await printOrderViaBridge(id, "80mm");
+    if (!r.ok) console.warn("[BridgePrint] auto-print falhou:", r.error);
   };
 
   const handleAction = async (action: string) => {
@@ -373,13 +381,7 @@ const FoodOrderEditPanel: React.FC<Props> = ({ orderId, viewMode }) => {
         <div className="fop-header">
           <h2>Pedido #{order.id}</h2>
           {order.status !== "PLACED" && order.status !== "CANCELLED" && (
-            <button
-              className="fop-print-btn"
-              onClick={() => printKitchenOrder({ ...order, commands })}
-              title="Reimprimir pedido para cozinha"
-            >
-              Imprimir
-            </button>
+            <BridgePrintButton orderId={order.id} paperWidth="80mm" label="Imprimir" />
           )}
           <span className="fop-badge" style={{ backgroundColor: statusInfo.color }}>
             {statusInfo.icon} {statusInfo.label}
