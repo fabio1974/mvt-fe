@@ -11,6 +11,7 @@ import { useState, useEffect } from "react";
 import { registerToast } from "./utils/toast";
 import { getUserRole } from "./utils/auth";
 import { useDarkMode } from "./hooks/useDarkMode";
+import { useHeaderCollapsed } from "./hooks/useHeaderCollapsed";
 
 // Página pública de rastreamento (sem layout autenticado)
 const TrackingPage = lazy(() => import("./components/Tracking/TrackingPage"));
@@ -108,28 +109,15 @@ function App() {
     localStorage.setItem("sidebarCollapsed", String(sidebarCollapsed));
   }, [sidebarCollapsed]);
 
-  // Estado do header (collapse/expand) — só para CLIENT (estabelecimento)
+  // Estado do header (collapse/expand) — só para CLIENT (estabelecimento).
+  // Usa useHeaderCollapsed (hook compartilhado) pra que TODAS as páginas
+  // (Header, PageContainer, EntityCRUD) compartilhem o mesmo source-of-truth
+  // via window event "headerCollapsedChange".
   const userRole = getUserRole();
   const isClientRole = userRole === "ROLE_CLIENT" || userRole === "CLIENT";
-  const [headerCollapsed, setHeaderCollapsed] = useState(() => {
-    return localStorage.getItem("headerCollapsed") === "true";
-  });
+  const [headerCollapsed, toggleHeaderCollapsed] = useHeaderCollapsed();
 
   useDarkMode(isLoggedIn);
-
-  useEffect(() => {
-    localStorage.setItem("headerCollapsed", String(headerCollapsed));
-  }, [headerCollapsed]);
-
-  // Sincronizar headerCollapsed com localStorage (quando breadcrumb muda o valor)
-  useEffect(() => {
-    const onStorage = () => {
-      const val = localStorage.getItem("headerCollapsed") === "true";
-      setHeaderCollapsed(val);
-    };
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
-  }, []);
 
   // Estado do toast
   const [toast, setToast] = useState<ToastState | null>(null);
@@ -223,7 +211,7 @@ function App() {
                 sidebarVisible={sidebarVisible}
                 sidebarCollapsed={sidebarCollapsed}
                 headerCollapsed={headerCollapsed}
-                onToggleHeader={() => setHeaderCollapsed(!headerCollapsed)}
+                onToggleHeader={toggleHeaderCollapsed}
               />
             )}
             <Suspense fallback={<PageLoader />}>

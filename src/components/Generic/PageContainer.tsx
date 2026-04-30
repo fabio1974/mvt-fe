@@ -72,15 +72,6 @@ const PageContainer: React.FC<PageContainerProps> = ({
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-          {collapsed && (
-            <button
-              className="breadcrumb-expand-header-btn"
-              onClick={toggleHeader}
-              title="Mostrar header"
-            >
-              <FiChevronDown size={16} />
-            </button>
-          )}
           {subPage && onBackToList ? (
             <button
               className="breadcrumb-action-btn btn-back"
@@ -91,6 +82,15 @@ const PageContainer: React.FC<PageContainerProps> = ({
             </button>
           ) : (
             headerActions
+          )}
+          {collapsed && (
+            <button
+              className="breadcrumb-expand-header-btn"
+              onClick={toggleHeader}
+              title="Mostrar header"
+            >
+              <FiChevronDown size={16} />
+            </button>
           )}
         </div>
       </div>

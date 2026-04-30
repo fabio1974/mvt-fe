@@ -366,7 +366,6 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-          {ExpandHeaderBtn}
           {mode === "table" ? (
             <>
               {extraHeaderActions}
@@ -416,6 +415,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
               <span>Voltar</span>
             </button>
           ) : null}
+          {ExpandHeaderBtn}
         </div>
       </div>
     );
