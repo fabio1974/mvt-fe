@@ -95,11 +95,9 @@ export default function ProductView(props: Props) {
         commandId: activeCommandId,
       }]);
     }
-    if (product.categoryName) {
-      navigate({ kind: "menu", categoryName: product.categoryName });
-    } else {
-      navigate({ kind: "menu" });
-    }
+    // Após adicionar/salvar, sempre volta pro cardápio principal (sem filtro de categoria),
+    // pra facilitar adicionar itens de outras categorias na sequência.
+    navigate({ kind: "menu" });
   };
 
   const handleDeleteDraft = () => {
