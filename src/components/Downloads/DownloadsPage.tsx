@@ -1,10 +1,5 @@
 import { useMemo, useState } from "react";
-import {
-  FiDownload,
-  FiInfo,
-  FiCheckCircle,
-  FiExternalLink,
-} from "react-icons/fi";
+import { FiDownload, FiInfo, FiCheckCircle } from "react-icons/fi";
 import PageContainer from "../Generic/PageContainer";
 
 type OS = "windows" | "mac" | "linux" | "other";
@@ -237,18 +232,6 @@ export default function DownloadsPage() {
               Clique em <strong>Teste</strong> — o recibo deve sair na impressora.
             </li>
           </ol>
-          <div style={{ marginTop: 12 }}>
-            Mais detalhes e código-fonte em{" "}
-            <a
-              href="https://github.com/fabio1974/zapi10-print-bridge"
-              target="_blank"
-              rel="noreferrer"
-              style={{ color: "#3b82f6", fontWeight: 600 }}
-            >
-              github.com/fabio1974/zapi10-print-bridge
-              <FiExternalLink size={12} style={{ marginLeft: 4 }} />
-            </a>
-          </div>
         </div>
       </div>
     </PageContainer>
