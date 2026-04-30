@@ -145,6 +145,32 @@ export default function DownloadsPage() {
           />
         )}
 
+        {userOS === "mac" && (
+          <div
+            style={{
+              background: "#fff7ed",
+              border: "1px solid #fed7aa",
+              borderRadius: 12,
+              padding: 14,
+              marginTop: -4,
+              marginBottom: 16,
+              fontSize: 13,
+              color: "#7c2d12",
+              lineHeight: 1.6,
+              display: "flex",
+              gap: 10,
+              alignItems: "flex-start",
+            }}
+          >
+            <FiInfo size={16} color="#c2410c" style={{ flexShrink: 0, marginTop: 2 }} />
+            <div>
+              <strong>Se o macOS bloquear o app na primeira abertura:</strong>{" "}
+              Configurações do Sistema → <strong>Privacidade e Segurança</strong> → role até embaixo
+              → mensagem "Zapi10PrintBridge foi bloqueado…" → clica em <strong>"Abrir Mesmo Assim"</strong>.
+            </div>
+          </div>
+        )}
+
         {others.length > 0 && (
           <div style={{ marginTop: 32 }}>
             <button
