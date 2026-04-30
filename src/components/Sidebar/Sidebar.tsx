@@ -18,7 +18,6 @@ import {
   FiTrendingUp,
   FiHome,
   FiGrid,
-  FiBarChart2,
   FiFileText,
   FiInbox,
   FiAlertCircle,
