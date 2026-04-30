@@ -58,6 +58,67 @@ export async function tryAutoDetectLocalhost(): Promise<string | null> {
   return null;
 }
 
+/** Subnets /24 mais comuns em redes domésticas/comerciais. */
+const COMMON_SUBNETS = ["192.168.0", "192.168.1", "192.168.18", "192.168.15", "10.0.0", "172.16.0"];
+
+/**
+ * Faz uma varredura paralela em subnets comuns procurando uma bridge na porta 9101.
+ * Retorna a URL do primeiro responder encontrado e salva no localStorage.
+ *
+ * Tempo médio: 2-5 segundos. Cada probe tem timeout de 1.2s.
+ */
+export async function discoverBridgeInNetwork(
+  onProgress?: (scanned: number, total: number) => void,
+): Promise<string | null> {
+  const port = 9101;
+  const probes: Promise<string | null>[] = [];
+
+  for (const subnet of COMMON_SUBNETS) {
+    for (let i = 1; i <= 254; i++) {
+      probes.push(probeBridge(`${subnet}.${i}`, port, 1200));
+    }
+  }
+
+  return new Promise((resolve) => {
+    let resolved = false;
+    let pending = probes.length;
+    let scanned = 0;
+    const total = probes.length;
+
+    for (const p of probes) {
+      p.then((result) => {
+        if (resolved) return;
+        scanned++;
+        onProgress?.(scanned, total);
+        if (result) {
+          resolved = true;
+          saveBridgeUrl(result);
+          resolve(result);
+        } else if (--pending === 0) {
+          resolve(null);
+        }
+      });
+    }
+  });
+}
+
+async function probeBridge(host: string, port: number, timeoutMs: number): Promise<string | null> {
+  const url = `http://${host}:${port}`;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(`${url}/health`, { signal: controller.signal });
+    clearTimeout(timer);
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data?.ok === true && typeof data?.version === "string") return url;
+    return null;
+  } catch {
+    clearTimeout(timer);
+    return null;
+  }
+}
+
 /** Faz GET /health pra confirmar que o bridge tá rodando e retorna metadata. */
 export async function checkBridgeHealth(url: string): Promise<BridgeHealth | null> {
   const target = normalizeUrl(url);

@@ -5,6 +5,7 @@ import {
   saveBridgeUrl,
   checkBridgeHealth,
   tryAutoDetectLocalhost,
+  discoverBridgeInNetwork,
   printOrder,
   type BridgeHealth,
 } from "../../services/printBridge";
@@ -25,6 +26,8 @@ interface Props {
 
 export default function BridgePrintButton({ orderId, paperWidth = "80mm", label = "Imprimir Térmica" }: Props) {
   const [printing, setPrinting] = useState(false);
+  const [discovering, setDiscovering] = useState(false);
+  const [discoveryProgress, setDiscoveryProgress] = useState(0);
   const [showConfig, setShowConfig] = useState(false);
   const [inputUrl, setInputUrl] = useState(getSavedBridgeUrl() ?? "");
   const [testing, setTesting] = useState(false);
@@ -33,15 +36,25 @@ export default function BridgePrintButton({ orderId, paperWidth = "80mm", label 
   const handlePrint = async () => {
     setPrinting(true);
     try {
-      // Zero-config: se não tem nada salvo, tenta detectar bridge em localhost.
-      // Cobre o caso típico: browser e bridge no MESMO PC (lanchonete).
+      // Tier 1: localhost (zero-config quando browser+bridge no mesmo PC)
       if (!getSavedBridgeUrl()) {
         const auto = await tryAutoDetectLocalhost();
         if (!auto) {
-          // Não achou em localhost — abre modal pra digitar IP da rede
+          // Tier 2: varre subnets comuns na rede
           setPrinting(false);
-          setShowConfig(true);
-          return;
+          setDiscovering(true);
+          setDiscoveryProgress(0);
+          const found = await discoverBridgeInNetwork((scanned, total) => {
+            setDiscoveryProgress(Math.round((scanned / total) * 100));
+          });
+          setDiscovering(false);
+          if (!found) {
+            // Tier 3: nada achado — pede IP manual
+            setShowConfig(true);
+            return;
+          }
+          // Achou! Vai imprimir abaixo
+          setPrinting(true);
         }
       }
       const r = await printOrder(orderId, paperWidth);
@@ -76,19 +89,19 @@ export default function BridgePrintButton({ orderId, paperWidth = "80mm", label 
     <>
       <button
         onClick={handlePrint}
-        disabled={printing}
+        disabled={printing || discovering}
         title="Imprimir na impressora térmica via Print Bridge"
         style={{
           display: "inline-flex", alignItems: "center", gap: 6,
           padding: "8px 14px", borderRadius: 8,
           background: "#1d4ed8", color: "#fff",
-          border: "none", cursor: printing ? "wait" : "pointer",
+          border: "none", cursor: (printing || discovering) ? "wait" : "pointer",
           fontSize: 13, fontWeight: 600,
-          opacity: printing ? 0.7 : 1,
+          opacity: (printing || discovering) ? 0.7 : 1,
         }}
       >
         <FiPrinter size={14} />
-        {printing ? "Imprimindo..." : label}
+        {discovering ? `Procurando bridge... ${discoveryProgress}%` : (printing ? "Imprimindo..." : label)}
         <FiSettings
           size={12}
           style={{ marginLeft: 4, opacity: 0.7, cursor: "pointer" }}
