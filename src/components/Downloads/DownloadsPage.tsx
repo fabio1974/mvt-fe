@@ -184,19 +184,28 @@ export default function DownloadsPage() {
             fontSize: 13,
             color: "#475569",
             lineHeight: 1.7,
+            textAlign: "left",
           }}
         >
           <strong style={{ color: "#1e293b" }}>Após instalar:</strong>
-          <ol style={{ paddingLeft: 20, margin: "8px 0 0 0" }}>
+          <ol style={{ paddingLeft: 24, margin: "8px 0 0 0", textAlign: "left" }}>
             <li>
-              Abra o Zapi10 Print Bridge no computador (Windows: Menu Iniciar →
-              "Zapi10 Status"; Mac: pasta de instalação → "show-status.command")
-              pra ver o IP e a porta.
+              {userOS === "windows" && (
+                <>Abra o Zapi10 Print Bridge no computador: <strong>Menu Iniciar → "Zapi10 Status"</strong> pra ver o IP e a porta.</>
+              )}
+              {userOS === "mac" && (
+                <>Abra o Zapi10 Print Bridge no computador: <strong>pasta de instalação → "show-status.command"</strong> pra ver o IP e a porta.</>
+              )}
+              {userOS === "linux" && (
+                <>Abra o Zapi10 Print Bridge no computador: rode <code>./show-status.sh</code> na pasta de instalação pra ver o IP e a porta.</>
+              )}
+              {userOS === "other" && (
+                <>Abra o Zapi10 Print Bridge no computador (Windows: Menu Iniciar → "Zapi10 Status" — Mac: pasta de instalação → "show-status.command" — Linux: <code>./show-status.sh</code>) pra ver o IP e a porta.</>
+              )}
             </li>
             <li>
-              No app Zapi10 do celular (mesma rede Wi-Fi que o computador): Menu
-              lateral → <strong>Impressoras</strong> → "Adicionar Impressora" →
-              digite o IP e a porta vistos no passo 1.
+              No app Zapi10 do celular (mesma rede Wi-Fi que o computador): Menu lateral →{" "}
+              <strong>Impressoras</strong> → "Adicionar Impressora" → digite o IP e a porta vistos no passo 1.
             </li>
             <li>
               Clique em <strong>Teste</strong> — o recibo deve sair na impressora.
