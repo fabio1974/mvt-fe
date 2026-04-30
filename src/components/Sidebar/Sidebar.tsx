@@ -103,22 +103,22 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
     roles: ["ROLE_ADMIN", "ROLE_CLIENT", "CLIENT"],
   },
   {
-    label: "Mesas",
-    icon: <FiGrid size={22} color="#8b5cf6" />,
-    path: "/mesas",
-    roles: ["ROLE_CLIENT", "CLIENT"],
-  },
-  {
-    label: "Caixa",
+    label: "Caixa/Mesas",
     icon: <FiInbox size={22} color="#16a34a" />,
-    path: "/caixa",
-    roles: ["ROLE_CLIENT", "CLIENT"],
-  },
-  {
-    label: "Relatórios",
-    icon: <FiBarChart2 size={22} color="#10b981" />,
     roles: ["ROLE_CLIENT", "CLIENT"],
     items: [
+      {
+        label: "Caixa",
+        icon: <FiInbox size={22} color="#16a34a" />,
+        path: "/caixa",
+        roles: ["ROLE_CLIENT", "CLIENT"],
+      },
+      {
+        label: "Mesas",
+        icon: <FiGrid size={22} color="#8b5cf6" />,
+        path: "/mesas",
+        roles: ["ROLE_CLIENT", "CLIENT"],
+      },
       {
         label: "Relatório de Caixa",
         icon: <FiFileText size={22} color="#10b981" />,
