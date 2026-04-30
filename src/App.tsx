@@ -39,6 +39,7 @@ const PaymentSuccessPage = lazy(() => import("./components/Payment/PaymentSucces
 const PaymentCancelPage = lazy(() => import("./components/Payment/PaymentCancelPage"));
 const PaymentCRUDPage = lazy(() => import("./components/Payment/PaymentCRUDPage"));
 const PersonalDataPage = lazy(() => import("./components/User/PersonalDataPage"));
+const StoreProfilePage = lazy(() => import("./components/User/StoreProfilePage"));
 const AddressPage = lazy(() => import("./components/User/AddressPage"));
 const ConsolidatedPaymentProcessor = lazy(() => import("./components/ConsolidatedPayment/ConsolidatedPaymentProcessor"));
 const SiteConfigurationCRUDPage = lazy(() => import("./components/SiteConfiguration/SiteConfigurationCRUDPage"));
@@ -256,6 +257,7 @@ function App() {
                 <Route path="/pagamentos" element={<PaymentCRUDPage />} />
                 <Route path="/balanco-financeiro" element={<OrganizerFinancialPage />} />
                 <Route path="/dados-pessoais" element={<PersonalDataPage />} />
+                <Route path="/dados-estabelecimento" element={<StoreProfilePage />} />
 
                 <Route path="/dados-endereco" element={<AddressPage />} />
                 <Route path="/processar-pagamentos" element={<ConsolidatedPaymentProcessor />} />

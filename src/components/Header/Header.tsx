@@ -430,7 +430,42 @@ export default function Header({
                       </svg>
                       <span>Dados Pessoais</span>
                     </button>
-                    
+
+                    {/* Botão Dados do Estabelecimento - apenas CLIENT */}
+                    {(userRole === "ROLE_CLIENT" || userRole === "CLIENT") && (
+                      <button
+                        style={{
+                          width: "100%",
+                          padding: "12px 16px",
+                          border: "none",
+                          background: "transparent",
+                          textAlign: "left",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 12,
+                          fontSize: "0.95rem",
+                          color: "var(--text-strong)",
+                          transition: "background-color 0.15s ease",
+                        }}
+                        onClick={() => {
+                          setUserMenuOpen(false);
+                          navigate("/dados-estabelecimento");
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = "var(--sidebar-item-hover-bg, #f3f4f6)";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = "transparent";
+                        }}
+                      >
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M3 21V7l9-4 9 4v14M9 21V12h6v9" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        <span>Dados do Estabelecimento</span>
+                      </button>
+                    )}
+
                     {/* Botão Alterar Senha */}
                     <button
                       style={{
