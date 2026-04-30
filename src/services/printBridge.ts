@@ -218,8 +218,25 @@ export async function printPackaging(
   return postBytesToBridge(bytes);
 }
 
+/**
+ * Normaliza URL do bridge:
+ *   - Garante prefixo http://
+ *   - Adiciona porta 9101 (HTTP) se não tiver porta
+ *   - Remove trailing slash
+ *
+ * Aceita: "192.168.1.42", "192.168.1.42:9101", "http://192.168.1.42",
+ *          "localhost", "localhost:9101"
+ */
 function normalizeUrl(url: string): string {
   let n = url.trim();
   if (!n.startsWith("http://") && !n.startsWith("https://")) n = "http://" + n;
-  return n.replace(/\/+$/, "");
+  // Remove trailing slash
+  n = n.replace(/\/+$/, "");
+  // Se não tem porta após o host, adiciona :9101
+  // Match: http(s)://host[:porta][/path]
+  const hasPort = /^https?:\/\/[^/]+:\d+/.test(n);
+  if (!hasPort) {
+    n = n.replace(/^(https?:\/\/[^/]+)/, "$1:9101");
+  }
+  return n;
 }

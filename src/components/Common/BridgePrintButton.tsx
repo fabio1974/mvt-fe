@@ -112,13 +112,13 @@ export default function BridgePrintButton({ orderId, paperWidth = "80mm", label 
             </p>
 
             <label style={{ display: "block", marginTop: 16, fontSize: 12, fontWeight: 600, color: "#475569" }}>
-              URL do Bridge (IP:porta)
+              IP do computador com a Print Bridge (porta 9101 é adicionada automaticamente)
             </label>
             <input
               type="text"
               value={inputUrl}
               onChange={(e) => setInputUrl(e.target.value)}
-              placeholder="192.168.1.42:9101"
+              placeholder="192.168.1.42"
               style={{
                 width: "100%", padding: "10px 12px", marginTop: 4,
                 border: "1px solid #cbd5e1", borderRadius: 8, fontSize: 14,
