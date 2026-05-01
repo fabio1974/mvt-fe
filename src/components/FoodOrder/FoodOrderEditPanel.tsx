@@ -323,7 +323,7 @@ const FoodOrderEditPanel: React.FC<Props> = ({ orderId, viewMode }) => {
           {STEPS.map((step) => {
             const stepIdx = STATUS_ORDER.indexOf(step.key);
             const isDone = stepIdx <= currentIdx;
-            const isNext = stepIdx === currentIdx + 1 || (step.key === "READY" && order.status === "ACCEPTED");
+            const isNext = stepIdx === currentIdx + 1;
             const canClick = isNext && !isDone;
 
             return (
