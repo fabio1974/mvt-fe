@@ -62,7 +62,7 @@ const MobileAppBanner: React.FC<MobileAppBannerProps> = ({ userName }) => {
       <div className="mobile-app-banner-stores">
         {/* Google Play - Ativo */}
         <a
-          href="https://play.google.com/store/apps/details?id=com.zapi10.app"
+          href="https://play.google.com/store/apps/details?id=com.mvt.mobile.zapi10"
           target="_blank"
           rel="noopener noreferrer"
           className="store-button google-play"
