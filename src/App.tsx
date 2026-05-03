@@ -46,6 +46,7 @@ const AddressPage = lazy(() => import("./components/User/AddressPage"));
 const ConsolidatedPaymentProcessor = lazy(() => import("./components/ConsolidatedPayment/ConsolidatedPaymentProcessor"));
 const SiteConfigurationCRUDPage = lazy(() => import("./components/SiteConfiguration/SiteConfigurationCRUDPage"));
 const AnnouncementCRUDPage = lazy(() => import("./components/Announcement/AnnouncementCRUDPage"));
+const MarketingPage = lazy(() => import("./components/Marketing/MarketingPage"));
 const MobileVersionReportPage = lazy(() => import("./components/Reports/MobileVersionReportPage"));
 const SpecialZonesMapPage = lazy(() => import("./components/SpecialZones/SpecialZonesMapPage"));
 const BankAccountPage = lazy(() => import("./components/User/BankAccountPage"));
@@ -253,6 +254,7 @@ function App() {
                 <Route path="/processar-pagamentos" element={<ConsolidatedPaymentProcessor />} />
                 <Route path="/configuracoes" element={<SiteConfigurationCRUDPage />} />
                 <Route path="/anuncios" element={<AnnouncementCRUDPage />} />
+                <Route path="/marketing" element={<MarketingPage />} />
                 <Route path="/versoes-mobile" element={<MobileVersionReportPage />} />
                 <Route path="/zonas-especiais" element={<SpecialZonesMapPage />} />
                 <Route path="/payment/success" element={<PaymentSuccessPage />} />

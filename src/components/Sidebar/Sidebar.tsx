@@ -24,6 +24,7 @@ import {
   FiBell,
   FiMessageSquare,
   FiSmartphone,
+  FiInstagram,
 } from "react-icons/fi";
 import "./Sidebar.css";
 
@@ -190,6 +191,12 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
     label: "Anúncios",
     icon: <FiBell size={22} color="#3b82f6" />,
     path: "/anuncios",
+    roles: ["ROLE_ADMIN"],
+  },
+  {
+    label: "Marketing",
+    icon: <FiInstagram size={22} color="#ec4899" />,
+    path: "/marketing",
     roles: ["ROLE_ADMIN"],
   },
   {

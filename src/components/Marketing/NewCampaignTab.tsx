@@ -1,0 +1,235 @@
+import React, { useState } from "react";
+import { marketingApi } from "./api";
+import type { MarketingCampaign, TargetAudience } from "./types";
+
+const AUDIENCES: { value: TargetAudience; label: string }[] = [
+  { value: "GENERAL", label: "Geral (sem segmentação)" },
+  { value: "END_CUSTOMER", label: "Consumidor final" },
+  { value: "RESTAURANT_OWNER", label: "Donos de restaurante (B2B)" },
+  { value: "CITY_FORTALEZA", label: "Fortaleza" },
+  { value: "CITY_SOBRAL", label: "Sobral" },
+  { value: "CITY_IBIAPABA", label: "Serra da Ibiapaba" },
+];
+
+interface Props {
+  campaigns: MarketingCampaign[];
+  onCreated: () => void;
+}
+
+const NewCampaignTab: React.FC<Props> = ({ campaigns, onCreated }) => {
+  const [briefing, setBriefing] = useState("");
+  const [audience, setAudience] = useState<TargetAudience>("END_CUSTOMER");
+  const [variations, setVariations] = useState(5);
+  const [creativeType, setCreativeType] = useState<"IMAGE" | "CAROUSEL">("CAROUSEL");
+  const [creating, setCreating] = useState(false);
+  const [generatingId, setGeneratingId] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const draftCampaigns = campaigns.filter((c) => c.status === "DRAFT" || c.status === "FAILED");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!briefing.trim()) return;
+    setError(null);
+    setCreating(true);
+    try {
+      await marketingApi.createCampaign({
+        briefing: briefing.trim(),
+        targetAudience: audience,
+        requestedVariations: variations,
+        creativeType,
+      });
+      setBriefing("");
+      onCreated();
+    } catch (err: any) {
+      setError(err?.response?.data?.message || err?.message || "Erro ao criar");
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleGenerate = async (id: number) => {
+    setGeneratingId(id);
+    setError(null);
+    try {
+      await marketingApi.generate(id);
+      onCreated();
+    } catch (err: any) {
+      setError(err?.response?.data?.message || err?.message || "Erro gerando variações");
+    } finally {
+      setGeneratingId(null);
+    }
+  };
+
+  return (
+    <div>
+      <form
+        onSubmit={handleSubmit}
+        style={{
+          background: "white",
+          padding: 20,
+          borderRadius: 12,
+          border: "1px solid #e2e8f0",
+          marginBottom: 24,
+        }}
+      >
+        <h2 style={{ fontSize: 18, marginBottom: 12 }}>Nova campanha</h2>
+
+        <label style={labelStyle}>Briefing</label>
+        <textarea
+          value={briefing}
+          onChange={(e) => setBriefing(e.target.value)}
+          placeholder="Ex: Promo Tex Burger sexta — combo X-tudo + batata + refri por R$25"
+          rows={4}
+          style={inputStyle}
+          required
+        />
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginTop: 12 }}>
+          <div>
+            <label style={labelStyle}>Público-alvo</label>
+            <select
+              value={audience}
+              onChange={(e) => setAudience(e.target.value as TargetAudience)}
+              style={inputStyle}
+            >
+              {AUDIENCES.map((a) => (
+                <option key={a.value} value={a.value}>
+                  {a.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label style={labelStyle}>Tipo</label>
+            <select
+              value={creativeType}
+              onChange={(e) => setCreativeType(e.target.value as "IMAGE" | "CAROUSEL")}
+              style={inputStyle}
+            >
+              <option value="CAROUSEL">Carrossel (várias imagens)</option>
+              <option value="IMAGE">Post único</option>
+            </select>
+          </div>
+
+          <div>
+            <label style={labelStyle}>Variações</label>
+            <input
+              type="number"
+              min={1}
+              max={10}
+              value={variations}
+              onChange={(e) => setVariations(Number(e.target.value))}
+              style={inputStyle}
+            />
+          </div>
+        </div>
+
+        {error && (
+          <div style={{ color: "#991b1b", marginTop: 8, fontSize: 13 }}>{error}</div>
+        )}
+
+        <button
+          type="submit"
+          disabled={creating || !briefing.trim()}
+          style={{
+            marginTop: 16,
+            padding: "10px 20px",
+            background: "#1d4ed8",
+            color: "white",
+            border: "none",
+            borderRadius: 8,
+            fontWeight: 600,
+            cursor: creating ? "not-allowed" : "pointer",
+            opacity: creating ? 0.6 : 1,
+          }}
+        >
+          {creating ? "Criando…" : "Criar campanha"}
+        </button>
+      </form>
+
+      {draftCampaigns.length > 0 && (
+        <div>
+          <h3 style={{ fontSize: 16, marginBottom: 8 }}>Rascunhos prontos pra gerar</h3>
+          {draftCampaigns.map((c) => (
+            <div
+              key={c.id}
+              style={{
+                background: "white",
+                padding: 14,
+                borderRadius: 10,
+                border: "1px solid #e2e8f0",
+                marginBottom: 8,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 12,
+              }}
+            >
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontWeight: 500, fontSize: 14 }}>
+                  #{c.id} · {c.creativeType} · {c.requestedVariations} variações · {c.status}
+                </div>
+                <div
+                  style={{
+                    color: "#64748b",
+                    fontSize: 13,
+                    marginTop: 2,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {c.briefing}
+                </div>
+                {c.errorMessage && (
+                  <div style={{ color: "#991b1b", fontSize: 12, marginTop: 4 }}>
+                    ❌ {c.errorMessage}
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={() => handleGenerate(c.id)}
+                disabled={generatingId !== null}
+                style={{
+                  padding: "8px 16px",
+                  background: "#1d4ed8",
+                  color: "white",
+                  border: "none",
+                  borderRadius: 8,
+                  fontWeight: 500,
+                  cursor: generatingId !== null ? "not-allowed" : "pointer",
+                  opacity: generatingId !== null ? 0.6 : 1,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {generatingId === c.id ? "Gerando…" : "Gerar variações"}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const labelStyle: React.CSSProperties = {
+  display: "block",
+  fontSize: 13,
+  fontWeight: 500,
+  color: "#475569",
+  marginBottom: 4,
+};
+
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "8px 10px",
+  border: "1px solid #cbd5e1",
+  borderRadius: 6,
+  fontSize: 14,
+  fontFamily: "inherit",
+  boxSizing: "border-box",
+};
+
+export default NewCampaignTab;
