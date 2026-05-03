@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
+import { getUserRole } from "../../utils/auth";
 import { marketingApi } from "./api";
 import type { MarketingCampaign, MarketingCreative } from "./types";
 import NewCampaignTab from "./NewCampaignTab";
@@ -15,6 +17,11 @@ const TABS: { key: TabKey; label: string }[] = [
 ];
 
 const MarketingPage: React.FC = () => {
+  const role = getUserRole();
+  if (role !== "ROLE_ADMIN") {
+    return <Navigate to="/" replace />;
+  }
+
   const [activeTab, setActiveTab] = useState<TabKey>("new");
   const [campaigns, setCampaigns] = useState<MarketingCampaign[]>([]);
   const [published, setPublished] = useState<MarketingCreative[]>([]);
