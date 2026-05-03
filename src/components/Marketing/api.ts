@@ -3,11 +3,13 @@ import type {
   CampaignDetail,
   MarketingCampaign,
   MarketingCreative,
+  MarketingGuideline,
   MetricSnapshot,
   TargetAudience,
 } from "./types";
 
 const BASE = "/api/admin/marketing";
+const GUIDELINES = `${BASE}/guidelines`;
 
 export const marketingApi = {
   health: async () =>
@@ -60,4 +62,17 @@ export const marketingApi = {
 
   refreshMetrics: async (id: number) =>
     (await api.post<MetricSnapshot[]>(`${BASE}/creatives/${id}/refresh-metrics`)).data,
+
+  // Diretrizes (observações permanentes)
+  listGuidelines: async () =>
+    (await api.get<MarketingGuideline[]>(GUIDELINES)).data,
+
+  createGuideline: async (input: { text: string; scope?: string | null; active?: boolean }) =>
+    (await api.post<MarketingGuideline>(GUIDELINES, input)).data,
+
+  patchGuideline: async (id: number, body: Partial<{ text: string; scope: string | null; active: boolean }>) =>
+    (await api.patch<MarketingGuideline>(`${GUIDELINES}/${id}`, body)).data,
+
+  deleteGuideline: async (id: number) =>
+    (await api.delete<{ deleted: boolean; id: number }>(`${GUIDELINES}/${id}`)).data,
 };

@@ -6,14 +6,16 @@ import type { MarketingCampaign, MarketingCreative } from "./types";
 import NewCampaignTab from "./NewCampaignTab";
 import ApprovalTab from "./ApprovalTab";
 import PublishedTab from "./PublishedTab";
+import GuidelinesTab from "./GuidelinesTab";
 import HealthBanner from "./HealthBanner";
 
-type TabKey = "new" | "approval" | "published";
+type TabKey = "new" | "approval" | "published" | "guidelines";
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: "new", label: "Nova campanha" },
   { key: "approval", label: "Em aprovação" },
   { key: "published", label: "Publicados" },
+  { key: "guidelines", label: "Diretrizes" },
 ];
 
 const MarketingPage: React.FC = () => {
@@ -124,6 +126,9 @@ const MarketingPage: React.FC = () => {
       )}
       {activeTab === "published" && (
         <PublishedTab creatives={published} />
+      )}
+      {activeTab === "guidelines" && (
+        <GuidelinesTab />
       )}
     </div>
   );

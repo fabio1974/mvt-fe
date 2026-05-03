@@ -75,3 +75,12 @@ export interface CampaignDetail {
   campaign: MarketingCampaign;
   creatives: MarketingCreative[];
 }
+
+export interface MarketingGuideline {
+  id: number;
+  text: string;
+  scope?: string | null;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
