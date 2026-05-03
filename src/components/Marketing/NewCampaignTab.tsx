@@ -6,6 +6,8 @@ const AUDIENCES: { value: TargetAudience; label: string }[] = [
   { value: "GENERAL", label: "Geral (sem segmentação)" },
   { value: "END_CUSTOMER", label: "Consumidor final" },
   { value: "RESTAURANT_OWNER", label: "Donos de restaurante (B2B)" },
+  { value: "COURIER", label: "Motoboys (B2B)" },
+  { value: "ORGANIZER", label: "Organizadores de eventos (B2B)" },
   { value: "CITY_FORTALEZA", label: "Fortaleza" },
   { value: "CITY_SOBRAL", label: "Sobral" },
   { value: "CITY_IBIAPABA", label: "Serra da Ibiapaba" },
@@ -23,9 +25,24 @@ const NewCampaignTab: React.FC<Props> = ({ campaigns, onCreated }) => {
   const [creativeType, setCreativeType] = useState<"IMAGE" | "CAROUSEL">("CAROUSEL");
   const [creating, setCreating] = useState(false);
   const [generatingId, setGeneratingId] = useState<number | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const draftCampaigns = campaigns.filter((c) => c.status === "DRAFT" || c.status === "FAILED");
+
+  const handleDelete = async (id: number) => {
+    if (!confirm(`Deletar campanha #${id}? As imagens também serão removidas do Cloudinary.`)) return;
+    setDeletingId(id);
+    setError(null);
+    try {
+      await marketingApi.deleteCampaign(id);
+      onCreated();
+    } catch (err: any) {
+      setError(err?.response?.data?.message || err?.message || "Erro ao deletar");
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -189,23 +206,41 @@ const NewCampaignTab: React.FC<Props> = ({ campaigns, onCreated }) => {
                   </div>
                 )}
               </div>
-              <button
-                onClick={() => handleGenerate(c.id)}
-                disabled={generatingId !== null}
-                style={{
-                  padding: "8px 16px",
-                  background: "#1d4ed8",
-                  color: "white",
-                  border: "none",
-                  borderRadius: 8,
-                  fontWeight: 500,
-                  cursor: generatingId !== null ? "not-allowed" : "pointer",
-                  opacity: generatingId !== null ? 0.6 : 1,
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {generatingId === c.id ? "Gerando…" : "Gerar variações"}
-              </button>
+              <div style={{ display: "flex", gap: 8 }}>
+                <button
+                  onClick={() => handleGenerate(c.id)}
+                  disabled={generatingId !== null || deletingId !== null}
+                  style={{
+                    padding: "8px 16px",
+                    background: "#1d4ed8",
+                    color: "white",
+                    border: "none",
+                    borderRadius: 8,
+                    fontWeight: 500,
+                    cursor: generatingId !== null ? "not-allowed" : "pointer",
+                    opacity: generatingId !== null ? 0.6 : 1,
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {generatingId === c.id ? "Gerando…" : "Gerar variações"}
+                </button>
+                <button
+                  onClick={() => handleDelete(c.id)}
+                  disabled={deletingId !== null || generatingId !== null}
+                  title="Deletar campanha"
+                  style={{
+                    padding: "8px 12px",
+                    background: "transparent",
+                    color: "#dc2626",
+                    border: "1px solid #dc2626",
+                    borderRadius: 8,
+                    cursor: deletingId !== null ? "not-allowed" : "pointer",
+                    opacity: deletingId !== null ? 0.6 : 1,
+                  }}
+                >
+                  {deletingId === c.id ? "…" : "🗑️"}
+                </button>
+              </div>
             </div>
           ))}
         </div>

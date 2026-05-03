@@ -28,6 +28,9 @@ export const marketingApi = {
   getCampaign: async (id: number) =>
     (await api.get<CampaignDetail>(`${BASE}/campaigns/${id}`)).data,
 
+  deleteCampaign: async (id: number) =>
+    (await api.delete<{ deleted: boolean; id: number }>(`${BASE}/campaigns/${id}`)).data,
+
   generate: async (id: number) =>
     (await api.post<MarketingCampaign>(`${BASE}/campaigns/${id}/generate`)).data,
 

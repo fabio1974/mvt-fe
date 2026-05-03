@@ -20,6 +20,8 @@ export type TargetAudience =
   | "GENERAL"
   | "RESTAURANT_OWNER"
   | "END_CUSTOMER"
+  | "COURIER"
+  | "ORGANIZER"
   | "CITY_FORTALEZA"
   | "CITY_SOBRAL"
   | "CITY_IBIAPABA";

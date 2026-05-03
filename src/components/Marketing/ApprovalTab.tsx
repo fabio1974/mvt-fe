@@ -58,6 +58,19 @@ const CampaignApprovalCard: React.FC<{ campaignId: number; onChanged: () => void
     onChanged();
   };
 
+  const handleDelete = async () => {
+    if (!confirm(`Deletar campanha #${campaignId}? Imagens também serão removidas do Cloudinary.`)) return;
+    setBusy(-2);
+    try {
+      await marketingApi.deleteCampaign(campaignId);
+      onChanged();
+    } catch (e: any) {
+      setError(e?.response?.data?.message || e?.message || "falha deletando");
+    } finally {
+      setBusy(null);
+    }
+  };
+
   const approveAll = async (creatives: MarketingCreative[]) => {
     for (const c of creatives) {
       if (c.status === "GENERATED") {
@@ -107,26 +120,45 @@ const CampaignApprovalCard: React.FC<{ campaignId: number; onChanged: () => void
         marginBottom: 20,
       }}
     >
-      <div style={{ marginBottom: 12 }}>
-        <div style={{ fontSize: 18, fontWeight: 600 }}>
-          #{campaign.id} · {campaign.creativeType} · {campaign.targetAudience}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12, gap: 12 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 18, fontWeight: 600 }}>
+            #{campaign.id} · {campaign.creativeType} · {campaign.targetAudience}
+          </div>
+          <div style={{ color: "#64748b", fontSize: 14, marginTop: 2 }}>
+            {campaign.briefing}
+          </div>
+          <div
+            style={{
+              display: "inline-block",
+              marginTop: 6,
+              padding: "2px 10px",
+              background: campaign.status === "AWAITING_APPROVAL" ? "#fef3c7" : "#dbeafe",
+              color: campaign.status === "AWAITING_APPROVAL" ? "#92400e" : "#1e40af",
+              borderRadius: 12,
+              fontSize: 12,
+            }}
+          >
+            {campaign.status}
+          </div>
         </div>
-        <div style={{ color: "#64748b", fontSize: 14, marginTop: 2 }}>
-          {campaign.briefing}
-        </div>
-        <div
+        <button
+          onClick={handleDelete}
+          disabled={busy !== null}
+          title="Deletar campanha"
           style={{
-            display: "inline-block",
-            marginTop: 6,
-            padding: "2px 10px",
-            background: campaign.status === "AWAITING_APPROVAL" ? "#fef3c7" : "#dbeafe",
-            color: campaign.status === "AWAITING_APPROVAL" ? "#92400e" : "#1e40af",
-            borderRadius: 12,
-            fontSize: 12,
+            padding: "6px 10px",
+            background: "transparent",
+            color: "#dc2626",
+            border: "1px solid #dc2626",
+            borderRadius: 8,
+            cursor: busy !== null ? "not-allowed" : "pointer",
+            opacity: busy !== null ? 0.6 : 1,
+            fontSize: 14,
           }}
         >
-          {campaign.status}
-        </div>
+          {busy === -2 ? "…" : "🗑️ Deletar"}
+        </button>
       </div>
 
       {campaign.status === "GENERATING" && (
