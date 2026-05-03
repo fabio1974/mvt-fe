@@ -7,7 +7,7 @@ const AUDIENCES: { value: TargetAudience; label: string }[] = [
   { value: "END_CUSTOMER", label: "Consumidor final" },
   { value: "RESTAURANT_OWNER", label: "Donos de restaurante (B2B)" },
   { value: "COURIER", label: "Motoboys (B2B)" },
-  { value: "ORGANIZER", label: "Organizadores de eventos (B2B)" },
+  { value: "ORGANIZER", label: "Gerentes Parceiros (B2B)" },
   { value: "CITY_FORTALEZA", label: "Fortaleza" },
   { value: "CITY_SOBRAL", label: "Sobral" },
   { value: "CITY_IBIAPABA", label: "Serra da Ibiapaba" },
