@@ -40,6 +40,10 @@ const CampaignApprovalCard: React.FC<{ campaignId: number; onChanged: () => void
   const [detail, setDetail] = useState<CampaignDetail | null>(null);
   const [busy, setBusy] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [editingBriefing, setEditingBriefing] = useState(false);
+  const [briefingDraft, setBriefingDraft] = useState("");
+  const [memoryNote, setMemoryNote] = useState("");
+  const [memoryStatus, setMemoryStatus] = useState<"idle" | "saving" | "saved">("idle");
 
   const load = async () => {
     try {
@@ -68,6 +72,58 @@ const CampaignApprovalCard: React.FC<{ campaignId: number; onChanged: () => void
       setError(e?.response?.data?.message || e?.message || "falha deletando");
     } finally {
       setBusy(null);
+    }
+  };
+
+  const startEdit = () => {
+    if (!detail) return;
+    setBriefingDraft(detail.campaign.briefing);
+    setEditingBriefing(true);
+  };
+
+  const handleSaveAndRegenerate = async () => {
+    if (!briefingDraft.trim()) return;
+    if (!confirm("Isso vai DELETAR as variações atuais e gerar novas com o briefing modificado. Continuar?")) return;
+    setBusy(-3);
+    setError(null);
+    try {
+      await marketingApi.updateCampaign(campaignId, { briefing: briefingDraft.trim() });
+      await marketingApi.regenerate(campaignId);
+      setEditingBriefing(false);
+      await refresh();
+    } catch (e: any) {
+      setError(e?.response?.data?.message || e?.message || "falha regenerando");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const handleSaveBriefingOnly = async () => {
+    if (!briefingDraft.trim()) return;
+    setBusy(-3);
+    setError(null);
+    try {
+      await marketingApi.updateCampaign(campaignId, { briefing: briefingDraft.trim() });
+      setEditingBriefing(false);
+      await refresh();
+    } catch (e: any) {
+      setError(e?.response?.data?.message || e?.message || "falha salvando");
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const handleAddMemory = async () => {
+    if (!memoryNote.trim()) return;
+    setMemoryStatus("saving");
+    try {
+      await marketingApi.observeMemory(memoryNote.trim());
+      setMemoryNote("");
+      setMemoryStatus("saved");
+      setTimeout(() => setMemoryStatus("idle"), 2500);
+    } catch (e: any) {
+      setError(e?.response?.data?.message || e?.message || "falha salvando memória");
+      setMemoryStatus("idle");
     }
   };
 
@@ -120,14 +176,54 @@ const CampaignApprovalCard: React.FC<{ campaignId: number; onChanged: () => void
         marginBottom: 20,
       }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12, gap: 12 }}>
+      <div style={{ display: "flex", marginBottom: 12, gap: 16 }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontSize: 18, fontWeight: 600 }}>
             #{campaign.id} · {campaign.creativeType} · {campaign.targetAudience}
           </div>
-          <div style={{ color: "#64748b", fontSize: 14, marginTop: 2 }}>
-            {campaign.briefing}
-          </div>
+          {editingBriefing ? (
+            <div style={{ marginTop: 8 }}>
+              <textarea
+                value={briefingDraft}
+                onChange={(e) => setBriefingDraft(e.target.value)}
+                rows={3}
+                style={{
+                  width: "100%",
+                  padding: 8,
+                  border: "1px solid #1d4ed8",
+                  borderRadius: 6,
+                  fontSize: 14,
+                  fontFamily: "inherit",
+                  boxSizing: "border-box",
+                }}
+              />
+              <div style={{ display: "flex", gap: 6, marginTop: 6 }}>
+                <button
+                  onClick={handleSaveAndRegenerate}
+                  disabled={busy !== null}
+                  style={btnPrimarySm}
+                  title="Deleta variações atuais e gera novas com o briefing modificado"
+                >
+                  {busy === -3 ? "Regenerando…" : "Salvar e regerar variações"}
+                </button>
+                <button
+                  onClick={handleSaveBriefingOnly}
+                  disabled={busy !== null}
+                  style={btnSecondarySm}
+                  title="Só atualiza o briefing, mantém variações"
+                >
+                  Salvar (sem regerar)
+                </button>
+                <button onClick={() => setEditingBriefing(false)} disabled={busy !== null} style={btnGhostSm}>
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div style={{ color: "#64748b", fontSize: 14, marginTop: 2 }}>
+              {campaign.briefing}
+            </div>
+          )}
           <div
             style={{
               display: "inline-block",
@@ -142,23 +238,67 @@ const CampaignApprovalCard: React.FC<{ campaignId: number; onChanged: () => void
             {campaign.status}
           </div>
         </div>
-        <button
-          onClick={handleDelete}
-          disabled={busy !== null}
-          title="Deletar campanha"
+
+        {/* Sidebar direita: editar / observação memória / deletar */}
+        <div
           style={{
-            padding: "6px 10px",
-            background: "transparent",
-            color: "#dc2626",
-            border: "1px solid #dc2626",
-            borderRadius: 8,
-            cursor: busy !== null ? "not-allowed" : "pointer",
-            opacity: busy !== null ? 0.6 : 1,
-            fontSize: 14,
+            display: "flex",
+            flexDirection: "column",
+            gap: 8,
+            width: 240,
+            flexShrink: 0,
+            paddingLeft: 14,
+            borderLeft: "1px solid #f1f5f9",
           }}
         >
-          {busy === -2 ? "…" : "🗑️ Deletar"}
-        </button>
+          {!editingBriefing && (
+            <button onClick={startEdit} disabled={busy !== null} style={btnSecondarySm} title="Editar briefing">
+              ✎ Editar briefing
+            </button>
+          )}
+
+          <div>
+            <label style={{ fontSize: 11, color: "#64748b", display: "block", marginBottom: 3 }}>
+              Anotar p/ memória global
+            </label>
+            <textarea
+              value={memoryNote}
+              onChange={(e) => setMemoryNote(e.target.value)}
+              placeholder="Ex: 'imagens não devem ter texto sobreposto'"
+              rows={2}
+              style={{
+                width: "100%",
+                padding: 6,
+                border: "1px solid #cbd5e1",
+                borderRadius: 6,
+                fontSize: 12,
+                fontFamily: "inherit",
+                boxSizing: "border-box",
+                resize: "vertical",
+              }}
+            />
+            <button
+              onClick={handleAddMemory}
+              disabled={memoryStatus === "saving" || !memoryNote.trim()}
+              style={{ ...btnSecondarySm, marginTop: 4, width: "100%" }}
+            >
+              {memoryStatus === "saving"
+                ? "Integrando…"
+                : memoryStatus === "saved"
+                ? "✓ Salvo"
+                : "+ Adicionar à memória"}
+            </button>
+          </div>
+
+          <button
+            onClick={handleDelete}
+            disabled={busy !== null}
+            title="Deletar campanha"
+            style={btnDangerSm}
+          >
+            {busy === -2 ? "…" : "🗑️ Deletar campanha"}
+          </button>
+        </div>
       </div>
 
       {campaign.status === "GENERATING" && (
@@ -370,5 +510,39 @@ const btnSmBase: React.CSSProperties = {
 const btnSmGreen: React.CSSProperties = { ...btnSmBase, background: "#dcfce7", color: "#166534" };
 const btnSmBlue: React.CSSProperties = { ...btnSmBase, background: "#dbeafe", color: "#1d4ed8" };
 const btnSmGray: React.CSSProperties = { ...btnSmBase, background: "#f1f5f9", color: "#64748b" };
+
+// Botões da sidebar direita do card de campanha
+const sidebarBtnBase: React.CSSProperties = {
+  padding: "6px 10px",
+  fontSize: 12,
+  borderRadius: 6,
+  cursor: "pointer",
+  fontWeight: 500,
+  textAlign: "center",
+};
+const btnPrimarySm: React.CSSProperties = {
+  ...sidebarBtnBase,
+  background: "#1d4ed8",
+  color: "white",
+  border: "none",
+};
+const btnSecondarySm: React.CSSProperties = {
+  ...sidebarBtnBase,
+  background: "#dbeafe",
+  color: "#1d4ed8",
+  border: "1px solid #bfdbfe",
+};
+const btnGhostSm: React.CSSProperties = {
+  ...sidebarBtnBase,
+  background: "transparent",
+  color: "#64748b",
+  border: "1px solid #cbd5e1",
+};
+const btnDangerSm: React.CSSProperties = {
+  ...sidebarBtnBase,
+  background: "transparent",
+  color: "#dc2626",
+  border: "1px solid #dc2626",
+};
 
 export default ApprovalTab;

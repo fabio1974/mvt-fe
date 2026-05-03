@@ -33,6 +33,15 @@ export const marketingApi = {
   deleteCampaign: async (id: number) =>
     (await api.delete<{ deleted: boolean; id: number }>(`${BASE}/campaigns/${id}`)).data,
 
+  updateCampaign: async (id: number, patch: { briefing?: string; targetAudience?: TargetAudience; creativeType?: "IMAGE" | "CAROUSEL"; requestedVariations?: number }) =>
+    (await api.patch<MarketingCampaign>(`${BASE}/campaigns/${id}`, patch)).data,
+
+  regenerate: async (id: number) =>
+    (await api.post<MarketingCampaign>(`${BASE}/campaigns/${id}/regenerate`)).data,
+
+  observeMemory: async (observation: string) =>
+    (await api.post<{ id: number; applied: boolean }>(`${BASE}/memory/observe`, { observation })).data,
+
   generate: async (id: number) =>
     (await api.post<MarketingCampaign>(`${BASE}/campaigns/${id}/generate`)).data,
 
