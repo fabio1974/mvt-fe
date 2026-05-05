@@ -7,14 +7,16 @@ import NewCampaignTab from "./NewCampaignTab";
 import ApprovalTab from "./ApprovalTab";
 import PublishedTab from "./PublishedTab";
 import MemoryTab from "./MemoryTab";
+import CharactersTab from "./CharactersTab";
 import HealthBanner from "./HealthBanner";
 
-type TabKey = "new" | "approval" | "published" | "memory";
+type TabKey = "new" | "approval" | "published" | "characters" | "memory";
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: "new", label: "Nova campanha" },
   { key: "approval", label: "Em aprovação" },
   { key: "published", label: "Publicados" },
+  { key: "characters", label: "🎭 Personagens" },
   { key: "memory", label: "🧠 Memória" },
 ];
 
@@ -126,6 +128,9 @@ const MarketingPage: React.FC = () => {
       )}
       {activeTab === "published" && (
         <PublishedTab creatives={published} />
+      )}
+      {activeTab === "characters" && (
+        <CharactersTab />
       )}
       {activeTab === "memory" && (
         <MemoryTab />

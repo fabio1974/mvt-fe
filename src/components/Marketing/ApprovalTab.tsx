@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { marketingApi } from "./api";
 import type { CampaignDetail, MarketingCampaign, MarketingCreative } from "./types";
+import GeneratingModal from "./GeneratingModal";
 
 interface Props {
   campaigns: MarketingCampaign[];
@@ -167,6 +168,12 @@ const CampaignApprovalCard: React.FC<{ campaignId: number; onChanged: () => void
   const hasApproved = creatives.some((c) => c.status === "APPROVED");
 
   return (
+    <>
+    <GeneratingModal
+      isOpen={busy === -3}
+      variationsCount={campaign.requestedVariations}
+      mode="regenerate"
+    />
     <div
       style={{
         background: "white",
@@ -387,6 +394,7 @@ const CampaignApprovalCard: React.FC<{ campaignId: number; onChanged: () => void
         <div style={{ color: "#991b1b", marginTop: 8, fontSize: 13 }}>{error}</div>
       )}
     </div>
+    </>
   );
 };
 
@@ -419,13 +427,22 @@ const CreativeCard: React.FC<{
         flexDirection: "column",
       }}
     >
-      <div style={{ width: "100%", aspectRatio: "1/1", background: "#f1f5f9" }}>
+      <div style={{ width: "100%", aspectRatio: creative.creativeType === "VIDEO" ? "9/16" : "1/1", background: "#f1f5f9" }}>
         {creative.assetUrl ? (
-          <img
-            src={creative.assetUrl}
-            alt={`Variação ${creative.variationIndex + 1}`}
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          />
+          creative.creativeType === "VIDEO" ? (
+            <video
+              src={creative.assetUrl}
+              controls
+              playsInline
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          ) : (
+            <img
+              src={creative.assetUrl}
+              alt={`Variação ${creative.variationIndex + 1}`}
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+          )
         ) : (
           <div
             style={{

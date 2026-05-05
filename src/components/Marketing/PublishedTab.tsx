@@ -67,17 +67,32 @@ const PublishedRow: React.FC<{ creative: MarketingCreative }> = ({ creative }) =
       }}
     >
       {creative.assetUrl && (
-        <img
-          src={creative.assetUrl}
-          alt=""
-          style={{
-            width: 80,
-            height: 80,
-            objectFit: "cover",
-            borderRadius: 8,
-            flexShrink: 0,
-          }}
-        />
+        creative.creativeType === "VIDEO" ? (
+          <video
+            src={creative.assetUrl}
+            muted
+            playsInline
+            style={{
+              width: 80,
+              height: 80,
+              objectFit: "cover",
+              borderRadius: 8,
+              flexShrink: 0,
+            }}
+          />
+        ) : (
+          <img
+            src={creative.assetUrl}
+            alt=""
+            style={{
+              width: 80,
+              height: 80,
+              objectFit: "cover",
+              borderRadius: 8,
+              flexShrink: 0,
+            }}
+          />
+        )
       )}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div

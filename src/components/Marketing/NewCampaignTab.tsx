@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { marketingApi } from "./api";
-import type { MarketingCampaign, TargetAudience } from "./types";
+import type { MarketingCampaign, MarketingCharacter, TargetAudience } from "./types";
+import GeneratingModal from "./GeneratingModal";
 
 const AUDIENCES: { value: TargetAudience; label: string }[] = [
   { value: "GENERAL", label: "Geral (sem segmentação)" },
@@ -22,11 +23,19 @@ const NewCampaignTab: React.FC<Props> = ({ campaigns, onCreated }) => {
   const [briefing, setBriefing] = useState("");
   const [audience, setAudience] = useState<TargetAudience>("END_CUSTOMER");
   const [variations, setVariations] = useState(5);
-  const [creativeType, setCreativeType] = useState<"IMAGE" | "CAROUSEL">("CAROUSEL");
+  const [creativeType, setCreativeType] = useState<"IMAGE" | "CAROUSEL" | "VIDEO">("IMAGE");
+  const [characterId, setCharacterId] = useState<number | "">("");
+  const [characters, setCharacters] = useState<MarketingCharacter[]>([]);
   const [creating, setCreating] = useState(false);
   const [generatingId, setGeneratingId] = useState<number | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (creativeType === "VIDEO" && characters.length === 0) {
+      marketingApi.listCharacters().then(setCharacters).catch(() => {});
+    }
+  }, [creativeType, characters.length]);
 
   const draftCampaigns = campaigns.filter((c) => c.status === "DRAFT" || c.status === "FAILED");
 
@@ -47,15 +56,23 @@ const NewCampaignTab: React.FC<Props> = ({ campaigns, onCreated }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!briefing.trim()) return;
+    if (creativeType === "VIDEO" && !characterId) {
+      setError("Vídeo requer um personagem selecionado.");
+      return;
+    }
     setError(null);
     setCreating(true);
     try {
-      await marketingApi.createCampaign({
+      const payload: any = {
         briefing: briefing.trim(),
         targetAudience: audience,
-        requestedVariations: variations,
+        requestedVariations: creativeType === "VIDEO" ? 1 : variations,
         creativeType,
-      });
+      };
+      if (creativeType === "VIDEO" && characterId) {
+        payload.character = { id: characterId };
+      }
+      await marketingApi.createCampaign(payload);
       setBriefing("");
       onCreated();
     } catch (err: any) {
@@ -78,8 +95,15 @@ const NewCampaignTab: React.FC<Props> = ({ campaigns, onCreated }) => {
     }
   };
 
+  const generatingCampaign = generatingId != null ? campaigns.find((c) => c.id === generatingId) : null;
+
   return (
     <div>
+      <GeneratingModal
+        isOpen={generatingId != null}
+        variationsCount={generatingCampaign?.requestedVariations ?? variations}
+        mode="generate"
+      />
       <form
         onSubmit={handleSubmit}
         style={{
@@ -122,25 +146,49 @@ const NewCampaignTab: React.FC<Props> = ({ campaigns, onCreated }) => {
             <label style={labelStyle}>Tipo</label>
             <select
               value={creativeType}
-              onChange={(e) => setCreativeType(e.target.value as "IMAGE" | "CAROUSEL")}
+              onChange={(e) => setCreativeType(e.target.value as "IMAGE" | "CAROUSEL" | "VIDEO")}
               style={inputStyle}
             >
-              <option value="CAROUSEL">Carrossel (várias imagens)</option>
               <option value="IMAGE">Post único</option>
+              <option value="CAROUSEL">Carrossel (várias imagens)</option>
+              <option value="VIDEO">Vídeo (Veo 3, ~8s)</option>
+              <option value="REEL" disabled>Reels (em breve — não disponível)</option>
             </select>
           </div>
 
-          <div>
-            <label style={labelStyle}>Variações</label>
-            <input
-              type="number"
-              min={1}
-              max={10}
-              value={variations}
-              onChange={(e) => setVariations(Number(e.target.value))}
-              style={inputStyle}
-            />
-          </div>
+          {creativeType === "VIDEO" ? (
+            <div>
+              <label style={labelStyle}>Personagem</label>
+              <select
+                value={characterId}
+                onChange={(e) => setCharacterId(e.target.value ? Number(e.target.value) : "")}
+                style={inputStyle}
+                required
+              >
+                <option value="">— escolha um personagem —</option>
+                {characters.filter((c) => c.enabled).map((c) => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </select>
+              {characters.length === 0 && (
+                <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 4 }}>
+                  Nenhum personagem cadastrado. Vá na aba <b>🎭 Personagens</b> primeiro.
+                </div>
+              )}
+            </div>
+          ) : (
+            <div>
+              <label style={labelStyle}>Variações</label>
+              <input
+                type="number"
+                min={1}
+                max={10}
+                value={variations}
+                onChange={(e) => setVariations(Number(e.target.value))}
+                style={inputStyle}
+              />
+            </div>
+          )}
         </div>
 
         {error && (

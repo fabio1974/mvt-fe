@@ -26,7 +26,18 @@ export type TargetAudience =
   | "CITY_SOBRAL"
   | "CITY_IBIAPABA";
 
-export type CreativeType = "IMAGE" | "CAROUSEL" | "REEL";
+export type CreativeType = "IMAGE" | "CAROUSEL" | "VIDEO" | "REEL";
+
+export interface MarketingCharacter {
+  id: number;
+  name: string;
+  description: string | null;
+  assetUrl: string;
+  assetPublicId: string;
+  enabled: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export interface MarketingCampaign {
   id: number;

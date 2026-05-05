@@ -2,6 +2,7 @@ import { api } from "../../services/api";
 import type {
   CampaignDetail,
   MarketingCampaign,
+  MarketingCharacter,
   MarketingCreative,
   MarketingGuideline,
   MetricSnapshot,
@@ -24,7 +25,8 @@ export const marketingApi = {
     briefing: string;
     targetAudience: TargetAudience;
     requestedVariations?: number;
-    creativeType?: "IMAGE" | "CAROUSEL";
+    creativeType?: "IMAGE" | "CAROUSEL" | "VIDEO";
+    character?: { id: number };
   }) => (await api.post<MarketingCampaign>(`${BASE}/campaigns`, input)).data,
 
   getCampaign: async (id: number) =>
@@ -33,7 +35,7 @@ export const marketingApi = {
   deleteCampaign: async (id: number) =>
     (await api.delete<{ deleted: boolean; id: number }>(`${BASE}/campaigns/${id}`)).data,
 
-  updateCampaign: async (id: number, patch: { briefing?: string; targetAudience?: TargetAudience; creativeType?: "IMAGE" | "CAROUSEL"; requestedVariations?: number }) =>
+  updateCampaign: async (id: number, patch: { briefing?: string; targetAudience?: TargetAudience; creativeType?: "IMAGE" | "CAROUSEL" | "VIDEO"; requestedVariations?: number }) =>
     (await api.patch<MarketingCampaign>(`${BASE}/campaigns/${id}`, patch)).data,
 
   regenerate: async (id: number) =>
@@ -84,4 +86,23 @@ export const marketingApi = {
 
   deleteGuideline: async (id: number) =>
     (await api.delete<{ deleted: boolean; id: number }>(`${GUIDELINES}/${id}`)).data,
+
+  // Personagens (image-to-video)
+  listCharacters: async () =>
+    (await api.get<MarketingCharacter[]>(`${BASE}/characters`)).data,
+
+  uploadCharacter: async (file: File, name: string, description?: string) => {
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("name", name);
+    if (description) fd.append("description", description);
+    return (
+      await api.post<MarketingCharacter>(`${BASE}/characters/upload`, fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+    ).data;
+  },
+
+  deleteCharacter: async (id: number) =>
+    (await api.delete<{ deleted: boolean; id: number }>(`${BASE}/characters/${id}`)).data,
 };
