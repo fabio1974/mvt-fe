@@ -55,30 +55,36 @@ api.interceptors.request.use(
   }
 );
 
-// Interceptor para detectar token expirado
+// Páginas públicas onde 401 é esperado (não dispara overlay nem redirect).
+const PUBLIC_PATHS = [/^\/$/, /^\/login/, /^\/registrar/, /^\/parceiro/, /^\/track/, /^\/recuperar-senha/, /^\/nova-senha/, /^\/confirmar-email/, /^\/reenviar-confirmacao/];
+
+const isOnPublicPage = () => PUBLIC_PATHS.some((re) => re.test(window.location.pathname));
+
+// Estado pra evitar disparar o overlay/redirect mais de uma vez por sessão
+let sessionExpiredHandled = false;
+
+// Interceptor para detectar token expirado / sessão inválida.
+// Em vez de Promise.reject puro (que dispara mensagens genéricas como "Erro ao
+// carregar dados" nos componentes), dispara um evento global que renderiza o
+// SessionExpiredOverlay full-screen com mensagem amigável + redirect.
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Token expirado ou inválido
-      const token = localStorage.getItem("authToken");
-      
-      if (token) {
-        // Só mostra a mensagem se havia um token (ou seja, usuário estava logado)
-        showToast("Sessão expirada. Faça login novamente.", "warning");
-        
-        // Limpa o localStorage
-        localStorage.removeItem("authToken");
-        localStorage.removeItem("userRole");
-        localStorage.removeItem("organizationId");
-        
-        // Redireciona para login após 1 segundo
-        setTimeout(() => {
-          window.location.href = "/login";
-        }, 1000);
-      }
+    if (error.response?.status === 401 && !sessionExpiredHandled && !isOnPublicPage()) {
+      sessionExpiredHandled = true;
+
+      // Limpa credenciais expiradas (sempre, com ou sem token no localStorage)
+      localStorage.removeItem("authToken");
+      localStorage.removeItem("userRole");
+      localStorage.removeItem("organizationId");
+
+      // Aciona overlay (App.tsx ouve via SessionExpiredOverlay)
+      window.dispatchEvent(new Event("session-expired"));
+
+      // Toast de fallback (caso o overlay não esteja montado por algum motivo)
+      showToast("Sessão expirada. Faça login novamente.", "warning");
     }
-    
+
     return Promise.reject(error);
   }
 );

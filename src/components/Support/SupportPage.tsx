@@ -10,9 +10,21 @@ type ConversationFilter = "active" | "resolved" | "all";
 
 const POLL_INTERVAL_MS = 30_000;
 
-const fmtTime = (iso: string) => {
+/** Hora se for hoje; "DD/MM HH:mm" caso contrário. Usado nas bolhas do chat. */
+const fmtMessageTime = (iso: string) => {
   try {
-    return new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+    const d = new Date(iso);
+    const now = new Date();
+    const sameDay =
+      d.getFullYear() === now.getFullYear() &&
+      d.getMonth() === now.getMonth() &&
+      d.getDate() === now.getDate();
+    if (sameDay) {
+      return d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+    }
+    return d.toLocaleString("pt-BR", {
+      day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit",
+    });
   } catch {
     return "";
   }
@@ -100,7 +112,7 @@ const UserChatView: React.FC = () => {
               <div key={m.id} className={`support-bubble-row ${m.fromAdmin ? "left" : "right"}`}>
                 <div className={`support-bubble ${m.fromAdmin ? "from-admin" : "from-me"}`}>
                   <div className="support-bubble-text">{m.text}</div>
-                  <div className="support-bubble-time">{fmtTime(m.createdAt)}</div>
+                  <div className="support-bubble-time">{fmtMessageTime(m.createdAt)}</div>
                 </div>
               </div>
             ))
@@ -324,7 +336,7 @@ const AdminConversationsView: React.FC = () => {
                   <div key={m.id} className={`support-bubble-row ${m.fromAdmin ? "right" : "left"}`}>
                     <div className={`support-bubble ${m.fromAdmin ? "from-me" : "from-admin"}`}>
                       <div className="support-bubble-text">{m.text}</div>
-                      <div className="support-bubble-time">{fmtTime(m.createdAt)}</div>
+                      <div className="support-bubble-time">{fmtMessageTime(m.createdAt)}</div>
                     </div>
                   </div>
                 ))}

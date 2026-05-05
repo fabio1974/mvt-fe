@@ -4,6 +4,7 @@ import Header from "./components/Header/Header";
 import Footer from "./components/Footer/Footer";
 import Sidebar from "./components/Sidebar/Sidebar";
 import Toast from "./components/Common/Toast";
+import SessionExpiredOverlay from "./components/Common/SessionExpiredOverlay";
 import MetadataLoader from "./components/Common/MetadataLoader";
 import { MetadataProvider } from "./contexts/MetadataContext";
 import { Routes, Route, useLocation } from "react-router-dom";
@@ -277,6 +278,9 @@ function App() {
               onClose={() => setToast(null)}
             />
           )}
+
+          {/* Overlay de sessão expirada (escuta event 'session-expired' do interceptor) */}
+          <SessionExpiredOverlay />
         </div>
       </MetadataLoader>
     </MetadataProvider>
