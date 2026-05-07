@@ -40,3 +40,6 @@ test-results/
 playwright-report/
 blob-report/
 coverage/
+
+# Claude Code runtime artifacts
+.claude/
