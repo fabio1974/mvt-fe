@@ -1,7 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
 import EntityCRUD from "../Generic/EntityCRUD";
-import BankAccountModal from "../BankAccount/BankAccountModal";
-import { FiCreditCard } from "react-icons/fi";
 
 /**
  * Página de CRUD completo para Motoboys
@@ -13,73 +11,23 @@ import { FiCreditCard } from "react-icons/fi";
  *
  * Toda a configuração vem do metadata do backend carregado
  * no início da aplicação pelo MetadataContext.
+ *
+ * Nota (2026-05-07): botão "Gerenciar Conta Bancária" removido — repasses
+ * agora saem 100% via PIX-out (PagarmeTransfer). Chave PIX é editada no
+ * formulário do próprio usuário (campos pixKey/pixKeyType). BankAccountModal
+ * permanece no repo se admin precisar acessar via outra via.
  */
 const CourierCRUDPage: React.FC = () => {
-  const [bankAccountModalOpen, setBankAccountModalOpen] = useState(false);
-  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
-  const [selectedUserName, setSelectedUserName] = useState<string>("");
-
-  // Custom actions para adicionar ícone de conta bancária
-  const customActions = (row: any) => {
-    return (
-      <button
-        onClick={() => {
-          setSelectedUserId(row.id);
-          setSelectedUserName(row.name || row.username || "Usuário");
-          setBankAccountModalOpen(true);
-        }}
-        className="btn-action"
-        style={{
-          backgroundColor: "transparent",
-          border: "1px solid #10b981",
-          color: "#10b981",
-          borderRadius: "6px",
-          padding: "6px 8px",
-          cursor: "pointer",
-          transition: "all 0.2s",
-          display: "inline-flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.backgroundColor = "#10b981";
-          e.currentTarget.style.color = "white";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.backgroundColor = "transparent";
-          e.currentTarget.style.color = "#10b981";
-        }}
-        title="Gerenciar Conta Bancária"
-      >
-        <FiCreditCard size={16} />
-      </button>
-    );
-  };
-
   return (
-    <>
-      <EntityCRUD
-        entityName="user"
-        hideArrayFields={false}
-        hideFields={["clientContracts", "clientContract", "storeProfile"]} // Esconde na tabela
-        hiddenFields={["clientContracts", "clientContract", "storeProfile"]} // Esconde no formulário (storeProfile só faz sentido pra CLIENT)
-        pageTitle="Motoboys"
-        pageDescription="Gerencie os motoboys da plataforma"
-        initialFilters={{ role: "COURIER" }}
-        customActions={customActions}
-      />
-
-      <BankAccountModal
-        isOpen={bankAccountModalOpen}
-        userId={selectedUserId}
-        userName={selectedUserName}
-        onClose={() => {
-          setBankAccountModalOpen(false);
-          setSelectedUserId(null);
-          setSelectedUserName("");
-        }}
-      />
-    </>
+    <EntityCRUD
+      entityName="user"
+      hideArrayFields={false}
+      hideFields={["clientContracts", "clientContract", "storeProfile"]}
+      hiddenFields={["clientContracts", "clientContract", "storeProfile"]}
+      pageTitle="Motoboys"
+      pageDescription="Gerencie os motoboys da plataforma"
+      initialFilters={{ role: "COURIER" }}
+    />
   );
 };
 

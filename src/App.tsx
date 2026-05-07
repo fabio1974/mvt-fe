@@ -50,6 +50,7 @@ const MarketingPage = lazy(() => import("./components/Marketing/MarketingPage"))
 const MobileVersionReportPage = lazy(() => import("./components/Reports/MobileVersionReportPage"));
 const SpecialZonesMapPage = lazy(() => import("./components/SpecialZones/SpecialZonesMapPage"));
 const BankAccountPage = lazy(() => import("./components/User/BankAccountPage"));
+const PixKeyPage = lazy(() => import("./components/User/PixKeyPage"));
 const CourierEarningsPage = lazy(() => import("./components/Courier/CourierEarningsPage"));
 const CourierWalletPage = lazy(() => import("./components/Courier/CourierWalletPage"));
 const CreditCardsPage = lazy(() => import("./components/Client/CreditCardsPage"));
@@ -259,6 +260,7 @@ function App() {
                 <Route path="/payment/success" element={<PaymentSuccessPage />} />
                 <Route path="/payment/cancel" element={<PaymentCancelPage />} />
                 <Route path="/dados-bancarios" element={<BankAccountPage />} />
+                <Route path="/chave-pix" element={<PixKeyPage />} />
                 <Route path="/meus-ganhos" element={<CourierEarningsPage />} />
                 <Route path="/minha-carteira" element={<CourierWalletPage />} />
                 <Route path="/meus-cartoes" element={<CreditCardsPage />} />

@@ -25,6 +25,7 @@ import {
   FiMessageSquare,
   FiSmartphone,
   FiInstagram,
+  FiZap,
 } from "react-icons/fi";
 import "./Sidebar.css";
 
@@ -152,10 +153,10 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
     roles: ["ROLE_COURIER", "COURIER"],
   },
   {
-    label: "Dados Bancários",
-    icon: <FiCreditCard size={22} color="#f59e0b" />,
-    path: "/dados-bancarios",
-    roles: ["ROLE_COURIER", "COURIER", "ROLE_CUSTOMER", "CUSTOMER"],
+    label: "Chave PIX",
+    icon: <FiZap size={22} color="#10b981" />,
+    path: "/chave-pix",
+    roles: ["ROLE_COURIER", "COURIER", "ROLE_ORGANIZER", "ORGANIZER", "ROLE_CLIENT", "CLIENT"],
   },
   {
     label: "Meus Cartões",
