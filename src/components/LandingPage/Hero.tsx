@@ -32,8 +32,8 @@ const USER_TYPE_OPTIONS: UserTypeOption[] = [
   },
   {
     value: "ORGANIZER",
-    label: "Líder de Associação",
-    description: "Represento uma associação de motoboys",
+    label: "Gerente Zapi10",
+    description: "Tenho uma equipe de motoristas e estabelecimentos comerciais e ganho com as corridas deles",
     icon: "👥",
   },
 ];
