@@ -16,7 +16,7 @@ const USER_TYPE_OPTIONS: UserTypeOption[] = [
   {
     value: "CUSTOMER",
     label: "Cliente Pessoa Física",
-    description: "Quero solicitar corridas para uso pessoal",
+    description: "Quero pedir comida, fazer uma corrida ou uma entrega de objeto",
     icon: "👤",
   },
   {
@@ -33,8 +33,8 @@ const USER_TYPE_OPTIONS: UserTypeOption[] = [
   },
   {
     value: "ORGANIZER",
-    label: "Líder de Associação",
-    description: "Represento uma associação de motoboys",
+    label: "Gerente Zapi10",
+    description: "Tenho uma equipe de motoristas e estabelecimentos comerciais e ganho com as corridas deles",
     icon: "👥",
   },
   {
