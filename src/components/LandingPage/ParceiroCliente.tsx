@@ -178,8 +178,8 @@ const ParceiroCliente: React.FC = () => {
         >
           <h2 style={styles.cardTitle}>Cliente Pessoa Física</h2>
           <p style={styles.cardSubtitle}>
-            Solicite entregas de objetos ou transporte de passageiros de forma
-            rápida, segura e econômica para seu uso pessoal.
+            Peça comida, faça uma corrida ou solicite uma entrega de objeto
+            de forma rápida, segura e econômica.
           </p>
 
           <div style={styles.benefitsList}>
