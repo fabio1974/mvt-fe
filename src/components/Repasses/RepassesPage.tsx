@@ -15,7 +15,7 @@ interface TransferSummary {
 interface RecipientDebt {
   recipientId: string;
   recipientName: string;
-  role: "COURIER" | "ORGANIZER" | string | null;
+  role: "COURIER" | "ORGANIZER" | "CLIENT" | string | null;
   pixKey: string | null;
   pixKeyType: "CPF" | "CNPJ" | "EMAIL" | "PHONE" | "EVP" | null;
   totalCents: number;
@@ -27,7 +27,9 @@ const fmtBRL = (cents: number) =>
 
 const roleLabel = (role: string | null | undefined): string => {
   if (role === "ORGANIZER") return "Gerente";
-  return "Motoboy";
+  if (role === "CLIENT") return "Estabelecimento";
+  if (role === "COURIER") return "Motoboy";
+  return "Recebedor";
 };
 
 const RepassesPage: React.FC = () => {
