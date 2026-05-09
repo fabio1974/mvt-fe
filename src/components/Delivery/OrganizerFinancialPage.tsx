@@ -51,7 +51,7 @@ const OrganizerFinancialPage: React.FC = () => {
       if (configs.length > 0) {
         const activeConfig = configs[0];
         
-        const percentage = activeConfig.organizerPercentage || 0;
+        const percentage = activeConfig.deliveryOrganizerPercentage || 0;
         setOrganizerPercentage(percentage);
         return percentage; // Retorna para usar no cálculo
       } else {
