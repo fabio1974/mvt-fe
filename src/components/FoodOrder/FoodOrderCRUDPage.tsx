@@ -5,6 +5,7 @@ import EntityCRUD from "../Generic/EntityCRUD";
 import FoodOrderEditPanel from "./FoodOrderEditPanel";
 import printKitchenOrder from "./printKitchenOrder";
 import { api } from "../../services/api";
+import { useNewOrderAlert } from "../../hooks/useNewOrderAlert";
 
 const FINAL_STATUSES = new Set(["COMPLETED", "CANCELLED"]);
 
@@ -33,6 +34,7 @@ const FoodOrderCRUDPage: React.FC = () => {
   const navigate = useNavigate();
   const orderIdParam = searchParams.get("orderId");
   const entityId = orderIdParam ? Number(orderIdParam) : undefined;
+  const { refreshTick } = useNewOrderAlert();
 
   return (
     <EntityCRUD
@@ -40,6 +42,7 @@ const FoodOrderCRUDPage: React.FC = () => {
       key={entityId ?? "list"}
       entityName="foodOrder"
       entityId={entityId}
+      externalRefreshKey={refreshTick}
       initialMode={entityId ? "edit" : undefined}
       hideCreateButton={true}
       disableView={true}

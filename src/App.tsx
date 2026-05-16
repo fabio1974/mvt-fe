@@ -7,9 +7,12 @@ import Toast from "./components/Common/Toast";
 import SessionExpiredOverlay from "./components/Common/SessionExpiredOverlay";
 import MetadataLoader from "./components/Common/MetadataLoader";
 import { MetadataProvider } from "./contexts/MetadataContext";
+import { NewOrderAlertProvider } from "./hooks/useNewOrderAlert";
+import NewOrderAlertModal from "./components/NewOrderAlert/NewOrderAlertModal";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { registerToast } from "./utils/toast";
+import { installAudioUnlock } from "./utils/newOrderSound";
 import { getUserRole } from "./utils/auth";
 import { useDarkMode } from "./hooks/useDarkMode";
 import { useHeaderCollapsed } from "./hooks/useHeaderCollapsed";
@@ -131,6 +134,14 @@ function App() {
     });
   }, []);
 
+  // Destrava o AudioContext na primeira interação do user (Chrome/Safari
+  // bloqueiam autoplay até gesture). Sem isso, o ding-dong de novo pedido
+  // do CLIENT é engolido silenciosamente se o pedido chegar antes do user
+  // clicar em algo na página.
+  useEffect(() => {
+    installAudioUnlock();
+  }, []);
+
   // Controle de responsividade
   useEffect(() => {
     function handleResize() {
@@ -182,6 +193,7 @@ function App() {
   return (
     <MetadataProvider>
       <MetadataLoader>
+        <NewOrderAlertProvider>
         <div className="App" style={{ display: "flex", minHeight: "100vh" }}>
           {isLoggedIn && sidebarVisible && (
             <Sidebar
@@ -281,7 +293,12 @@ function App() {
 
           {/* Overlay de sessão expirada (escuta event 'session-expired' do interceptor) */}
           <SessionExpiredOverlay />
+
+          {/* Alerta de pedido novo pro CLIENT (Zapi-Food). Provider monta polling 5s
+              quando role é CLIENT; modal só renderiza se houver PLACED não-acked. */}
+          <NewOrderAlertModal />
         </div>
+        </NewOrderAlertProvider>
       </MetadataLoader>
     </MetadataProvider>
   );

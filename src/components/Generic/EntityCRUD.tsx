@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FiPlus,
@@ -103,6 +103,8 @@ interface EntityCRUDProps {
   condensed?: boolean;
   /** Oculta a coluna "Número" (id) na tabela */
   hideIdColumn?: boolean;
+  /** Chave externa pra forçar re-fetch da tabela sem remontar (preserva filtros/scroll). Incrementa o número pra disparar. */
+  externalRefreshKey?: number;
 }
 
 /**
@@ -165,6 +167,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
   pageTitle,
   condensed = false,
   hideIdColumn = false,
+  externalRefreshKey,
 }) => {
   // Determina o modo inicial baseado nas props
   const getInitialMode = (): ViewMode => {
@@ -183,6 +186,13 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
   >(propEntityId);
   const [refreshKey, setRefreshKey] = useState(0);
   const navigate = useNavigate();
+
+  // Propaga externalRefreshKey (incremento externo, ex: polling de novos pedidos) pro refreshKey interno
+  // sem remontar — EntityTable lê via key abaixo e re-fetcha mantendo filtros/scroll do user.
+  useEffect(() => {
+    if (externalRefreshKey === undefined) return;
+    setRefreshKey((prev) => prev + 1);
+  }, [externalRefreshKey]);
 
   // Helper para mudar o modo e notificar o callback
   const setViewMode = (mode: ViewMode) => {

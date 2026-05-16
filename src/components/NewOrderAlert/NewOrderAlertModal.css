@@ -1,0 +1,191 @@
+.new-order-alert-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: nowAlertFadeIn 0.15s ease-out;
+}
+
+.new-order-alert-modal {
+  /* bg escuro fixo (não usa var de tema): este é um alerta proposital, precisa
+     contrastar com o resto da UI tanto em light quanto em dark mode. Texto
+     branco hardcoded abaixo depende dessa premissa. */
+  background: #0f172a;
+  color: #fff;
+  border: 2px solid #f59e0b;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 0 4px rgba(245, 158, 11, 0.18);
+  width: 100%;
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  animation: nowAlertPulse 1s ease-out infinite alternate;
+}
+
+.new-order-alert-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.new-order-alert-icon {
+  font-size: 28px;
+  animation: nowAlertShake 0.6s ease-in-out infinite;
+}
+
+.new-order-alert-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #f59e0b;
+}
+
+.new-order-alert-body {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.new-order-alert-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 15px;
+}
+
+.new-order-alert-label {
+  color: rgba(255, 255, 255, 0.6);
+  flex-shrink: 0;
+}
+
+.new-order-alert-value {
+  color: #fff;
+  font-weight: 500;
+  text-align: right;
+  word-break: break-word;
+  min-width: 0;
+}
+
+.new-order-alert-total {
+  color: #f59e0b;
+  font-weight: 700;
+  font-size: 17px;
+}
+
+.new-order-alert-items {
+  margin-top: 4px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.new-order-alert-items ul {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.new-order-alert-items li {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 14px;
+  color: #fff;
+}
+
+.new-order-alert-item-qty {
+  flex-shrink: 0;
+  color: #f59e0b;
+  font-weight: 700;
+  min-width: 28px;
+}
+
+.new-order-alert-item-name {
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.new-order-alert-item-obs {
+  color: rgba(255, 255, 255, 0.55);
+  font-style: italic;
+  font-size: 13px;
+}
+
+.new-order-alert-item-price {
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.85);
+  font-variant-numeric: tabular-nums;
+}
+
+.new-order-alert-notes {
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.new-order-alert-notes p {
+  color: #fff;
+  margin: 6px 0 0;
+  white-space: pre-wrap;
+}
+
+.new-order-alert-actions {
+  display: flex;
+  gap: 10px;
+  padding: 16px 24px 20px;
+}
+
+.new-order-alert-btn {
+  flex: 1;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: filter 0.15s ease, opacity 0.15s ease;
+}
+
+.new-order-alert-btn:hover {
+  filter: brightness(1.1);
+}
+
+.new-order-alert-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.new-order-alert-btn-defer {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.new-order-alert-btn-accept {
+  background: #f59e0b;
+  color: #fff;
+}
+
+@keyframes nowAlertFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes nowAlertPulse {
+  from { box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 0 4px rgba(245, 158, 11, 0.18); }
+  to { box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 0 10px rgba(245, 158, 11, 0.32); }
+}
+
+@keyframes nowAlertShake {
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(-12deg); }
+  75% { transform: rotate(12deg); }
+}

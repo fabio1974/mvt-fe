@@ -2,6 +2,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import { getUserRole, getUserId } from "../../utils/auth";
 import { api } from "../../services/api";
+import { useNewOrderAlert } from "../../hooks/useNewOrderAlert";
 import LOGO_PATH from "../../config/logo";
 import {
   FiSettings,
@@ -242,6 +243,8 @@ export default function Sidebar({
   const location = useLocation();
   const userRole = getUserRole();
   const [tableOrdersEnabled, setTableOrdersEnabled] = useState(false);
+  const { placedOrders } = useNewOrderAlert();
+  const newOrderCount = placedOrders.length;
 
   // Buscar store profile do CLIENT para saber se módulo de mesas está ativo
   useEffect(() => {
@@ -308,6 +311,8 @@ export default function Sidebar({
   const renderMenuItem = (item: MenuItem, isSubItem = false) => {
     if (!hasPermission(item)) return null;
 
+    const showOrderBadge = item.path === "/pedidos" && newOrderCount > 0;
+
     return (
       <button
         key={item.path}
@@ -322,6 +327,15 @@ export default function Sidebar({
       >
         {item.icon}
         {!collapsed && <span className="sidebar-menu-label">{item.label}</span>}
+        {showOrderBadge && (
+          <span
+            className="sidebar-menu-badge"
+            aria-label={`${newOrderCount} ${newOrderCount === 1 ? "pedido novo" : "pedidos novos"}`}
+            title={`${newOrderCount} ${newOrderCount === 1 ? "pedido novo" : "pedidos novos"}`}
+          >
+            {newOrderCount}
+          </span>
+        )}
       </button>
     );
   };
