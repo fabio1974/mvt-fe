@@ -359,6 +359,21 @@ const FoodOrderEditPanel: React.FC<Props> = ({ orderId, viewMode }) => {
               <span className="fop-btn-label">Confirmar Pgto</span>
             </button>
           )}
+          {order.orderType === "PICKUP" && order.status === "READY" && (
+            <button
+              className="fop-status-btn next"
+              style={{
+                borderColor: "#10b981",
+                backgroundColor: "#10b981",
+                color: "#fff",
+              }}
+              disabled={updating}
+              onClick={() => { if (window.confirm("Confirmar que o cliente retirou o pedido?")) handleAction("complete"); }}
+            >
+              <span className="fop-btn-icon">🏬</span>
+              <span className="fop-btn-label">Cliente retirou</span>
+            </button>
+          )}
           <button
             className="fop-status-btn"
             style={{
@@ -392,7 +407,16 @@ const FoodOrderEditPanel: React.FC<Props> = ({ orderId, viewMode }) => {
         <FormContainer title="">
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "16px" }}>
             <FormField label="Tipo do Pedido">
-              <FormInput value={order.orderType === "DELIVERY" ? "Entrega" : "Mesa"} disabled />
+              <FormInput
+                value={
+                  order.orderType === "DELIVERY"
+                    ? "Entrega por motoboy"
+                    : order.orderType === "PICKUP"
+                      ? "Retirada no balcão"
+                      : "Mesa"
+                }
+                disabled
+              />
             </FormField>
             {order.tableNumber != null && (() => {
               const isFinal = order.status === "COMPLETED" || order.status === "CANCELLED";
