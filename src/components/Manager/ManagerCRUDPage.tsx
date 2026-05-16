@@ -14,11 +14,29 @@ const ManagerCRUDPage: React.FC = () => {
     <EntityCRUD
       entityName="user"
       hideArrayFields={false}
-      hideFields={["clientContracts", "employmentContracts", "vehicles", "storeProfile"]}
-      hiddenFields={["clientContracts", "employmentContracts", "vehicles", "storeProfile"]}
+      hideFields={["clientContracts", "employmentContracts", "vehicles", "storeProfile", "foodNegotiatedPercentage"]}
+      hiddenFields={["clientContracts", "employmentContracts", "vehicles", "storeProfile", "foodNegotiatedPercentage"]}
       pageTitle="Gerentes"
       pageDescription="Gerencie os gerentes (organizadores) cadastrados na plataforma"
       initialFilters={{ role: "ORGANIZER" }}
+      showFields={["deliveryNegotiatedPercentage"]}
+      customRenderers={{
+        deliveryNegotiatedPercentage: (value: unknown) => {
+          if (value == null || value === "") {
+            return (
+              <span style={{ color: "#94a3b8", fontStyle: "italic" }}>
+                padrão site
+              </span>
+            );
+          }
+          const pct = typeof value === "number" ? value : Number(value);
+          return (
+            <span style={{ color: "#1d4ed8", fontWeight: 600 }}>
+              {pct.toFixed(2).replace(".", ",")}%
+            </span>
+          );
+        },
+      }}
     />
   );
 };
