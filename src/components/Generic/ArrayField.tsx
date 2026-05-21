@@ -724,22 +724,38 @@ export const ArrayField: React.FC<ArrayFieldProps> = ({
 
         // Componente genérico de entidade (já tratamos cidade no início do case)
         const renderAs = entityConfig.renderAs || "select";
-        const EntityComponent =
-          renderAs === "typeahead" || renderAs === "autocomplete"
-            ? EntityTypeahead
-            : EntitySelect;
+        const isTypeahead = renderAs === "typeahead" || renderAs === "autocomplete";
+
+        // Para typeahead: se o valor é um objeto {id, name}, passa o objeto inteiro
+        // para o EntityTypeahead usar o name como label direto (sem fetch por id,
+        // que falharia em endpoints de busca como /api/users/search/couriers).
+        const typeaheadValue =
+          fieldValue && typeof fieldValue === "object"
+            ? (fieldValue as { id: string | number; name?: string })
+            : stringValue;
 
         return (
           <FormField label={field.label} required={field.required}>
-            <EntityComponent
+            {isTypeahead ? (
+              <EntityTypeahead
+                config={entityConfig}
+                value={typeaheadValue}
+                onChange={(newValue) =>
+                  handleFieldChange(itemIndex, field.name, newValue)
+                }
+                disabled={field.disabled || disabled}
+              />
+            ) : (
+              <EntitySelect
                 config={entityConfig}
                 value={stringValue}
                 onChange={(newValue) =>
                   handleFieldChange(itemIndex, field.name, newValue)
-                  }
-                  disabled={field.disabled || disabled}
-                />
-            </FormField>
+                }
+                disabled={field.disabled || disabled}
+              />
+            )}
+          </FormField>
           );
       }
 

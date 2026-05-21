@@ -1534,7 +1534,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
             entityConfig = {
               entityName: field.relationship.targetEntity,
               endpoint: field.relationship.targetEndpoint,
-              labelField: "name", // Padrão: campo "name"
+              labelField: field.relationship.labelField || "name",
               valueField: "id", // Padrão: campo "id"
               renderAs: "typeahead" as const, // Padrão: typeahead para melhor UX
             };
