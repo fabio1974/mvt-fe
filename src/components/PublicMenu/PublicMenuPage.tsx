@@ -1,0 +1,323 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useParams } from "react-router-dom";
+import { Download, ImageOff, Minus, Plus, ShoppingCart } from "lucide-react";
+import type { PublicCategory, PublicMenu, PublicProduct } from "./publicMenuApi";
+import { fetchMenuBySlug, productPrice } from "./publicMenuApi";
+import { useCart } from "./useCart";
+import AppDownloadModal from "./AppDownloadModal";
+import "./PublicMenu.css";
+
+const brl = (n: number) => `R$ ${n.toFixed(2).replace(".", ",")}`;
+
+/** Seções renderizadas = categorias com produtos + (opcional) "Outros". */
+interface Section {
+  key: string;
+  title: string;
+  description?: string | null;
+  products: PublicProduct[];
+}
+
+export default function PublicMenuPage() {
+  const { slug = "" } = useParams<{ slug: string }>();
+  const [menu, setMenu] = useState<PublicMenu | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [activeKey, setActiveKey] = useState<string | null>(null);
+
+  const cart = useCart(slug);
+  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(false);
+    fetchMenuBySlug(slug)
+      .then((data) => {
+        if (!cancelled) setMenu(data);
+      })
+      .catch(() => {
+        if (!cancelled) setError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [slug]);
+
+  const store = menu?.store;
+
+  // Título + meta no client (o preview rico do WhatsApp vem do prerender; isto
+  // melhora a aba do navegador e quem já está com o app/site aberto).
+  useEffect(() => {
+    if (!store) return;
+    document.title = `${store.name} · Cardápio | Zapi10`;
+    const desc = store.description || `Veja o cardápio de ${store.name} e peça pelo Zapi10.`;
+    let tag = document.querySelector('meta[name="description"]');
+    if (!tag) {
+      tag = document.createElement("meta");
+      tag.setAttribute("name", "description");
+      document.head.appendChild(tag);
+    }
+    tag.setAttribute("content", desc);
+  }, [store]);
+
+  const sections: Section[] = useMemo(() => {
+    if (!menu) return [];
+    const list: Section[] = menu.categories
+      .filter((c: PublicCategory) => c.products.length > 0)
+      .map((c) => ({
+        key: `cat-${c.id}`,
+        title: c.name,
+        description: c.description,
+        products: c.products,
+      }));
+    if (menu.uncategorized && menu.uncategorized.length > 0) {
+      list.push({ key: "outros", title: "Outros", products: menu.uncategorized });
+    }
+    return list;
+  }, [menu]);
+
+  // Scrollspy: destaca a aba da categoria visível.
+  useEffect(() => {
+    if (sections.length === 0) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (visible) setActiveKey(visible.target.getAttribute("data-key"));
+      },
+      { rootMargin: "-45% 0px -50% 0px", threshold: [0, 0.25, 0.5, 1] }
+    );
+    sections.forEach((s) => {
+      const el = sectionRefs.current[s.key];
+      if (el) observer.observe(el);
+    });
+    return () => observer.disconnect();
+  }, [sections]);
+
+  const scrollTo = (key: string) => {
+    const el = sectionRefs.current[key];
+    if (el) {
+      const y = el.getBoundingClientRect().top + window.scrollY - 64;
+      window.scrollTo({ top: y, behavior: "smooth" });
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="pm-root">
+        <div className="pm-center">
+          <div className="pm-spinner" />
+          <span>Carregando cardápio…</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !store) {
+    return (
+      <div className="pm-root">
+        <div className="pm-center">
+          <ImageOff size={40} />
+          <h3 style={{ margin: 0 }}>Cardápio não encontrado</h3>
+          <p style={{ margin: 0 }}>O link pode estar incorreto ou a loja saiu do ar.</p>
+          <button className="pm-getapp" style={{ margin: 0 }} onClick={() => setModalOpen(true)}>
+            <Download size={16} /> Baixar o app Zapi10
+          </button>
+        </div>
+        <AppDownloadModal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          storeName="Zapi10"
+          lines={[]}
+          total={0}
+        />
+      </div>
+    );
+  }
+
+  const isOpen = store.isOpenNow !== false;
+  const notEnabled = store.enabled === false;
+  const logoLetter = (store.name || "?").trim().charAt(0).toUpperCase();
+  const empty = sections.length === 0;
+
+  return (
+    <div className="pm-root">
+      <div className="pm-container">
+        {/* Cover */}
+        <div className="pm-cover">
+          {store.coverUrl ? (
+            <img src={store.coverUrl} alt={store.name} />
+          ) : (
+            <div className="pm-cover-placeholder">
+              <ImageOff size={40} />
+            </div>
+          )}
+        </div>
+
+        {/* Logo + nome */}
+        <div className="pm-headbar">
+          {store.logoUrl ? (
+            <img className="pm-logo" src={store.logoUrl} alt={store.name} />
+          ) : (
+            <div className="pm-logo pm-logo-fallback">{logoLetter}</div>
+          )}
+          <div className="pm-headinfo">
+            <h1 className="pm-store-name">{store.name}</h1>
+          </div>
+        </div>
+
+        {/* Meta */}
+        <div className="pm-meta-row">
+          <span className={`pm-status ${isOpen ? "open" : "closed"}`}>
+            <span className="pm-bullet" />
+            {isOpen ? "Aberto agora" : "Fechado"}
+          </span>
+          {store.todayHours && (
+            <>
+              <span className="pm-dot" />
+              <span>{store.todayHours}</span>
+            </>
+          )}
+          {store.avgPreparationMinutes ? (
+            <>
+              <span className="pm-dot" />
+              <span>~{store.avgPreparationMinutes} min</span>
+            </>
+          ) : null}
+          {store.minOrder ? (
+            <>
+              <span className="pm-dot" />
+              <span>Mín. {brl(store.minOrder)}</span>
+            </>
+          ) : null}
+        </div>
+
+        {store.description && <div className="pm-desc">{store.description}</div>}
+
+        {/* Botão baixar app (sempre visível como porta de conversão) */}
+        <button className="pm-getapp" onClick={() => setModalOpen(true)}>
+          <Download size={16} /> Baixar o app Zapi10
+        </button>
+
+        {/* Banners */}
+        {notEnabled && (
+          <div className="pm-banner">
+            Loja ainda não habilitada na plataforma — você pode ver o cardápio, mas os pedidos
+            abrem em breve.
+          </div>
+        )}
+        {!notEnabled && !isOpen && (
+          <div className="pm-banner">
+            Loja fechada agora — monte seu pedido e finalize pelo app assim que ela reabrir.
+          </div>
+        )}
+
+        {/* Tabs de categoria */}
+        {!empty && (
+          <div className="pm-tabs">
+            {sections.map((s) => (
+              <button
+                key={s.key}
+                className={`pm-tab ${activeKey === s.key ? "active" : ""}`}
+                onClick={() => scrollTo(s.key)}
+              >
+                {s.title}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Menu */}
+        <div className="pm-menu">
+          {empty ? (
+            <div className="pm-empty">
+              <ShoppingCart size={56} style={{ opacity: 0.4 }} />
+              <h3>Cardápio em preparação</h3>
+              <p>Esta loja ainda não cadastrou produtos. Volte em breve.</p>
+            </div>
+          ) : (
+            sections.map((s) => (
+              <div
+                key={s.key}
+                className="pm-cat"
+                data-key={s.key}
+                ref={(el) => {
+                  sectionRefs.current[s.key] = el;
+                }}
+              >
+                <h2 className="pm-cat-title">{s.title}</h2>
+                {s.description && <p className="pm-cat-desc">{s.description}</p>}
+                {s.products.map((p) => {
+                  const qty = cart.quantityOf(p.id);
+                  return (
+                    <div key={p.id} className="pm-card">
+                      <div className="pm-card-info">
+                        <div>
+                          <h3 className="pm-prod-name">{p.name}</h3>
+                          {p.description && <p className="pm-prod-desc">{p.description}</p>}
+                        </div>
+                        <div className="pm-card-bottom">
+                          <span className="pm-price">{brl(productPrice(p))}</span>
+                          <div className="pm-qty">
+                            {qty > 0 && (
+                              <button
+                                className="pm-qty-btn minus"
+                                aria-label="Remover"
+                                onClick={() => cart.remove(p.id)}
+                              >
+                                <Minus size={16} />
+                              </button>
+                            )}
+                            {qty > 0 && <span className="pm-qty-num">{qty}</span>}
+                            <button
+                              className="pm-qty-btn plus"
+                              aria-label="Adicionar"
+                              onClick={() => cart.add(p)}
+                            >
+                              <Plus size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="pm-card-img">
+                        {p.imageUrl ? (
+                          <img src={p.imageUrl} alt={p.name} />
+                        ) : (
+                          <ImageOff className="pm-img-fallback" size={32} />
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Barra fixa do carrinho */}
+        {cart.count > 0 && (
+          <div className="pm-cartbar-wrap">
+            <button className="pm-cartbar" onClick={() => setModalOpen(true)}>
+              <span className="pm-cart-badge">{cart.count}</span>
+              <span className="pm-cart-label">Finalizar pedido</span>
+              <span className="pm-cart-total">{brl(cart.total)}</span>
+            </button>
+          </div>
+        )}
+
+        <AppDownloadModal
+          open={modalOpen}
+          onClose={() => setModalOpen(false)}
+          storeName={store.name}
+          lines={cart.lines}
+          total={cart.total}
+        />
+      </div>
+    </div>
+  );
+}

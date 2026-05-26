@@ -1,0 +1,527 @@
+/* Página pública de cardápio (/c/<slug>). Mobile-first — é o que o WhatsApp abre.
+   No desktop o conteúdo fica centralizado num container estreito (cara de app).
+   Paleta espelha o StoreMenuScreen do mobile (accent #f59e0b). */
+
+.pm-root {
+  --pm-accent: #f59e0b;
+  --pm-green: #10b981;
+  --pm-bg: #f3f4f6;
+  --pm-surface: #ffffff;
+  --pm-text: #111827;
+  --pm-muted: #6b7280;
+  --pm-faint: #9ca3af;
+  --pm-border: #e5e7eb;
+
+  min-height: 100vh;
+  background: var(--pm-bg);
+  color: var(--pm-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.pm-container {
+  max-width: 640px;
+  margin: 0 auto;
+  background: var(--pm-bg);
+  min-height: 100vh;
+  position: relative;
+}
+
+/* ---- Header (cover + logo) ---- */
+.pm-cover {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  background: linear-gradient(135deg, #1f2937, #374151);
+  overflow: hidden;
+}
+.pm-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.pm-cover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 0.55) 100%);
+}
+.pm-cover-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.pm-headbar {
+  display: flex;
+  gap: 14px;
+  align-items: flex-end;
+  padding: 0 16px;
+  margin-top: -36px;
+  position: relative;
+  z-index: 2;
+}
+.pm-logo {
+  width: 72px;
+  height: 72px;
+  border-radius: 16px;
+  background: var(--pm-surface);
+  border: 1px solid var(--pm-border);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.pm-logo-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--pm-accent);
+}
+.pm-headinfo {
+  flex: 1;
+  min-width: 0;
+  padding-bottom: 4px;
+}
+.pm-store-name {
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.2;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pm-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  align-items: center;
+  padding: 12px 16px 4px;
+  font-size: 13px;
+  color: var(--pm-muted);
+}
+.pm-meta-row .pm-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--pm-faint);
+}
+.pm-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 700;
+}
+.pm-status.open {
+  color: var(--pm-green);
+}
+.pm-status.closed {
+  color: #dc2626;
+}
+.pm-status .pm-bullet {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.pm-desc {
+  padding: 6px 16px 0;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--pm-muted);
+}
+
+/* ---- Banner (fechado / não habilitado) ---- */
+.pm-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 16px 0;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ---- Tabs de categoria (sticky) ---- */
+.pm-tabs {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 12px 16px;
+  margin-top: 10px;
+  background: var(--pm-bg);
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.pm-tabs::-webkit-scrollbar {
+  display: none;
+}
+.pm-tab {
+  flex-shrink: 0;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--pm-border);
+  background: var(--pm-surface);
+  color: var(--pm-muted);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.pm-tab.active {
+  background: var(--pm-accent);
+  border-color: var(--pm-accent);
+  color: #fff;
+}
+
+/* ---- Lista de produtos ---- */
+.pm-menu {
+  padding: 4px 16px 140px;
+}
+.pm-cat {
+  margin-top: 18px;
+}
+.pm-cat-title {
+  font-size: 19px;
+  font-weight: 800;
+  margin: 0 0 4px;
+}
+.pm-cat-desc {
+  font-size: 13px;
+  color: var(--pm-muted);
+  margin: 0 0 10px;
+}
+.pm-card {
+  display: flex;
+  background: var(--pm-surface);
+  border: 1px solid var(--pm-border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 10px;
+  min-height: 116px;
+}
+.pm-card-info {
+  flex: 1;
+  min-width: 0;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6px;
+}
+.pm-prod-name {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+}
+.pm-prod-desc {
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--pm-muted);
+  margin: 2px 0 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.pm-card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.pm-price {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--pm-accent);
+}
+.pm-qty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pm-qty-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  cursor: pointer;
+}
+.pm-qty-btn.minus {
+  background: #64748b;
+}
+.pm-qty-btn.plus {
+  background: var(--pm-accent);
+}
+.pm-qty-num {
+  font-size: 15px;
+  font-weight: 800;
+  min-width: 18px;
+  text-align: center;
+}
+.pm-card-img {
+  width: 120px;
+  flex-shrink: 0;
+  background: #f1f1f1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pm-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.pm-card-img .pm-img-fallback {
+  color: var(--pm-faint);
+  opacity: 0.5;
+}
+
+.pm-empty {
+  text-align: center;
+  padding: 60px 24px;
+  color: var(--pm-muted);
+}
+.pm-empty h3 {
+  color: var(--pm-text);
+  margin: 14px 0 6px;
+}
+
+/* ---- Barra fixa do carrinho ---- */
+.pm-cartbar-wrap {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  justify-content: center;
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  pointer-events: none;
+}
+.pm-cartbar {
+  pointer-events: auto;
+  width: 100%;
+  max-width: 608px;
+  background: var(--pm-accent);
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(245, 158, 11, 0.45);
+  font-size: 16px;
+  font-weight: 800;
+}
+.pm-cartbar .pm-cart-badge {
+  background: #fff;
+  color: var(--pm-accent);
+  min-width: 28px;
+  height: 28px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 0 6px;
+}
+.pm-cartbar .pm-cart-label {
+  flex: 1;
+  text-align: left;
+}
+.pm-cartbar .pm-cart-total {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+/* ---- Botão "baixar app" no header ---- */
+.pm-getapp {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 14px 16px 0;
+  padding: 9px 14px;
+  border-radius: 10px;
+  background: #eef2ff;
+  color: #1d4ed8;
+  border: 1px solid #c7d2fe;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ---- Modal de handoff ---- */
+.pm-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+@media (min-width: 560px) {
+  .pm-modal-overlay {
+    align-items: center;
+  }
+}
+.pm-modal {
+  background: var(--pm-surface);
+  width: 100%;
+  max-width: 480px;
+  border-radius: 20px 20px 0 0;
+  padding: 22px 20px calc(24px + env(safe-area-inset-bottom));
+  text-align: center;
+  animation: pm-slide-up 0.22s ease;
+}
+@media (min-width: 560px) {
+  .pm-modal {
+    border-radius: 20px;
+  }
+}
+@keyframes pm-slide-up {
+  from {
+    transform: translateY(24px);
+    opacity: 0.4;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+.pm-modal-handle {
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--pm-border);
+  margin: 0 auto 16px;
+}
+.pm-modal h2 {
+  font-size: 19px;
+  font-weight: 800;
+  margin: 0 0 8px;
+}
+.pm-modal p {
+  font-size: 14px;
+  color: var(--pm-muted);
+  margin: 0 0 16px;
+  line-height: 1.45;
+}
+.pm-modal-summary {
+  background: var(--pm-bg);
+  border-radius: 12px;
+  padding: 12px 14px;
+  text-align: left;
+  font-size: 13px;
+  color: var(--pm-text);
+  margin-bottom: 16px;
+  max-height: 140px;
+  overflow-y: auto;
+}
+.pm-modal-summary .pm-sum-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 3px 0;
+}
+.pm-modal-summary .pm-sum-total {
+  display: flex;
+  justify-content: space-between;
+  border-top: 1px solid var(--pm-border);
+  margin-top: 6px;
+  padding-top: 8px;
+  font-weight: 800;
+}
+.pm-store-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 15px;
+  border-radius: 14px;
+  background: #111827;
+  color: #fff;
+  border: none;
+  font-size: 16px;
+  font-weight: 800;
+  cursor: pointer;
+  text-decoration: none;
+  margin-bottom: 10px;
+}
+.pm-badges {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+.pm-badges a {
+  flex: 1;
+}
+.pm-qr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.pm-qr img {
+  width: 200px;
+  height: 200px;
+  border-radius: 12px;
+  border: 1px solid var(--pm-border);
+}
+.pm-modal-close {
+  margin-top: 14px;
+  background: none;
+  border: none;
+  color: var(--pm-muted);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* ---- Loading / erro ---- */
+.pm-center {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  color: var(--pm-muted);
+  padding: 24px;
+  text-align: center;
+}
+.pm-spinner {
+  width: 38px;
+  height: 38px;
+  border: 3px solid var(--pm-border);
+  border-top-color: var(--pm-accent);
+  border-radius: 50%;
+  animation: pm-spin 0.9s linear infinite;
+}
+@keyframes pm-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

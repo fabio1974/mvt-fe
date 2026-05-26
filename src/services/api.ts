@@ -56,7 +56,7 @@ api.interceptors.request.use(
 );
 
 // Páginas públicas onde 401 é esperado (não dispara overlay nem redirect).
-const PUBLIC_PATHS = [/^\/$/, /^\/login/, /^\/registrar/, /^\/parceiro/, /^\/track/, /^\/recuperar-senha/, /^\/nova-senha/, /^\/confirmar-email/, /^\/reenviar-confirmacao/];
+const PUBLIC_PATHS = [/^\/$/, /^\/login/, /^\/registrar/, /^\/parceiro/, /^\/track/, /^\/c\//, /^\/recuperar-senha/, /^\/nova-senha/, /^\/confirmar-email/, /^\/reenviar-confirmacao/];
 
 const isOnPublicPage = () => PUBLIC_PATHS.some((re) => re.test(window.location.pathname));
 

@@ -20,6 +20,10 @@ import { useHeaderCollapsed } from "./hooks/useHeaderCollapsed";
 // Página pública de rastreamento (sem layout autenticado)
 const TrackingPage = lazy(() => import("./components/Tracking/TrackingPage"));
 
+// Página pública de cardápio por loja (/c/<slug>) — funil pro download do app.
+// Renderiza fora do layout autenticado, distribuída como link de WhatsApp.
+const PublicMenuPage = lazy(() => import("./components/PublicMenu/PublicMenuPage"));
+
 // Lazy load das páginas para code splitting
 const LandingPage = lazy(() => import("./components/LandingPage/LandingPage"));
 const PartnerPage = lazy(() => import("./components/LandingPage/PartnerPage"));
@@ -185,6 +189,17 @@ function App() {
       <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/rastreio/:token" element={<TrackingPage />} />
+        </Routes>
+      </Suspense>
+    );
+  }
+
+  // Cardápio público por slug — renderiza fora do layout principal (sem sidebar/header).
+  if (location.pathname.startsWith("/c/")) {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="/c/:slug" element={<PublicMenuPage />} />
         </Routes>
       </Suspense>
     );
