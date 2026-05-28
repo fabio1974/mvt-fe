@@ -27,6 +27,7 @@ import {
   FiSmartphone,
   FiInstagram,
   FiZap,
+  FiTag,
 } from "react-icons/fi";
 import "./Sidebar.css";
 
@@ -199,6 +200,12 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
     label: "Marketing",
     icon: <FiInstagram size={22} color="#ec4899" />,
     path: "/marketing",
+    roles: ["ROLE_ADMIN"],
+  },
+  {
+    label: "Cupons",
+    icon: <FiTag size={22} color="#10b981" />,
+    path: "/cupons",
     roles: ["ROLE_ADMIN"],
   },
   {

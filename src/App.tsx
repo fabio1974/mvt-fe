@@ -52,6 +52,7 @@ const StoreProfilePage = lazy(() => import("./components/User/StoreProfilePage")
 const AddressPage = lazy(() => import("./components/User/AddressPage"));
 const ConsolidatedPaymentProcessor = lazy(() => import("./components/ConsolidatedPayment/ConsolidatedPaymentProcessor"));
 const SiteConfigurationCRUDPage = lazy(() => import("./components/SiteConfiguration/SiteConfigurationCRUDPage"));
+const CouponCRUDPage = lazy(() => import("./components/Coupon/CouponCRUDPage"));
 const AnnouncementCRUDPage = lazy(() => import("./components/Announcement/AnnouncementCRUDPage"));
 const MarketingPage = lazy(() => import("./components/Marketing/MarketingPage"));
 const MobileVersionReportPage = lazy(() => import("./components/Reports/MobileVersionReportPage"));
@@ -279,6 +280,7 @@ function App() {
                 <Route path="/dados-endereco" element={<AddressPage />} />
                 <Route path="/processar-pagamentos" element={<ConsolidatedPaymentProcessor />} />
                 <Route path="/configuracoes" element={<SiteConfigurationCRUDPage />} />
+                <Route path="/cupons" element={<CouponCRUDPage />} />
                 <Route path="/anuncios" element={<AnnouncementCRUDPage />} />
                 <Route path="/marketing" element={<MarketingPage />} />
                 <Route path="/versoes-mobile" element={<MobileVersionReportPage />} />
