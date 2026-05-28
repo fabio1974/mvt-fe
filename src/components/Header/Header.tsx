@@ -590,9 +590,10 @@ export default function Header({
                       </span>
                     </button>
 
-                    {/* Dados Bancários — couriers e customers (não CLIENT) */}
+                    {/* Chave PIX — couriers, organizers e clients */}
                     {(userRole === "ROLE_COURIER" || userRole === "COURIER" ||
-                      userRole === "ROLE_CUSTOMER" || userRole === "CUSTOMER") && (
+                      userRole === "ROLE_ORGANIZER" || userRole === "ORGANIZER" ||
+                      userRole === "ROLE_CLIENT" || userRole === "CLIENT") && (
                       <button
                         style={{
                           width: "100%",
@@ -610,16 +611,17 @@ export default function Header({
                         }}
                         onClick={() => {
                           setUserMenuOpen(false);
-                          navigate("/dados-bancarios");
+                          navigate("/chave-pix");
                         }}
                         onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "#f3f4f6"; }}
                         onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
                       >
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <rect x="2" y="5" width="20" height="14" rx="2" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                          <line x1="2" y1="10" x2="22" y2="10" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" />
+                          <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          <path d="M2 17l10 5 10-5" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                          <path d="M2 12l10 5 10-5" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
-                        <span>Dados Bancários</span>
+                        <span>Chave PIX</span>
                       </button>
                     )}
 

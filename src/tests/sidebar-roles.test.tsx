@@ -8,9 +8,9 @@ import { describe, it, expect } from "vitest";
 // Reproduz a estrutura de roles do Sidebar e Header
 const MENU_ITEMS = [
   {
-    label: "Dados Bancários",
-    path: "/dados-bancarios",
-    roles: ["ROLE_COURIER", "COURIER", "ROLE_CUSTOMER", "CUSTOMER"],
+    label: "Chave PIX",
+    path: "/chave-pix",
+    roles: ["ROLE_COURIER", "COURIER", "ROLE_ORGANIZER", "ORGANIZER", "ROLE_CLIENT", "CLIENT"],
   },
   {
     label: "Meus Cartões",
@@ -36,28 +36,29 @@ function isMenuVisible(label: string, userRole: string): boolean {
 }
 
 describe("Sidebar/Header — visibilidade de menus por role", () => {
-  describe("Dados Bancários", () => {
-    it("CLIENT não vê Dados Bancários", () => {
-      expect(isMenuVisible("Dados Bancários", "ROLE_CLIENT")).toBe(false);
-      expect(isMenuVisible("Dados Bancários", "CLIENT")).toBe(false);
+  describe("Chave PIX", () => {
+    it("COURIER vê Chave PIX", () => {
+      expect(isMenuVisible("Chave PIX", "ROLE_COURIER")).toBe(true);
+      expect(isMenuVisible("Chave PIX", "COURIER")).toBe(true);
     });
 
-    it("COURIER vê Dados Bancários", () => {
-      expect(isMenuVisible("Dados Bancários", "ROLE_COURIER")).toBe(true);
-      expect(isMenuVisible("Dados Bancários", "COURIER")).toBe(true);
+    it("ORGANIZER vê Chave PIX", () => {
+      expect(isMenuVisible("Chave PIX", "ROLE_ORGANIZER")).toBe(true);
+      expect(isMenuVisible("Chave PIX", "ORGANIZER")).toBe(true);
     });
 
-    it("CUSTOMER vê Dados Bancários", () => {
-      expect(isMenuVisible("Dados Bancários", "ROLE_CUSTOMER")).toBe(true);
-      expect(isMenuVisible("Dados Bancários", "CUSTOMER")).toBe(true);
+    it("CLIENT vê Chave PIX", () => {
+      expect(isMenuVisible("Chave PIX", "ROLE_CLIENT")).toBe(true);
+      expect(isMenuVisible("Chave PIX", "CLIENT")).toBe(true);
     });
 
-    it("ADMIN não vê Dados Bancários", () => {
-      expect(isMenuVisible("Dados Bancários", "ROLE_ADMIN")).toBe(false);
+    it("CUSTOMER não vê Chave PIX (não recebe repasses)", () => {
+      expect(isMenuVisible("Chave PIX", "ROLE_CUSTOMER")).toBe(false);
+      expect(isMenuVisible("Chave PIX", "CUSTOMER")).toBe(false);
     });
 
-    it("ORGANIZER não vê Dados Bancários", () => {
-      expect(isMenuVisible("Dados Bancários", "ROLE_ORGANIZER")).toBe(false);
+    it("ADMIN não vê Chave PIX", () => {
+      expect(isMenuVisible("Chave PIX", "ROLE_ADMIN")).toBe(false);
     });
   });
 

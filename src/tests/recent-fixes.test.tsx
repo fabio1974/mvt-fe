@@ -339,60 +339,8 @@ describe("DeliveryCRUD — canUseWizard por role", () => {
 });
 
 // ============================================================
-// 10. BankAccountPage — fetch por userId, estados loading/notFound
+// 10. (removido) — BankAccountPage descontinuada em 2026-05-27 (pix-only).
 // ============================================================
-
-describe("BankAccountPage — lógica de carregamento", () => {
-  // Simula a lógica de decidir entityId e initialMode
-  function bankAccountPageState(response: { id?: number } | null, isError404: boolean) {
-    let bankAccountId: number | null = null;
-    let notFound = false;
-
-    if (isError404) {
-      notFound = true;
-    } else if (response && response.id) {
-      bankAccountId = response.id;
-    } else {
-      notFound = true;
-    }
-
-    return {
-      entityId: notFound ? undefined : bankAccountId ?? undefined,
-      initialMode: notFound ? "create" : "view",
-      showEditButton: !notFound,
-      pageDescription: notFound
-        ? "Cadastre suas informações bancárias"
-        : "Visualize e edite suas informações bancárias",
-    };
-  }
-
-  it("conta encontrada → mode view, entityId numérico", () => {
-    const state = bankAccountPageState({ id: 42 }, false);
-    expect(state.entityId).toBe(42);
-    expect(state.initialMode).toBe("view");
-    expect(state.showEditButton).toBe(true);
-  });
-
-  it("404 → mode create, sem entityId", () => {
-    const state = bankAccountPageState(null, true);
-    expect(state.entityId).toBeUndefined();
-    expect(state.initialMode).toBe("create");
-    expect(state.showEditButton).toBe(false);
-  });
-
-  it("resposta sem id → mode create", () => {
-    const state = bankAccountPageState({}, false);
-    expect(state.entityId).toBeUndefined();
-    expect(state.initialMode).toBe("create");
-  });
-
-  it("descrição muda conforme notFound", () => {
-    const found = bankAccountPageState({ id: 1 }, false);
-    const notFound = bankAccountPageState(null, true);
-    expect(found.pageDescription).toContain("Visualize");
-    expect(notFound.pageDescription).toContain("Cadastre");
-  });
-});
 
 // ============================================================
 // 11. totalAmount — formatação em Real (R$ X,XX)
