@@ -1,8 +1,25 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { FiSend, FiCheckCircle, FiXCircle, FiRefreshCw, FiCopy } from "react-icons/fi";
+import { FiSend, FiRefreshCw, FiCopy } from "react-icons/fi";
 import { api } from "../../services/api";
 import PageContainer from "../Generic/PageContainer";
 import "./Repasses.css";
+
+type StatusFilter = "PENDING" | "SUCCEEDED";
+type WindowFilter = "1d" | "7d" | "30d" | "90d";
+
+const WINDOW_OPTIONS: Array<{ key: WindowFilter; label: string; days: number }> = [
+  { key: "1d", label: "Último dia", days: 1 },
+  { key: "7d", label: "Última semana", days: 7 },
+  { key: "30d", label: "Último mês", days: 30 },
+  { key: "90d", label: "Últimos 3 meses", days: 90 },
+];
+
+const sinceIsoFor = (w: WindowFilter): string => {
+  const opt = WINDOW_OPTIONS.find((o) => o.key === w)!;
+  const d = new Date();
+  d.setDate(d.getDate() - opt.days);
+  return d.toISOString();
+};
 
 interface TransferSummary {
   id: number;
@@ -10,6 +27,8 @@ interface TransferSummary {
   deliveryId: number | null;
   amountCents: number;
   createdAt: string;
+  executedAt: string | null;
+  providerTransactionId: string | null;
 }
 
 interface RecipientDebt {
@@ -36,68 +55,70 @@ const RepassesPage: React.FC = () => {
   const [debts, setDebts] = useState<RecipientDebt[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [working, setWorking] = useState<Set<number>>(new Set());
+  const [working, setWorking] = useState<Set<string>>(new Set());
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("PENDING");
+  const [windowFilter, setWindowFilter] = useState<WindowFilter>("7d");
+  const [excluded, setExcluded] = useState<Set<number>>(new Set());
 
   const fetch = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.get<RecipientDebt[]>("/api/pagarme-transfers/by-recipient");
+      const res = await api.get<RecipientDebt[]>("/api/pagarme-transfers/by-recipient", {
+        params: { status: statusFilter, since: sinceIsoFor(windowFilter) },
+      });
       setDebts(res.data);
     } catch (e: any) {
       setError(e?.response?.data?.error || e?.message || "Falha ao carregar repasses");
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [statusFilter, windowFilter]);
 
   useEffect(() => { fetch(); }, [fetch]);
 
-  const mark = (id: number) => {
-    setWorking((s) => { const n = new Set(s); n.add(id); return n; });
+  const mark = (recipientId: string) => {
+    setWorking((s) => { const n = new Set(s); n.add(recipientId); return n; });
   };
-  const unmark = (id: number) => {
-    setWorking((s) => { const n = new Set(s); n.delete(id); return n; });
+  const unmark = (recipientId: string) => {
+    setWorking((s) => { const n = new Set(s); n.delete(recipientId); return n; });
   };
 
-  const handleSendPix = async (t: TransferSummary, recipientName: string) => {
-    if (!window.confirm(`Disparar PIX de ${fmtBRL(t.amountCents)} para ${recipientName}?`)) return;
-    mark(t.id);
-    try {
-      await api.post(`/api/pagarme-transfers/${t.id}/send-pix`);
-      await fetch();
-    } catch (e: any) {
-      alert(e?.response?.data?.error || e?.message || "Falha ao enviar PIX");
-    } finally {
-      unmark(t.id);
+  const selectedTransfers = (d: RecipientDebt) =>
+    d.transfers.filter((t) => !excluded.has(t.id));
+  const selectedTotal = (d: RecipientDebt) =>
+    selectedTransfers(d).reduce((acc, t) => acc + t.amountCents, 0);
+
+  const toggleTransfer = (transferId: number) => {
+    setExcluded((s) => {
+      const n = new Set(s);
+      if (n.has(transferId)) n.delete(transferId);
+      else n.add(transferId);
+      return n;
+    });
+  };
+
+  const handleSendPixAll = async (d: RecipientDebt) => {
+    const selected = selectedTransfers(d);
+    const total = selectedTotal(d);
+    if (selected.length === 0) {
+      alert("Nenhum transfer marcado pra esta pessoa.");
+      return;
     }
-  };
-
-  const handleMarkPaid = async (t: TransferSummary) => {
-    const note = window.prompt(`Marcar ${fmtBRL(t.amountCents)} como pago. Observação (opcional):`);
-    if (note === null) return;
-    mark(t.id);
+    const allSelected = selected.length === d.transfers.length;
+    if (!window.confirm(
+      `Enviar 1 PIX único de ${fmtBRL(total)} para ${d.recipientName} ` +
+      `(${selected.length} de ${d.transfers.length} transfer${d.transfers.length > 1 ? "s" : ""})?`
+    )) return;
+    mark(d.recipientId);
     try {
-      await api.post(`/api/pagarme-transfers/${t.id}/mark-paid`, { note });
+      const body = allSelected ? {} : { transferIds: selected.map((t) => t.id) };
+      await api.post(`/api/pagarme-transfers/recipient/${d.recipientId}/send-pix-all`, body);
       await fetch();
     } catch (e: any) {
-      alert(e?.response?.data?.error || e?.message || "Falha ao marcar pago");
+      alert(e?.response?.data?.error || e?.message || "Falha ao enviar PIX em lote");
     } finally {
-      unmark(t.id);
-    }
-  };
-
-  const handleMarkFailed = async (t: TransferSummary) => {
-    const note = window.prompt(`Cancelar este transfer (${fmtBRL(t.amountCents)}). Motivo:`);
-    if (note === null) return;
-    mark(t.id);
-    try {
-      await api.post(`/api/pagarme-transfers/${t.id}/mark-failed`, { note });
-      await fetch();
-    } catch (e: any) {
-      alert(e?.response?.data?.error || e?.message || "Falha ao cancelar");
-    } finally {
-      unmark(t.id);
+      unmark(d.recipientId);
     }
   };
 
@@ -106,6 +127,7 @@ const RepassesPage: React.FC = () => {
   };
 
   const totalAll = debts.reduce((acc, d) => acc + d.totalCents, 0);
+  const isPending = statusFilter === "PENDING";
 
   return (
     <PageContainer
@@ -118,9 +140,37 @@ const RepassesPage: React.FC = () => {
       }
     >
       <div className="repasses-container">
+        <div className="repasses-filter-row">
+          <div className="repasses-filter">
+            <button
+              className={`filter-btn ${isPending ? "active" : ""}`}
+              onClick={() => setStatusFilter("PENDING")}
+            >
+              Pendentes
+            </button>
+            <button
+              className={`filter-btn ${!isPending ? "active" : ""}`}
+              onClick={() => setStatusFilter("SUCCEEDED")}
+            >
+              Pagos
+            </button>
+          </div>
+          <div className="repasses-filter">
+            {WINDOW_OPTIONS.map((o) => (
+              <button
+                key={o.key}
+                className={`filter-btn ${windowFilter === o.key ? "active" : ""}`}
+                onClick={() => setWindowFilter(o.key)}
+              >
+                {o.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="summary-bar">
           <div>
-            <span>Total PENDING</span>
+            <span>Total {isPending ? "a pagar" : "pago"}</span>
             <strong>{fmtBRL(totalAll)}</strong>
           </div>
           <div>
@@ -136,85 +186,119 @@ const RepassesPage: React.FC = () => {
         {error && <div className="repasses-error">{error}</div>}
 
         {debts.length === 0 && !loading ? (
-          <div className="repasses-empty">Nenhum repasse pendente. 👏</div>
+          <div className="repasses-empty">
+            {isPending ? "Nenhum repasse pendente. 👏" : "Nenhum repasse pago ainda."}
+          </div>
         ) : (
-          debts.map((d) => (
-            <div key={d.recipientId} className="repasses-card">
-              <div className="repasses-card-header">
-                <div>
-                  <h3>{d.recipientName || d.recipientId}</h3>
-                  {d.pixKey ? (
-                    <div className="pix-key">
-                      <span className="pix-key-type">{d.pixKeyType}</span>
-                      <span className="pix-key-value">{d.pixKey}</span>
-                      <button onClick={() => copyPixKey(d.pixKey!)} title="Copiar chave PIX">
-                        <FiCopy />
-                      </button>
+          debts.map((d) => {
+            const busy = working.has(d.recipientId);
+            const selTotal = selectedTotal(d);
+            const selCount = selectedTransfers(d).length;
+            return (
+              <div key={d.recipientId} className="repasses-card">
+                <div className="repasses-card-header">
+                  <div>
+                    <h3>{d.recipientName || d.recipientId}</h3>
+                    {d.pixKey ? (
+                      <div className="pix-key">
+                        <span className="pix-key-type">{d.pixKeyType}</span>
+                        <span className="pix-key-value">{d.pixKey}</span>
+                        <button onClick={() => copyPixKey(d.pixKey!)} title="Copiar chave PIX">
+                          <FiCopy />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="pix-key-missing">⚠️ {roleLabel(d.role)} não cadastrou chave PIX</div>
+                    )}
+                  </div>
+                  <div className="repasses-header-right">
+                    <div className="repasses-total">
+                      <span>Total {isPending ? "a pagar" : "pago"}</span>
+                      <strong>{fmtBRL(d.totalCents)}</strong>
                     </div>
-                  ) : (
-                    <div className="pix-key-missing">⚠️ {roleLabel(d.role)} não cadastrou chave PIX</div>
-                  )}
+                    {isPending && (
+                      <div className="repasses-header-actions">
+                        <button
+                          className="btn-send"
+                          onClick={() => handleSendPixAll(d)}
+                          disabled={busy || !d.pixKey || selCount === 0}
+                          title={
+                            !d.pixKey ? `${roleLabel(d.role)} sem chave PIX`
+                            : selCount === 0 ? "Nenhum transfer marcado"
+                            : "Disparar 1 PIX único com o total marcado"
+                          }
+                        >
+                          <FiSend /> Enviar PIX ({fmtBRL(selTotal)})
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className="repasses-total">
-                  <span>Total a pagar</span>
-                  <strong>{fmtBRL(d.totalCents)}</strong>
-                </div>
-              </div>
 
-              <table className="transfers-table">
-                <thead>
-                  <tr>
-                    <th>Transfer</th>
-                    <th>Pedido</th>
-                    <th>Delivery</th>
-                    <th>Valor</th>
-                    <th>Criado em</th>
-                    <th>Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {d.transfers.map((t) => {
-                    const busy = working.has(t.id);
-                    return (
-                      <tr key={t.id}>
-                        <td>#{t.id}</td>
-                        <td>{t.foodOrderId ? `#${t.foodOrderId}` : "—"}</td>
-                        <td>{t.deliveryId ? `#${t.deliveryId}` : "—"}</td>
-                        <td className="amount">{fmtBRL(t.amountCents)}</td>
-                        <td>{new Date(t.createdAt).toLocaleString("pt-BR")}</td>
-                        <td className="actions">
-                          <button
-                            className="btn-send"
-                            onClick={() => handleSendPix(t, d.recipientName)}
-                            disabled={busy || !d.pixKey}
-                            title={!d.pixKey ? `${roleLabel(d.role)} sem chave PIX` : "Disparar PIX via provider"}
-                          >
-                            <FiSend /> Enviar PIX
-                          </button>
-                          <button
-                            className="btn-mark-paid"
-                            onClick={() => handleMarkPaid(t)}
-                            disabled={busy}
-                            title="Já enviei PIX por fora, só registrar"
-                          >
-                            <FiCheckCircle /> Marcar Pago
-                          </button>
-                          <button
-                            className="btn-fail"
-                            onClick={() => handleMarkFailed(t)}
-                            disabled={busy}
-                            title="Cancelar / marcar como falha"
-                          >
-                            <FiXCircle /> Cancelar
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          ))
+                <table className="transfers-table">
+                  <thead>
+                    <tr>
+                      {isPending && <th className="checkbox-col"></th>}
+                      <th>Transfer</th>
+                      <th>Pedido</th>
+                      <th>Delivery</th>
+                      <th>Valor</th>
+                      <th>{isPending ? "Criado em" : "Pago em"}</th>
+                      {!isPending && <th>Comprovante (Inter)</th>}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[...d.transfers]
+                      .sort((a, b) => {
+                        const aDate = (isPending ? a.createdAt : a.executedAt) || a.createdAt;
+                        const bDate = (isPending ? b.createdAt : b.executedAt) || b.createdAt;
+                        return new Date(bDate).getTime() - new Date(aDate).getTime();
+                      })
+                      .map((t) => {
+                      const isIncluded = !excluded.has(t.id);
+                      return (
+                        <tr key={t.id} className={isPending && !isIncluded ? "row-excluded" : ""}>
+                          {isPending && (
+                            <td className="checkbox-col">
+                              <input
+                                type="checkbox"
+                                checked={isIncluded}
+                                onChange={() => toggleTransfer(t.id)}
+                                disabled={busy}
+                                title={isIncluded ? "Marcado pra incluir no PIX" : "Desmarcado — não entra no PIX desta rodada"}
+                              />
+                            </td>
+                          )}
+                          <td>#{t.id}</td>
+                          <td>{t.foodOrderId ? `#${t.foodOrderId}` : "—"}</td>
+                          <td>{t.deliveryId ? `#${t.deliveryId}` : "—"}</td>
+                          <td className="amount">{fmtBRL(t.amountCents)}</td>
+                          <td>{new Date((isPending ? t.createdAt : t.executedAt) || t.createdAt).toLocaleString("pt-BR")}</td>
+                          {!isPending && (
+                            <td className="provider-tx">
+                              {t.providerTransactionId ? (
+                                <span className="provider-tx-cell" title={t.providerTransactionId}>
+                                  <code>{t.providerTransactionId.slice(0, 8)}…</code>
+                                  <button
+                                    onClick={() => navigator.clipboard.writeText(t.providerTransactionId!)}
+                                    title="Copiar codigoSolicitacao Inter"
+                                  >
+                                    <FiCopy />
+                                  </button>
+                                </span>
+                              ) : (
+                                <span className="provider-tx-empty">—</span>
+                              )}
+                            </td>
+                          )}
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            );
+          })
         )}
       </div>
     </PageContainer>

@@ -566,7 +566,8 @@ const EntityForm: React.FC<EntityFormProps> = ({
     }
 
     // Campo obrigatório (funciona para todos os tipos, incluindo date)
-    if (field.required && (!value || value === "" || value === null || value === undefined)) {
+    // Não usar !value — falha em 0/false que são valores legítimos.
+    if (field.required && (value === null || value === undefined || value === "")) {
       return `${field.label} é obrigatório`;
     }
 
