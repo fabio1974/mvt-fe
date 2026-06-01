@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Zapi10 — Lançamento (TV)</title>
+
+<!-- Gerador de QR Code (CDN). Se a TV estiver sem internet, o QR mostra um aviso e o resto do loop funciona normal. -->
+<script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+
+<!-- Pré-carrega as fotos reais do mosaico (evita piscar na TV) -->
+<link rel="preload" as="image" href="https://res.cloudinary.com/dz7fl4wvj/image/upload/c_fill,w_600,h_600,q_auto,f_auto/v1779490959/zapi-food/products/camarao.jpg">
+<link rel="preload" as="image" href="https://res.cloudinary.com/dz7fl4wvj/image/upload/c_fill,w_600,h_600,q_auto,f_auto/v1778776121/zapi-food/demo-pizzaria/pizza_pepperoni.png">
+<link rel="preload" as="image" href="https://res.cloudinary.com/dz7fl4wvj/image/upload/c_fill,w_600,h_600,q_auto,f_auto/v1778109883/zapi-food/products/wwu1tkzspr15oglbeqqs.jpg">
+<link rel="preload" as="image" href="https://res.cloudinary.com/dz7fl4wvj/image/upload/c_fill,w_600,h_600,q_auto,f_auto/v1777160455/zapi-food/products/uwfmwp1p5qdjlgxwcmv9.png">
+
+<style>
+  /* ====================================================================
+     CONFIGURAÇÃO RÁPIDA — mexa só aqui pra ajustar a campanha
+     ==================================================================== */
+  :root{
+    --navy:        #0f172a;
+    --navy-2:      #1e293b;
+    --cyan:        #22d3ee;
+    --orange:      #f59e0b;
+    --white:       #ffffff;
+    --muted:       #cbd5e1;
+  }
+
+  /* ====================================================================
+     BASE
+     ==================================================================== */
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html,body{ height:100%; background:#000; overflow:hidden; }
+  body{
+    font-family:'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
+    color:var(--white);
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* Palco 16:9 que ocupa a tela inteira mantendo proporção */
+  #stage{
+    position:fixed; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    background:var(--navy);
+  }
+  .deck{
+    position:relative;
+    width:100vw; height:56.25vw;      /* 16:9 */
+    max-height:100vh; max-width:177.78vh;
+    background:var(--navy);
+    overflow:hidden;
+  }
+
+  /* ====================================================================
+     SLIDES
+     ==================================================================== */
+  .slide{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column;
+    align-items:center; justify-content:center;
+    text-align:center;
+    padding:6%;
+    opacity:0; visibility:hidden;
+    transition:opacity .8s ease;
+    background:var(--navy);
+  }
+  .slide.active{ opacity:1; visibility:visible; }
+
+  /* Slide de abertura — fundo navy (como os outros) + logo ORIGINAL num cartão branco */
+  .slide.intro{ background:var(--navy); }
+  .logo-card{
+    background:#fff; border-radius:2.6vh; padding:3.6vh 5.5vw;
+    box-shadow:0 3vh 8vh rgba(0,0,0,.5);
+  }
+  .logo-card img{ width:40vw; max-width:46vh; height:auto; display:block; }
+  .slide.active .logo-card{ animation:pop .7s ease both; }
+  .intro .region{ font-size:2.9vw; color:#fff; font-weight:700; margin-top:4vh; }
+  .intro .region b{ color:var(--orange); }
+
+  /* Brilho de fundo sutil */
+  .glow{
+    position:absolute; border-radius:50%;
+    filter:blur(120px); opacity:.35; pointer-events:none;
+  }
+  .glow.cyan{   background:var(--cyan);   width:45vh; height:45vh; top:-10vh; left:-8vh; }
+  .glow.orange{ background:var(--orange); width:50vh; height:50vh; bottom:-15vh; right:-10vh; }
+
+  /* ---- Mosaico de fotos reais (Slide Comida) ---- */
+  .food-grid{ display:flex; gap:1.6vw; margin-top:4vh; }
+  .food-grid .pic{
+    width:18vw; height:18vw; border-radius:2vw;
+    background-size:cover; background-position:center;
+    box-shadow:0 1.5vh 4vh rgba(0,0,0,.5);
+    border:.4vh solid rgba(255,255,255,.12);
+  }
+  .slide.active .food-grid .pic{ animation:pop .7s ease both; }
+  .slide.active .food-grid .pic:nth-child(2){ animation-delay:.1s; }
+  .slide.active .food-grid .pic:nth-child(3){ animation-delay:.2s; }
+  .slide.active .food-grid .pic:nth-child(4){ animation-delay:.3s; }
+
+  /* Tipografia escalável por viewport (vw) pra ler de longe */
+  .kicker{ font-size:2.2vw; letter-spacing:.35em; color:var(--cyan); font-weight:700; text-transform:uppercase; margin-bottom:2.5vh; }
+  .headline{ font-size:8vw; font-weight:900; line-height:1.02; letter-spacing:-.01em; }
+  .headline.lg{ font-size:11vw; }
+  .sub{ font-size:3.4vw; color:var(--muted); margin-top:3vh; max-width:80%; font-weight:500; }
+  .emoji{ font-size:14vw; line-height:1; margin-bottom:3vh; }
+
+  .accent-cyan{ color:var(--cyan); }
+  .accent-orange{ color:var(--orange); }
+
+  /* Logo wordmark */
+  .logo{ font-weight:900; font-size:12vw; letter-spacing:-.02em; }
+  .logo .dot{ color:var(--cyan); }
+
+  /* ---- Slide dos 3 serviços (imagens reais geradas por IA) ---- */
+  .services{ display:flex; gap:4vw; margin-top:5vh; }
+  .service{ display:flex; flex-direction:column; align-items:center; width:24vw; }
+  .service .ic-img{
+    width:20vw; height:20vw; border-radius:50%; object-fit:cover; margin-bottom:2.5vh;
+    box-shadow:0 1.8vh 4.5vh rgba(0,0,0,.55);
+    border:.5vh solid rgba(255,255,255,.18);
+  }
+  .slide.active .service .ic-img{ animation:pop .7s ease both; }
+  .slide.active .service:nth-child(3) .ic-img{ animation-delay:.1s; }
+  .slide.active .service:nth-child(4) .ic-img{ animation-delay:.2s; }
+  .service .name{ font-size:3vw; font-weight:900; letter-spacing:.05em; }
+  .service .desc{ font-size:1.8vw; color:var(--muted); margin-top:1vh; }
+  .service.food .name{ color:var(--orange); }
+  .service.deliv .name{ color:var(--cyan); }
+  .service.ride .name{ color:#a78bfa; }
+
+  /* ---- Selo da marca (logo padrão impressa em todas as slides) ---- */
+  .brand-badge{
+    position:absolute; top:3.5vh; left:3vw; z-index:6;
+    background:#fff; border-radius:1.4vh; padding:1.1vh 1.8vw;
+    box-shadow:0 1vh 2.5vh rgba(0,0,0,.28);
+  }
+  .brand-badge img{ height:5vh; width:auto; display:block; }
+
+  /* ---- Slide da promoção ---- */
+  .promo{ background:linear-gradient(135deg, var(--orange), #fbbf24); }
+  .promo .kicker{ color:var(--navy); opacity:.85; }
+  .promo .off{ font-size:18vw; font-weight:900; color:var(--navy); line-height:.95; }
+  .promo .promo-sub{ font-size:3.6vw; color:var(--navy); font-weight:800; margin-top:2vh; }
+  .coupon{
+    margin-top:4vh; display:inline-flex; align-items:center; gap:1.5vw;
+    background:var(--navy); color:var(--white);
+    padding:1.8vh 4vw; border-radius:999px;
+    font-size:4vw; font-weight:900; letter-spacing:.1em;
+  }
+  .coupon .tag{ font-size:3vw; }
+  .fineprint{ margin-top:3.5vh; font-size:1.7vw; color:var(--navy); opacity:.8; font-weight:600; }
+
+  /* ---- Slide CTA / QR (tela dividida em 2: Apple | Android) ---- */
+  .qr-split{ display:flex; align-items:stretch; justify-content:center; gap:0; margin-top:3.5vh; }
+  .qr-col{
+    display:flex; flex-direction:column; align-items:center; gap:2.2vh;
+    padding:0 5vw;
+  }
+  .qr-col:first-child{ border-right:.3vh solid rgba(255,255,255,.18); }
+  .qr-store{ font-size:2.7vw; font-weight:800; display:flex; align-items:center; gap:1vw; }
+  .qr-plat{ font-size:1.9vw; color:var(--muted); font-weight:600; }
+  .qr-box{
+    background:#fff; padding:1.4vh; border-radius:1.6vh;
+    width:30vh; height:30vh;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .qr-box canvas, .qr-box img{ width:100% !important; height:100% !important; }
+  .qr-fallback{ color:#0f172a; font-size:1.4vw; font-weight:700; text-align:center; padding:1vw; }
+
+  /* ====================================================================
+     ANIMAÇÕES de entrada (aplicadas ao slide ativo)
+     ==================================================================== */
+  @keyframes pop{ 0%{ transform:scale(.92); opacity:0 } 100%{ transform:scale(1); opacity:1 } }
+  @keyframes rise{ 0%{ transform:translateY(4vh); opacity:0 } 100%{ transform:translateY(0); opacity:1 } }
+  .slide.active .headline,
+  .slide.active .logo,
+  .slide.active .off{ animation:pop .7s ease both; }
+  .slide.active .sub,
+  .slide.active .kicker,
+  .slide.active .services,
+  .slide.active .coupon,
+  .slide.active .qr-split,
+  .slide.active .promo-sub{ animation:rise .8s ease .15s both; }
+
+  /* Barra de progresso fininha no rodapé (oculta — descomente p/ exibir) */
+  #bar{ display:none; position:absolute; left:0; bottom:0; height:.6vh; background:var(--cyan); width:0; z-index:10; }
+
+  /* Dica de fullscreen (some após 1º clique/toque) */
+  #fs-hint{
+    position:fixed; bottom:2vh; right:2vw; z-index:20;
+    font-size:1.4vh; color:#64748b; background:rgba(0,0,0,.4);
+    padding:1vh 1.5vw; border-radius:1vh; cursor:pointer;
+  }
+</style>
+</head>
+<body>
+
+<div id="fs-hint">Clique para tela cheia ⛶</div>
+
+<div id="stage" onclick="goFullscreen()">
+  <div class="deck">
+    <div id="bar"></div>
+
+    <!-- 1 — Lançamento -->
+    <section class="slide intro" data-dur="3500">
+      <div class="glow cyan"></div><div class="glow orange"></div>
+      <div class="kicker">🎉 Chegou o</div>
+      <div class="logo-card"><img src="zapi10-logo.png" alt="Zapi10" /></div>
+      <div class="region">na <b>Região Norte do Ceará</b> e na <b>Serra da Ibiapaba</b></div>
+      <div class="sub">Comida, entregas e corridas — tudo num app só</div>
+    </section>
+
+    <!-- 2 — 3 serviços (imagens reais geradas por IA) -->
+    <section class="slide" data-dur="3500">
+      <div class="glow cyan"></div>
+      <div class="brand-badge"><img src="zapi10-logo.png" alt="Zapi10"></div>
+      <div class="kicker">Tudo em um só app</div>
+      <div class="headline">3 serviços, <span class="accent-cyan">1 aplicativo</span></div>
+      <div class="services">
+        <div class="service food"><img class="ic-img" src="svc-comida.png" alt=""><div class="name">COMIDA</div><div class="desc">peça e receba rápido</div></div>
+        <div class="service deliv"><img class="ic-img" src="svc-entregas.png" alt=""><div class="name">ENTREGAS</div><div class="desc">mande e receba encomendas</div></div>
+        <div class="service ride"><img class="ic-img" src="svc-corridas.png" alt=""><div class="name">CORRIDAS</div><div class="desc">vá aonde precisar</div></div>
+      </div>
+    </section>
+
+    <!-- 3 — Comida (fotos reais das lojas de Sobral) -->
+    <section class="slide" data-dur="4000">
+      <div class="glow orange"></div>
+      <div class="brand-badge"><img src="zapi10-logo.png" alt="Zapi10"></div>
+      <div class="headline">Bateu a <span class="accent-orange">fome?</span></div>
+      <div class="sub">Peça dos melhores lugares da cidade e receba na sua porta</div>
+      <div class="food-grid">
+        <div class="pic" style="background-image:url('https://res.cloudinary.com/dz7fl4wvj/image/upload/c_fill,w_600,h_600,q_auto,f_auto/v1779490959/zapi-food/products/camarao.jpg')"></div>
+        <div class="pic" style="background-image:url('https://res.cloudinary.com/dz7fl4wvj/image/upload/c_fill,w_600,h_600,q_auto,f_auto/v1778776121/zapi-food/demo-pizzaria/pizza_pepperoni.png')"></div>
+        <div class="pic" style="background-image:url('https://res.cloudinary.com/dz7fl4wvj/image/upload/c_fill,w_600,h_600,q_auto,f_auto/v1778109883/zapi-food/products/wwu1tkzspr15oglbeqqs.jpg')"></div>
+        <div class="pic" style="background-image:url('https://res.cloudinary.com/dz7fl4wvj/image/upload/c_fill,w_600,h_600,q_auto,f_auto/v1777160455/zapi-food/products/uwfmwp1p5qdjlgxwcmv9.png')"></div>
+      </div>
+    </section>
+
+    <!-- 4 — PROMOÇÃO (a estrela) -->
+    <section class="slide promo" data-dur="5000">
+      <div class="brand-badge"><img src="zapi10-logo.png" alt="Zapi10"></div>
+      <div class="kicker">Promoção de lançamento</div>
+      <div class="off">R$15 OFF</div>
+      <div class="promo-sub">na sua <b>primeira compra</b> de comida 🍔</div>
+      <div class="coupon"><span class="tag">🎟️ cupom</span> ZAPI10</div>
+      <div class="fineprint">Pedido mín. R$30 · válido até 30/06 · 1 por CPF</div>
+    </section>
+
+    <!-- 5 — CTA / Download (tela dividida: Apple | Android) -->
+    <section class="slide cta" data-dur="4000">
+      <div class="glow cyan"></div><div class="glow orange"></div>
+      <div class="brand-badge"><img src="zapi10-logo.png" alt="Zapi10"></div>
+      <div class="kicker">Baixe agora — aponte a câmera no QR Code</div>
+      <div class="qr-split">
+        <div class="qr-col">
+          <div class="qr-store"> App Store</div>
+          <div class="qr-box"><div id="qr-ios"><div class="qr-fallback">Busque<br><b>Zapi10</b><br>na App Store</div></div></div>
+          <div class="qr-plat">iPhone / iPad</div>
+        </div>
+        <div class="qr-col">
+          <div class="qr-store">▶ Google Play</div>
+          <div class="qr-box"><div id="qr-android"><div class="qr-fallback">Busque<br><b>Zapi10</b><br>no Google Play</div></div></div>
+          <div class="qr-plat">Android</div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<script>
+  /* ====================================================================
+     CONFIG — links diretos das lojas (cada QR abre a loja certa)
+     ==================================================================== */
+  const QR_IOS     = "https://apps.apple.com/br/app/id6759847860";
+  const QR_ANDROID = "https://play.google.com/store/apps/details?id=com.mvt.mobile.zapi10";
+
+  /* Gera os 2 QR codes (se a CDN carregou) */
+  function makeQR(elId, url){
+    try{
+      if (window.QRCode){
+        const el = document.getElementById(elId);
+        el.innerHTML = '';
+        new QRCode(el, {
+          text: url, width:512, height:512,
+          colorDark:"#0f172a", colorLight:"#ffffff",
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      }
+    }catch(e){ /* mantém o fallback de texto */ }
+  }
+  makeQR('qr-ios', QR_IOS);
+  makeQR('qr-android', QR_ANDROID);
+
+  /* ====================================================================
+     LOOP automático dos slides
+     ==================================================================== */
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const bar = document.getElementById('bar');
+  let i = 0, timer = null, rafId = null;
+
+  function show(n){
+    slides.forEach((s,k)=> s.classList.toggle('active', k===n));
+    const dur = parseInt(slides[n].dataset.dur, 10) || 4500;
+    runBar(dur);
+    clearTimeout(timer);
+    timer = setTimeout(()=>{ i = (i+1) % slides.length; show(i); }, dur);
+  }
+
+  function runBar(dur){
+    cancelAnimationFrame(rafId);
+    let start = null;
+    function step(ts){
+      if(start===null) start = ts;
+      const p = Math.min((ts-start)/dur, 1);
+      bar.style.width = (p*100) + '%';
+      if(p<1) rafId = requestAnimationFrame(step);
+    }
+    rafId = requestAnimationFrame(step);
+  }
+
+  /* Fullscreen (TVs/PCs) */
+  function goFullscreen(){
+    const el = document.documentElement;
+    if (!document.fullscreenElement && el.requestFullscreen){ el.requestFullscreen().catch(()=>{}); }
+    const hint = document.getElementById('fs-hint'); if(hint) hint.style.display='none';
+  }
+
+  show(0);
+
+  /* Avança/volta no teclado (útil pra testar) */
+  document.addEventListener('keydown', e=>{
+    if(e.key==='ArrowRight'){ i=(i+1)%slides.length; show(i); }
+    if(e.key==='ArrowLeft'){ i=(i-1+slides.length)%slides.length; show(i); }
+    if(e.key==='f' || e.key==='F'){ goFullscreen(); }
+  });
+</script>
+</body>
+</html>
