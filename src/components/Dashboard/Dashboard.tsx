@@ -3,6 +3,7 @@ import { FiHome, FiChevronDown } from "react-icons/fi";
 import { getUserName, getUserRole } from "../../utils/auth";
 import MobileAppBanner from "./MobileAppBanner";
 import MyStoreCard from "./MyStoreCard";
+import ShareMenuCard from "./ShareMenuCard";
 import { useHeaderCollapsed } from "../../hooks/useHeaderCollapsed";
 import "../Generic/EntityCRUD.css";
 
@@ -75,6 +76,7 @@ const Dashboard: React.FC = () => {
                 Como seus clientes te veem
               </h2>
               <MyStoreCard />
+              <ShareMenuCard />
             </div>
           )}
         </div>

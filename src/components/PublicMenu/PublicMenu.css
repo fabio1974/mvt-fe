@@ -256,6 +256,8 @@
 .pm-qty-btn {
   width: 30px;
   height: 30px;
+  /* zera o padding do button global (index.css) que estourava o círculo virando elipse */
+  padding: 0;
   border-radius: 50%;
   border: none;
   display: flex;
@@ -263,6 +265,7 @@
   justify-content: center;
   color: #fff;
   cursor: pointer;
+  flex-shrink: 0;
 }
 .pm-qty-btn.minus {
   background: #64748b;
