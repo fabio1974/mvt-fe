@@ -4,7 +4,6 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { api } from "../../services/api";
 import { FormField, FormPasswordInput, FormButton } from "../Common/FormComponents";
 import { FiCheckCircle } from "react-icons/fi";
-import InfoPanel from "./InfoPanel";
 import "./LoginRegisterPage.css";
 
 interface NewPasswordFormData {
@@ -210,7 +209,6 @@ export default function NewPasswordPage() {
             </button>
           </div>
         </div>
-        <InfoPanel />
       </div>
     </div>
   );

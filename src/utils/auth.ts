@@ -18,6 +18,33 @@ export function decodeJWT(token: string) {
   }
 }
 
+// Dados do usuário retornados pelo /auth/login e /auth/google
+export interface AuthUser {
+  userId?: string;
+  username?: string;
+  name?: string;
+  role?: string;
+  organizationId?: string;
+  latitude?: number;
+  longitude?: number;
+  address?: string;
+}
+
+// Persiste o token + dados do usuário no localStorage (mesmas chaves do login por senha).
+// Usado pelo login com Google pra deixar a sessão idêntica à do fluxo tradicional.
+export function persistAuthSession(token: string, user?: AuthUser) {
+  localStorage.setItem("authToken", token);
+  if (!user) return;
+  if (user.userId) localStorage.setItem("userId", user.userId);
+  if (user.name) localStorage.setItem("userName", user.name);
+  if (user.username) localStorage.setItem("userEmail", user.username);
+  if (user.role) localStorage.setItem("userRole", user.role);
+  if (user.organizationId) localStorage.setItem("organizationId", user.organizationId);
+  if (user.latitude !== undefined) localStorage.setItem("latitude", String(user.latitude));
+  if (user.longitude !== undefined) localStorage.setItem("longitude", String(user.longitude));
+  if (user.address) localStorage.setItem("userAddress", user.address);
+}
+
 // Função para obter o role do usuário logado
 export function getUserRole(): string | null {
   const token = localStorage.getItem('authToken');

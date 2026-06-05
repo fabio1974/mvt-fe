@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { api } from "../../services/api";
 import { FormField, FormInput, FormButton } from "../Common/FormComponents";
 import { FiCheckCircle } from "react-icons/fi";
-import InfoPanel from "./InfoPanel";
 import "./LoginRegisterPage.css";
 
 interface ForgotPasswordFormData {
@@ -173,7 +172,6 @@ export default function ForgotPasswordPage() {
             </button>
           </div>
         </div>
-        <InfoPanel />
       </div>
     </div>
   );

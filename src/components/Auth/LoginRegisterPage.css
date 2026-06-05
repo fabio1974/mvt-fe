@@ -1,119 +1,37 @@
-/* Layout Principal - Divisão de cores 50/50 com painéis centralizados */
+/* Layout Principal - coluna única centralizada (sem painel direito de marketing) */
 .login-register-layout,
 .login-register-page {
-  display: grid;
-  grid-template-columns: 50% 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   min-height: calc(95vh - 155px); /* 100vh - (header 81px + footer 54px) */
   font-family: 'Inter', system-ui, sans-serif;
   position: relative;
+  background: #f9f9f9;
 }
 
 .login-register-container {
   display: contents;
 }
 
-/* Fundo cinza no lado esquerdo (auth) - só dentro do container */
-.login-register-layout::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 50%;
-  height: 100%;
-  background: #f9f9f9;
-  z-index: 0;
-  pointer-events: none;
-}
-
-/* Fundo branco no lado direito (info) - só dentro do container */
-.login-register-layout::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  top: 0;
-  width: 50%;
-  height: 100%;
-  background: white;
-  z-index: 0;
-  pointer-events: none;
-}
-
-/* Painel de Informações (centralizado no lado direito) */
-.info-panel {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
-  padding: 40px;
-  padding-top: 15vh; /* Posiciona mais acima */
-  position: relative;
-  z-index: 1;
-  min-height: calc(100vh - 135px); /* Mesma altura do container pai */
-}
-
-.info-panel > * {
-  width: 70%;
-  max-width: 500px;
-}
-
-.info-panel h2 {
-  font-weight: 700;
-  font-size: 2.5rem;
-  margin-bottom: 16px;
-  color: #1a1a1a;
-  line-height: 1.2;
-}
-
-.info-panel-subtitle {
-  color: #666;
-  font-size: 1rem;
-  margin-bottom: 40px;
-  font-weight: 400;
-  line-height: 1.5;
-}
-
-.info-panel ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.info-panel li {
-  margin-bottom: 16px;
-  display: flex;
-  align-items: flex-start;
-  padding: 0;
-  background: transparent;
-  border-radius: 0;
-  font-size: 1rem;
-  color: #333;
-  line-height: 1.6;
-}
-
-.info-panel li span:first-child {
-  color: #5b4cfa;
-  font-size: 20px;
-  margin-right: 12px;
-  margin-top: 2px;
-  flex-shrink: 0;
-}
-
-/* Painel de Autenticação (centralizado no lado esquerdo) */
+/* Painel de Autenticação (centralizado) */
 .auth-panel {
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  align-items: center;
-  padding: 40px;
-  padding-top: 15vh; /* Posiciona mais acima */
+  align-items: stretch;
+  width: 100%;
+  max-width: 460px;
+  padding: 40px 24px;
+  padding-top: 12vh; /* Posiciona mais acima */
   position: relative;
   z-index: 1;
   min-height: calc(100vh - 135px); /* Mesma altura do container pai */
 }
 
 .auth-panel > * {
-  width: 70%;
-  max-width: 500px;
+  width: 100%;
+  max-width: none;
 }
 
 .auth-panel h2 {

@@ -3,6 +3,8 @@ import { useSearchParams } from "react-router-dom";
 import { X } from "lucide-react";
 import LoginForm from "./LoginForm";
 import RegisterForm from "./RegisterForm";
+import GoogleSignInButton from "./GoogleSignInButton";
+import { buildSupportWhatsappUrl } from "../../config/support";
 
 // Tipos de usuário para o wizard
 type UserTypeOption = {
@@ -47,11 +49,16 @@ const USER_TYPE_OPTIONS: UserTypeOption[] = [
 
 export default function AuthTabs() {
   const [searchParams] = useSearchParams();
-  const initialTab = searchParams.get("tab") === "register" ? "register" : "login";
   const preselectedRole = searchParams.get("role") || undefined;
   const lockRole = searchParams.get("lockRole") === "true";
-  
-  const [activeView, setActiveView] = useState<"login" | "register">(initialTab);
+  // Sem role no link de cadastro → tela de escolha (Google vs formulário). Com role
+  // (links de parceiro) → vai direto pro formulário manual com o papel travado.
+  const initialView: "login" | "register" | "registerChoice" =
+    searchParams.get("tab") === "register"
+      ? (preselectedRole ? "register" : "registerChoice")
+      : "login";
+
+  const [activeView, setActiveView] = useState<"login" | "register" | "registerChoice">(initialView);
   const [showWizard, setShowWizard] = useState(false);
   const [selectedRole, setSelectedRole] = useState<string>(preselectedRole || "");
   const [isMobile, setIsMobile] = useState(false);
@@ -74,14 +81,19 @@ export default function AuthTabs() {
         setIsRoleLocked(lockRole);
         setActiveView("register");
       } else {
-        // Se veio pra register sem role, abre o wizard
-        setShowWizard(true);
+        // Sem role: tela de escolha (Google vs preencher formulário)
+        setActiveView("registerChoice");
       }
     }
   }, [searchParams, preselectedRole, lockRole]);
 
-  // Handler para clicar em "Ainda não estou cadastrado"
+  // "Criar conta" → tela de escolha do método de cadastro
   const handleNotRegisteredClick = () => {
+    setActiveView("registerChoice");
+  };
+
+  // "Preencher Cadastro" → escolhe o papel no wizard e segue pro formulário manual
+  const handlePreencherCadastro = () => {
     setShowWizard(true);
   };
 
@@ -253,7 +265,37 @@ export default function AuthTabs() {
     fontSize: "0.95rem",
     padding: 0,
   };
-  
+
+  const supportLinkStyles: React.CSSProperties = {
+    color: "#6b7280",
+    fontWeight: 500,
+    cursor: "pointer",
+    textDecoration: "underline",
+    fontSize: "0.9rem",
+  };
+
+  const dividerWrap: React.CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    gap: 12,
+    margin: "16px 0",
+  };
+  const dividerLine: React.CSSProperties = { flex: 1, height: 1, background: "#e5e7eb" };
+  const dividerText: React.CSSProperties = { color: "#9ca3af", fontSize: "0.85rem" };
+
+  // Botão secundário "Preencher Cadastro" — neutro/outline pra não competir com o do Google.
+  const fillFormButtonStyles: React.CSSProperties = {
+    width: "100%",
+    padding: "12px 0",
+    borderRadius: 9999,
+    border: "1px solid #d1d5db",
+    background: "#fff",
+    color: "#374151",
+    fontWeight: 600,
+    fontSize: "0.95rem",
+    cursor: "pointer",
+  };
+
   return (
     <div className="auth-panel">
       {activeView === "login" ? (
@@ -264,6 +306,7 @@ export default function AuthTabs() {
             </div>
           </div>
           <LoginForm />
+          <GoogleSignInButton mode="login" />
           <div style={linkStyles}>
             Ainda não está cadastrado?{" "}
             <button
@@ -275,6 +318,51 @@ export default function AuthTabs() {
               Criar conta
             </button>
           </div>
+          {/* Saída pros casos em que o usuário fica preso (e-mail errado no cadastro,
+              não confirmado e sem recuperar) — WhatsApp, único canal sem login. Espelha o app. */}
+          <div style={{ ...linkStyles, marginTop: 8 }}>
+            <a
+              href={buildSupportWhatsappUrl(
+                "Olá! Estou com problema para acessar minha conta no Zapi10."
+              )}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={supportLinkStyles}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "#374151")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "#6b7280")}
+            >
+              Problemas para entrar? Falar no WhatsApp
+            </a>
+          </div>
+        </>
+      ) : activeView === "registerChoice" ? (
+        <>
+          <div className="auth-tabs">
+            <div className="auth-tab active" style={{ cursor: "default", flex: 1 }}>
+              CRIAR CONTA
+            </div>
+          </div>
+          {/* Cadastro com Google: abre o wizard de onboarding (papel → CPF → requisitos). */}
+          <GoogleSignInButton mode="signup" showDivider={false} />
+          <div style={dividerWrap}>
+            <span style={dividerLine} />
+            <span style={dividerText}>ou</span>
+            <span style={dividerLine} />
+          </div>
+          <button style={fillFormButtonStyles} onClick={handlePreencherCadastro}>
+            Preencher Cadastro
+          </button>
+          <div style={linkStyles}>
+            Já possui uma conta?{" "}
+            <button
+              style={linkButtonStyles}
+              onClick={handleBackToLogin}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "#2563eb")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "#3b82f6")}
+            >
+              Fazer login
+            </button>
+          </div>
         </>
       ) : (
         <>
@@ -283,8 +371,8 @@ export default function AuthTabs() {
               CRIAR CONTA
             </div>
           </div>
-          <RegisterForm 
-            onSuccess={() => setActiveView("login")} 
+          <RegisterForm
+            onSuccess={() => setActiveView("login")}
             preselectedRole={selectedRole || preselectedRole}
             lockRole={isRoleLocked}
             onChangeRole={() => {
