@@ -1,0 +1,13 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    { "label": "Frontend - Start", "type": "shell", "command": "npm run dev", "problemMatcher": [], "presentation": { "echo": true, "reveal": "always", "focus": true, "panel": "dedicated", "showReuseMessage": false, "clear": true }, "isBackground": true, "group": { "kind": "build", "isDefault": false } },
+    { "label": "Frontend - Stop", "type": "shell", "command": "lsof -ti:5173 | xargs kill -9 2>/dev/null && echo '✅ Frontend parado na porta 5173' || echo '⚠️ Nenhum processo encontrado na porta 5173'", "problemMatcher": [], "presentation": { "echo": true, "reveal": "always", "focus": false, "panel": "shared", "showReuseMessage": false, "clear": false } },
+    { "label": "🚀 Start React App (Auto Node)", "type": "shell", "command": "bash scripts/start-with-node.sh", "problemMatcher": [], "presentation": { "echo": true, "reveal": "always", "focus": true, "panel": "dedicated", "showReuseMessage": false, "clear": true }, "isBackground": true, "group": { "kind": "build", "isDefault": true }, "runOptions": { "runOn": "default" } },
+    { "label": "📦 Install Dependencies", "type": "shell", "command": "bash scripts/start-with-node.sh", "args": [], "problemMatcher": [], "presentation": { "echo": true, "reveal": "always", "focus": true, "panel": "shared", "showReuseMessage": true, "clear": false } },
+    { "label": "🧪 Run Tests", "type": "shell", "command": "npm run test", "problemMatcher": [], "presentation": { "echo": true, "reveal": "always", "focus": false, "panel": "shared" } },
+    { "label": "🏗️ Build Production", "type": "shell", "command": "npm run build", "problemMatcher": ["$tsc"], "group": { "kind": "build", "isDefault": false }, "presentation": { "echo": true, "reveal": "always", "focus": false, "panel": "shared" } },
+    { "label": "🔍 Lint Code", "type": "shell", "command": "npm run lint", "problemMatcher": ["$eslint-stylish"], "presentation": { "echo": true, "reveal": "always", "focus": false, "panel": "shared" } },
+    { "label": "👁️ Preview Production Build", "type": "shell", "command": "npm run preview", "problemMatcher": [], "presentation": { "echo": true, "reveal": "always", "focus": true, "panel": "dedicated" }, "isBackground": true }
+  ]
+}
