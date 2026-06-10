@@ -1,7 +1,7 @@
 {
-  "name": "Zapi10 - Mobilidade com propósito social",
+  "name": "Zapi10 - Comida, Corridas e Entregas",
   "short_name": "Zapi10",
-  "description": "Plataforma de mobilidade com propósito social. Conectando pessoas através de entregas rápidas e seguras.",
+  "description": "Seu Aplicativo de Comida, Corridas e Entregas.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

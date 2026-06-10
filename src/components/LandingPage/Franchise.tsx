@@ -75,7 +75,7 @@ const Franchise = () => {
           marginBottom: isMobile ? "2rem" : "3rem",
         }}>
           {[
-            { icon: "🍕", title: "Zapi-Food", desc: "5% de cada pedido de delivery do seu grupo", highlight: "5% do total" },
+            { icon: "🍕", title: "Zapi-Food", desc: "4% de cada pedido de delivery do seu grupo", highlight: "4% do total" },
             { icon: "📦", title: "Corridas Avulsas", desc: "5% de cada corrida de entrega dos estabelecimentos", highlight: "5% do frete" },
             { icon: "🍽️", title: "Serviço de Mesa", desc: "35% da fatura mensal de cada estabelecimento", highlight: "35% da fatura" },
           ].map((item, i) => (
