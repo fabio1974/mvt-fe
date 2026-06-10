@@ -28,6 +28,8 @@ import {
   FiInstagram,
   FiZap,
   FiTag,
+  FiBookOpen,
+  FiShoppingCart,
 } from "react-icons/fi";
 import "./Sidebar.css";
 
@@ -104,6 +106,26 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
     icon: <FiShoppingBag size={22} color="#f59e0b" />,
     path: "/pedidos",
     roles: ["ROLE_ADMIN", "ROLE_CLIENT", "CLIENT"],
+  },
+  // Grupo Minha Loja (apenas CLIENT) — autogestão do estabelecimento
+  {
+    label: "Minha Loja",
+    icon: <FiShoppingCart size={22} color="#16a34a" />,
+    roles: ["ROLE_CLIENT", "CLIENT"],
+    items: [
+      {
+        label: "Meu Cardápio",
+        icon: <FiBookOpen size={22} color="#f59e0b" />,
+        path: "/cardapio",
+        roles: ["ROLE_CLIENT", "CLIENT"],
+      },
+      {
+        label: "Configurar Loja",
+        icon: <FiSettings size={22} color="#60a5fa" />,
+        path: "/configurar-loja",
+        roles: ["ROLE_CLIENT", "CLIENT"],
+      },
+    ],
   },
   {
     label: "Caixa/Mesas",

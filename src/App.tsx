@@ -3,6 +3,7 @@ import { lazy, Suspense } from "react";
 import Header from "./components/Header/Header";
 import Footer from "./components/Footer/Footer";
 import Sidebar from "./components/Sidebar/Sidebar";
+import ActivationGate from "./components/activation/ActivationGate";
 import Toast from "./components/Common/Toast";
 import SessionExpiredOverlay from "./components/Common/SessionExpiredOverlay";
 import MetadataLoader from "./components/Common/MetadataLoader";
@@ -49,6 +50,8 @@ const PaymentCancelPage = lazy(() => import("./components/Payment/PaymentCancelP
 const PaymentCRUDPage = lazy(() => import("./components/Payment/PaymentCRUDPage"));
 const PersonalDataPage = lazy(() => import("./components/User/PersonalDataPage"));
 const StoreProfilePage = lazy(() => import("./components/User/StoreProfilePage"));
+const StoreMenuPage = lazy(() => import("./components/Store/StoreMenuPage"));
+const StoreSettingsPage = lazy(() => import("./components/Store/StoreSettingsPage"));
 const AddressPage = lazy(() => import("./components/User/AddressPage"));
 const ConsolidatedPaymentProcessor = lazy(() => import("./components/ConsolidatedPayment/ConsolidatedPaymentProcessor"));
 const SiteConfigurationCRUDPage = lazy(() => import("./components/SiteConfiguration/SiteConfigurationCRUDPage"));
@@ -210,6 +213,9 @@ function App() {
       <MetadataLoader>
         <NewOrderAlertProvider>
         <div className="App" style={{ display: "flex", minHeight: "100vh" }}>
+          {/* Cadastro obrigatório do CLIENT — overlay global (z 2000) que trava a tela
+              inteira, sidebar inclusa, até as pendências serem preenchidas. */}
+          {isLoggedIn && isClientRole && <ActivationGate />}
           {isLoggedIn && sidebarVisible && (
             <Sidebar
               collapsed={sidebarCollapsed}
@@ -276,6 +282,8 @@ function App() {
                 <Route path="/balanco-financeiro" element={<OrganizerFinancialPage />} />
                 <Route path="/dados-pessoais" element={<PersonalDataPage />} />
                 <Route path="/dados-estabelecimento" element={<StoreProfilePage />} />
+                <Route path="/cardapio" element={<StoreMenuPage />} />
+                <Route path="/configurar-loja" element={<StoreSettingsPage />} />
 
                 <Route path="/dados-endereco" element={<AddressPage />} />
                 <Route path="/processar-pagamentos" element={<ConsolidatedPaymentProcessor />} />

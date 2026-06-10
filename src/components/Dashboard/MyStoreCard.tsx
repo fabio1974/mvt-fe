@@ -21,9 +21,24 @@ interface StoreInfo {
   coverUrl: string | null;
   todayHours?: string | null;
   isOpenNow?: boolean;
+  serviceType?: string | null;
+  address?: string | null;
+  avgPreparationMinutes?: number | null;
+  minOrder?: number | null;
+  distanceKm?: number | null;
 }
 
-const MyStoreCard: React.FC = () => {
+// Mesmo mapeamento de tipo do card mobile (StoresScreen.renderStore).
+const serviceTypeLabel = (t?: string | null): string =>
+  t === "DELIVERY" ? "🍽️ Restaurante" : t === "PASSENGER_TRANSPORT" ? "💊 Farmácia" : "🏪 Loja";
+
+interface MyStoreCardProps {
+  /** Quando definido, o badge segue este estado (compartilhado com o switch do
+   * breadcrumb) em vez do isOpenNow vindo da própria busca — sincroniza ao vivo. */
+  isOpenOverride?: boolean | null;
+}
+
+const MyStoreCard: React.FC<MyStoreCardProps> = ({ isOpenOverride }) => {
   const userId = getUserId();
   const [store, setStore] = useState<StoreInfo | null>(null);
   const [loading, setLoading] = useState(true);
@@ -84,7 +99,7 @@ const MyStoreCard: React.FC = () => {
     );
   }
 
-  const openNow = store.isOpenNow ?? store.isOpen;
+  const openNow = isOpenOverride ?? store.isOpenNow ?? store.isOpen;
 
   return (
     <div
@@ -118,97 +133,63 @@ const MyStoreCard: React.FC = () => {
         </div>
       )}
 
-      <div style={{ padding: 16, display: "flex", alignItems: "center", gap: 14 }}>
-        {store.logoUrl ? (
-          <img
-            src={store.logoUrl}
-            alt={`Logo ${store.name}`}
-            style={{
-              width: 56,
-              height: 56,
-              borderRadius: 12,
-              objectFit: "cover",
-              background: "var(--surface-inset)",
-              border: "1px solid var(--card-border)",
-            }}
-          />
-        ) : (
-          <div
-            style={{
-              width: 56,
-              height: 56,
-              borderRadius: 12,
-              background: "#f59e0b",
-              color: "white",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontWeight: 700,
-              fontSize: 22,
-            }}
-          >
-            {store.name.charAt(0)}
+      <div style={{ padding: 16 }}>
+        {/* Header: logo circular + nome + tipo (igual StoresScreen.storeHeader do mobile) */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+          {store.logoUrl ? (
+            <img
+              src={store.logoUrl}
+              alt={`Logo ${store.name}`}
+              style={{ width: 44, height: 44, borderRadius: "50%", objectFit: "cover", background: "var(--surface-inset)", flexShrink: 0 }}
+            />
+          ) : (
+            <div
+              style={{ width: 44, height: 44, borderRadius: "50%", background: "#f59e0b", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: 20, flexShrink: 0 }}
+            >
+              {store.name.charAt(0)}
+            </div>
+          )}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontWeight: 700, fontSize: "1.05rem", color: "var(--text-strong)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {store.name}
+            </div>
+            <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: 2 }}>
+              {serviceTypeLabel(store.serviceType)}
+            </div>
           </div>
+        </div>
+
+        {store.description && (
+          <p style={{ fontSize: "0.875rem", lineHeight: 1.4, color: "var(--text-secondary, #475569)", margin: "0 0 8px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+            {store.description}
+          </p>
         )}
 
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div
-            style={{
-              fontWeight: 600,
-              fontSize: "1.05rem",
-              color: "var(--text-strong)",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {store.name}
-          </div>
-          {store.todayHours && (
-            <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: 2 }}>
-              {store.todayHours}
-            </div>
+        {/* Footer: tags + status pill (igual storeFooter do mobile) */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+          {store.avgPreparationMinutes != null && (
+            <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>🕐 ~{store.avgPreparationMinutes} min</span>
+          )}
+          {store.minOrder != null && (
+            <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>Mín. R$ {store.minOrder.toFixed(2).replace(".", ",")}</span>
+          )}
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 12, fontSize: "0.78rem", fontWeight: 700, background: openNow ? "#dcfce7" : "#e5e7eb", color: openNow ? "#166534" : "#374151" }}>
+            <span style={{ width: 8, height: 8, borderRadius: "50%", background: openNow ? "#16a34a" : "#9ca3af" }} />
+            {openNow ? "Aberto Agora" : "Fechado"}
+          </span>
+          {store.hasMenu === false && (
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 12, fontSize: "0.78rem", fontWeight: 700, background: "#fef3c7", color: "#92400e" }}>
+              ⏳ Cardápio em preparação
+            </span>
           )}
         </div>
 
-        <span
-          style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: 6,
-            padding: "4px 12px",
-            borderRadius: 20,
-            fontSize: "0.8rem",
-            fontWeight: 600,
-            background: openNow ? "#dcfce7" : "#e5e7eb",
-            color: openNow ? "#15803d" : "#4b5563",
-          }}
-        >
-          <span
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: "50%",
-              background: openNow ? "#16a34a" : "#9ca3af",
-            }}
-          />
-          {openNow ? "Aberto" : "Fechado"}
-        </span>
+        {store.todayHours && (
+          <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: 8, fontStyle: "italic" }}>
+            {openNow ? "Aberto" : "Horário"} das {store.todayHours.replace(/-/g, " às ")}
+          </p>
+        )}
       </div>
-
-      {store.hasMenu === false && (
-        <div
-          style={{
-            padding: "10px 16px",
-            background: "#fef3c7",
-            color: "#92400e",
-            fontSize: "0.85rem",
-            borderTop: "1px solid var(--card-border)",
-          }}
-        >
-          ⚠️ Cardápio em preparação — adicione produtos pra aparecer pros clientes.
-        </div>
-      )}
     </div>
   );
 };

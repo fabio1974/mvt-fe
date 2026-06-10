@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { FiHome, FiChevronDown } from "react-icons/fi";
 import { getUserName, getUserRole } from "../../utils/auth";
+import { api } from "../../services/api";
 import MobileAppBanner from "./MobileAppBanner";
 import MyStoreCard from "./MyStoreCard";
 import ShareMenuCard from "./ShareMenuCard";
+import StoreOpenToggle from "./StoreOpenToggle";
 import { useHeaderCollapsed } from "../../hooks/useHeaderCollapsed";
 import "../Generic/EntityCRUD.css";
 
@@ -12,6 +14,38 @@ const Dashboard: React.FC = () => {
   const userRole = getUserRole();
   const [headerCollapsed, toggleHeader] = useHeaderCollapsed();
   const isClient = userRole === "ROLE_CLIENT" || userRole === "CLIENT";
+
+  // Estado de abertura da loja, compartilhado entre o switch do breadcrumb e o
+  // badge do MyStoreCard — assim os dois sincronizam ao vivo, sem refresh.
+  const [storeOpen, setStoreOpen] = useState<boolean | null>(null);
+  const [togglingStore, setTogglingStore] = useState(false);
+
+  useEffect(() => {
+    if (!isClient) return;
+    (async () => {
+      try {
+        const res = await api.get<{ isOpen: boolean }>("/api/store-profile/me");
+        setStoreOpen(!!res.data.isOpen);
+      } catch {
+        // sem perfil de loja → switch não aparece
+      }
+    })();
+  }, [isClient]);
+
+  const toggleStore = async () => {
+    if (togglingStore || storeOpen === null) return;
+    setTogglingStore(true);
+    const next = !storeOpen;
+    setStoreOpen(next); // otimista — switch e badge atualizam na hora
+    try {
+      const res = await api.patch<{ isOpen: boolean }>("/api/store-profile/me/toggle");
+      setStoreOpen(!!res.data.isOpen);
+    } catch {
+      setStoreOpen(!next); // reverte em caso de erro
+    } finally {
+      setTogglingStore(false);
+    }
+  };
 
   return (
     <div className="entity-crud-container">
@@ -22,6 +56,9 @@ const Dashboard: React.FC = () => {
             <span>Início</span>
           </div>
         </div>
+        {isClient && (
+          <StoreOpenToggle isOpen={storeOpen} busy={togglingStore} onToggle={toggleStore} />
+        )}
         {headerCollapsed && (
           <button
             className="breadcrumb-expand-header-btn"
@@ -73,9 +110,9 @@ const Dashboard: React.FC = () => {
                   letterSpacing: "0.05em",
                 }}
               >
-                Como seus clientes te veem
+                Como seus clientes veem você
               </h2>
-              <MyStoreCard />
+              <MyStoreCard isOpenOverride={storeOpen} />
               <ShareMenuCard />
             </div>
           )}
