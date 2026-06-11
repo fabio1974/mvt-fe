@@ -1,10 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Download, ImageOff, Minus, Plus, ShoppingCart } from "lucide-react";
-import type { PublicCategory, PublicMenu, PublicProduct } from "./publicMenuApi";
+import type { PublicMenu, PublicProduct } from "./publicMenuApi";
 import { fetchMenuBySlug, productPrice } from "./publicMenuApi";
 import { useCart } from "./useCart";
 import AppDownloadModal from "./AppDownloadModal";
+import ProductDetailModal from "../Food/ProductDetailModal";
+import CheckoutWizard from "../Food/CheckoutWizard";
+import { addonGroupsForProduct, allProducts, productHasAddons } from "../Food/addonGroups";
+import type { CartAddon } from "../Food/foodTypes";
 import "./PublicMenu.css";
 
 const brl = (n: number) => `R$ ${n.toFixed(2).replace(".", ",")}`;
@@ -24,8 +28,12 @@ export default function PublicMenuPage() {
   const [error, setError] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [activeKey, setActiveKey] = useState<string | null>(null);
+  const [detailProduct, setDetailProduct] = useState<PublicProduct | null>(null);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   const cart = useCart(slug);
+  // Todos os produtos (pra escopar os addons por categoria do produto aberto).
+  const allProds = useMemo(() => (menu ? allProducts(menu) : []), [menu]);
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   useEffect(() => {
@@ -66,16 +74,14 @@ export default function PublicMenuPage() {
 
   const sections: Section[] = useMemo(() => {
     if (!menu) return [];
+    // Produtos is_addon não aparecem como itens do cardápio — só dentro do detalhe.
+    const sellable = (ps: PublicProduct[]) => ps.filter((p) => !p.isAddon);
     const list: Section[] = menu.categories
-      .filter((c: PublicCategory) => c.products.length > 0)
-      .map((c) => ({
-        key: `cat-${c.id}`,
-        title: c.name,
-        description: c.description,
-        products: c.products,
-      }));
-    if (menu.uncategorized && menu.uncategorized.length > 0) {
-      list.push({ key: "outros", title: "Outros", products: menu.uncategorized });
+      .map((c) => ({ key: `cat-${c.id}`, title: c.name, description: c.description, products: sellable(c.products) }))
+      .filter((s: Section) => s.products.length > 0);
+    const outros = sellable(menu.uncategorized ?? []);
+    if (outros.length > 0) {
+      list.push({ key: "outros", title: "Outros", products: outros });
     }
     return list;
   }, [menu]);
@@ -257,7 +263,13 @@ export default function PublicMenuPage() {
                   return (
                     <div key={p.id} className="pm-card">
                       <div className="pm-card-info">
-                        <div>
+                        <div
+                          className="pm-prod-head"
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setDetailProduct(p)}
+                          onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setDetailProduct(p)}
+                        >
                           <h3 className="pm-prod-name">{p.name}</h3>
                           {p.description && <p className="pm-prod-desc">{p.description}</p>}
                         </div>
@@ -268,7 +280,7 @@ export default function PublicMenuPage() {
                               <button
                                 className="pm-qty-btn minus"
                                 aria-label="Remover"
-                                onClick={() => cart.remove(p.id)}
+                                onClick={() => cart.removeQuick(p.id)}
                               >
                                 <Minus size={16} />
                               </button>
@@ -277,14 +289,20 @@ export default function PublicMenuPage() {
                             <button
                               className="pm-qty-btn plus"
                               aria-label="Adicionar"
-                              onClick={() => cart.add(p)}
+                              onClick={() => (productHasAddons(allProds, p) ? setDetailProduct(p) : cart.addQuick(p))}
                             >
                               <Plus size={16} />
                             </button>
                           </div>
                         </div>
                       </div>
-                      <div className="pm-card-img">
+                      <div
+                        className="pm-card-img"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => setDetailProduct(p)}
+                        onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setDetailProduct(p)}
+                      >
                         {p.imageUrl ? (
                           <img src={p.imageUrl} alt={p.name} />
                         ) : (
@@ -299,10 +317,10 @@ export default function PublicMenuPage() {
           )}
         </div>
 
-        {/* Barra fixa do carrinho */}
+        {/* Barra fixa do carrinho → abre o checkout na própria web */}
         {cart.count > 0 && (
           <div className="pm-cartbar-wrap">
-            <button className="pm-cartbar" onClick={() => setModalOpen(true)}>
+            <button className="pm-cartbar" onClick={() => setCheckoutOpen(true)}>
               <span className="pm-cart-badge">{cart.count}</span>
               <span className="pm-cart-label">Finalizar pedido</span>
               <span className="pm-cart-total">{brl(cart.total)}</span>
@@ -317,6 +335,20 @@ export default function PublicMenuPage() {
           lines={cart.lines}
           total={cart.total}
         />
+
+        <ProductDetailModal
+          product={detailProduct}
+          addonGroups={detailProduct ? addonGroupsForProduct(allProds, detailProduct) : []}
+          onClose={() => setDetailProduct(null)}
+          onConfirm={(quantity, notes, addons: CartAddon[]) => {
+            if (detailProduct) cart.addCustomLine(detailProduct, quantity, notes, addons);
+            setDetailProduct(null);
+          }}
+        />
+
+        {checkoutOpen && (
+          <CheckoutWizard store={store} cart={cart} onClose={() => setCheckoutOpen(false)} />
+        )}
       </div>
     </div>
   );

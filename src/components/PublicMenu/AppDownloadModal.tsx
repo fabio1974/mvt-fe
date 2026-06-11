@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
-import { Check, Download, Link2, Smartphone, X } from "lucide-react";
+import { Check, Link2, Smartphone, X } from "lucide-react";
 import type { CartLine } from "./useCart";
-import { productPrice } from "./publicMenuApi";
+import { lineTotal } from "../Food/foodTypes";
 import {
   APP_STORE_URL,
   PLAY_STORE_URL,
+  appHandoffUrl,
   detectPlatform,
+  openAppOrStore,
   storeUrlFor,
 } from "./platform";
 import type { Platform } from "./platform";
@@ -28,6 +30,9 @@ const brl = (n: number) => `R$ ${n.toFixed(2).replace(".", ",")}`;
 export default function AppDownloadModal({ open, onClose, storeName, lines, total }: Props) {
   const platform: Platform = useMemo(() => detectPlatform(), []);
   const [copied, setCopied] = useState(false);
+  // Handoff: se o visitante está logado, emite um código pro app entrar logado no
+  // 1º launch (Android via Install Referrer; iOS lê o clipboard).
+  const [handoff, setHandoff] = useState<string | null>(null);
 
   // Bloqueia o scroll do fundo enquanto o modal está aberto.
   useEffect(() => {
@@ -39,10 +44,29 @@ export default function AppDownloadModal({ open, onClose, storeName, lines, tota
     };
   }, [open]);
 
+  useEffect(() => {
+    if (!open || !localStorage.getItem("authToken")) return;
+    let cancelled = false;
+    import("../../services/api").then(({ api }) =>
+      api.post<{ code: string }>("/auth/handoff/issue")
+        .then((r) => { if (!cancelled) setHandoff(r.data.code); })
+        .catch(() => { /* sem handoff — download normal */ })
+    );
+    return () => { cancelled = true; };
+  }, [open]);
+
   if (!open) return null;
 
   const storeUrl = storeUrlFor(platform);
   const hasItems = lines.length > 0;
+  // Android: carrega o handoff via Install Referrer.
+  const playUrl = handoff
+    ? `${PLAY_STORE_URL}&referrer=${encodeURIComponent("zapihandoff_" + handoff)}`
+    : PLAY_STORE_URL;
+  // iOS/desktop: deixa o código no clipboard pro app ler no 1º launch.
+  const dropHandoffToClipboard = () => {
+    if (handoff) navigator.clipboard?.writeText("zapihandoff_" + handoff).catch(() => {});
+  };
 
   const copyLink = async () => {
     try {
@@ -77,11 +101,11 @@ export default function AppDownloadModal({ open, onClose, storeName, lines, tota
         {hasItems && (
           <div className="pm-modal-summary">
             {lines.map((l) => (
-              <div key={l.product.id} className="pm-sum-line">
+              <div key={l.id} className="pm-sum-line">
                 <span>
                   {l.quantity}× {l.product.name}
                 </span>
-                <span>{brl(productPrice(l.product) * l.quantity)}</span>
+                <span>{brl(lineTotal(l))}</span>
               </div>
             ))}
             <div className="pm-sum-total">
@@ -102,20 +126,33 @@ export default function AppDownloadModal({ open, onClose, storeName, lines, tota
               {copied ? "Link copiado!" : "Copiar link do cardápio"}
             </button>
             <div className="pm-badges">
-              <a className="pm-store-btn" href={APP_STORE_URL} target="_blank" rel="noreferrer">
+              <a className="pm-store-btn" href={APP_STORE_URL} target="_blank" rel="noreferrer" onClick={dropHandoffToClipboard}>
                 App Store
               </a>
-              <a className="pm-store-btn" href={PLAY_STORE_URL} target="_blank" rel="noreferrer">
+              <a className="pm-store-btn" href={playUrl} target="_blank" rel="noreferrer" onClick={dropHandoffToClipboard}>
                 Google Play
               </a>
             </div>
           </>
         ) : (
           <>
-            <a className="pm-store-btn" href={storeUrl ?? PLAY_STORE_URL}>
-              {platform === "ios" ? <Smartphone size={20} /> : <Download size={20} />}
-              {platform === "ios" ? "Baixar na App Store" : "Baixar no Google Play"}
-            </a>
+            {handoff && (
+              <div style={{ background: "#ecfdf5", border: "1px solid #a7f3d0", color: "#047857", borderRadius: 8, padding: "8px 10px", fontSize: 13, marginBottom: 10, textAlign: "center" }}>
+                ✓ Você já vai entrar logado no app
+              </div>
+            )}
+            <button
+              type="button"
+              className="pm-store-btn"
+              onClick={() => {
+                // iOS fresh-install lê o código do clipboard; o app instalado lê do deep link.
+                dropHandoffToClipboard();
+                openAppOrStore(appHandoffUrl(handoff), platform === "android" ? playUrl : (storeUrl ?? playUrl));
+              }}
+            >
+              <Smartphone size={20} />
+              Continuar no app
+            </button>
             <div className="pm-badges">
               <a
                 href={platform === "ios" ? PLAY_STORE_URL : APP_STORE_URL}

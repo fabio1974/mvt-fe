@@ -6,6 +6,7 @@ import MobileAppBanner from "./MobileAppBanner";
 import MyStoreCard from "./MyStoreCard";
 import ShareMenuCard from "./ShareMenuCard";
 import StoreOpenToggle from "./StoreOpenToggle";
+import StorePickerModal from "../Food/StorePickerModal";
 import { useHeaderCollapsed } from "../../hooks/useHeaderCollapsed";
 import "../Generic/EntityCRUD.css";
 
@@ -14,11 +15,14 @@ const Dashboard: React.FC = () => {
   const userRole = getUserRole();
   const [headerCollapsed, toggleHeader] = useHeaderCollapsed();
   const isClient = userRole === "ROLE_CLIENT" || userRole === "CLIENT";
+  // Só o CUSTOMER pede comida pelo Zapi-Food — admin/garçom/client/courier/organizer não.
+  const isCustomerRole = userRole === "ROLE_CUSTOMER" || userRole === "CUSTOMER";
 
   // Estado de abertura da loja, compartilhado entre o switch do breadcrumb e o
   // badge do MyStoreCard — assim os dois sincronizam ao vivo, sem refresh.
   const [storeOpen, setStoreOpen] = useState<boolean | null>(null);
   const [togglingStore, setTogglingStore] = useState(false);
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   useEffect(() => {
     if (!isClient) return;
@@ -98,6 +102,37 @@ const Dashboard: React.FC = () => {
             </h1>
           </div>
 
+          {/* Atalho pra pedir comida (Zapi-Food) — SÓ pro CUSTOMER (quem pede comida) */}
+          {isCustomerRole && (
+          <button
+            onClick={() => setPickerOpen(true)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 14,
+              width: "100%",
+              padding: "16px 18px",
+              marginTop: 8,
+              borderRadius: 14,
+              border: "none",
+              cursor: "pointer",
+              background: "linear-gradient(90deg, #f59e0b, #fbbf24)",
+              color: "#fff",
+              textAlign: "left",
+              boxShadow: "0 6px 16px rgba(245, 158, 11, 0.3)",
+            }}
+          >
+            <span style={{ fontSize: 28, lineHeight: 1 }}>🍽️</span>
+            <span style={{ flex: 1 }}>
+              <span style={{ display: "block", fontSize: "1.05rem", fontWeight: 700 }}>Fazer um pedido</span>
+              <span style={{ display: "block", fontSize: "0.85rem", opacity: 0.95 }}>
+                Peça comida das lojas perto de você
+              </span>
+            </span>
+            <span style={{ fontSize: 22, fontWeight: 700 }}>›</span>
+          </button>
+          )}
+
           {isClient && (
             <div style={{ marginTop: 8 }}>
               <h2
@@ -118,6 +153,8 @@ const Dashboard: React.FC = () => {
           )}
         </div>
       </div>
+
+      {pickerOpen && <StorePickerModal onClose={() => setPickerOpen(false)} />}
     </div>
   );
 };

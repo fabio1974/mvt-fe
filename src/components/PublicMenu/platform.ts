@@ -33,3 +33,42 @@ export function storeUrlFor(platform: Platform): string | null {
   if (platform === "android") return PLAY_STORE_URL;
   return null;
 }
+
+/**
+ * Custom scheme registrado no app (Info.plist CFBundleURLSchemes / Android). Hoje é
+ * o do dev client (= bundle id); o app deve rotear `<scheme>://handoff?code=...` pra
+ * fechar o auto-login (F4 nativo). Universal Links da MESMA origem não disparam no
+ * Safari, por isso usamos o scheme pra "tentar abrir o app".
+ */
+export const APP_SCHEME = "com.mvt.mobile.zapi10";
+
+/** Deep link do app pro handoff; carrega o código (auto-login zero-toque no instalado). */
+export function appHandoffUrl(handoffCode: string | null): string {
+  return handoffCode
+    ? `${APP_SCHEME}://handoff?code=${encodeURIComponent("zapihandoff_" + handoffCode)}`
+    : `${APP_SCHEME}://`;
+}
+
+/**
+ * "Tenta abrir o app, senão vai pra loja." Navega pro deep link do app; se em ~1,4s
+ * a página ainda estiver visível (o app não assumiu o foco = não instalado/não rotea),
+ * cai pro link da loja. Pattern app-link-then-store.
+ */
+export function openAppOrStore(appUrl: string, storeUrl: string): void {
+  if (typeof window === "undefined") return;
+  let bailed = false;
+  const onHidden = () => { bailed = true; };
+  const onVis = () => { if (document.hidden) onHidden(); };
+  document.addEventListener("visibilitychange", onVis);
+  window.addEventListener("pagehide", onHidden);
+
+  window.location.href = appUrl; // tenta o app
+
+  window.setTimeout(() => {
+    document.removeEventListener("visibilitychange", onVis);
+    window.removeEventListener("pagehide", onHidden);
+    if (!bailed && !document.hidden) {
+      window.location.href = storeUrl; // app não abriu → loja
+    }
+  }, 1400);
+}

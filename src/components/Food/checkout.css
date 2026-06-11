@@ -1,0 +1,29 @@
+/* Barra de progresso do CheckoutWizard + spinner inline. */
+.fco-progress {
+  height: 3px;
+  background: #f1f3f5;
+  flex-shrink: 0;
+}
+.fco-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+  transition: width 0.3s ease;
+}
+.pm-spin-inline {
+  animation: fco-spin 0.9s linear infinite;
+}
+@keyframes fco-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Em telas largas, centraliza a folha como um modal (não full-bleed). */
+@media (min-width: 600px) {
+  .fco-sheet-desktop {
+    height: auto !important;
+    max-height: 92vh !important;
+    border-radius: 16px;
+    margin: 16px;
+  }
+}

@@ -1,4 +1,8 @@
 import { api } from "../../services/api";
+import type { FoodProduct } from "../Food/foodTypes";
+import { productPrice } from "../Food/foodTypes";
+
+export { productPrice };
 
 /**
  * Cliente da página pública de cardápio (zapi10.com.br/c/<slug>).
@@ -25,16 +29,14 @@ export interface PublicStore {
   avgPreparationMinutes?: number | null;
   todayHours?: string | null;
   address?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  /** Só no listing por proximidade (GET /stores?lat&lng). */
+  distanceKm?: number | null;
 }
 
-export interface PublicProduct {
-  id: number;
-  name: string;
-  description?: string | null;
-  price: number;
-  deliveryPrice?: number | null;
-  imageUrl?: string | null;
-}
+/** O produto público é o mesmo FoodProduct (inclui isAddon/available/categoria). */
+export type PublicProduct = FoodProduct;
 
 export interface PublicCategory {
   id: number;
@@ -48,11 +50,6 @@ export interface PublicMenu {
   store: PublicStore;
   categories: PublicCategory[];
   uncategorized?: PublicProduct[];
-}
-
-/** Preço efetivo do produto na vitrine (delivery tem prioridade, como no app). */
-export function productPrice(p: PublicProduct): number {
-  return p.deliveryPrice ?? p.price;
 }
 
 export async function fetchMenuBySlug(slug: string): Promise<PublicMenu> {

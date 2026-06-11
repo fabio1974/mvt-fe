@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../services/api";
 import { persistAuthSession, type AuthUser } from "../../utils/auth";
+import { maskCPF, validateCPF } from "../../utils/masks";
 import GoogleOnboardingWizard from "./GoogleOnboardingWizard";
 
 const GIS_SRC = "https://accounts.google.com/gsi/client";
@@ -60,10 +61,14 @@ export default function GoogleSignInButton({
   role,
   mode = "login",
   showDivider = true,
+  onAuthenticated,
 }: {
   role?: string;
   mode?: "login" | "signup";
   showDivider?: boolean;
+  /** Quando passado, é chamado no fim da auth EM VEZ de redirecionar/recarregar
+   *  (usado no checkout, pra não perder o estado do wizard/carrinho). */
+  onAuthenticated?: () => void;
 }) {
   const btnRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -111,6 +116,9 @@ export default function GoogleSignInButton({
     window.location.reload();
   };
 
+  // Fim da auth: no checkout avança o wizard (callback); fora dele, vai pra home.
+  const finish = () => (onAuthenticated ? onAuthenticated() : goHome());
+
   const handleCredential = async (resp: { credential?: string }) => {
     setError("");
     const idToken = resp?.credential;
@@ -133,7 +141,7 @@ export default function GoogleSignInButton({
         setNeedsDocument(true); // abre modal de CPF
         return;
       }
-      goHome();
+      finish();
     } catch (e) {
       setError(extractMsg(e) || "Falha no login com Google.");
     }
@@ -141,11 +149,16 @@ export default function GoogleSignInButton({
 
   const submitCpf = async () => {
     setError("");
+    const cleanCpf = cpf.replace(/\D/g, "");
+    if (!validateCPF(cleanCpf)) {
+      setError("CPF inválido. Confira os dígitos e tente novamente.");
+      return;
+    }
     setSavingCpf(true);
     try {
-      const { data } = await api.patch<{ token?: string }>("/users/me/document", { document: cpf });
+      const { data } = await api.patch<{ token?: string }>("/users/me/document", { document: cleanCpf });
       if (data.token) localStorage.setItem("authToken", data.token);
-      goHome();
+      finish();
     } catch (e) {
       setError(extractMsg(e) || "CPF inválido. Confira e tente novamente.");
     } finally {
@@ -181,9 +194,10 @@ export default function GoogleSignInButton({
             <input
               autoFocus
               inputMode="numeric"
-              placeholder="Digite seu CPF"
+              placeholder="000.000.000-00"
               value={cpf}
-              onChange={(e) => setCpf(e.target.value)}
+              onChange={(e) => setCpf(maskCPF(e.target.value))}
+              maxLength={14}
               onKeyDown={(e) => e.key === "Enter" && !savingCpf && submitCpf()}
               style={cpfInput}
             />
@@ -200,7 +214,7 @@ export default function GoogleSignInButton({
           email={wizard.email}
           name={wizard.name}
           initialRole={roleRef.current}
-          onComplete={goHome}
+          onComplete={finish}
           onClose={() => setWizard(null)}
         />
       )}

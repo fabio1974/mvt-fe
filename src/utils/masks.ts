@@ -104,6 +104,29 @@ export const maskCPF = (value: string): string => {
 };
 
 /**
+ * Valida CPF (11 dígitos + dígitos verificadores). Aceita com ou sem máscara.
+ */
+export const validateCPF = (cpf: string): boolean => {
+  const cleaned = unmaskValue(cpf);
+  if (cleaned.length !== 11) return false;
+  if (/^(\d)\1{10}$/.test(cleaned)) return false; // todos os dígitos iguais
+
+  let sum = 0;
+  for (let i = 0; i < 9; i++) sum += parseInt(cleaned.charAt(i)) * (10 - i);
+  let digit = 11 - (sum % 11);
+  if (digit >= 10) digit = 0;
+  if (digit !== parseInt(cleaned.charAt(9))) return false;
+
+  sum = 0;
+  for (let i = 0; i < 10; i++) sum += parseInt(cleaned.charAt(i)) * (11 - i);
+  digit = 11 - (sum % 11);
+  if (digit >= 10) digit = 0;
+  if (digit !== parseInt(cleaned.charAt(10))) return false;
+
+  return true;
+};
+
+/**
  * Aplica máscara de telefone brasileiro
  * Formato: (85) 99757-2919 ou (85) 3257-2919
  */

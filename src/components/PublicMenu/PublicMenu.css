@@ -462,6 +462,7 @@
   justify-content: center;
   gap: 10px;
   width: 100%;
+  box-sizing: border-box;
   padding: 15px;
   border-radius: 14px;
   background: #111827;
@@ -527,4 +528,13 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Área clicável do produto (abre o detalhe com adicionais). */
+.pm-prod-head {
+  cursor: pointer;
+  outline: none;
+}
+.pm-card-img {
+  cursor: pointer;
 }
