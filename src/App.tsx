@@ -70,6 +70,7 @@ const TablesCRUDPage = lazy(() => import("./components/TableOrders/TablesCRUDPag
 const CashReportPage = lazy(() => import("./components/Reports/CashReportPage"));
 const CashRegisterPage = lazy(() => import("./components/CashRegister/CashRegisterPage"));
 const RepassesPage = lazy(() => import("./components/Repasses/RepassesPage"));
+const PlatformEarningsPage = lazy(() => import("./components/Reports/PlatformEarningsPage"));
 const SupportPage = lazy(() => import("./components/Support/SupportPage"));
 const DownloadsPage = lazy(() => import("./components/Downloads/DownloadsPage"));
 
@@ -276,6 +277,7 @@ function App() {
                 <Route path="/relatorios/caixa" element={<CashReportPage />} />
                 <Route path="/caixa" element={<CashRegisterPage />} />
                 <Route path="/repasses" element={<RepassesPage />} />
+                <Route path="/ganhos" element={<PlatformEarningsPage />} />
                 <Route path="/suporte" element={<SupportPage />} />
                 <Route path="/downloads" element={<DownloadsPage />} />
                 <Route path="/pagamentos" element={<PaymentCRUDPage />} />

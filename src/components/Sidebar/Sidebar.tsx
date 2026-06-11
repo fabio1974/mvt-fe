@@ -207,6 +207,12 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
     roles: ["ROLE_ADMIN"],
   },
   {
+    label: "Ganhos",
+    icon: <FiTrendingUp size={22} color="#10b981" />,
+    path: "/ganhos",
+    roles: ["ROLE_ADMIN"],
+  },
+  {
     label: "Zonas Especiais",
     icon: <FiMapPin size={22} color="#ef4444" />,
     path: "/zonas-especiais",
