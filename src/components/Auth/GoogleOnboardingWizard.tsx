@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { api } from "../../services/api";
 import { persistAuthSession, type AuthUser } from "../../utils/auth";
 import { USER_TYPE_OPTIONS } from "../../config/userTypes";
+import { maskCPF, maskPhone, validateCPF } from "../../utils/masks";
 
 /**
  * Wizard de onboarding pós "Continuar com Google" para usuário NOVO.
@@ -108,8 +109,8 @@ export default function GoogleOnboardingWizard({ idToken, name, initialRole, onC
   // ou o CPF duplicado, o BE não cria nada e ninguém loga — sem conta órfã.
   const createAccountAndSetCpf = async () => {
     const cleanCpf = cpf.replace(/\D/g, "");
-    if (cleanCpf.length !== 11) {
-      throw new Error("Digite um CPF válido (11 dígitos).");
+    if (!validateCPF(cleanCpf)) {
+      throw new Error("CPF inválido. Confira os dígitos e tente novamente.");
     }
     const cleanPhone = phone.replace(/\D/g, "");
     if (cleanPhone.length < 10 || cleanPhone.length > 11) {
@@ -216,9 +217,10 @@ export default function GoogleOnboardingWizard({ idToken, name, initialRole, onC
             <input
               autoFocus
               inputMode="numeric"
-              placeholder="Digite seu CPF"
+              placeholder="000.000.000-00"
               value={cpf}
-              onChange={(e) => setCpf(e.target.value)}
+              onChange={(e) => setCpf(maskCPF(e.target.value))}
+              maxLength={14}
               style={styles.input}
             />
             <label style={styles.fieldLabel}>Telefone (com DDD)</label>
@@ -226,7 +228,8 @@ export default function GoogleOnboardingWizard({ idToken, name, initialRole, onC
               inputMode="numeric"
               placeholder="(88) 98108-7485"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => setPhone(maskPhone(e.target.value))}
+              maxLength={15}
               onKeyDown={(e) => e.key === "Enter" && !loading && handleNext()}
               style={styles.input}
             />
