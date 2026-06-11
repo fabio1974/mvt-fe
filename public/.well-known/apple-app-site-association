@@ -1,0 +1,10 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appID": "ZSX7459HCR.com.mvt.mobile.zapi10",
+        "paths": ["/c/*", "/track/*"]
+      }
+    ]
+  }
+}

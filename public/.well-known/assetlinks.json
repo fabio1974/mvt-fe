@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.mvt.mobile.zapi10",
+      "sha256_cert_fingerprints": [
+        "EB:87:E2:C1:B9:6E:75:0F:1B:9A:7C:41:D7:BD:DE:20:ED:29:C1:C9:A5:8E:13:92:0E:D4:8E:E7:1B:C5:5F:45"
+      ]
+    }
+  }
+]
