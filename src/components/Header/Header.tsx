@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiSettings, FiChevronUp, FiMessageSquare } from "react-icons/fi";
-import { getUserName, getUserRole, isAdmin } from "../../utils/auth";
+import { getUserName, getUserRole, getAvatarUrl, isAdmin } from "../../utils/auth";
 import { useDarkMode } from "../../hooks/useDarkMode";
 import { supportService } from "../../services/supportService";
 import LOGO_PATH from "../../config/logo";
@@ -100,6 +100,7 @@ export default function Header({
     propIsLoggedIn ?? Boolean(localStorage.getItem("authToken"));
   const userName = getUserName();
   const userRole = getUserRole();
+  const avatarUrl = getAvatarUrl();
   const { isDark, toggle: toggleDark } = useDarkMode(isLoggedIn);
 
   // Determinar classes do header baseado no sidebar
@@ -288,9 +289,24 @@ export default function Header({
                 e.currentTarget.style.boxShadow = "0 2px 8px rgba(59, 130, 246, 0.3)";
               }}
             >
-              {/* Ícone baseado no tipo de usuário */}
+              {/* Foto de perfil (avatar) quando houver — círculo pequeno estilo Google;
+                  senão cai no ícone baseado no tipo de usuário */}
               <div style={{ display: "flex", alignItems: "center" }}>
-                {getUserIcon(userRole)}
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt={userName || "Avatar"}
+                    style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: "50%",
+                      objectFit: "cover",
+                      border: "2px solid rgba(255, 255, 255, 0.9)",
+                    }}
+                  />
+                ) : (
+                  getUserIcon(userRole)
+                )}
               </div>
               
               {/* Nome e tipo do usuário */}

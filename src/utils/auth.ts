@@ -28,6 +28,7 @@ export interface AuthUser {
   latitude?: number;
   longitude?: number;
   address?: string;
+  avatarUrl?: string;
 }
 
 // Persiste o token + dados do usuário no localStorage (mesmas chaves do login por senha).
@@ -43,6 +44,8 @@ export function persistAuthSession(token: string, user?: AuthUser) {
   if (user.latitude !== undefined) localStorage.setItem("latitude", String(user.latitude));
   if (user.longitude !== undefined) localStorage.setItem("longitude", String(user.longitude));
   if (user.address) localStorage.setItem("userAddress", user.address);
+  // avatarUrl não vai pro localStorage: getAvatarUrl() lê direto do JWT (token-only),
+  // evitando estado stale entre usuários no mesmo navegador.
 }
 
 // Função para obter o role do usuário logado
@@ -108,6 +111,17 @@ export function getUserName(): string | null {
   
   const decoded = decodeJWT(token);
   return decoded?.name || null;
+}
+
+// Foto de perfil (avatar) do usuário — lê do claim "avatarUrl" do JWT (origem Google).
+// Token-only de propósito: o JWT sempre traz a claim quando a conta tem foto, e é
+// trocado a cada login. Ler só do token evita vazar a foto de um usuário anterior
+// pro próximo (login por senha sem foto não sobrescreveria um localStorage stale).
+export function getAvatarUrl(): string | null {
+  const token = localStorage.getItem('authToken');
+  if (!token) return null;
+  const decoded = decodeJWT(token);
+  return decoded?.avatarUrl || null;
 }
 
 // Função para obter o ID do usuário (UUID)
