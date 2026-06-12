@@ -8,3 +8,17 @@
 .zapi-brand-i {
   color: #fb7600; /* mesmo laranja do "i" no logo */
 }
+
+/* Fundo escuro: degradê branco→azul sutil nas letras (igual ao logo escuro).
+   O "i" continua laranja chapado. */
+.zapi-brand-ondark {
+  background: linear-gradient(180deg, #ffffff 38%, #bad2f2);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+.zapi-brand-ondark .zapi-brand-i {
+  -webkit-text-fill-color: #fb7600;
+  color: #fb7600;
+}

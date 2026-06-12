@@ -2,21 +2,25 @@ import type { CSSProperties } from "react";
 import "./BrandName.css";
 
 interface BrandNameProps {
+  /**
+   * true quando o nome fica sobre fundo ESCURO: aplica o degradê branco→azul
+   * sutil (igual ao logo escuro). Sem isso (fundo claro), as letras herdam a cor
+   * do texto (navy/escuro). O "i" laranja é constante nos dois casos.
+   */
+  onDark?: boolean;
   className?: string;
   style?: CSSProperties;
 }
 
 /**
- * Nome "Zapi10" para TEXTO CORRIDO (dentro de frases/títulos), sem virar imagem.
- * Segue a paleta do logo: o "i" em laranja (#FB7600, a assinatura da marca) + negrito.
- * As demais letras herdam a cor do texto ao redor — então funciona igual em fundo
- * claro ou escuro, sem precisar saber o contexto.
- *
- * Para o LOGOTIPO (header, rodapé, topo de página), use <BrandMark/> em vez deste.
+ * Nome "Zapi10" para TEXTO CORRIDO (frases/títulos), sem virar imagem.
+ * Segue a paleta do logo: "i" laranja (#FB7600) + (em fundo escuro) degradê
+ * branco→azul nas demais letras. Para o LOGOTIPO use <BrandMark/>.
  */
-export default function BrandName({ className, style }: BrandNameProps) {
+export default function BrandName({ onDark = false, className, style }: BrandNameProps) {
+  const cls = `zapi-brand${onDark ? " zapi-brand-ondark" : ""}${className ? " " + className : ""}`;
   return (
-    <span className={`zapi-brand${className ? " " + className : ""}`} style={style}>
+    <span className={cls} style={style}>
       Zap<span className="zapi-brand-i">i</span>10
     </span>
   );

@@ -6,6 +6,7 @@ import Restaurants from "./Restaurants";
 import Franchise from "./Franchise";
 import CTA from "./CTA";
 import LandingFooter from "./LandingFooter";
+import PromoRibbon from "../Promotions/PromoRibbon";
 
 const LandingPage = () => {
   return (
@@ -33,6 +34,7 @@ const LandingPage = () => {
           }
         `}
       </style>
+      <PromoRibbon />
       <div
         className="zapi10-landing"
         style={{

@@ -435,7 +435,7 @@ const Hero = () => {
 
           <p style={styles.paragraph}>
             Conectamos você ao destino com a velocidade e segurança que só o{" "}
-            <BrandName /> oferece. Entregas rápidas via moto em toda a cidade.
+            <BrandName onDark /> oferece. Entregas rápidas via moto em toda a cidade.
           </p>
 
           <div style={styles.buttonContainer}>

@@ -275,7 +275,7 @@ const Impact = () => {
               fontSize: isMobile ? "0.875rem" : "1rem",
             }}
           >
-            Enquanto grandes apps ficam com 25-30%, no <BrandName /> o trabalhador
+            Enquanto grandes apps ficam com 25-30%, no <BrandName onDark /> o trabalhador
             fica com a maior parte! 🚀
           </p>
         </div>

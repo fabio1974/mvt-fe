@@ -160,7 +160,7 @@ const ParceiroCliente: React.FC = () => {
   return (
     <div style={styles.container}>
       <div style={styles.header}>
-        <h1 style={styles.title}>Bem-vindo ao <BrandName /></h1>
+        <h1 style={styles.title}>Bem-vindo ao <BrandName onDark /></h1>
         <p style={styles.subtitle}>
           Entregas rápidas e transporte seguro de passageiros.
           Escolha como você quer usar nossa plataforma.

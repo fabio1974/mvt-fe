@@ -77,7 +77,7 @@ const Benefits = () => {
             }}
           >
             Por que escolher o{" "}
-            <BrandName />
+            <BrandName onDark />
             ?
           </h2>
           <p

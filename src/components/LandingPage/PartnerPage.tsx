@@ -158,7 +158,7 @@ const PartnerPage: React.FC = () => {
   return (
     <div style={styles.container}>
       <div style={styles.header}>
-        <h1 style={styles.title}>Seja um Parceiro <BrandName /></h1>
+        <h1 style={styles.title}>Seja um Parceiro <BrandName onDark /></h1>
         <p style={styles.subtitle}>
           Junte-se a nós e faça parte da revolução das entregas justas e eficientes. 
           Escolha como você quer crescer conosco.

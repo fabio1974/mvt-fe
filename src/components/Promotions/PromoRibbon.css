@@ -1,0 +1,76 @@
+/* Faixa de promoção a 45° no canto superior direito (sobre o header da landing). */
+.promo-ribbon-wrap {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 160px;
+  height: 160px;
+  overflow: hidden;
+  z-index: 1000; /* acima do header (z 20) */
+  pointer-events: none; /* só a faixa é clicável */
+}
+
+.promo-ribbon {
+  pointer-events: auto;
+  position: absolute;
+  top: 36px;
+  right: -54px;
+  width: 230px;
+  transform: rotate(45deg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+  padding: 9px 0;
+  text-align: center;
+  text-decoration: none;
+  background: linear-gradient(135deg, #fb7600, #f59e0b);
+  color: #0f172a; /* navy sobre laranja — alto contraste */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  border-top: 1px solid rgba(255, 255, 255, 0.45);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.18);
+  transition: filter 0.2s ease;
+}
+.promo-ribbon:hover {
+  filter: brightness(1.06);
+}
+
+.promo-ribbon-l1 {
+  font-weight: 900;
+  font-size: 1.05rem;
+  letter-spacing: 0.01em;
+}
+.promo-ribbon-l2 {
+  font-weight: 800;
+  font-size: 0.72rem;
+  margin-top: 3px;
+  opacity: 0.85;
+}
+
+/* Abre espaço à direita do header só quando a faixa está na tela (landing),
+   pra ela não cobrir o botão "Entrar". */
+body.has-promo-ribbon .modern-actions {
+  margin-right: 132px;
+}
+
+@media (max-width: 600px) {
+  .promo-ribbon-wrap {
+    width: 124px;
+    height: 124px;
+  }
+  body.has-promo-ribbon .modern-actions {
+    margin-right: 96px;
+  }
+  .promo-ribbon {
+    width: 188px;
+    top: 26px;
+    right: -50px;
+    padding: 6px 0;
+  }
+  .promo-ribbon-l1 {
+    font-size: 0.9rem;
+  }
+  .promo-ribbon-l2 {
+    font-size: 0.62rem;
+  }
+}

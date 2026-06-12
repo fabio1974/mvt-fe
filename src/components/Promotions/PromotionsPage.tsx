@@ -61,7 +61,7 @@ export default function PromotionsPage() {
       <section className="pp-hero">
         <span className="pp-hero-kicker">Promoções</span>
         <h1 className="pp-hero-title">
-          Promoções <span className="pp-accent-cyan">Zapi10</span>
+          Promoções <BrandName onDark />
         </h1>
         <p className="pp-hero-sub">
           {activeCount > 0
@@ -91,7 +91,7 @@ export default function PromotionsPage() {
           As regras de cada promoção valem enquanto a campanha estiver ativa. Sujeito a
           disponibilidade na sua região.
         </p>
-        <p className="pp-foot-copy">© {new Date().getFullYear()} Moveltrack Sistemas · <BrandName /></p>
+        <p className="pp-foot-copy">© {new Date().getFullYear()} Moveltrack Sistemas · <BrandName onDark /></p>
       </footer>
     </div>
   );

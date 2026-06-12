@@ -315,7 +315,7 @@ function TrackingPage() {
 
       {/* Footer */}
       <div className="tracking-footer">
-        <span>Rastreamento <BrandName /> • Atualizado a cada 10s</span>
+        <span>Rastreamento <BrandName onDark /> • Atualizado a cada 10s</span>
       </div>
     </div>
   );

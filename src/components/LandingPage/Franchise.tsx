@@ -53,7 +53,7 @@ const Franchise = () => {
             lineHeight: 1.2,
             marginBottom: "1rem",
           }}>
-            Seja um <span style={{ background: "linear-gradient(90deg, #8b5cf6, #f59e0b)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Gerente Franqueado</span> <BrandName />
+            Seja um <span style={{ background: "linear-gradient(90deg, #8b5cf6, #f59e0b)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Gerente Franqueado</span> <BrandName onDark />
           </h2>
 
           <p style={{
