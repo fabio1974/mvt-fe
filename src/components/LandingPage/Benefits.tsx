@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "../ui/card";
 import { Zap, Shield, MapPin, Clock, Building2 } from "lucide-react";
+import BrandName from "../Brand/BrandName";
 
 const benefits = [
   {
@@ -76,17 +77,7 @@ const Benefits = () => {
             }}
           >
             Por que escolher o{" "}
-            <span
-              style={{
-                background:
-                  "linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(32 95% 55%) 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}
-            >
-              Zapi10
-            </span>
+            <BrandName />
             ?
           </h2>
           <p

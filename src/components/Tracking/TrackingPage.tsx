@@ -1,6 +1,8 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { GoogleMap, useJsApiLoader, Marker, Polyline } from "@react-google-maps/api";
+import BrandMark from "../Brand/BrandMark";
+import BrandName from "../Brand/BrandName";
 import "./TrackingPage.css";
 
 const API_URL = (import.meta.env.VITE_API_URL || "https://mvt-events-api.onrender.com/api").replace(/\/api$/, "/api");
@@ -148,7 +150,7 @@ function TrackingPage() {
         <div className="tracking-error-icon">📦</div>
         <h2>Rastreamento não encontrado</h2>
         <p>{error || "Este link de rastreamento é inválido ou expirou."}</p>
-        <a href="/" className="tracking-home-link">Ir para o Zapi10</a>
+        <a href="/" className="tracking-home-link">Ir para o <BrandName /></a>
       </div>
     );
   }
@@ -168,7 +170,7 @@ function TrackingPage() {
     <div className="tracking-page">
       {/* Header */}
       <div className="tracking-header">
-        <div className="tracking-logo">🚀 Zapi10</div>
+        <div className="tracking-logo"><BrandMark onDark height={20} /></div>
         <div className="tracking-delivery-id">Corrida #{String(data.deliveryId).padStart(6, "0")}</div>
       </div>
 
@@ -313,7 +315,7 @@ function TrackingPage() {
 
       {/* Footer */}
       <div className="tracking-footer">
-        <span>Rastreamento Zapi10 • Atualizado a cada 10s</span>
+        <span>Rastreamento <BrandName /> • Atualizado a cada 10s</span>
       </div>
     </div>
   );

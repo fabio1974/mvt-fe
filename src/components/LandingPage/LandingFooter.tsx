@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import LOGO_PATH from "../../config/logo";
+import BrandMark from "../Brand/BrandMark";
 
 export default function LandingFooter() {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
@@ -47,50 +47,8 @@ export default function LandingFooter() {
               gap: "1rem",
             }}
           >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "0.75rem",
-                marginBottom: "1rem",
-              }}
-            >
-              <div
-                style={{
-                  background: "transparent",
-                  padding: "0",
-                  borderRadius: "0",
-                  border: "none",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  overflow: "hidden",
-                  width: "2.5rem",
-                  height: "2.5rem",
-                }}
-              >
-                <img
-                  src={LOGO_PATH}
-                  alt="Zapi10"
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "contain",
-                  }}
-                />
-              </div>
-              <span
-                style={{
-                  fontSize: "1.5rem",
-                  fontWeight: 700,
-                  background: "linear-gradient(90deg, #3b82f6, #f59e0b)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                }}
-              >
-                Zapi10
-              </span>
+            <div style={{ marginBottom: "1rem" }}>
+              <BrandMark onDark height={40} />
             </div>
             <p
               style={{
@@ -128,6 +86,22 @@ export default function LandingFooter() {
                 gap: "0.75rem",
               }}
             >
+              <li>
+                <a
+                  href="/promocoes"
+                  style={{
+                    color: "#cbd5e1",
+                    textDecoration: "none",
+                    fontSize: "0.95rem",
+                    fontWeight: 600,
+                    transition: "color 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = "#60a5fa")}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = "#cbd5e1")}
+                >
+                  Promoções
+                </a>
+              </li>
               {["Recursos", "Preços", "Casos de Uso", "Integrações"].map(
                 (item) => (
                   <li key={item}>

@@ -1,0 +1,10 @@
+/* Nome "Zapi10" em texto corrido — segue a paleta do logo (o "i" laranja). */
+.zapi-brand {
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  color: inherit; /* "Zap" e "10" acompanham a cor do texto (claro/escuro) */
+}
+.zapi-brand-i {
+  color: #fb7600; /* mesmo laranja do "i" no logo */
+}

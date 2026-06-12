@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Users, Heart, Building, TrendingUp } from "lucide-react";
+import BrandName from "../Brand/BrandName";
 
 const impactStats = [
   {
@@ -274,8 +275,8 @@ const Impact = () => {
               fontSize: isMobile ? "0.875rem" : "1rem",
             }}
           >
-            Enquanto grandes apps ficam com 25-30%, no Zapi10 o trabalhador fica
-            com a maior parte! 🚀
+            Enquanto grandes apps ficam com 25-30%, no <BrandName /> o trabalhador
+            fica com a maior parte! 🚀
           </p>
         </div>
       </div>

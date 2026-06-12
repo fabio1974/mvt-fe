@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiCheck, FiArrowLeft } from "react-icons/fi";
+import BrandName from "../Brand/BrandName";
 
 const PartnerPage: React.FC = () => {
   const navigate = useNavigate();
@@ -157,7 +158,7 @@ const PartnerPage: React.FC = () => {
   return (
     <div style={styles.container}>
       <div style={styles.header}>
-        <h1 style={styles.title}>Seja um Parceiro Zapi10</h1>
+        <h1 style={styles.title}>Seja um Parceiro <BrandName /></h1>
         <p style={styles.subtitle}>
           Junte-se a nós e faça parte da revolução das entregas justas e eficientes. 
           Escolha como você quer crescer conosco.
@@ -174,7 +175,7 @@ const PartnerPage: React.FC = () => {
           onMouseEnter={() => setHoveredCard("manager")}
           onMouseLeave={() => setHoveredCard(null)}
         >
-          <h2 style={styles.cardTitle}>Gerente Zapi10</h2>
+          <h2 style={styles.cardTitle}>Gerente <BrandName /></h2>
           <p style={styles.cardSubtitle}>
             Represente uma associação de motoboys e ganhe comissões recorrentes
             gerenciando sua própria equipe de entregadores.

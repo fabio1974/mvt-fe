@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { api } from "../../services/api";
+import BrandName from "../Brand/BrandName";
 import { persistAuthSession, type AuthUser } from "../../utils/auth";
 import { USER_TYPE_OPTIONS } from "../../config/userTypes";
 import { maskCPF, maskPhone, validateCPF } from "../../utils/masks";
@@ -189,7 +190,7 @@ export default function GoogleOnboardingWizard({ idToken, name, initialRole, onC
         {current === "role" && (
           <>
             <h2 style={styles.title}>Bem-vindo{name ? `, ${name.split(" ")[0]}` : ""}! 👋</h2>
-            <p style={styles.subtitle}>Como você vai usar o Zapi10?</p>
+            <p style={styles.subtitle}>Como você vai usar o <BrandName />?</p>
             <div style={styles.optionsList}>
               {USER_TYPE_OPTIONS.map((opt) => (
                 <button
@@ -357,7 +358,9 @@ function DoneStep({ onComplete }: { onComplete: () => void }) {
       <h2 style={styles.title}>{enabled ? "Tudo pronto! 🎉" : "Cadastro criado!"}</h2>
       <p style={styles.subtitle}>
         {enabled
-          ? "Sua conta está ativa. Aproveite o Zapi10!"
+          ? (
+            <>Sua conta está ativa. Aproveite o <BrandName />!</>
+          )
           : "Sua conta foi criada. Você ainda pode completar os itens abaixo no app:"}
       </p>
       {!enabled && pending.length > 0 && (

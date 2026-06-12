@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import BrandName from "../Brand/BrandName";
 import { Zap, Clock, MapPin, X } from "lucide-react";
 import heroImage from "../../assets/hero-delivery.jpg";
 
@@ -433,8 +434,8 @@ const Hero = () => {
           </h1>
 
           <p style={styles.paragraph}>
-            Conectamos você ao destino com a velocidade e segurança que só o
-            Zapi10 oferece. Entregas rápidas via moto em toda a cidade.
+            Conectamos você ao destino com a velocidade e segurança que só o{" "}
+            <BrandName /> oferece. Entregas rápidas via moto em toda a cidade.
           </p>
 
           <div style={styles.buttonContainer}>
@@ -494,7 +495,11 @@ const Hero = () => {
           <div style={modalStyles.modal} onClick={(e) => e.stopPropagation()}>
             <div style={modalStyles.header}>
               <h2 style={modalStyles.title}>
-                {wizardStep === "initial" ? "Bem-vindo ao Zapi10!" : "Qual é o seu perfil?"}
+                {wizardStep === "initial" ? (
+                  <>Bem-vindo ao <BrandName />!</>
+                ) : (
+                  "Qual é o seu perfil?"
+                )}
               </h2>
               <button
                 style={modalStyles.closeButton}

@@ -25,6 +25,10 @@ const TrackingPage = lazy(() => import("./components/Tracking/TrackingPage"));
 // Renderiza fora do layout autenticado, distribuída como link de WhatsApp.
 const PublicMenuPage = lazy(() => import("./components/PublicMenu/PublicMenuPage"));
 
+// Página pública de promoções (/promocoes) — slides de cada campanha pro download
+// do app. Renderiza fora do layout autenticado, distribuída como link de propaganda.
+const PromotionsPage = lazy(() => import("./components/Promotions/PromotionsPage"));
+
 // Lazy load das páginas para code splitting
 const LandingPage = lazy(() => import("./components/LandingPage/LandingPage"));
 const PartnerPage = lazy(() => import("./components/LandingPage/PartnerPage"));
@@ -204,6 +208,17 @@ function App() {
       <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/c/:slug" element={<PublicMenuPage />} />
+        </Routes>
+      </Suspense>
+    );
+  }
+
+  // Promoções — página pública renderizada fora do layout principal (sem sidebar/header).
+  if (location.pathname.startsWith("/promocoes")) {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path="/promocoes" element={<PromotionsPage />} />
         </Routes>
       </Suspense>
     );

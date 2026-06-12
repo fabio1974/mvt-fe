@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import BrandName from "../Brand/BrandName";
 import { FiCheck, FiArrowLeft } from "react-icons/fi";
 
 const ParceiroCliente: React.FC = () => {
@@ -159,7 +160,7 @@ const ParceiroCliente: React.FC = () => {
   return (
     <div style={styles.container}>
       <div style={styles.header}>
-        <h1 style={styles.title}>Bem-vindo ao Zapi10</h1>
+        <h1 style={styles.title}>Bem-vindo ao <BrandName /></h1>
         <p style={styles.subtitle}>
           Entregas rápidas e transporte seguro de passageiros.
           Escolha como você quer usar nossa plataforma.
@@ -220,7 +221,7 @@ const ParceiroCliente: React.FC = () => {
         >
           <h2 style={styles.cardTitle}>Estabelecimento Comercial</h2>
           <p style={styles.cardSubtitle}>
-            Tenha um gerente exclusivo Zapi10 dedicado ao seu negócio para 
+            Tenha um gerente exclusivo <BrandName /> dedicado ao seu negócio para 
             atendimento personalizado, além de tecnologia de ponta com 
             WhatsApp e IA para facilitar suas entregas.
           </p>

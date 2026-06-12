@@ -5,6 +5,7 @@ import { getUserName, getUserRole, isAdmin } from "../../utils/auth";
 import { useDarkMode } from "../../hooks/useDarkMode";
 import { supportService } from "../../services/supportService";
 import LOGO_PATH from "../../config/logo";
+import BrandMark from "../Brand/BrandMark";
 import "./Header.css";
 
 /**
@@ -232,7 +233,7 @@ export default function Header({
             className="brand-text-block"
             style={{ alignItems: "flex-start" }}
           >
-            <span className="brand-title">Zapi10</span>
+            <BrandMark onDark={!isLoggedIn} height={22} style={{ marginBottom: 4 }} />
             <span className="brand-sub">Seu Aplicativo de Comida, Corridas e Entregas</span>
           </div>
         </a>

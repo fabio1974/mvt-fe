@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "../ui/button";
 import { ArrowRight } from "lucide-react";
+import BrandName from "../Brand/BrandName";
 
 const Franchise = () => {
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
@@ -52,7 +53,7 @@ const Franchise = () => {
             lineHeight: 1.2,
             marginBottom: "1rem",
           }}>
-            Seja um <span style={{ background: "linear-gradient(90deg, #8b5cf6, #f59e0b)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Gerente Franqueado</span> Zapi10
+            Seja um <span style={{ background: "linear-gradient(90deg, #8b5cf6, #f59e0b)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>Gerente Franqueado</span> <BrandName />
           </h2>
 
           <p style={{

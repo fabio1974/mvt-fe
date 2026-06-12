@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Check, Link2, Smartphone, X } from "lucide-react";
+import BrandName from "../Brand/BrandName";
 import type { CartLine } from "./useCart";
 import { lineTotal } from "../Food/foodTypes";
 import {
@@ -83,17 +84,17 @@ export default function AppDownloadModal({ open, onClose, storeName, lines, tota
       <div className="pm-modal" onClick={(e) => e.stopPropagation()}>
         <div className="pm-modal-handle" />
 
-        <h2>{hasItems ? "Quase lá! 🎉" : "Baixe o app Zapi10"}</h2>
+        <h2>{hasItems ? "Quase lá! 🎉" : <>Baixe o app <BrandName /></>}</h2>
         <p>
           {hasItems ? (
             <>
               Seu pedido foi montado. Para enviar pra <strong>{storeName}</strong>, pagar e
-              acompanhar a entrega, é só baixar o app <strong>Zapi10</strong> — leva poucos segundos.
+              acompanhar a entrega, é só baixar o app <BrandName /> — leva poucos segundos.
             </>
           ) : (
             <>
               Peça de <strong>{storeName}</strong>, pague com PIX e acompanhe a entrega em tempo real,
-              tudo pelo app <strong>Zapi10</strong>.
+              tudo pelo app <BrandName />.
             </>
           )}
         </p>

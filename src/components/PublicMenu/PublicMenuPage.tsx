@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
+import BrandName from "../Brand/BrandName";
 import { Download, ImageOff, Minus, Plus, ShoppingCart } from "lucide-react";
 import type { PublicMenu, PublicProduct } from "./publicMenuApi";
 import { fetchMenuBySlug, productPrice } from "./publicMenuApi";
@@ -132,7 +133,7 @@ export default function PublicMenuPage() {
           <h3 style={{ margin: 0 }}>Cardápio não encontrado</h3>
           <p style={{ margin: 0 }}>O link pode estar incorreto ou a loja saiu do ar.</p>
           <button className="pm-getapp" style={{ margin: 0 }} onClick={() => setModalOpen(true)}>
-            <Download size={16} /> Baixar o app Zapi10
+            <Download size={16} /> Baixar o app <BrandName />
           </button>
         </div>
         <AppDownloadModal
@@ -207,7 +208,7 @@ export default function PublicMenuPage() {
 
         {/* Botão baixar app (sempre visível como porta de conversão) */}
         <button className="pm-getapp" onClick={() => setModalOpen(true)}>
-          <Download size={16} /> Baixar o app Zapi10
+          <Download size={16} /> Baixar o app <BrandName />
         </button>
 
         {/* Banners */}

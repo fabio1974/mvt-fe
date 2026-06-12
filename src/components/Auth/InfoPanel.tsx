@@ -1,8 +1,10 @@
+import BrandName from "../Brand/BrandName";
+
 export default function InfoPanel() {
   return (
     <div className="info-panel">
       <h2>
-        Bem-vindo ao Zapi10,{" "}
+        Bem-vindo ao <BrandName />,{" "}
         <span
           style={{
             background: "linear-gradient(90deg, #5b4cfa, #4c9aff)",
@@ -15,7 +17,7 @@ export default function InfoPanel() {
         </span>
       </h2>
       <div className="info-panel-subtitle">
-        Com sua conta Zapi10, você encontra:
+        Com sua conta <BrandName />, você encontra:
       </div>
       <ul>
         <li>
