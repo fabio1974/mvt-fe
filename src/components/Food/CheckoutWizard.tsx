@@ -15,7 +15,24 @@ import "./checkout.css";
 
 type Step = "cart" | "auth" | "address" | "summary" | "pix" | "success";
 
-const isAuthed = () => !!localStorage.getItem("authToken");
+/**
+ * Considera logado SÓ se houver token E ele não estiver expirado. Antes checava só a
+ * existência — um token vencido (ou de conta deletada, pego depois via 401) fazia o
+ * wizard PULAR o login e morrer no "Authentication required" no resumo. A validade real
+ * (assinatura/usuário existe) é confirmada pelo BE; aqui só descartamos o óbvio (exp).
+ */
+const isAuthed = () => {
+  const t = localStorage.getItem("authToken");
+  if (!t) return false;
+  try {
+    const payload = t.split(".")[1] || "";
+    const exp = JSON.parse(atob(payload.replace(/-/g, "+").replace(/_/g, "/")))?.exp;
+    if (exp && exp * 1000 < Date.now()) return false; // expirado
+  } catch {
+    return false; // token malformado = inútil
+  }
+  return true;
+};
 
 const AUTH_KEYS = [
   "authToken", "userId", "userName", "userEmail", "userRole",
@@ -143,6 +160,7 @@ export default function CheckoutWizard({ store, cart, onClose }: Props) {
               setOrder(o);
               setStep(o.pixQrCode ? "pix" : "success");
             }}
+            onAuthExpired={switchAccount}
             onBack={() => setStep(fulfillment === "PICKUP" ? "cart" : "address")}
           />
         )}

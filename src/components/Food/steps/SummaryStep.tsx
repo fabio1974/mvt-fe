@@ -13,6 +13,8 @@ interface Props {
   fulfillment: OrderType;
   deliveryAddress: DeliveryAddress | null;
   onSubmit: (order: FoodOrderInfo) => void;
+  /** Token inválido/expirado/de conta deletada (401): limpa a sessão e volta pro login. */
+  onAuthExpired: () => void;
   onBack: () => void;
 }
 
@@ -24,7 +26,17 @@ function extractMsg(e: unknown): string {
   return "";
 }
 
-export default function SummaryStep({ store, cart, fulfillment, deliveryAddress, onSubmit, onBack }: Props) {
+/** 401 = sessão inválida (token expirado / usuário deletado). Tratado como re-login, não como erro. */
+function is401(e: unknown): boolean {
+  return !!(
+    e &&
+    typeof e === "object" &&
+    "response" in e &&
+    (e as { response?: { status?: number } }).response?.status === 401
+  );
+}
+
+export default function SummaryStep({ store, cart, fulfillment, deliveryAddress, onSubmit, onAuthExpired, onBack }: Props) {
   const isPickup = fulfillment === "PICKUP";
   const [fee, setFee] = useState<number | null>(isPickup ? 0 : null);
   const [feeLoading, setFeeLoading] = useState(!isPickup);
@@ -53,7 +65,11 @@ export default function SummaryStep({ store, cart, fulfillment, deliveryAddress,
         if (!cancelled) setFee(r.deliveryFee);
       })
       .catch((e) => {
-        if (!cancelled) setFeeError(extractMsg(e) || "Não foi possível calcular o frete.");
+        if (cancelled) return;
+        // Token velho (expirado / conta deletada): manda pro login em vez de mostrar
+        // "Authentication required" sem saída. A auth é por callback, o carrinho sobrevive.
+        if (is401(e)) return onAuthExpired();
+        setFeeError(extractMsg(e) || "Não foi possível calcular o frete.");
       })
       .finally(() => {
         if (!cancelled) setFeeLoading(false);
@@ -137,6 +153,8 @@ export default function SummaryStep({ store, cart, fulfillment, deliveryAddress,
       const order = await foodApi.createOrder(body);
       onSubmit(order);
     } catch (e) {
+      // Token velho (expirado / conta deletada): volta pro login em vez de "erro ao criar pedido".
+      if (is401(e)) { onAuthExpired(); return; }
       setError(extractMsg(e) || "Não foi possível criar o pedido. Tente novamente.");
     } finally {
       setSubmitting(false);
