@@ -50,7 +50,7 @@ export function appHandoffUrl(handoffCode: string | null): string {
 }
 
 /**
- * "Tenta abrir o app, senão vai pra loja." Navega pro deep link do app; se em ~1,4s
+ * "Tenta abrir o app, senão vai pra loja." Navega pro deep link do app; se em ~2,5s
  * a página ainda estiver visível (o app não assumiu o foco = não instalado/não rotea),
  * cai pro link da loja. Pattern app-link-then-store.
  */
@@ -70,5 +70,8 @@ export function openAppOrStore(appUrl: string, storeUrl: string): void {
     if (!bailed && !document.hidden) {
       window.location.href = storeUrl; // app não abriu → loja
     }
-  }, 1400);
+    // 2,5s: o iOS exige o prompt "Abrir no Zapi10?" (1 toque). Com 1,4s o timer
+    // disparava antes do usuário tocar "Open" e jogava na App Store mesmo com o app
+    // instalado. Mais tempo dá margem pra reação humana sem prejudicar quem não tem o app.
+  }, 2500);
 }
