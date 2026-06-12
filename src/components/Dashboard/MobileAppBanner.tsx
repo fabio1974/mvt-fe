@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FiX, FiSmartphone } from "react-icons/fi";
 import { FaGooglePlay, FaApple } from "react-icons/fa";
 import { getGenderedGreeting } from "../../utils/auth";
+import BrandName from "../Brand/BrandName";
 import "./MobileAppBanner.css";
 
 interface MobileAppBannerProps {
@@ -52,7 +53,7 @@ const MobileAppBanner: React.FC<MobileAppBannerProps> = ({ userName }) => {
           Olá{userName ? `, ${userName}` : ""}! 👋
         </h3>
         <p className="mobile-app-banner-text">
-          Seja {getGenderedGreeting().toLowerCase()} ao <strong>Zapi10</strong>!
+          Seja {getGenderedGreeting().toLowerCase()} ao <BrandName onDark />!
         </p>
         <p className="mobile-app-banner-text">
           ...para uma melhor experiência, baixe nosso aplicativo:
