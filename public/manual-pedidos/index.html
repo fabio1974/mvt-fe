@@ -114,6 +114,14 @@
   .capture-note{ margin-top:12px; background:#fff7ed; border:1px solid #fed7aa; color:#9a3412;
     border-radius:10px; padding:10px 12px; font-size:13.5px; display:flex; gap:8px; }
 
+  /* CTA final — "atender pedidos" */
+  .wz-cta{ display:none; margin-top:16px; text-align:center; text-decoration:none;
+    background:linear-gradient(135deg,var(--c-accept),#0ea371); color:#fff; font-weight:900; font-size:16px;
+    padding:15px 18px; border-radius:12px; box-shadow:0 10px 22px rgba(16,185,129,.35);
+    transition:filter .12s, transform .12s; }
+  .wz-cta.show{ display:block; }
+  .wz-cta:hover{ filter:brightness(1.04); transform:translateY(-1px); }
+
   /* CHIPS (botões reais) */
   .chip{ display:inline-flex; align-items:center; gap:4px; color:#fff; font-weight:800; font-size:13px;
     padding:2px 9px; border-radius:999px; white-space:nowrap; vertical-align:middle; }
@@ -183,6 +191,9 @@
       <h3 id="title"></h3>
       <div id="desc"></div>
       <div id="capture"></div>
+      <a id="cta" class="wz-cta" href="https://zapi10.com.br/pedidos" target="_blank" rel="noopener">
+        ✅ Clique aqui para atender pedidos
+      </a>
     </div>
 
     <div class="wz-nav">
@@ -305,9 +316,12 @@
       `<span class="dot ${i===idx?'active':(i<idx?'done':'')}"></span>`).join('');
 
     // nav
+    const isLast = idx===steps.length-1;
     $('prev').disabled = idx===0;
-    $('next').textContent = idx===steps.length-1 ? 'Concluir ✓' : 'Próximo ›';
-    $('next').disabled = idx===steps.length-1;
+    $('next').textContent = isLast ? 'Concluir ✓' : 'Próximo ›';
+    $('next').disabled = isLast;
+    // CTA "atender pedidos" só no último passo (fim do manual)
+    $('cta').classList.toggle('show', isLast);
   }
 
   // Só desktop por enquanto: abre direto o manual do computador e esconde o "Trocar".
