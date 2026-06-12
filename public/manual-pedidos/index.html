@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Zapi10 — Como aceitar pedidos</title>
+<meta name="description" content="Passo a passo pra sua loja aceitar pedidos no Zapi-Food, pelo celular e pelo computador." />
+<meta property="og:title" content="Zapi10 — Como aceitar pedidos" />
+<meta property="og:description" content="Guia passo a passo pra sua loja aceitar pedidos." />
+<meta property="og:type" content="website" />
+<link rel="icon" href="/favicon.png" />
+
+<style>
+  :root{
+    --navy:#0f172a; --navy-2:#1e293b; --cyan:#22d3ee; --blue:#0099ff; --orange:#f59e0b;
+    --ink:#0f172a; --ink-2:#475569; --line:#e2e8f0; --bg:#eef2f7; --card:#fff;
+    --c-accept:#10b981; --c-accept2:#3b82f6; --c-reject:#ef4444; --c-prep:#8b5cf6;
+    --c-ready:#06b6d4; --c-new:#f59e0b; --c-gray:#475569;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{ font-family:'Segoe UI',system-ui,-apple-system,Arial,sans-serif; color:var(--ink);
+    background:var(--bg); -webkit-font-smoothing:antialiased; line-height:1.55; }
+  .wrap{ max-width:720px; margin:0 auto; padding:0 16px 56px; }
+
+  /* HERO */
+  header.hero{ background:linear-gradient(135deg,var(--navy),var(--navy-2)); color:#fff;
+    padding:24px 16px 30px; text-align:center; position:relative; overflow:hidden; }
+  .hero .logo-card{ display:inline-block; background:#fff; border-radius:12px; padding:8px 16px;
+    box-shadow:0 10px 30px rgba(0,0,0,.35); margin-bottom:14px; }
+  .hero .logo-card img{ height:30px; display:block; }
+  .hero h1{ font-size:24px; font-weight:900; letter-spacing:-.01em; }
+  .hero p{ color:#cbd5e1; margin-top:6px; font-size:14.5px; max-width:520px; margin-inline:auto; }
+  .hero .glow{ position:absolute; border-radius:50%; filter:blur(80px); opacity:.3; pointer-events:none; }
+  .hero .glow.cyan{ background:var(--cyan); width:180px; height:180px; top:-60px; left:-40px; }
+  .hero .glow.orange{ background:var(--orange); width:200px; height:200px; bottom:-90px; right:-50px; }
+
+  /* ESCOLHA DE PLATAFORMA */
+  .chooser{ margin-top:-18px; position:relative; z-index:2; }
+  .chooser h2{ text-align:center; font-size:15px; color:var(--ink-2); font-weight:800;
+    text-transform:uppercase; letter-spacing:.05em; margin:24px 0 14px; }
+  .choose-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .choose-card{ background:var(--card); border:1px solid var(--line); border-radius:18px;
+    padding:24px 16px; text-align:center; cursor:pointer; transition:transform .12s, box-shadow .12s, border-color .12s;
+    box-shadow:0 6px 20px rgba(15,23,42,.06); }
+  .choose-card:hover{ transform:translateY(-3px); border-color:var(--blue); box-shadow:0 12px 28px rgba(0,153,255,.18); }
+  .choose-card .ic{ font-size:42px; display:block; margin-bottom:10px; }
+  .choose-card .t{ font-weight:900; font-size:17px; }
+  .choose-card .d{ color:var(--ink-2); font-size:13.5px; margin-top:4px; }
+
+  /* WIZARD */
+  #wizard{ display:none; }
+  #wizard.on{ display:block; }
+  .wz-top{ display:flex; align-items:center; justify-content:space-between; margin:22px 0 14px; gap:12px; }
+  .wz-back-platform{ background:none; border:none; color:var(--blue); font:inherit; font-weight:700;
+    cursor:pointer; font-size:14px; display:inline-flex; align-items:center; gap:5px; padding:6px 0; }
+  .wz-count{ font-size:13.5px; color:var(--ink-2); font-weight:700; }
+  .dots{ display:flex; gap:7px; }
+  .dots .dot{ width:9px; height:9px; border-radius:50%; background:#cbd5e1; transition:all .2s; }
+  .dots .dot.active{ background:var(--blue); transform:scale(1.25); }
+  .dots .dot.done{ background:var(--cyan); }
+
+  /* MOLDURA NAVEGADOR */
+  .frame-browser{ position:relative; background:#0b1220; border-radius:14px; overflow:hidden;
+    box-shadow:0 18px 50px rgba(15,23,42,.28); border:1px solid #0b1220; cursor:zoom-in; }
+  .frame-browser .bar{ display:flex; align-items:center; gap:7px; padding:9px 12px; background:#1c2433; }
+  .frame-browser .bar .d{ width:11px; height:11px; border-radius:50%; }
+  .frame-browser .bar .d.r{ background:#ff5f56; } .frame-browser .bar .d.y{ background:#ffbd2e; } .frame-browser .bar .d.g{ background:#27c93f; }
+  .frame-browser .bar .url{ flex:1; margin-left:8px; background:#0f1726; color:#7c8aa3; font-size:11.5px;
+    padding:5px 12px; border-radius:7px; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .frame-browser img{ display:block; width:100%; height:auto; }
+
+  /* MOLDURA SIMPLES (zooms recortados) */
+  .frame-img{ position:relative; margin:0; background:#fff; border:1px solid var(--line);
+    border-radius:14px; overflow:hidden; box-shadow:0 18px 40px rgba(15,23,42,.16); cursor:zoom-in; }
+  .frame-img img{ display:block; width:100%; height:auto; }
+
+  /* Dica "ampliar" */
+  .zoom-hint{ position:absolute; right:10px; bottom:10px; background:rgba(15,23,42,.78); color:#fff;
+    font-size:12px; font-weight:700; padding:5px 10px; border-radius:999px; pointer-events:none; }
+
+  /* LIGHTBOX — figura o maior possível, INTEIRA e CENTRALIZADA na tela (header -> rodapé) */
+  .lightbox{ position:fixed; inset:0; z-index:999; background:rgba(8,12,22,.94);
+    display:none; align-items:center; justify-content:center; padding:2vh 2vw; cursor:zoom-out; }
+  .lightbox.on{ display:flex; }
+  .lightbox img{ max-width:96vw; max-height:94vh; width:auto; height:auto; border-radius:10px;
+    box-shadow:0 24px 70px rgba(0,0,0,.65); }
+  .lightbox .close{ position:fixed; top:12px; right:18px; color:#fff; font-size:32px; font-weight:800;
+    line-height:1; cursor:pointer; opacity:.9; z-index:1000; }
+
+  /* MOLDURA CELULAR */
+  .frame-phone{ width:268px; max-width:78%; margin:0 auto; background:#0b1220; border-radius:34px;
+    padding:12px; box-shadow:0 18px 50px rgba(15,23,42,.28); }
+  .frame-phone .notch{ width:108px; height:20px; background:#0b1220; border-radius:0 0 14px 14px; margin:-12px auto 8px; }
+  .frame-phone .screen{ border-radius:22px; overflow:hidden; background:#0f172a; aspect-ratio:9/17.5;
+    display:flex; align-items:center; justify-content:center; }
+  .frame-phone .screen img{ width:100%; height:100%; object-fit:cover; }
+
+  /* PLACEHOLDER (mobile aguardando screenshot real) */
+  .ph{ width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:10px; text-align:center; padding:22px; color:#94a3b8;
+    background:repeating-linear-gradient(45deg,#0f172a,#0f172a 12px,#131f36 12px,#131f36 24px); }
+  .ph .cam{ font-size:34px; }
+  .ph .pt{ font-weight:800; color:#cbd5e1; font-size:13.5px; }
+  .ph .pd{ font-size:12px; line-height:1.4; }
+
+  /* TEXTO DO PASSO */
+  .step-box{ background:var(--card); border:1px solid var(--line); border-radius:16px;
+    padding:18px 18px; margin-top:18px; box-shadow:0 4px 14px rgba(15,23,42,.05); }
+  .step-box .kicker{ color:var(--blue); font-weight:800; font-size:12.5px; text-transform:uppercase; letter-spacing:.06em; }
+  .step-box h3{ font-size:19px; font-weight:900; margin:3px 0 8px; }
+  .step-box p{ color:var(--ink-2); font-size:15px; }
+  .step-box p + p{ margin-top:8px; }
+  .capture-note{ margin-top:12px; background:#fff7ed; border:1px solid #fed7aa; color:#9a3412;
+    border-radius:10px; padding:10px 12px; font-size:13.5px; display:flex; gap:8px; }
+
+  /* CHIPS (botões reais) */
+  .chip{ display:inline-flex; align-items:center; gap:4px; color:#fff; font-weight:800; font-size:13px;
+    padding:2px 9px; border-radius:999px; white-space:nowrap; vertical-align:middle; }
+  .chip.outline{ background:transparent; border:2px solid; padding:1px 8px; }
+  .c-accept{background:var(--c-accept)} .c-accept2{background:var(--c-accept2)} .c-reject{background:var(--c-reject)}
+  .c-prep{background:var(--c-prep)} .c-ready{background:var(--c-ready)} .c-new{background:var(--c-new)} .c-gray{background:var(--c-gray)}
+  .o-reject{color:var(--c-reject);border-color:var(--c-reject)}
+
+  /* NAV */
+  .wz-nav{ display:flex; gap:12px; margin-top:18px; }
+  .wz-nav button{ flex:1; border:none; cursor:pointer; font:inherit; font-weight:800; font-size:15px;
+    padding:14px; border-radius:12px; transition:filter .12s, opacity .12s; }
+  .wz-nav .prev{ background:#e2e8f0; color:var(--ink); }
+  .wz-nav .next{ background:var(--blue); color:#fff; box-shadow:0 8px 18px rgba(0,153,255,.3); }
+  .wz-nav button:hover{ filter:brightness(.97); }
+  .wz-nav button:disabled{ opacity:.4; cursor:default; box-shadow:none; }
+
+  footer{ text-align:center; color:var(--ink-2); font-size:12.5px; margin-top:28px; }
+  footer b{ color:var(--blue); }
+
+  @media (max-width:480px){
+    .hero h1{ font-size:21px; }
+    .choose-card .ic{ font-size:36px; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="glow cyan"></div><div class="glow orange"></div>
+  <div class="logo-card"><img src="/tv-lancamento/zapi10-logo.png" alt="Zapi10" /></div>
+  <h1>Como aceitar pedidos</h1>
+  <p>Passo a passo pra sua loja receber e aceitar pedidos no <b>Zapi-Food</b>.</p>
+</header>
+
+<div class="wrap">
+
+  <!-- ESCOLHA -->
+  <section class="chooser" id="chooser">
+    <h2>Onde você usa o Zapi-Food?</h2>
+    <div class="choose-grid">
+      <div class="choose-card" onclick="choose('mobile')">
+        <span class="ic">📱</span>
+        <div class="t">No celular</div>
+        <div class="d">Aplicativo Zapi10</div>
+      </div>
+      <div class="choose-card" onclick="choose('web')">
+        <span class="ic">💻</span>
+        <div class="t">No computador</div>
+        <div class="d">Painel no navegador</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WIZARD -->
+  <section id="wizard">
+    <div class="wz-top">
+      <button class="wz-back-platform" onclick="backToChooser()">‹ Trocar</button>
+      <div class="dots" id="dots"></div>
+      <div class="wz-count" id="count"></div>
+    </div>
+
+    <div id="frame"></div>
+
+    <div class="step-box">
+      <div class="kicker" id="kicker"></div>
+      <h3 id="title"></h3>
+      <div id="desc"></div>
+      <div id="capture"></div>
+    </div>
+
+    <div class="wz-nav">
+      <button class="prev" id="prev" onclick="go(-1)">‹ Voltar</button>
+      <button class="next" id="next" onclick="go(1)">Próximo ›</button>
+    </div>
+  </section>
+
+  <footer>Dúvidas? Fale com o suporte <b>Zapi10</b>. · Guia da loja — Zapi-Food</footer>
+</div>
+
+<!-- Lightbox (clique pra ampliar) -->
+<div class="lightbox" id="lightbox" onclick="closeZoom()">
+  <span class="close" aria-label="Fechar">×</span>
+  <img id="lightbox-img" src="" alt="ampliação" />
+</div>
+
+<script>
+  function zoom(src){ const lb=document.getElementById('lightbox');
+    document.getElementById('lightbox-img').src=src; lb.classList.add('on'); }
+  function closeZoom(){ document.getElementById('lightbox').classList.remove('on'); }
+</script>
+
+<script>
+  const STEPS = {
+    web: [
+      { img:"img/web/01-login.png", full:true, kicker:"Passo 1",
+        title:"Entre no painel da loja",
+        desc:`Abra o <b>painel da sua loja no navegador</b> (o mesmo site do seu login) e entre com seu <b>e-mail</b> e <b>senha</b>.` },
+      { img:"img/web/02-painel.png", full:true, kicker:"Passo 2",
+        title:"Este é o seu painel",
+        desc:`Aqui você gerencia a loja. Repare em dois pontos: o menu <b>Pedidos</b> (à esquerda — com o número em vermelho dos que estão esperando) e a chave <b>Loja aberta</b> (canto superior direito) — ela precisa estar <b>verde</b> pra você receber pedidos.` },
+      { img:"img/web/03-alerta.png", full:true, kicker:"Passo 3",
+        title:"Chegou pedido? A tela avisa",
+        desc:`Quando entra um pedido, o painel <b>toca um alarme</b> e mostra este aviso <b>“Pedido novo!”</b> com cliente, itens e total.
+              Clique <span class="chip c-new">Aceitar</span> pra aceitar na hora, ou <span class="chip c-gray">Ver depois</span> pra fechar — o pedido continua esperando no menu <b>Pedidos</b>.` },
+      { img:"img/web/04-lista.png", full:true, kicker:"Passo 4",
+        title:"Abra a lista de pedidos",
+        desc:`No menu <b>Pedidos</b> você vê todos. Os que acabaram de chegar aparecem com status <b>Novo</b>. Clique no pedido pra abrir os detalhes.` },
+      { img:"img/web/05-controle.png", full:true, kicker:"Passo 5",
+        title:"Aceite na coluna Controle",
+        desc:`No detalhe do pedido, use a coluna <b>CONTROLE</b> (à esquerda): clique <span class="chip c-accept2">✅ Aceitar</span>.
+              Depois seguem <span class="chip c-prep">👨‍🍳 Preparar</span> → <span class="chip c-ready">📦 Pronto</span>.
+              Pra recusar, <span class="chip outline o-reject">❌ Cancelar</span>.` },
+      { img:"img/web/06-imprimir.png", full:true, kicker:"Passo 6",
+        title:"Aceitar e imprimir",
+        desc:`Ao aceitar, aparece <b>“Imprimir pedido?”</b>. Escolha <b>Aceitar e imprimir</b> (manda o pedido pra cozinha na impressora) ou <b>Apenas aceitar</b>. Pronto — o pedido foi aceito! ✅` },
+    ],
+    mobile: [
+      { img:null, kicker:"Passo 1", title:"Abra o Zapi-Food",
+        desc:`Na tela inicial do app, toque no botão azul <span class="chip c-accept2">🍽️ Zapi-Food</span> (“Cardápio, pedidos e perfil da loja”).`,
+        capture:`Tela inicial do app mostrando o botão <b>🍽️ Zapi-Food</b>.` },
+      { img:null, kicker:"Passo 2", title:"Deixe a loja aberta",
+        desc:`No topo, em <b>Minha Loja</b>, mantenha a chavinha verde: <b>🟢 Aberta — recebendo pedidos</b>. Se estiver <b>🔴 Fechada</b>, você não recebe pedidos novos.`,
+        capture:`Topo do Zapi-Food com o card <b>Minha Loja</b> e o toggle <b>Aberta</b>.` },
+      { img:null, kicker:"Passo 3", title:"Veja os pedidos chegando",
+        desc:`Em <b>Pedidos Ativos</b>, cada pedido novo aparece com o selo <span class="chip c-new">🔔 Novo</span>. A lista atualiza sozinha a cada 20s (puxe pra baixo pra atualizar na hora).`,
+        capture:`A lista <b>Pedidos Ativos</b> com pelo menos um pedido <b>🔔 Novo</b>.` },
+      { img:null, kicker:"Passo 4", title:"Aceite ou recuse",
+        desc:`No pedido novo, toque <span class="chip c-accept">✅ Aceitar</span> (vai pra preparo) ou <span class="chip c-reject">❌ Rejeitar</span> (confirme em “Sim, rejeitar” — o cliente é avisado).`,
+        capture:`O card de um pedido mostrando os botões <b>✅ Aceitar</b> e <b>❌ Rejeitar</b>.` },
+      { img:null, kicker:"Passo 5", title:"Toque o pedido pra frente",
+        desc:`Depois de aceitar, o botão muda: <span class="chip c-prep">👨‍🍳 Preparar</span> → <span class="chip c-ready">📦 Pronto!</span> → <span class="chip c-accept">🛍️ Cliente retirou</span> (retirada no balcão). Em entrega por motoboy, o resto anda sozinho.`,
+        capture:`Um pedido já aceito mostrando o botão <b>👨‍🍳 Preparar</b> (e/ou 📦 Pronto).` },
+    ]
+  };
+
+  const URLS = { web:"zapi10.com.br/painel", mobile:"app Zapi10" };
+  // Mude pra true pra reativar o manual do celular (track 📱). Por enquanto: só desktop.
+  const SHOW_MOBILE = false;
+  let track = null, idx = 0;
+
+  const $ = id => document.getElementById(id);
+
+  function choose(t){ track = t; idx = 0; $('chooser').style.display='none'; $('wizard').classList.add('on'); render();
+    window.scrollTo({top:0,behavior:'smooth'}); }
+  function backToChooser(){ $('wizard').classList.remove('on'); $('chooser').style.display='block';
+    window.scrollTo({top:0,behavior:'smooth'}); }
+  function go(d){ const steps=STEPS[track]; idx=Math.max(0,Math.min(steps.length-1, idx+d)); render();
+    document.querySelector('.wz-top').scrollIntoView({behavior:'smooth',block:'start'}); }
+
+  function render(){
+    const steps = STEPS[track]; const s = steps[idx];
+
+    // moldura + imagem / placeholder
+    let frameHtml;
+    if (track==='web'){
+      if (s.full){
+        frameHtml = `<div class="frame-browser" onclick="zoom('${s.img}')">
+          <div class="bar"><span class="d r"></span><span class="d y"></span><span class="d g"></span>
+            <span class="url">🔒 ${URLS.web}</span></div>
+          <img src="${s.img}" alt="${s.title}" loading="eager" />
+          <span class="zoom-hint">🔍 ampliar</span>
+        </div>`;
+      } else {
+        frameHtml = `<figure class="frame-img" onclick="zoom('${s.img}')">
+          <img src="${s.img}" alt="${s.title}" loading="eager" />
+          <span class="zoom-hint">🔍 ampliar</span>
+        </figure>`;
+      }
+    } else {
+      const inner = s.img
+        ? `<img src="${s.img}" alt="${s.title}" />`
+        : `<div class="ph"><div class="cam">📷</div><div class="pt">Screenshot do app</div>
+             <div class="pd">${s.capture||''}</div></div>`;
+      frameHtml = `<div class="frame-phone"><div class="notch"></div><div class="screen">${inner}</div></div>`;
+    }
+    $('frame').innerHTML = frameHtml;
+
+    // texto
+    $('kicker').textContent = s.kicker;
+    $('title').textContent = s.title;
+    $('desc').innerHTML = s.desc;
+    $('capture').innerHTML = (track==='mobile' && !s.img && s.capture)
+      ? `<div class="capture-note"><span>📸</span><div><b>Pra esta tela, me envie:</b> ${s.capture}</div></div>` : '';
+
+    // dots + contador
+    $('count').textContent = `Passo ${idx+1} de ${steps.length}`;
+    $('dots').innerHTML = steps.map((_,i)=>
+      `<span class="dot ${i===idx?'active':(i<idx?'done':'')}"></span>`).join('');
+
+    // nav
+    $('prev').disabled = idx===0;
+    $('next').textContent = idx===steps.length-1 ? 'Concluir ✓' : 'Próximo ›';
+    $('next').disabled = idx===steps.length-1;
+  }
+
+  // Só desktop por enquanto: abre direto o manual do computador e esconde o "Trocar".
+  if (!SHOW_MOBILE){
+    document.querySelector('.wz-back-platform').style.display = 'none';
+    choose('web');
+  } else {
+    // Deep-link: ...#web ou ...#mobile abre direto o wizard
+    const h = (location.hash||'').replace('#','');
+    if (h==='web' || h==='mobile') choose(h);
+  }
+
+  // Teclado: Esc fecha o zoom; setas avançam/voltam (quando o zoom está fechado)
+  document.addEventListener('keydown', e=>{
+    const lbOpen = document.getElementById('lightbox').classList.contains('on');
+    if(e.key==='Escape'){ closeZoom(); return; }
+    if(lbOpen || !track) return;
+    if(e.key==='ArrowRight') go(1);
+    if(e.key==='ArrowLeft') go(-1);
+  });
+</script>
+</body>
+</html>
