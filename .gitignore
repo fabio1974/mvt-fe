@@ -44,3 +44,6 @@ coverage/
 
 # Claude Code runtime artifacts
 .claude/
+
+# Helper local de screenshots do manual (tem credencial de seed; não versionar)
+scripts/capture-manual-shots.cjs
