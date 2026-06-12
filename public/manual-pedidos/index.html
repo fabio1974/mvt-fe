@@ -114,13 +114,11 @@
   .capture-note{ margin-top:12px; background:#fff7ed; border:1px solid #fed7aa; color:#9a3412;
     border-radius:10px; padding:10px 12px; font-size:13.5px; display:flex; gap:8px; }
 
-  /* CTA final — "atender pedidos" */
-  .wz-cta{ display:none; margin-top:16px; text-align:center; text-decoration:none;
-    background:linear-gradient(135deg,var(--c-accept),#0ea371); color:#fff; font-weight:900; font-size:16px;
-    padding:15px 18px; border-radius:12px; box-shadow:0 10px 22px rgba(16,185,129,.35);
-    transition:filter .12s, transform .12s; }
-  .wz-cta.show{ display:block; }
-  .wz-cta:hover{ filter:brightness(1.04); transform:translateY(-1px); }
+  /* Botão da direita em modo CTA ("atender pedidos") no último passo */
+  .wz-nav .next.cta{ background:linear-gradient(135deg,var(--c-accept),#0ea371);
+    box-shadow:0 8px 18px rgba(16,185,129,.35); opacity:1; cursor:pointer; }
+  .wz-nav.last .prev{ flex:0 0 auto; padding-inline:22px; }
+  .wz-nav.last .next{ flex:1; }
 
   /* CHIPS (botões reais) */
   .chip{ display:inline-flex; align-items:center; gap:4px; color:#fff; font-weight:800; font-size:13px;
@@ -191,14 +189,11 @@
       <h3 id="title"></h3>
       <div id="desc"></div>
       <div id="capture"></div>
-      <a id="cta" class="wz-cta" href="https://zapi10.com.br/pedidos" target="_blank" rel="noopener">
-        ✅ Clique aqui para atender pedidos
-      </a>
     </div>
 
     <div class="wz-nav">
       <button class="prev" id="prev" onclick="go(-1)">‹ Voltar</button>
-      <button class="next" id="next" onclick="go(1)">Próximo ›</button>
+      <button class="next" id="next" onclick="nextOrFinish()">Próximo ›</button>
     </div>
   </section>
 
@@ -262,6 +257,7 @@
   };
 
   const URLS = { web:"zapi10.com.br/painel", mobile:"app Zapi10" };
+  const PANEL_URL = "https://zapi10.com.br/pedidos"; // destino do CTA "atender pedidos"
   // Mude pra true pra reativar o manual do celular (track 📱). Por enquanto: só desktop.
   const SHOW_MOBILE = false;
   let track = null, idx = 0;
@@ -274,6 +270,11 @@
     window.scrollTo({top:0,behavior:'smooth'}); }
   function go(d){ const steps=STEPS[track]; idx=Math.max(0,Math.min(steps.length-1, idx+d)); render();
     document.querySelector('.wz-top').scrollIntoView({behavior:'smooth',block:'start'}); }
+  // Botão da direita: avança; no último passo, abre o painel de pedidos.
+  function nextOrFinish(){
+    if (idx === STEPS[track].length-1){ window.open(PANEL_URL, '_blank', 'noopener'); return; }
+    go(1);
+  }
 
   function render(){
     const steps = STEPS[track]; const s = steps[idx];
@@ -315,13 +316,14 @@
     $('dots').innerHTML = steps.map((_,i)=>
       `<span class="dot ${i===idx?'active':(i<idx?'done':'')}"></span>`).join('');
 
-    // nav
+    // nav — no último passo o botão da direita vira o CTA "atender pedidos"
     const isLast = idx===steps.length-1;
     $('prev').disabled = idx===0;
-    $('next').textContent = isLast ? 'Concluir ✓' : 'Próximo ›';
-    $('next').disabled = isLast;
-    // CTA "atender pedidos" só no último passo (fim do manual)
-    $('cta').classList.toggle('show', isLast);
+    const next = $('next'), nav = document.querySelector('.wz-nav');
+    next.disabled = false;
+    next.textContent = isLast ? '✅ Clique aqui para atender pedidos' : 'Próximo ›';
+    next.classList.toggle('cta', isLast);
+    nav.classList.toggle('last', isLast);
   }
 
   // Só desktop por enquanto: abre direto o manual do computador e esconde o "Trocar".
