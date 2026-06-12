@@ -1,8 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { readFileSync, existsSync } from "node:fs";
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
 import { BRAND } from "../config/brand";
+import brandNameCss from "../components/Brand/BrandName.css?raw";
+import promotionsCss from "../components/Promotions/Promotions.css?raw";
+import wordmarkLight from "../assets/zapi10-wordmark-light.png";
+import wordmarkDark from "../assets/zapi10-wordmark-dark.png";
 
 /**
  * LOCK da paleta de marca Zapi10.
@@ -10,9 +11,10 @@ import { BRAND } from "../config/brand";
  * Trava os hex oficiais E garante que os CSS reais (BrandName, Promotions) e os
  * assets do logo continuem usando esses valores. Se alguém alterar a identidade
  * sem querer, este teste quebra no build (o script "build" roda vitest antes).
+ *
+ * Lê os CSS via `?raw` do Vite (sem node:fs) pra typecheckar no tsconfig do app.
  */
-const here = dirname(fileURLToPath(import.meta.url));
-const read = (rel: string) => readFileSync(resolve(here, rel), "utf8").toLowerCase();
+const lower = (s: string) => s.toLowerCase();
 
 describe("lock da paleta de marca", () => {
   it("BRAND mantém os hex oficiais travados", () => {
@@ -27,12 +29,11 @@ describe("lock da paleta de marca", () => {
   });
 
   it('BrandName usa o laranja do "i" do logo', () => {
-    const css = read("../components/Brand/BrandName.css");
-    expect(css).toContain(BRAND.orangeMark);
+    expect(lower(brandNameCss)).toContain(BRAND.orangeMark);
   });
 
   it("Promotions.css declara os tokens da paleta (sem drift)", () => {
-    const css = read("../components/Promotions/Promotions.css");
+    const css = lower(promotionsCss);
     expect(css).toContain(`--navy: ${BRAND.navy}`);
     expect(css).toContain(`--navy-2: ${BRAND.navy2}`);
     expect(css).toContain(`--cyan: ${BRAND.cyan}`);
@@ -41,7 +42,7 @@ describe("lock da paleta de marca", () => {
   });
 
   it("os dois wordmarks (claro/escuro) existem para o BrandMark", () => {
-    expect(existsSync(resolve(here, "../assets/zapi10-wordmark-light.png"))).toBe(true);
-    expect(existsSync(resolve(here, "../assets/zapi10-wordmark-dark.png"))).toBe(true);
+    expect(wordmarkLight).toBeTruthy();
+    expect(wordmarkDark).toBeTruthy();
   });
 });
