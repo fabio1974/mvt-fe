@@ -74,7 +74,6 @@
     box-shadow:0 3vh 8vh rgba(0,0,0,.5);
   }
   .logo-card img{ width:40vw; max-width:46vh; height:auto; display:block; }
-  .slide.active .logo-card{ animation:pop .7s ease both; }
   .intro .region{ font-size:2.9vw; color:#fff; font-weight:700; margin-top:4vh; }
   .intro .region b{ color:var(--orange); }
 
@@ -94,10 +93,6 @@
     box-shadow:0 1.5vh 4vh rgba(0,0,0,.5);
     border:.4vh solid rgba(255,255,255,.12);
   }
-  .slide.active .food-grid .pic{ animation:pop .7s ease both; }
-  .slide.active .food-grid .pic:nth-child(2){ animation-delay:.1s; }
-  .slide.active .food-grid .pic:nth-child(3){ animation-delay:.2s; }
-  .slide.active .food-grid .pic:nth-child(4){ animation-delay:.3s; }
 
   /* Tipografia escalável por viewport (vw) pra ler de longe */
   .kicker{ font-size:2.2vw; letter-spacing:.35em; color:var(--cyan); font-weight:700; text-transform:uppercase; margin-bottom:2.5vh; }
@@ -121,9 +116,6 @@
     box-shadow:0 1.8vh 4.5vh rgba(0,0,0,.55);
     border:.5vh solid rgba(255,255,255,.18);
   }
-  .slide.active .service .ic-img{ animation:pop .7s ease both; }
-  .slide.active .service:nth-child(3) .ic-img{ animation-delay:.1s; }
-  .slide.active .service:nth-child(4) .ic-img{ animation-delay:.2s; }
   .service .name{ font-size:3vw; font-weight:900; letter-spacing:.05em; }
   .service .desc{ font-size:1.8vw; color:var(--muted); margin-top:1vh; }
   .service.food .name{ color:var(--orange); }
@@ -170,19 +162,36 @@
   .qr-fallback{ color:#0f172a; font-size:1.4vw; font-weight:700; text-align:center; padding:1vw; }
 
   /* ====================================================================
-     ANIMAÇÕES de entrada (aplicadas ao slide ativo)
+     ANIMAÇÕES de entrada — VARIADAS (estilo propaganda de TV).
+     Cada elemento entra de uma direção (.a-*) com um atraso (.d*).
+     Só animam no slide .active → re-disparam a cada volta do loop.
+     Pra "faixas se encontrando": dois elementos vizinhos com a-left + a-right.
      ==================================================================== */
-  @keyframes pop{ 0%{ transform:scale(.92); opacity:0 } 100%{ transform:scale(1); opacity:1 } }
-  @keyframes rise{ 0%{ transform:translateY(4vh); opacity:0 } 100%{ transform:translateY(0); opacity:1 } }
-  .slide.active .headline,
-  .slide.active .logo,
-  .slide.active .off{ animation:pop .7s ease both; }
-  .slide.active .sub,
-  .slide.active .kicker,
-  .slide.active .services,
-  .slide.active .coupon,
-  .slide.active .qr-split,
-  .slide.active .promo-sub{ animation:rise .8s ease .15s both; }
+  @keyframes pop    { from{ transform:scale(.90); opacity:0 } to{ transform:scale(1); opacity:1 } }
+  @keyframes zoomIn { 0%{ transform:scale(.55); opacity:0 } 65%{ transform:scale(1.08); opacity:1 } 100%{ transform:scale(1) } }
+  @keyframes inUp   { from{ transform:translateY(9vh);   opacity:0 } to{ transform:translateY(0); opacity:1 } }
+  @keyframes inDown { from{ transform:translateY(-9vh);  opacity:0 } to{ transform:translateY(0); opacity:1 } }
+  @keyframes inLeft { from{ transform:translateX(-22vw); opacity:0 } to{ transform:translateX(0); opacity:1 } }
+  @keyframes inRight{ from{ transform:translateX(22vw);  opacity:0 } to{ transform:translateX(0); opacity:1 } }
+  @keyframes blurIn { from{ filter:blur(2.2vh); transform:scale(1.05); opacity:0 } to{ filter:blur(0); transform:scale(1); opacity:1 } }
+
+  .ib{ display:inline-block; }   /* spans precisam disso pra animar com translateX */
+
+  /* direções (curva com leve desaceleração no fim, dá peso "cinematográfico") */
+  .slide.active .a-up    { animation: inUp    1.10s cubic-bezier(.18,.7,.2,1) both; }
+  .slide.active .a-down  { animation: inDown  1.10s cubic-bezier(.18,.7,.2,1) both; }
+  .slide.active .a-left  { animation: inLeft  1.20s cubic-bezier(.18,.7,.2,1) both; }
+  .slide.active .a-right { animation: inRight 1.20s cubic-bezier(.18,.7,.2,1) both; }
+  .slide.active .a-pop   { animation: pop     1.00s cubic-bezier(.18,.7,.2,1) both; }
+  .slide.active .a-zoom  { animation: zoomIn  1.20s cubic-bezier(.2,.8,.2,1)  both; }
+  .slide.active .a-blur  { animation: blurIn  1.25s ease both; }
+
+  /* atrasos pra escalonar a entrada (stagger) — devem vir DEPOIS das direções */
+  .slide.active .d1{ animation-delay:.14s }
+  .slide.active .d2{ animation-delay:.36s }
+  .slide.active .d3{ animation-delay:.60s }
+  .slide.active .d4{ animation-delay:.86s }
+  .slide.active .d5{ animation-delay:1.14s }
 
   /* Barra de progresso fininha no rodapé (oculta — descomente p/ exibir) */
   #bar{ display:none; position:absolute; left:0; bottom:0; height:.6vh; background:var(--cyan); width:0; z-index:10; }
@@ -204,52 +213,55 @@
     <div id="bar"></div>
 
     <!-- 1 — Lançamento -->
-    <section class="slide intro" data-dur="3500">
+    <section class="slide intro">
       <div class="glow cyan"></div><div class="glow orange"></div>
-      <div class="kicker">🎉 Chegou o</div>
-      <div class="logo-card"><img src="zapi10-logo.png" alt="Zapi10" /></div>
-      <div class="region">na <b>Região Norte do Ceará</b> e na <b>Serra da Ibiapaba</b></div>
-      <div class="sub">Comida, entregas e corridas — tudo num app só</div>
+      <div class="kicker a-down d1">🎉 Chegou o</div>
+      <div class="logo-card a-zoom d2"><img src="zapi10-logo.png" alt="Zapi10" /></div>
+      <div class="region a-left d3">na <b>Região Norte do Ceará</b> e na <b>Serra da Ibiapaba</b></div>
+      <div class="sub a-up d4">Comida, entregas e corridas — tudo num app só</div>
     </section>
 
     <!-- 2 — 3 serviços (imagens reais geradas por IA) -->
-    <section class="slide" data-dur="3500">
+    <section class="slide">
       <div class="glow cyan"></div>
       <div class="brand-badge"><img src="zapi10-logo.png" alt="Zapi10"></div>
-      <div class="kicker">Tudo em um só app</div>
-      <div class="headline">3 serviços, <span class="accent-cyan">1 aplicativo</span></div>
+      <div class="kicker a-down d1">Tudo em um só app</div>
+      <div class="headline"><span class="ib a-left d2">3 serviços,</span> <span class="accent-cyan ib a-right d3">1 aplicativo</span></div>
       <div class="services">
-        <div class="service food"><img class="ic-img" src="svc-comida.png" alt=""><div class="name">COMIDA</div><div class="desc">peça e receba rápido</div></div>
-        <div class="service deliv"><img class="ic-img" src="svc-entregas.png" alt=""><div class="name">ENTREGAS</div><div class="desc">mande e receba encomendas</div></div>
-        <div class="service ride"><img class="ic-img" src="svc-corridas.png" alt=""><div class="name">CORRIDAS</div><div class="desc">vá aonde precisar</div></div>
+        <div class="service food a-left d3"><img class="ic-img" src="svc-comida.png" alt=""><div class="name">COMIDA</div><div class="desc">peça e receba rápido</div></div>
+        <div class="service deliv a-up d4"><img class="ic-img" src="svc-entregas.png" alt=""><div class="name">ENTREGAS</div><div class="desc">mande e receba encomendas</div></div>
+        <div class="service ride a-right d5"><img class="ic-img" src="svc-corridas.png" alt=""><div class="name">CORRIDAS</div><div class="desc">vá aonde precisar</div></div>
       </div>
     </section>
 
     <!-- 3 — Comida (fotos reais das lojas de Sobral) -->
-    <section class="slide" data-dur="4000">
+    <section class="slide">
       <div class="glow orange"></div>
       <div class="brand-badge"><img src="zapi10-logo.png" alt="Zapi10"></div>
-      <div class="headline">Bateu a <span class="accent-orange">fome?</span></div>
-      <div class="sub">Peça dos melhores lugares da cidade e receba na sua porta</div>
+      <div class="headline a-zoom d1">Bateu a <span class="accent-orange">fome?</span></div>
+      <div class="sub a-up d2">Peça dos melhores lugares da cidade e receba na sua porta</div>
       <div class="food-grid">
-        <div class="pic" style="background-image:url('https://res.cloudinary.com/dz7fl4wvj/image/upload/c_fill,w_600,h_600,q_auto,f_auto/v1779490959/zapi-food/products/camarao.jpg')"></div>
-        <div class="pic" style="background-image:url('https://res.cloudinary.com/dz7fl4wvj/image/upload/c_fill,w_600,h_600,q_auto,f_auto/v1778776121/zapi-food/demo-pizzaria/pizza_pepperoni.png')"></div>
-        <div class="pic" style="background-image:url('https://res.cloudinary.com/dz7fl4wvj/image/upload/c_fill,w_600,h_600,q_auto,f_auto/v1778109883/zapi-food/products/wwu1tkzspr15oglbeqqs.jpg')"></div>
-        <div class="pic" style="background-image:url('https://res.cloudinary.com/dz7fl4wvj/image/upload/c_fill,w_600,h_600,q_auto,f_auto/v1777160455/zapi-food/products/uwfmwp1p5qdjlgxwcmv9.png')"></div>
+        <div class="pic a-left d2" style="background-image:url('https://res.cloudinary.com/dz7fl4wvj/image/upload/c_fill,w_600,h_600,q_auto,f_auto/v1779490959/zapi-food/products/camarao.jpg')"></div>
+        <div class="pic a-down d3" style="background-image:url('https://res.cloudinary.com/dz7fl4wvj/image/upload/c_fill,w_600,h_600,q_auto,f_auto/v1778776121/zapi-food/demo-pizzaria/pizza_pepperoni.png')"></div>
+        <div class="pic a-up d4" style="background-image:url('https://res.cloudinary.com/dz7fl4wvj/image/upload/c_fill,w_600,h_600,q_auto,f_auto/v1778109883/zapi-food/products/wwu1tkzspr15oglbeqqs.jpg')"></div>
+        <div class="pic a-right d5" style="background-image:url('https://res.cloudinary.com/dz7fl4wvj/image/upload/c_fill,w_600,h_600,q_auto,f_auto/v1777160455/zapi-food/products/uwfmwp1p5qdjlgxwcmv9.png')"></div>
       </div>
     </section>
 
     <!-- 4 — PROMOÇÃO (a estrela) -->
-    <section class="slide promo" data-dur="5000">
+    <section class="slide promo">
       <div class="brand-badge"><img src="zapi10-logo.png" alt="Zapi10"></div>
-      <div class="kicker">Promoção de lançamento</div>
-      <div class="off">R$15 OFF</div>
-      <div class="promo-sub">na sua <b>primeira compra</b> de comida 🍔</div>
-      <div class="coupon"><span class="tag">🎟️ cupom</span> ZAPI10</div>
-      <div class="fineprint">Pedido mín. R$30 · válido até 30/06 · 1 por CPF</div>
+      <div class="kicker a-down d1">Promoção de lançamento</div>
+      <div class="off a-zoom d2">R$15 OFF</div>
+      <div class="promo-sub a-left d3">na sua <b>primeira compra</b> de comida 🍔</div>
+      <div class="coupon a-right d4"><span class="tag">🎟️ cupom</span> ZAPI10</div>
+      <div class="fineprint a-up d5">Pedido mín. R$30 · válido até 30/06 · 1 por CPF</div>
     </section>
 
-    <!-- 5 — CTA / Download (tela dividida: Apple | Android) -->
+    <!-- 5 — CTA / Download (QR Code) — OCULTO a pedido em 2026-06-15.
+         Pra reexibir: descomente este bloco E as 2 chamadas makeQR() no script.
+         O tempo é fixo por slide (SLIDE_MS no script), então reexibir só alonga o loop. -->
+    <!--
     <section class="slide cta" data-dur="4000">
       <div class="glow cyan"></div><div class="glow orange"></div>
       <div class="brand-badge"><img src="zapi10-logo.png" alt="Zapi10"></div>
@@ -267,6 +279,7 @@
         </div>
       </div>
     </section>
+    -->
 
   </div>
 </div>
@@ -292,8 +305,10 @@
       }
     }catch(e){ /* mantém o fallback de texto */ }
   }
+  /* QR ocultos junto com o slide CTA — reative as duas linhas juntas:
   makeQR('qr-ios', QR_IOS);
   makeQR('qr-android', QR_ANDROID);
+  */
 
   /* ====================================================================
      LOOP automático dos slides
@@ -302,9 +317,12 @@
   const bar = document.getElementById('bar');
   let i = 0, timer = null, rafId = null;
 
+  /* Tempo de CADA slide (igual pra todos). Loop completo = SLIDE_MS × nº de slides. */
+  const SLIDE_MS = 6000;   // 6s por slide → 4 slides ativos = 24s no loop
+
   function show(n){
     slides.forEach((s,k)=> s.classList.toggle('active', k===n));
-    const dur = parseInt(slides[n].dataset.dur, 10) || 4500;
+    const dur = SLIDE_MS;   // mesmo tempo pra todos (divisão por igual)
     runBar(dur);
     clearTimeout(timer);
     timer = setTimeout(()=>{ i = (i+1) % slides.length; show(i); }, dur);
