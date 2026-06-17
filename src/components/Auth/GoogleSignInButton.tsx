@@ -62,6 +62,7 @@ export default function GoogleSignInButton({
   mode = "login",
   showDivider = true,
   onAuthenticated,
+  width = 300,
 }: {
   role?: string;
   mode?: "login" | "signup";
@@ -69,6 +70,8 @@ export default function GoogleSignInButton({
   /** Quando passado, é chamado no fim da auth EM VEZ de redirecionar/recarregar
    *  (usado no checkout, pra não perder o estado do wizard/carrinho). */
   onAuthenticated?: () => void;
+  /** Largura do botão GIS (px). Responsivo em telas estreitas (mobile). Máx 400 (limite do Google). */
+  width?: number;
 }) {
   const btnRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -100,7 +103,7 @@ export default function GoogleSignInButton({
           text: mode === "signup" ? "continue_with" : "signin_with",
           shape: "pill",
           logo_alignment: "center",
-          width: 300,
+          width: Math.max(200, Math.min(400, width)),
           locale: "pt-BR",
         });
       })

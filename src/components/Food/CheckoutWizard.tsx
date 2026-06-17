@@ -11,6 +11,7 @@ import AddressStep from "./steps/AddressStep";
 import SummaryStep from "./steps/SummaryStep";
 import PixStep from "./steps/PixStep";
 import SuccessStep from "./steps/SuccessStep";
+import OrderingAsBadge from "./steps/OrderingAsBadge";
 import "./checkout.css";
 
 type Step = "cart" | "auth" | "address" | "summary" | "pix" | "success";
@@ -125,6 +126,12 @@ export default function CheckoutWizard({ store, cart, onClose }: Props) {
           <div className="fco-progress-fill" style={{ width: `${progressPct[step]}%` }} />
         </div>
 
+        {/* Identidade do pedido em todos os passos (auto-oculta se não logado). "Trocar"
+            só no carrinho — trocar de conta nos passos seguintes descartaria o endereço. */}
+        <div style={{ padding: "8px 16px 0" }}>
+          <OrderingAsBadge key={authNonce} onSwitchAccount={step === "cart" ? switchAccount : undefined} />
+        </div>
+
         {step === "cart" && (
           <CartStep
             store={store}
@@ -132,7 +139,6 @@ export default function CheckoutWizard({ store, cart, onClose }: Props) {
             fulfillment={fulfillment}
             setFulfillment={setFulfillment}
             onContinue={fromCart}
-            onSwitchAccount={switchAccount}
             pendingOrder={pendingOrder}
             onResumePending={resumePending}
           />

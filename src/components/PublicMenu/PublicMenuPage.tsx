@@ -8,6 +8,8 @@ import { useCart } from "./useCart";
 import AppDownloadModal from "./AppDownloadModal";
 import ProductDetailModal from "../Food/ProductDetailModal";
 import CheckoutWizard from "../Food/CheckoutWizard";
+import OrderingAsBadge from "../Food/steps/OrderingAsBadge";
+import SwitchAccountModal from "../Auth/SwitchAccountModal";
 import { addonGroupsForProduct, allProducts, productHasAddons } from "../Food/addonGroups";
 import type { CartAddon } from "../Food/foodTypes";
 import "./PublicMenu.css";
@@ -31,6 +33,10 @@ export default function PublicMenuPage() {
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const [detailProduct, setDetailProduct] = useState<PublicProduct | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  // "Trocar" no banner abre um modal de troca (OAuth / e-mail+senha).
+  const [switchOpen, setSwitchOpen] = useState(false);
+  // Força recomputar a identidade exibida após trocar de conta.
+  const [authNonce, setAuthNonce] = useState(0);
 
   const cart = useCart(slug);
   // Todos os produtos (pra escopar os addons por categoria do produto aberto).
@@ -176,6 +182,11 @@ export default function PublicMenuPage() {
           <div className="pm-headinfo">
             <h1 className="pm-store-name">{store.name}</h1>
           </div>
+        </div>
+
+        {/* Identidade logada (auto-oculta se não logado), alinhada à direita com "Trocar". */}
+        <div style={{ margin: "2px 0 4px" }}>
+          <OrderingAsBadge key={authNonce} align="right" onSwitchAccount={() => setSwitchOpen(true)} />
         </div>
 
         {/* Meta */}
@@ -349,6 +360,10 @@ export default function PublicMenuPage() {
 
         {checkoutOpen && (
           <CheckoutWizard store={store} cart={cart} onClose={() => setCheckoutOpen(false)} />
+        )}
+
+        {switchOpen && (
+          <SwitchAccountModal onClose={() => setSwitchOpen(false)} onSwitched={() => setAuthNonce((n) => n + 1)} />
         )}
       </div>
     </div>

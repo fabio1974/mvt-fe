@@ -3,7 +3,6 @@ import type { PublicStore } from "../../PublicMenu/publicMenuApi";
 import type { FoodCart } from "../useFoodCart";
 import type { FoodOrderInfo, OrderType } from "../foodTypes";
 import { brl, lineTotal, productPrice } from "../foodTypes";
-import { getUserName } from "../../../utils/auth";
 import { cs } from "../checkoutStyles";
 
 interface Props {
@@ -12,13 +11,11 @@ interface Props {
   fulfillment: OrderType;
   setFulfillment: (f: OrderType) => void;
   onContinue: () => void;
-  onSwitchAccount: () => void;
   pendingOrder: FoodOrderInfo | null;
   onResumePending: () => void;
 }
 
-export default function CartStep({ store, cart, fulfillment, setFulfillment, onContinue, onSwitchAccount, pendingOrder, onResumePending }: Props) {
-  const loggedName = typeof localStorage !== "undefined" && localStorage.getItem("authToken") ? getUserName() : null;
+export default function CartStep({ store, cart, fulfillment, setFulfillment, onContinue, pendingOrder, onResumePending }: Props) {
   const minOrder = store.minOrder ?? 0;
   const belowMin = minOrder > 0 && cart.total < minOrder;
   const canContinue = cart.count > 0 && !belowMin;
@@ -34,16 +31,6 @@ export default function CartStep({ store, cart, fulfillment, setFulfillment, onC
             </div>
             <button style={{ ...cs.primaryBtn, padding: "10px 0", fontSize: 14 }} onClick={onResumePending}>
               Pagar pedido #{pendingOrder.id} agora
-            </button>
-          </div>
-        )}
-
-        {/* Quem está finalizando (evita a confusão de "pedi sem conta") */}
-        {loggedName && (
-          <div style={{ ...cs.rowBetween, fontSize: 13, color: "#6b7280", padding: "0 2px" }}>
-            <span>Pedindo como <strong style={{ color: "#374151" }}>{loggedName}</strong></span>
-            <button onClick={onSwitchAccount} style={{ border: "none", background: "transparent", color: "#2563eb", cursor: "pointer", fontWeight: 600, padding: 0 }}>
-              Trocar
             </button>
           </div>
         )}

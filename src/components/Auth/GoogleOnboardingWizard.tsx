@@ -227,7 +227,6 @@ export default function GoogleOnboardingWizard({ idToken, name, initialRole, onC
             <label style={styles.fieldLabel}>Telefone (com DDD)</label>
             <input
               inputMode="numeric"
-              placeholder="(88) 98108-7485"
               value={phone}
               onChange={(e) => setPhone(maskPhone(e.target.value))}
               maxLength={15}
@@ -396,7 +395,7 @@ const styles: Record<string, React.CSSProperties> = {
   optionContent: { display: "flex", flexDirection: "column", flex: 1 },
   optionLabel: { fontSize: "1rem", fontWeight: 600, color: "#111827" },
   optionDesc: { fontSize: "0.82rem", color: "#6b7280", marginTop: 2 },
-  fieldLabel: { display: "block", fontSize: "0.82rem", color: "#374151", fontWeight: 500, margin: "10px 0 4px" },
+  fieldLabel: { display: "block", textAlign: "left", fontSize: "0.82rem", color: "#374151", fontWeight: 500, margin: "10px 0 4px" },
   input: {
     width: "100%", padding: "12px 14px", borderRadius: 10, border: "1px solid #d1d5db",
     fontSize: "1rem", boxSizing: "border-box", background: "#fff",
