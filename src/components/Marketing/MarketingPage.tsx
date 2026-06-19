@@ -6,16 +6,18 @@ import type { MarketingCampaign, MarketingCreative } from "./types";
 import NewCampaignTab from "./NewCampaignTab";
 import ApprovalTab from "./ApprovalTab";
 import PublishedTab from "./PublishedTab";
+import AdsTab from "./AdsTab";
 import MemoryTab from "./MemoryTab";
 import CharactersTab from "./CharactersTab";
 import HealthBanner from "./HealthBanner";
 
-type TabKey = "new" | "approval" | "published" | "characters" | "memory";
+type TabKey = "new" | "approval" | "published" | "ads" | "characters" | "memory";
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: "new", label: "Nova campanha" },
   { key: "approval", label: "Em aprovação" },
   { key: "published", label: "Publicados" },
+  { key: "ads", label: "📣 Ads" },
   { key: "characters", label: "🎭 Personagens" },
   { key: "memory", label: "🧠 Memória" },
 ];
@@ -59,10 +61,10 @@ const MarketingPage: React.FC = () => {
     <div style={{ padding: 24, maxWidth: 1200, margin: "0 auto" }}>
       <div style={{ marginBottom: 16 }}>
         <h1 style={{ fontSize: 28, fontWeight: 600, marginBottom: 4 }}>
-          Marketing — Zapi Food
+          Marketing — Zapi10
         </h1>
         <p style={{ color: "#64748b", margin: 0 }}>
-          Pipeline automatizado: briefing → IA gera variações → você aprova → publica no @zapi.food.
+          Pipeline automatizado: briefing → IA gera variações → você aprova → publica no @zapi10oficial.
         </p>
       </div>
 
@@ -128,6 +130,9 @@ const MarketingPage: React.FC = () => {
       )}
       {activeTab === "published" && (
         <PublishedTab creatives={published} />
+      )}
+      {activeTab === "ads" && (
+        <AdsTab published={published} />
       )}
       {activeTab === "characters" && (
         <CharactersTab />

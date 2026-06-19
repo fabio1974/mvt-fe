@@ -95,3 +95,36 @@ export interface MarketingGuideline {
   createdAt: string;
   updatedAt: string;
 }
+
+// Mídia paga (Meta Marketing API) — Fase 2
+
+export type PaidCampaignStatus = "DRAFT" | "CREATED" | "ACTIVE" | "PAUSED" | "FAILED";
+
+export interface MarketingPaidCampaign {
+  id: number;
+  creativeId?: number | null;
+  name: string;
+  objective: string;
+  linkUrl: string;
+  dailyBudgetCents: number;
+  status: PaidCampaignStatus;
+  fbCampaignId?: string | null;
+  fbAdsetId?: string | null;
+  fbCreativeId?: string | null;
+  fbAdId?: string | null;
+  errorMessage?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdSpendSnapshot {
+  id: number;
+  capturedAt: string;
+  spendCents: number;
+  impressions: number;
+  reach: number;
+  clicks: number;
+  ctr: number;
+  cpcCents: number;
+  cpmCents: number;
+}

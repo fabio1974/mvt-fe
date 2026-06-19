@@ -1,10 +1,12 @@
 import { api } from "../../services/api";
 import type {
+  AdSpendSnapshot,
   CampaignDetail,
   MarketingCampaign,
   MarketingCharacter,
   MarketingCreative,
   MarketingGuideline,
+  MarketingPaidCampaign,
   MetricSnapshot,
   TargetAudience,
 } from "./types";
@@ -105,4 +107,23 @@ export const marketingApi = {
 
   deleteCharacter: async (id: number) =>
     (await api.delete<{ deleted: boolean; id: number }>(`${BASE}/characters/${id}`)).data,
+
+  // Mídia paga (Meta Marketing API) — Fase 2
+  adsHealth: async () =>
+    (await api.get<{ ads_configured: boolean }>(`${BASE}/ads/health`)).data,
+
+  listPaidCampaigns: async () =>
+    (await api.get<MarketingPaidCampaign[]>(`${BASE}/ads`)).data,
+
+  promoteCreative: async (input: { creativeId: number; dailyBudgetCents: number; linkUrl: string }) =>
+    (await api.post<MarketingPaidCampaign>(`${BASE}/ads/promote`, input)).data,
+
+  launchPaid: async (id: number) =>
+    (await api.post<MarketingPaidCampaign>(`${BASE}/ads/${id}/launch`)).data,
+
+  pausePaid: async (id: number) =>
+    (await api.post<MarketingPaidCampaign>(`${BASE}/ads/${id}/pause`)).data,
+
+  refreshAdSpend: async (id: number) =>
+    (await api.post<AdSpendSnapshot>(`${BASE}/ads/${id}/refresh-spend`)).data,
 };
