@@ -25,6 +25,23 @@ const AdsTab: React.FC<Props> = ({ published }) => {
   const [startDate, setStartDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [endDate, setEndDate] = useState(() => new Date(Date.now() + 6 * 864e5).toISOString().slice(0, 10));
   const [link, setLink] = useState("https://zapi10.com.br");
+  const [storeHint, setStoreHint] = useState<string | null>(null);
+
+  // Ao escolher um post: se a campanha for de uma loja, pré-preenche o link /c/<slug>
+  const onPickCreative = async (value: number | "") => {
+    setCreativeId(value);
+    setStoreHint(null);
+    if (!value) return;
+    try {
+      const sl = await marketingApi.creativeStoreLink(Number(value));
+      if (sl.link) {
+        setLink(sl.link);
+        setStoreHint(sl.storeName);
+      }
+    } catch {
+      /* sem loja vinculada — mantém o link atual */
+    }
+  };
 
   const days = Math.max(
     1,
@@ -109,7 +126,7 @@ const AdsTab: React.FC<Props> = ({ published }) => {
             Post (dos publicados)
             <select
               value={creativeId}
-              onChange={(e) => setCreativeId(e.target.value ? Number(e.target.value) : "")}
+              onChange={(e) => onPickCreative(e.target.value ? Number(e.target.value) : "")}
               style={inputStyle}
             >
               <option value="">— escolher —</option>
@@ -142,8 +159,20 @@ const AdsTab: React.FC<Props> = ({ published }) => {
           </div>
           <label style={{ fontSize: 13, color: "#475569" }}>
             Link de destino
-            <input value={link} onChange={(e) => setLink(e.target.value)} style={inputStyle} />
+            <input
+              value={link}
+              onChange={(e) => {
+                setLink(e.target.value);
+                setStoreHint(null);
+              }}
+              style={inputStyle}
+            />
           </label>
+          {storeHint && (
+            <div style={{ fontSize: 12, color: "#15803d", marginTop: -4 }}>
+              🏪 Link do cardápio de <strong>{storeHint}</strong> preenchido automaticamente.
+            </div>
+          )}
           <div style={{ fontSize: 12, color: "#94a3b8" }}>
             ⏰ Período fixo de <strong>{days} dia(s)</strong> · total ≈ <strong>R$ {totalReais.toFixed(2).replace(".", ",")}</strong>{" "}
             (verba/dia × dias). Só veicula no <strong>horário de funcionamento da loja</strong> e <strong>para sozinho no fim</strong>.

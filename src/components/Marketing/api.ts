@@ -2,11 +2,13 @@ import { api } from "../../services/api";
 import type {
   AdSpendSnapshot,
   CampaignDetail,
+  CreativeStoreLink,
   MarketingCampaign,
   MarketingCharacter,
   MarketingCreative,
   MarketingGuideline,
   MarketingPaidCampaign,
+  MarketingStore,
   MetricSnapshot,
   TargetAudience,
 } from "./types";
@@ -30,6 +32,23 @@ export const marketingApi = {
     creativeType?: "IMAGE" | "CAROUSEL" | "VIDEO";
     character?: { id: number };
   }) => (await api.post<MarketingCampaign>(`${BASE}/campaigns`, input)).data,
+
+  // Lojas ativas com cardápio (slug) pro multi-select de campanhas
+  listStores: async () =>
+    (await api.get<MarketingStore[]>(`${BASE}/stores`)).data,
+
+  // Cria 1 campanha por loja selecionada (briefing personalizado); sem lojas = 1 institucional
+  createCampaignBatch: async (input: {
+    briefing: string;
+    targetAudience: TargetAudience;
+    requestedVariations?: number;
+    creativeType?: "IMAGE" | "CAROUSEL" | "VIDEO";
+    storeIds: number[];
+  }) => (await api.post<MarketingCampaign[]>(`${BASE}/campaigns/batch`, input)).data,
+
+  // Resolve o link /c/<slug> da loja de um creative (auto-preenchimento no Ads)
+  creativeStoreLink: async (id: number) =>
+    (await api.get<CreativeStoreLink>(`${BASE}/creatives/${id}/store-link`)).data,
 
   getCampaign: async (id: number) =>
     (await api.get<CampaignDetail>(`${BASE}/campaigns/${id}`)).data,

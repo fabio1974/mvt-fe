@@ -48,8 +48,26 @@ export interface MarketingCampaign {
   status: CampaignStatus;
   requestedVariations: number;
   errorMessage?: string | null;
+  storeId?: number | null;
+  storeSlug?: string | null;
+  storeName?: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+/** Loja (estabelecimento) ativa com cardápio público — pro select de campanhas. */
+export interface MarketingStore {
+  id: number;
+  slug: string;
+  name: string;
+}
+
+/** Resolução do link /c/<slug> da loja de um creative (auto-preenchimento no Ads). */
+export interface CreativeStoreLink {
+  storeId: number | null;
+  storeSlug: string | null;
+  storeName: string | null;
+  link: string | null;
 }
 
 export interface MarketingCreative {

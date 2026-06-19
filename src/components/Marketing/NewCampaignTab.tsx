@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { marketingApi } from "./api";
-import type { MarketingCampaign, MarketingCharacter, TargetAudience } from "./types";
+import type { MarketingCampaign, MarketingCharacter, MarketingStore, TargetAudience } from "./types";
 import GeneratingModal from "./GeneratingModal";
 
 const AUDIENCES: { value: TargetAudience; label: string }[] = [
@@ -26,6 +26,9 @@ const NewCampaignTab: React.FC<Props> = ({ campaigns, onCreated }) => {
   const [creativeType, setCreativeType] = useState<"IMAGE" | "CAROUSEL" | "VIDEO">("IMAGE");
   const [characterId, setCharacterId] = useState<number | "">("");
   const [characters, setCharacters] = useState<MarketingCharacter[]>([]);
+  const [stores, setStores] = useState<MarketingStore[]>([]);
+  const [selectedStoreIds, setSelectedStoreIds] = useState<number[]>([]);
+  const [storeSearch, setStoreSearch] = useState("");
   const [creating, setCreating] = useState(false);
   const [generatingId, setGeneratingId] = useState<number | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
@@ -36,6 +39,21 @@ const NewCampaignTab: React.FC<Props> = ({ campaigns, onCreated }) => {
       marketingApi.listCharacters().then(setCharacters).catch(() => {});
     }
   }, [creativeType, characters.length]);
+
+  useEffect(() => {
+    marketingApi.listStores().then(setStores).catch(() => {});
+  }, []);
+
+  const isBatch = creativeType !== "VIDEO" && selectedStoreIds.length > 0;
+
+  const filteredStores = useMemo(() => {
+    const q = storeSearch.trim().toLowerCase();
+    if (!q) return stores;
+    return stores.filter((s) => s.name.toLowerCase().includes(q) || s.slug.toLowerCase().includes(q));
+  }, [stores, storeSearch]);
+
+  const toggleStore = (id: number) =>
+    setSelectedStoreIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
   const draftCampaigns = campaigns.filter((c) => c.status === "DRAFT" || c.status === "FAILED");
 
@@ -63,16 +81,28 @@ const NewCampaignTab: React.FC<Props> = ({ campaigns, onCreated }) => {
     setError(null);
     setCreating(true);
     try {
-      const payload: any = {
-        briefing: briefing.trim(),
-        targetAudience: audience,
-        requestedVariations: creativeType === "VIDEO" ? 1 : variations,
-        creativeType,
-      };
-      if (creativeType === "VIDEO" && characterId) {
-        payload.character = { id: characterId };
+      if (isBatch) {
+        // 1 campanha por loja — o BE personaliza o briefing (nome + produtos de cada loja)
+        await marketingApi.createCampaignBatch({
+          briefing: briefing.trim(),
+          targetAudience: audience,
+          requestedVariations: variations,
+          creativeType: creativeType as "IMAGE" | "CAROUSEL",
+          storeIds: selectedStoreIds,
+        });
+        setSelectedStoreIds([]);
+      } else {
+        const payload: any = {
+          briefing: briefing.trim(),
+          targetAudience: audience,
+          requestedVariations: creativeType === "VIDEO" ? 1 : variations,
+          creativeType,
+        };
+        if (creativeType === "VIDEO" && characterId) {
+          payload.character = { id: characterId };
+        }
+        await marketingApi.createCampaign(payload);
       }
-      await marketingApi.createCampaign(payload);
       setBriefing("");
       onCreated();
     } catch (err: any) {
@@ -191,6 +221,86 @@ const NewCampaignTab: React.FC<Props> = ({ campaigns, onCreated }) => {
           )}
         </div>
 
+        {creativeType !== "VIDEO" && (
+          <div style={{ marginTop: 16 }}>
+            <label style={labelStyle}>
+              Estabelecimentos (opcional) — cria 1 campanha por loja, personalizada com nome + produtos
+            </label>
+            {stores.length === 0 ? (
+              <div style={{ fontSize: 12, color: "#94a3b8" }}>
+                Nenhuma loja ativa com cardápio (slug) encontrada.
+              </div>
+            ) : (
+              <>
+                <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 6 }}>
+                  <input
+                    value={storeSearch}
+                    onChange={(e) => setStoreSearch(e.target.value)}
+                    placeholder="🔎 filtrar loja…"
+                    style={{ ...inputStyle, flex: 1, marginBottom: 0 }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setSelectedStoreIds(filteredStores.map((s) => s.id))}
+                    style={chipBtn}
+                  >
+                    Selecionar todas
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedStoreIds([])}
+                    style={chipBtn}
+                  >
+                    Limpar
+                  </button>
+                </div>
+                <div
+                  style={{
+                    maxHeight: 180,
+                    overflowY: "auto",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: 8,
+                    padding: 8,
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+                    gap: 4,
+                  }}
+                >
+                  {filteredStores.map((s) => (
+                    <label
+                      key={s.id}
+                      style={{
+                        display: "flex",
+                        gap: 6,
+                        alignItems: "center",
+                        fontSize: 13,
+                        padding: "4px 6px",
+                        borderRadius: 6,
+                        cursor: "pointer",
+                        background: selectedStoreIds.includes(s.id) ? "#eff6ff" : "transparent",
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedStoreIds.includes(s.id)}
+                        onChange={() => toggleStore(s.id)}
+                      />
+                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {s.name}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+                <div style={{ fontSize: 12, color: isBatch ? "#1d4ed8" : "#94a3b8", marginTop: 6 }}>
+                  {isBatch
+                    ? `📦 Vai criar ${selectedStoreIds.length} campanha(s) — 1 por loja, com ${variations} variações cada.`
+                    : "Nenhuma loja selecionada → cria 1 campanha institucional (Zapi10)."}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
         {error && (
           <div style={{ color: "#991b1b", marginTop: 8, fontSize: 13 }}>{error}</div>
         )}
@@ -210,7 +320,11 @@ const NewCampaignTab: React.FC<Props> = ({ campaigns, onCreated }) => {
             opacity: creating ? 0.6 : 1,
           }}
         >
-          {creating ? "Criando…" : "Criar campanha"}
+          {creating
+            ? "Criando…"
+            : isBatch
+            ? `Criar ${selectedStoreIds.length} campanhas (1 por loja)`
+            : "Criar campanha"}
         </button>
       </form>
 
@@ -313,6 +427,18 @@ const inputStyle: React.CSSProperties = {
   fontSize: 14,
   fontFamily: "inherit",
   boxSizing: "border-box",
+};
+
+const chipBtn: React.CSSProperties = {
+  padding: "6px 10px",
+  background: "#dbeafe",
+  color: "#1d4ed8",
+  border: "1px solid #bfdbfe",
+  borderRadius: 6,
+  fontSize: 12,
+  fontWeight: 500,
+  cursor: "pointer",
+  whiteSpace: "nowrap",
 };
 
 export default NewCampaignTab;
