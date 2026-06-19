@@ -84,6 +84,8 @@ export interface MarketingCreative {
   instagramPermalink?: string | null;
   publishedAt?: string | null;
   errorMessage?: string | null;
+  storeName?: string | null;
+  storeSlug?: string | null;
   createdAt: string;
   updatedAt: string;
 }

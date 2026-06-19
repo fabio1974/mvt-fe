@@ -6,6 +6,8 @@ interface Props {
   published: MarketingCreative[];
 }
 
+const CARDAPIO_BASE = "https://zapi10.com.br/c/";
+
 const brl = (cents: number) => `R$ ${(cents / 100).toFixed(2).replace(".", ",")}`;
 const fmtK = (n: number) => (n >= 1000 ? `${Math.round(n / 1000)} mil` : String(n));
 
@@ -21,25 +23,20 @@ const AdsTab: React.FC<Props> = ({ published }) => {
   const [campaigns, setCampaigns] = useState<MarketingPaidCampaign[]>([]);
   const [loading, setLoading] = useState(false);
   const [creativeId, setCreativeId] = useState<number | "">("");
-  const [budgetReais, setBudgetReais] = useState(30);
+  const [budgetReais, setBudgetReais] = useState(20);
   const [startDate, setStartDate] = useState(() => new Date().toISOString().slice(0, 10));
-  const [endDate, setEndDate] = useState(() => new Date(Date.now() + 6 * 864e5).toISOString().slice(0, 10));
+  const [endDate, setEndDate] = useState(() => new Date(Date.now() + 2 * 864e5).toISOString().slice(0, 10));
   const [link, setLink] = useState("https://zapi10.com.br");
   const [storeHint, setStoreHint] = useState<string | null>(null);
 
   // Ao escolher um post: se a campanha for de uma loja, pré-preenche o link /c/<slug>
-  const onPickCreative = async (value: number | "") => {
-    setCreativeId(value);
-    setStoreHint(null);
-    if (!value) return;
-    try {
-      const sl = await marketingApi.creativeStoreLink(Number(value));
-      if (sl.link) {
-        setLink(sl.link);
-        setStoreHint(sl.storeName);
-      }
-    } catch {
-      /* sem loja vinculada — mantém o link atual */
+  const onPickCreative = (c: MarketingCreative) => {
+    setCreativeId(c.id);
+    if (c.storeSlug) {
+      setLink(CARDAPIO_BASE + c.storeSlug);
+      setStoreHint(c.storeName || c.storeSlug);
+    } else {
+      setStoreHint(null);
     }
   };
 
@@ -122,21 +119,114 @@ const AdsTab: React.FC<Props> = ({ published }) => {
           tráfego pro link de destino.
         </p>
         <div style={{ display: "grid", gap: 10, maxWidth: 560 }}>
-          <label style={{ fontSize: 13, color: "#475569" }}>
-            Post (dos publicados)
-            <select
-              value={creativeId}
-              onChange={(e) => onPickCreative(e.target.value ? Number(e.target.value) : "")}
-              style={inputStyle}
-            >
-              <option value="">— escolher —</option>
-              {published.map((c) => (
-                <option key={c.id} value={c.id}>
-                  #{c.id} · {(c.caption || "(sem caption)").slice(0, 50)}
-                </option>
-              ))}
-            </select>
-          </label>
+          <div>
+            <label style={{ fontSize: 13, color: "#475569" }}>Post (dos publicados)</label>
+            {published.length === 0 ? (
+              <div style={{ fontSize: 13, color: "#94a3b8", marginTop: 4 }}>
+                Nenhum post publicado ainda. Publique um na aba "Publicados".
+              </div>
+            ) : (
+              <div
+                style={{
+                  marginTop: 4,
+                  maxHeight: 320,
+                  overflowY: "auto",
+                  display: "grid",
+                  gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
+                  gap: 8,
+                  padding: 4,
+                  border: "1px solid #e2e8f0",
+                  borderRadius: 8,
+                }}
+              >
+                {published.map((c) => {
+                  const selected = creativeId === c.id;
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => onPickCreative(c)}
+                      title={c.caption || ""}
+                      style={{
+                        textAlign: "left",
+                        padding: 0,
+                        background: "white",
+                        border: selected ? "2px solid #1d4ed8" : "1px solid #e2e8f0",
+                        borderRadius: 8,
+                        overflow: "hidden",
+                        cursor: "pointer",
+                        display: "flex",
+                        flexDirection: "column",
+                      }}
+                    >
+                      <div style={{ position: "relative", width: "100%", aspectRatio: "1/1", background: "#f1f5f9" }}>
+                        {c.assetUrl && (
+                          <img
+                            src={c.assetUrl}
+                            alt=""
+                            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                          />
+                        )}
+                        {selected && (
+                          <div
+                            style={{
+                              position: "absolute",
+                              top: 4,
+                              right: 4,
+                              background: "#1d4ed8",
+                              color: "white",
+                              borderRadius: 10,
+                              width: 20,
+                              height: 20,
+                              fontSize: 12,
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            ✓
+                          </div>
+                        )}
+                      </div>
+                      <div style={{ padding: 6 }}>
+                        {c.storeName ? (
+                          <div
+                            style={{
+                              fontSize: 11,
+                              fontWeight: 700,
+                              color: "#15803d",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            🏪 {c.storeName}
+                          </div>
+                        ) : (
+                          <div style={{ fontSize: 11, fontWeight: 600, color: "#94a3b8" }}>
+                            Zapi10 (institucional)
+                          </div>
+                        )}
+                        <div
+                          style={{
+                            fontSize: 11,
+                            color: "#64748b",
+                            marginTop: 2,
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                            overflow: "hidden",
+                          }}
+                        >
+                          #{c.id} · {c.caption || "(sem caption)"}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
           <div style={{ display: "flex", gap: 10 }}>
             <label style={{ fontSize: 13, color: "#475569", flex: 1 }}>
               Verba diária (R$)
