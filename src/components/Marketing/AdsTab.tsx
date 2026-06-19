@@ -21,8 +21,15 @@ const AdsTab: React.FC<Props> = ({ published }) => {
   const [loading, setLoading] = useState(false);
   const [creativeId, setCreativeId] = useState<number | "">("");
   const [budgetReais, setBudgetReais] = useState(30);
-  const [durationDays, setDurationDays] = useState(7);
+  const [startDate, setStartDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [endDate, setEndDate] = useState(() => new Date(Date.now() + 6 * 864e5).toISOString().slice(0, 10));
   const [link, setLink] = useState("https://zapi10.com.br");
+
+  const days = Math.max(
+    1,
+    Math.round((new Date(endDate).getTime() - new Date(startDate).getTime()) / 864e5) + 1
+  );
+  const totalReais = budgetReais * days;
   const [promoting, setPromoting] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -52,7 +59,8 @@ const AdsTab: React.FC<Props> = ({ published }) => {
         creativeId: Number(creativeId),
         dailyBudgetCents: Math.round(budgetReais * 100),
         linkUrl: link,
-        durationDays,
+        startDate,
+        endDate,
       });
       setCreativeId("");
       await reload();
@@ -102,23 +110,21 @@ const AdsTab: React.FC<Props> = ({ published }) => {
               />
             </label>
             <label style={{ fontSize: 13, color: "#475569", flex: 1 }}>
-              Duração (dias)
-              <input
-                type="number"
-                min={1}
-                value={durationDays}
-                onChange={(e) => setDurationDays(Number(e.target.value))}
-                style={inputStyle}
-              />
+              Início
+              <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} style={inputStyle} />
             </label>
-            <label style={{ fontSize: 13, color: "#475569", flex: 2 }}>
-              Link de destino
-              <input value={link} onChange={(e) => setLink(e.target.value)} style={inputStyle} />
+            <label style={{ fontSize: 13, color: "#475569", flex: 1 }}>
+              Fim
+              <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} style={inputStyle} />
             </label>
           </div>
+          <label style={{ fontSize: 13, color: "#475569" }}>
+            Link de destino
+            <input value={link} onChange={(e) => setLink(e.target.value)} style={inputStyle} />
+          </label>
           <div style={{ fontSize: 12, color: "#94a3b8" }}>
-            ⏰ O anúncio só veicula no <strong>horário de funcionamento da loja</strong> (do cardápio do link). Total
-            gasto = verba/dia × duração.
+            ⏰ Período fixo de <strong>{days} dia(s)</strong> · total ≈ <strong>R$ {totalReais.toFixed(2).replace(".", ",")}</strong>{" "}
+            (verba/dia × dias). Só veicula no <strong>horário de funcionamento da loja</strong> e <strong>para sozinho no fim</strong>.
           </div>
           {err && <div style={{ color: "#b91c1c", fontSize: 13 }}>{err}</div>}
           <button
