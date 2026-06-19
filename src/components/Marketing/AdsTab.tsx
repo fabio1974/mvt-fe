@@ -21,6 +21,7 @@ const AdsTab: React.FC<Props> = ({ published }) => {
   const [loading, setLoading] = useState(false);
   const [creativeId, setCreativeId] = useState<number | "">("");
   const [budgetReais, setBudgetReais] = useState(30);
+  const [durationDays, setDurationDays] = useState(7);
   const [link, setLink] = useState("https://zapi10.com.br");
   const [promoting, setPromoting] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -51,6 +52,7 @@ const AdsTab: React.FC<Props> = ({ published }) => {
         creativeId: Number(creativeId),
         dailyBudgetCents: Math.round(budgetReais * 100),
         linkUrl: link,
+        durationDays,
       });
       setCreativeId("");
       await reload();
@@ -99,10 +101,24 @@ const AdsTab: React.FC<Props> = ({ published }) => {
                 style={inputStyle}
               />
             </label>
+            <label style={{ fontSize: 13, color: "#475569", flex: 1 }}>
+              Duração (dias)
+              <input
+                type="number"
+                min={1}
+                value={durationDays}
+                onChange={(e) => setDurationDays(Number(e.target.value))}
+                style={inputStyle}
+              />
+            </label>
             <label style={{ fontSize: 13, color: "#475569", flex: 2 }}>
               Link de destino
               <input value={link} onChange={(e) => setLink(e.target.value)} style={inputStyle} />
             </label>
+          </div>
+          <div style={{ fontSize: 12, color: "#94a3b8" }}>
+            ⏰ O anúncio só veicula no <strong>horário de funcionamento da loja</strong> (do cardápio do link). Total
+            gasto = verba/dia × duração.
           </div>
           {err && <div style={{ color: "#b91c1c", fontSize: 13 }}>{err}</div>}
           <button

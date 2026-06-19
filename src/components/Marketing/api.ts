@@ -115,7 +115,7 @@ export const marketingApi = {
   listPaidCampaigns: async () =>
     (await api.get<MarketingPaidCampaign[]>(`${BASE}/ads`)).data,
 
-  promoteCreative: async (input: { creativeId: number; dailyBudgetCents: number; linkUrl: string }) =>
+  promoteCreative: async (input: { creativeId: number; dailyBudgetCents: number; linkUrl: string; durationDays: number }) =>
     (await api.post<MarketingPaidCampaign>(`${BASE}/ads/promote`, input)).data,
 
   launchPaid: async (id: number) =>
