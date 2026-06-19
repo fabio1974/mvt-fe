@@ -60,6 +60,9 @@ export const marketingApi = {
   publishCreative: async (id: number) =>
     (await api.post<MarketingCreative>(`${BASE}/creatives/${id}/publish`)).data,
 
+  resetCreative: async (id: number) =>
+    (await api.post<MarketingCreative>(`${BASE}/creatives/${id}/reset`)).data,
+
   publishCarousel: async (campaignId: number, creativeIds: number[]) =>
     (
       await api.post<MarketingCreative>(`${BASE}/campaigns/${campaignId}/publish-carousel`, {

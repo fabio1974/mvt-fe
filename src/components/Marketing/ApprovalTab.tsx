@@ -341,6 +341,12 @@ const CampaignApprovalCard: React.FC<{ campaignId: number; onChanged: () => void
               catch (e: any) { setError(e?.response?.data?.message || e?.message || "falha publicando"); }
               finally { setBusy(null); }
             }}
+            onReset={async () => {
+              setBusy(c.id);
+              try { await marketingApi.resetCreative(c.id); await refresh(); }
+              catch (e: any) { setError(e?.response?.data?.message || e?.message || "falha resetando"); }
+              finally { setBusy(null); }
+            }}
             onEditCaption={async (newCaption) => {
               setBusy(c.id);
               try { await marketingApi.approveCreative(c.id, newCaption); await refresh(); }
@@ -404,10 +410,13 @@ const CreativeCard: React.FC<{
   onApprove: () => void;
   onReject: () => void;
   onPublishSingle: () => void;
+  onReset: () => void;
   onEditCaption: (newCaption: string) => void;
-}> = ({ creative, busy, onApprove, onReject, onPublishSingle, onEditCaption }) => {
+}> = ({ creative, busy, onApprove, onReject, onPublishSingle, onReset, onEditCaption }) => {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(creative.caption || "");
+  const [zoom, setZoom] = useState(false);
+  const err = creative.errorMessage ? formatCreativeError(creative.errorMessage) : null;
 
   const cardBorder =
     creative.status === "APPROVED" ? "#10b981" :
@@ -427,7 +436,7 @@ const CreativeCard: React.FC<{
         flexDirection: "column",
       }}
     >
-      <div style={{ width: "100%", aspectRatio: creative.creativeType === "VIDEO" ? "9/16" : "1/1", background: "#f1f5f9" }}>
+      <div style={{ position: "relative", width: "100%", aspectRatio: creative.creativeType === "VIDEO" ? "9/16" : "1/1", background: "#f1f5f9" }}>
         {creative.assetUrl ? (
           creative.creativeType === "VIDEO" ? (
             <video
@@ -437,11 +446,36 @@ const CreativeCard: React.FC<{
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           ) : (
-            <img
-              src={creative.assetUrl}
-              alt={`Variação ${creative.variationIndex + 1}`}
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            />
+            <>
+              <img
+                src={creative.assetUrl}
+                alt={`Variação ${creative.variationIndex + 1}`}
+                onClick={() => setZoom(true)}
+                style={{ width: "100%", height: "100%", objectFit: "cover", cursor: "zoom-in" }}
+              />
+              <button
+                onClick={() => setZoom(true)}
+                title="Ampliar imagem"
+                style={{
+                  position: "absolute",
+                  top: 6,
+                  right: 6,
+                  width: 30,
+                  height: 30,
+                  borderRadius: 6,
+                  border: "none",
+                  background: "rgba(15,23,42,0.6)",
+                  color: "white",
+                  fontSize: 14,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                🔍
+              </button>
+            </>
           )
         ) : (
           <div
@@ -460,6 +494,60 @@ const CreativeCard: React.FC<{
         )}
       </div>
 
+      {zoom && creative.assetUrl && (
+        <div
+          onClick={() => setZoom(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 1000,
+            background: "rgba(0,0,0,0.85)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 24,
+            cursor: "zoom-out",
+          }}
+        >
+          {creative.creativeType === "VIDEO" ? (
+            <video
+              src={creative.assetUrl}
+              controls
+              autoPlay
+              playsInline
+              onClick={(e) => e.stopPropagation()}
+              style={{ maxWidth: "95vw", maxHeight: "95vh", borderRadius: 8 }}
+            />
+          ) : (
+            <img
+              src={creative.assetUrl}
+              alt={`Variação ${creative.variationIndex + 1} ampliada`}
+              onClick={(e) => e.stopPropagation()}
+              style={{ maxWidth: "95vw", maxHeight: "95vh", objectFit: "contain", borderRadius: 8 }}
+            />
+          )}
+          <button
+            onClick={() => setZoom(false)}
+            title="Fechar"
+            style={{
+              position: "fixed",
+              top: 18,
+              right: 22,
+              width: 42,
+              height: 42,
+              borderRadius: 21,
+              border: "none",
+              background: "rgba(255,255,255,0.15)",
+              color: "white",
+              fontSize: 22,
+              cursor: "pointer",
+            }}
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       <div style={{ padding: 10, fontSize: 12, color: "#475569" }}>
         <div style={{ fontSize: 11, color: "#94a3b8", marginBottom: 4 }}>
           var #{creative.variationIndex + 1} · {creative.status}
@@ -477,8 +565,39 @@ const CreativeCard: React.FC<{
         {creative.hashtags && (
           <div style={{ color: "#0891b2", fontSize: 11, marginTop: 4 }}>{creative.hashtags}</div>
         )}
-        {creative.errorMessage && (
-          <div style={{ color: "#dc2626", marginTop: 6, fontSize: 11 }}>{creative.errorMessage}</div>
+        {err && (
+          <div
+            style={{
+              marginTop: 6,
+              padding: 8,
+              background: "#fef2f2",
+              border: "1px solid #fecaca",
+              borderRadius: 6,
+            }}
+          >
+            <div style={{ color: "#b91c1c", fontSize: 11, fontWeight: 600, lineHeight: 1.4 }}>
+              ⚠️ {err.short}
+            </div>
+            {err.detail && (
+              <details style={{ marginTop: 4 }}>
+                <summary style={{ color: "#dc2626", fontSize: 10, cursor: "pointer" }}>
+                  ver detalhes técnicos
+                </summary>
+                <div
+                  style={{
+                    color: "#7f1d1d",
+                    fontSize: 10,
+                    marginTop: 3,
+                    whiteSpace: "pre-wrap",
+                    wordBreak: "break-word",
+                    fontFamily: "monospace",
+                  }}
+                >
+                  {err.detail}
+                </div>
+              </details>
+            )}
+          </div>
         )}
       </div>
 
@@ -505,6 +624,16 @@ const CreativeCard: React.FC<{
             Ver no IG ↗
           </a>
         )}
+        {creative.status === "FAILED" && (
+          <button
+            onClick={onReset}
+            disabled={busy}
+            title="Reseta o erro e volta o creative pra revisão, pra você reenviar"
+            style={btnSmAmber}
+          >
+            {busy ? "…" : "↻ Tentar de novo"}
+          </button>
+        )}
         {editing && (
           <>
             <button onClick={() => onEditCaption(draft)} disabled={busy} style={btnSmGreen}>Salvar+Aprovar</button>
@@ -527,6 +656,29 @@ const btnSmBase: React.CSSProperties = {
 const btnSmGreen: React.CSSProperties = { ...btnSmBase, background: "#dcfce7", color: "#166534" };
 const btnSmBlue: React.CSSProperties = { ...btnSmBase, background: "#dbeafe", color: "#1d4ed8" };
 const btnSmGray: React.CSSProperties = { ...btnSmBase, background: "#f1f5f9", color: "#64748b" };
+const btnSmAmber: React.CSSProperties = { ...btnSmBase, background: "#fef3c7", color: "#92400e" };
+
+// Extrai a mensagem legível de um erro de creative (Graph API costuma vir como
+// JSON cru tipo `400 ... {"error":{"error_user_msg":"...","message":"..."}}`).
+function formatCreativeError(raw: string): { short: string; detail?: string } {
+  if (!raw) return { short: "Erro desconhecido" };
+  try {
+    const first = raw.indexOf("{");
+    const last = raw.lastIndexOf("}");
+    if (first >= 0 && last > first) {
+      const parsed = JSON.parse(raw.slice(first, last + 1));
+      const e = parsed?.error ?? parsed;
+      const short = e?.error_user_msg || e?.message || e?.error_user_title;
+      if (short) return { short, detail: raw };
+    }
+  } catch {
+    /* não é JSON — cai pro fallback */
+  }
+  const trimmed = raw.trim();
+  return trimmed.length > 140
+    ? { short: trimmed.slice(0, 140) + "…", detail: raw }
+    : { short: trimmed };
+}
 
 // Botões da sidebar direita do card de campanha
 const sidebarBtnBase: React.CSSProperties = {
