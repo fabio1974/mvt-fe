@@ -7,6 +7,7 @@ interface Props {
 }
 
 const brl = (cents: number) => `R$ ${(cents / 100).toFixed(2).replace(".", ",")}`;
+const fmtK = (n: number) => (n >= 1000 ? `${Math.round(n / 1000)} mil` : String(n));
 
 const STATUS_STYLE: Record<string, { bg: string; color: string; label: string }> = {
   DRAFT: { bg: "#f1f5f9", color: "#475569", label: "Rascunho" },
@@ -30,6 +31,27 @@ const AdsTab: React.FC<Props> = ({ published }) => {
     Math.round((new Date(endDate).getTime() - new Date(startDate).getTime()) / 864e5) + 1
   );
   const totalReais = budgetReais * days;
+
+  const [estimate, setEstimate] = useState<
+    { lowerBound: number; upperBound: number; radiusKm: number; hasStore: boolean } | null
+  >(null);
+  useEffect(() => {
+    if (!link.includes("/c/")) {
+      setEstimate(null);
+      return;
+    }
+    let cancelled = false;
+    const t = setTimeout(() => {
+      marketingApi
+        .audienceEstimate(link)
+        .then((e) => !cancelled && setEstimate(e))
+        .catch(() => !cancelled && setEstimate(null));
+    }, 500);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
+  }, [link]);
   const [promoting, setPromoting] = useState(false);
   const [err, setErr] = useState<string | null>(null);
 
@@ -126,6 +148,27 @@ const AdsTab: React.FC<Props> = ({ published }) => {
             ⏰ Período fixo de <strong>{days} dia(s)</strong> · total ≈ <strong>R$ {totalReais.toFixed(2).replace(".", ",")}</strong>{" "}
             (verba/dia × dias). Só veicula no <strong>horário de funcionamento da loja</strong> e <strong>para sozinho no fim</strong>.
           </div>
+          {estimate && estimate.hasStore && estimate.upperBound > 0 && (
+            <div
+              style={{
+                fontSize: 12,
+                color: "#475569",
+                background: "#f8fafc",
+                border: "1px solid #e2e8f0",
+                borderRadius: 8,
+                padding: "8px 10px",
+              }}
+            >
+              👥 Público na área:{" "}
+              <strong>
+                ~{fmtK(estimate.lowerBound)}–{fmtK(estimate.upperBound)} pessoas
+              </strong>{" "}
+              (raio {estimate.radiusKm}km, 18–65).{" "}
+              <span style={{ color: "#94a3b8" }}>
+                É o total da região (pool); quanto você alcança disso depende da verba e do período.
+              </span>
+            </div>
+          )}
           {err && <div style={{ color: "#b91c1c", fontSize: 13 }}>{err}</div>}
           <button
             onClick={promote}

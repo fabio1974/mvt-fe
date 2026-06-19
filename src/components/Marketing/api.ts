@@ -115,6 +115,12 @@ export const marketingApi = {
   listPaidCampaigns: async () =>
     (await api.get<MarketingPaidCampaign[]>(`${BASE}/ads`)).data,
 
+  audienceEstimate: async (link: string) =>
+    (await api.get<{ lowerBound: number; upperBound: number; radiusKm: number; hasStore: boolean }>(
+      `${BASE}/ads/audience-estimate`,
+      { params: { link } }
+    )).data,
+
   promoteCreative: async (input: { creativeId: number; dailyBudgetCents: number; linkUrl: string; startDate: string; endDate: string }) =>
     (await api.post<MarketingPaidCampaign>(`${BASE}/ads/promote`, input)).data,
 
