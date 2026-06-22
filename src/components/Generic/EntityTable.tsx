@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { FiEye, FiEdit, FiTrash2 } from "react-icons/fi";
+import { FiEye, FiEdit, FiTrash2, FiColumns } from "react-icons/fi";
 import { api } from "../../services/api";
 import { useMetadata } from "../../hooks/useMetadata";
 import type { EntityMetadata, FieldMetadata } from "../../types/metadata";
@@ -117,6 +117,48 @@ const EntityTable: React.FC<EntityTableProps> = ({
     }
     setCurrentPage(1);
   };
+
+  // Colunas escondidas pelo usuário — persistidas por entidade no localStorage.
+  // Independente de hideFields (que é do dev): aqui é preferência do usuário.
+  const colStorageKey = `entity_hidden_cols::${entityName}`;
+  const [hiddenCols, setHiddenCols] = useState<Set<string>>(() => {
+    try {
+      const raw = localStorage.getItem(`entity_hidden_cols::${entityName}`);
+      return raw ? new Set<string>(JSON.parse(raw)) : new Set<string>();
+    } catch {
+      return new Set<string>();
+    }
+  });
+  const [showColMenu, setShowColMenu] = useState(false);
+  const colMenuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(colStorageKey, JSON.stringify([...hiddenCols]));
+    } catch {
+      /* quota/private mode — ignora */
+    }
+  }, [hiddenCols, colStorageKey]);
+
+  // Fecha o menu de colunas ao clicar fora
+  useEffect(() => {
+    if (!showColMenu) return;
+    const onDocClick = (e: MouseEvent) => {
+      if (colMenuRef.current && !colMenuRef.current.contains(e.target as Node)) {
+        setShowColMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, [showColMenu]);
+
+  const toggleCol = (name: string) =>
+    setHiddenCols((prev) => {
+      const next = new Set(prev);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return next;
+    });
 
   // Carrega metadata do contexto
   useEffect(() => {
@@ -476,10 +518,13 @@ const EntityTable: React.FC<EntityTableProps> = ({
     }
   });
 
-  // Filtra campos visíveis: (visible=true OU está em showFields) E não está em hideFields
-  const visibleFields = (fieldsWithForcedVisible.filter((f) => 
+  // Colunas candidatas: (visible=true OU está em showFields) E não está em hideFields.
+  // `candidateFields` = tudo que PODE aparecer (alimenta o seletor de colunas).
+  const candidateFields = (fieldsWithForcedVisible.filter((f) =>
     f.visible || showFields.includes(f.name)
   ) || []).filter((f) => !hideFields.includes(f.name));
+  // `visibleFields` = candidatas menos as que o usuário escondeu (localStorage).
+  const visibleFields = candidateFields.filter((f) => !hiddenCols.has(f.name));
 
   // Determina se deve mostrar coluna ID (todas entidades exceto 'user' ou se prop hideIdColumn=true)
   const showIdColumn = !hideIdColumn && entityName.toLowerCase() !== "user";
@@ -523,6 +568,110 @@ const EntityTable: React.FC<EntityTableProps> = ({
         <div className="entity-table-error">{error}</div>
       ) : (
         <div className="entity-table-container">
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              padding: "0 2px 8px",
+            }}
+          >
+            <div ref={colMenuRef} style={{ position: "relative" }}>
+              <button
+                type="button"
+                onClick={() => setShowColMenu((s) => !s)}
+                title="Mostrar/esconder colunas"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "6px 12px",
+                  borderRadius: 8,
+                  border: "1px solid #cbd5e1",
+                  background: "white",
+                  color: "#475569",
+                  fontSize: 13,
+                  cursor: "pointer",
+                }}
+              >
+                <FiColumns />
+                Colunas
+                {hiddenCols.size > 0 && (
+                  <span style={{ color: "#1d4ed8", fontWeight: 600 }}>
+                    {" "}
+                    ({visibleFields.length}/{candidateFields.length})
+                  </span>
+                )}
+              </button>
+              {showColMenu && (
+                <div
+                  style={{
+                    position: "absolute",
+                    right: 0,
+                    top: "100%",
+                    marginTop: 4,
+                    zIndex: 50,
+                    background: "white",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: 8,
+                    boxShadow: "0 8px 24px rgba(0,0,0,.12)",
+                    padding: 8,
+                    maxHeight: 360,
+                    overflowY: "auto",
+                    minWidth: 240,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      padding: "4px 6px 8px",
+                      borderBottom: "1px solid #f1f5f9",
+                      marginBottom: 4,
+                    }}
+                  >
+                    <strong style={{ fontSize: 13 }}>Colunas visíveis</strong>
+                    <button
+                      type="button"
+                      onClick={() => setHiddenCols(new Set())}
+                      disabled={hiddenCols.size === 0}
+                      style={{
+                        fontSize: 12,
+                        color: hiddenCols.size === 0 ? "#94a3b8" : "#1d4ed8",
+                        background: "none",
+                        border: "none",
+                        cursor: hiddenCols.size === 0 ? "default" : "pointer",
+                      }}
+                    >
+                      Mostrar todas
+                    </button>
+                  </div>
+                  {candidateFields.map((f) => (
+                    <label
+                      key={f.name}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        padding: "5px 6px",
+                        fontSize: 13,
+                        cursor: "pointer",
+                        borderRadius: 6,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={!hiddenCols.has(f.name)}
+                        onChange={() => toggleCol(f.name)}
+                      />
+                      <span>{translateLabel(f.label)}</span>
+                    </label>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
           <div className="entity-table-scroll">
             <table className="entity-table">
               <thead>
@@ -550,7 +699,17 @@ const EntityTable: React.FC<EntityTableProps> = ({
                         onClick={isSortable ? () => handleHeaderSort(field.name) : undefined}
                         title={isSortable ? 'Clique pra ordenar' : undefined}
                       >
-                        {translateLabel(field.label)}{arrow}
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                          <span>{translateLabel(field.label)}{arrow}</span>
+                          <span
+                            className="col-hide-x"
+                            role="button"
+                            title="Esconder coluna"
+                            onClick={(e) => { e.stopPropagation(); toggleCol(field.name); }}
+                          >
+                            ×
+                          </span>
+                        </span>
                       </th>
                     );
                   })}

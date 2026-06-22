@@ -128,6 +128,24 @@
   padding-left: 1rem;
 }
 
+/* "×" pra esconder a coluna — aparece só no hover do header, não compete com o sort */
+.entity-table th .col-hide-x {
+  opacity: 0;
+  color: var(--text-muted, #94a3b8);
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 2px;
+  transition: opacity 0.15s, color 0.15s;
+}
+.entity-table th:hover .col-hide-x {
+  opacity: 1;
+}
+.entity-table th .col-hide-x:hover {
+  color: var(--danger, #dc2626);
+}
+
 .entity-table td {
   padding: 8px;
   border-bottom: 1px solid #f3f4f6;
