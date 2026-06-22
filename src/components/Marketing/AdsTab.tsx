@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { marketingApi } from "./api";
 import type { MarketingCreative, MarketingPaidCampaign, AdSpendSnapshot } from "./types";
+import "../Generic/EntityTable.css";
+
+const PAGE_SIZE = 8;
 
 interface Props {
   published: MarketingCreative[];
@@ -47,8 +50,9 @@ const AdsTab: React.FC<Props> = ({ published }) => {
   const totalReais = budgetReais * days;
 
   const [estimate, setEstimate] = useState<
-    { lowerBound: number; upperBound: number; radiusKm: number; hasStore: boolean } | null
+    { lowerBound: number; upperBound: number; radiusKm: number; hasStore: boolean; scheduleSummary: string | null } | null
   >(null);
+  const [page, setPage] = useState(1);
   useEffect(() => {
     if (!link.includes("/c/")) {
       setEstimate(null);
@@ -108,6 +112,10 @@ const AdsTab: React.FC<Props> = ({ published }) => {
   };
 
   const creativeById = (id?: number | null) => published.find((c) => c.id === id);
+
+  const totalPages = Math.max(1, Math.ceil(campaigns.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const pageItems = campaigns.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
 
   return (
     <div style={{ display: "grid", gap: 20 }}>
@@ -263,6 +271,11 @@ const AdsTab: React.FC<Props> = ({ published }) => {
               🏪 Link do cardápio de <strong>{storeHint}</strong> preenchido automaticamente.
             </div>
           )}
+          {estimate?.scheduleSummary && (
+            <div style={{ fontSize: 12, color: "#475569", marginTop: -2 }}>
+              ⏰ Veicula: <strong>{estimate.scheduleSummary}</strong>
+            </div>
+          )}
           <div style={{ fontSize: 12, color: "#94a3b8" }}>
             ⏰ Período fixo de <strong>{days} dia(s)</strong> · total ≈ <strong>R$ {totalReais.toFixed(2).replace(".", ",")}</strong>{" "}
             (verba/dia × dias). Só veicula no <strong>horário de funcionamento da loja</strong> e <strong>para sozinho no fim</strong>.
@@ -299,7 +312,7 @@ const AdsTab: React.FC<Props> = ({ published }) => {
         </div>
       </div>
 
-      {/* Lista de campanhas pagas */}
+      {/* Lista de campanhas pagas — tabela responsiva paginada */}
       <div>
         <h3 style={{ margin: "0 0 10px", fontSize: 16 }}>Campanhas pagas</h3>
         {loading && <div style={{ color: "#64748b" }}>Carregando…</div>}
@@ -317,11 +330,57 @@ const AdsTab: React.FC<Props> = ({ published }) => {
             Nenhuma campanha paga ainda.
           </div>
         )}
-        <div style={{ display: "grid", gap: 12 }}>
-          {campaigns.map((pc) => (
-            <PaidRow key={pc.id} pc={pc} creative={creativeById(pc.creativeId)} onChanged={reload} />
-          ))}
-        </div>
+        {campaigns.length > 0 && (
+          <div className="entity-table-container">
+            <div className="entity-table-scroll">
+              <table className="entity-table">
+                <thead>
+                  <tr>
+                    <th style={{ width: 52 }}></th>
+                    <th>Status</th>
+                    <th>Anúncio</th>
+                    <th>⏰ Veiculação</th>
+                    <th>Verba/dia</th>
+                    <th>Gasto</th>
+                    <th style={{ width: 96 }}>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {pageItems.map((pc) => (
+                    <PaidRow key={pc.id} pc={pc} creative={creativeById(pc.creativeId)} onChanged={reload} />
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {totalPages > 1 && (
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "flex-end",
+                  gap: 10,
+                  padding: "10px 4px",
+                  fontSize: 13,
+                  color: "#64748b",
+                }}
+              >
+                <span>
+                  {(safePage - 1) * PAGE_SIZE + 1}–{Math.min(safePage * PAGE_SIZE, campaigns.length)} de{" "}
+                  {campaigns.length}
+                </span>
+                <button onClick={() => setPage(safePage - 1)} disabled={safePage <= 1} style={btnGhost}>
+                  ‹ Anterior
+                </button>
+                <span>
+                  {safePage}/{totalPages}
+                </span>
+                <button onClick={() => setPage(safePage + 1)} disabled={safePage >= totalPages} style={btnGhost}>
+                  Próxima ›
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -360,91 +419,104 @@ const PaidRow: React.FC<{
   };
 
   return (
-    <div
-      style={{
-        background: "white",
-        padding: 12,
-        borderRadius: 10,
-        border: "1px solid #e2e8f0",
-        display: "flex",
-        gap: 14,
-        alignItems: "center",
-      }}
-    >
-      {creative?.assetUrl && (
-        <img
-          src={creative.assetUrl}
-          alt=""
-          style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 8, flexShrink: 0 }}
-        />
-      )}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <span
-            style={{
-              background: st.bg,
-              color: st.color,
-              borderRadius: 8,
-              padding: "2px 8px",
-              fontSize: 12,
-              fontWeight: 600,
-            }}
-          >
-            {st.label}
-          </span>
-          <span style={{ fontSize: 13, color: "#64748b" }}>{brl(pc.dailyBudgetCents)}/dia</span>
-        </div>
-        <div
+    <tr>
+      <td>
+        {creative?.assetUrl ? (
+          <img
+            src={creative.assetUrl}
+            alt=""
+            style={{ width: 44, height: 44, objectFit: "cover", borderRadius: 6, display: "block" }}
+          />
+        ) : (
+          <div style={{ width: 44, height: 44, borderRadius: 6, background: "#f1f5f9" }} />
+        )}
+      </td>
+      <td>
+        <span
           style={{
-            fontSize: 13,
-            marginTop: 4,
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-          }}
-        >
-          {creative?.caption || pc.name}
-        </div>
-        <div
-          style={{
+            background: st.bg,
+            color: st.color,
+            borderRadius: 8,
+            padding: "2px 8px",
             fontSize: 12,
-            color: "#64748b",
-            marginTop: 2,
-            overflow: "hidden",
-            textOverflow: "ellipsis",
+            fontWeight: 600,
             whiteSpace: "nowrap",
           }}
         >
-          → {pc.linkUrl}
-        </div>
-        {spend && (
-          <div style={{ fontSize: 13, marginTop: 6, display: "flex", gap: 12, color: "#475569", flexWrap: "wrap" }}>
-            <span>💸 {brl(spend.spendCents)}</span>
-            <span>🖱️ {spend.clicks} cliques</span>
-            <span>CPC {brl(spend.cpcCents)}</span>
-            <span>👁️ {spend.reach}</span>
+          {st.label}
+        </span>
+      </td>
+      <td>
+        <div style={{ maxWidth: 340 }}>
+          {creative?.storeName && (
+            <div style={{ fontSize: 12, fontWeight: 700, color: "#15803d" }}>🏪 {creative.storeName}</div>
+          )}
+          <div
+            style={{ fontSize: 13, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+            title={creative?.caption || pc.name}
+          >
+            {creative?.caption || pc.name}
           </div>
-        )}
-        {pc.errorMessage && (
-          <div style={{ fontSize: 12, color: "#b91c1c", marginTop: 4 }}>{pc.errorMessage}</div>
-        )}
-      </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-        {(pc.status === "CREATED" || pc.status === "PAUSED") && (
-          <button onClick={() => act(() => marketingApi.launchPaid(pc.id))} disabled={busy} style={btnAction}>
-            ▶ Ativar
+          <div
+            style={{
+              fontSize: 11,
+              color: "#94a3b8",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+            title={pc.linkUrl}
+          >
+            → {pc.linkUrl}
+          </div>
+          {pc.errorMessage && (
+            <div
+              style={{
+                fontSize: 11,
+                color: "#b91c1c",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+              title={pc.errorMessage}
+            >
+              ⚠️ {pc.errorMessage}
+            </div>
+          )}
+        </div>
+      </td>
+      <td style={{ fontSize: 12, color: "#475569", whiteSpace: "nowrap" }}>
+        {pc.scheduleSummary || "—"}
+      </td>
+      <td style={{ fontSize: 13, color: "#64748b", whiteSpace: "nowrap" }}>{brl(pc.dailyBudgetCents)}</td>
+      <td style={{ fontSize: 12, whiteSpace: "nowrap" }}>
+        {spend ? (
+          <div style={{ color: "#475569", lineHeight: 1.5 }}>
+            <div>💸 {brl(spend.spendCents)}</div>
+            <div>🖱️ {spend.clicks} · CPC {brl(spend.cpcCents)}</div>
+            <div>👁️ {spend.reach}</div>
+          </div>
+        ) : (
+          <button onClick={refreshSpend} disabled={busy} style={btnGhost}>
+            Ver gasto
           </button>
         )}
-        {pc.status === "ACTIVE" && (
-          <button onClick={() => act(() => marketingApi.pausePaid(pc.id))} disabled={busy} style={btnGhost}>
-            ⏸ Pausar
-          </button>
-        )}
-        <button onClick={refreshSpend} disabled={busy} style={btnGhost}>
-          Ver gasto
-        </button>
-      </div>
-    </div>
+      </td>
+      <td>
+        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          {(pc.status === "CREATED" || pc.status === "PAUSED") && (
+            <button onClick={() => act(() => marketingApi.launchPaid(pc.id))} disabled={busy} style={btnAction}>
+              ▶ Ativar
+            </button>
+          )}
+          {pc.status === "ACTIVE" && (
+            <button onClick={() => act(() => marketingApi.pausePaid(pc.id))} disabled={busy} style={btnGhost}>
+              ⏸ Pausar
+            </button>
+          )}
+        </div>
+      </td>
+    </tr>
   );
 };
 

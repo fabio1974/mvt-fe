@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { api } from "../../services/api";
 import { persistAuthSession, type AuthUser } from "../../utils/auth";
 import { maskCPF, validateCPF } from "../../utils/masks";
+import { track } from "../PublicMenu/funnel";
 import GoogleOnboardingWizard from "./GoogleOnboardingWizard";
 
 const GIS_SRC = "https://accounts.google.com/gsi/client";
@@ -129,24 +130,30 @@ export default function GoogleSignInButton({
       setError("Login com Google cancelado.");
       return;
     }
+    track("auth_google_credential");
     try {
       // Probe puro (sem role): o BE decide se é login (conta existe) ou cadastro novo.
       const { data } = await api.post<GoogleResponse>("/auth/google", { idToken });
       if (data.needsRole) {
         // Conta nova → wizard de onboarding (papel → CPF → requisitos). initialRole vem
         // da aba de cadastro (se o usuário já escolheu o perfil no wizard de cadastro).
+        track("auth_google_new"); // cadastro novo → wizard (papel → CPF → telefone)
         setWizard({ idToken, email: data.email || "", name: data.name });
         return;
       }
       // Conta existente: login direto. needsDocument cobre contas antigas sem CPF.
       persistAuthSession(data.token || "", data.user);
       if (data.needsDocument) {
-        setNeedsDocument(true); // abre modal de CPF
+        track("auth_cpf_needed"); // abre modal "Falta só o CPF"
+        setNeedsDocument(true);
         return;
       }
+      track("auth_success", "google");
       finish();
     } catch (e) {
-      setError(extractMsg(e) || "Falha no login com Google.");
+      const msg = extractMsg(e) || "Falha no login com Google.";
+      track("auth_google_error", msg);
+      setError(msg);
     }
   };
 
@@ -154,16 +161,21 @@ export default function GoogleSignInButton({
     setError("");
     const cleanCpf = cpf.replace(/\D/g, "");
     if (!validateCPF(cleanCpf)) {
+      track("auth_cpf_invalid");
       setError("CPF inválido. Confira os dígitos e tente novamente.");
       return;
     }
     setSavingCpf(true);
+    track("auth_cpf_submit");
     try {
       const { data } = await api.patch<{ token?: string }>("/users/me/document", { document: cleanCpf });
       if (data.token) localStorage.setItem("authToken", data.token);
+      track("auth_success", "google_cpf");
       finish();
     } catch (e) {
-      setError(extractMsg(e) || "CPF inválido. Confira e tente novamente.");
+      const msg = extractMsg(e) || "CPF inválido. Confira e tente novamente.";
+      track("auth_cpf_error", msg);
+      setError(msg);
     } finally {
       setSavingCpf(false);
     }

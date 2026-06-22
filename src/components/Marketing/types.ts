@@ -62,6 +62,13 @@ export interface MarketingStore {
   name: string;
 }
 
+/** Relatório de funil do cardápio: visitantes únicos por estágio (total + por loja). */
+export interface FunnelReport {
+  days: number;
+  total: Record<string, number>;
+  stores: { slug: string; name: string; counts: Record<string, number> }[];
+}
+
 /** Resolução do link /c/<slug> da loja de um creative (auto-preenchimento no Ads). */
 export interface CreativeStoreLink {
   storeId: number | null;
@@ -133,6 +140,7 @@ export interface MarketingPaidCampaign {
   fbCreativeId?: string | null;
   fbAdId?: string | null;
   errorMessage?: string | null;
+  scheduleSummary?: string | null;
   createdAt: string;
   updatedAt: string;
 }

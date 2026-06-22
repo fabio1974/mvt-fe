@@ -4,6 +4,7 @@ import BrandName from "../Brand/BrandName";
 import { Download, ImageOff, Minus, Plus, ShoppingCart } from "lucide-react";
 import type { PublicMenu, PublicProduct } from "./publicMenuApi";
 import { fetchMenuBySlug, productPrice } from "./publicMenuApi";
+import { startFunnel, stopFunnel, track } from "./funnel";
 import { useCart } from "./useCart";
 import AppDownloadModal from "./AppDownloadModal";
 import ProductDetailModal from "../Food/ProductDetailModal";
@@ -61,6 +62,32 @@ export default function PublicMenuPage() {
       cancelled = true;
     };
   }, [slug]);
+
+  // Funil: marca a visita ao cardápio e ativa o tracker pros componentes profundos.
+  useEffect(() => {
+    if (!slug) return;
+    startFunnel(slug);
+    track("cardapio_view");
+    return () => stopFunnel();
+  }, [slug]);
+
+  // Handlers instrumentados (cada clique relevante vira um passo do funil).
+  const openDetail = (p: PublicProduct) => {
+    track("product_open", p.name);
+    openDetail(p);
+  };
+  const quickAdd = (p: PublicProduct) => {
+    track("cart_add", p.name);
+    cart.addQuick(p);
+  };
+  const openCheckout = () => {
+    track("checkout_open");
+    setCheckoutOpen(true);
+  };
+  const openApp = () => {
+    track("getapp_click");
+    setModalOpen(true);
+  };
 
   const store = menu?.store;
 
@@ -138,7 +165,7 @@ export default function PublicMenuPage() {
           <ImageOff size={40} />
           <h3 style={{ margin: 0 }}>Cardápio não encontrado</h3>
           <p style={{ margin: 0 }}>O link pode estar incorreto ou a loja saiu do ar.</p>
-          <button className="pm-getapp" style={{ margin: 0 }} onClick={() => setModalOpen(true)}>
+          <button className="pm-getapp" style={{ margin: 0 }} onClick={openApp}>
             <Download size={16} /> Baixar o app <BrandName />
           </button>
         </div>
@@ -218,7 +245,7 @@ export default function PublicMenuPage() {
         {store.description && <div className="pm-desc">{store.description}</div>}
 
         {/* Botão baixar app (sempre visível como porta de conversão) */}
-        <button className="pm-getapp" onClick={() => setModalOpen(true)}>
+        <button className="pm-getapp" onClick={openApp}>
           <Download size={16} /> Baixar o app <BrandName />
         </button>
 
@@ -279,8 +306,8 @@ export default function PublicMenuPage() {
                           className="pm-prod-head"
                           role="button"
                           tabIndex={0}
-                          onClick={() => setDetailProduct(p)}
-                          onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setDetailProduct(p)}
+                          onClick={() => openDetail(p)}
+                          onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && openDetail(p)}
                         >
                           <h3 className="pm-prod-name">{p.name}</h3>
                           {p.description && <p className="pm-prod-desc">{p.description}</p>}
@@ -301,7 +328,7 @@ export default function PublicMenuPage() {
                             <button
                               className="pm-qty-btn plus"
                               aria-label="Adicionar"
-                              onClick={() => (productHasAddons(allProds, p) ? setDetailProduct(p) : cart.addQuick(p))}
+                              onClick={() => (productHasAddons(allProds, p) ? openDetail(p) : quickAdd(p))}
                             >
                               <Plus size={16} />
                             </button>
@@ -312,8 +339,8 @@ export default function PublicMenuPage() {
                         className="pm-card-img"
                         role="button"
                         tabIndex={0}
-                        onClick={() => setDetailProduct(p)}
-                        onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setDetailProduct(p)}
+                        onClick={() => openDetail(p)}
+                        onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && openDetail(p)}
                       >
                         {p.imageUrl ? (
                           <img src={p.imageUrl} alt={p.name} />
@@ -332,7 +359,7 @@ export default function PublicMenuPage() {
         {/* Barra fixa do carrinho → abre o checkout na própria web */}
         {cart.count > 0 && (
           <div className="pm-cartbar-wrap">
-            <button className="pm-cartbar" onClick={() => setCheckoutOpen(true)}>
+            <button className="pm-cartbar" onClick={openCheckout}>
               <span className="pm-cart-badge">{cart.count}</span>
               <span className="pm-cart-label">Finalizar pedido</span>
               <span className="pm-cart-total">{brl(cart.total)}</span>
@@ -353,7 +380,10 @@ export default function PublicMenuPage() {
           addonGroups={detailProduct ? addonGroupsForProduct(allProds, detailProduct) : []}
           onClose={() => setDetailProduct(null)}
           onConfirm={(quantity, notes, addons: CartAddon[]) => {
-            if (detailProduct) cart.addCustomLine(detailProduct, quantity, notes, addons);
+            if (detailProduct) {
+              track("cart_add", detailProduct.name);
+              cart.addCustomLine(detailProduct, quantity, notes, addons);
+            }
             setDetailProduct(null);
           }}
         />

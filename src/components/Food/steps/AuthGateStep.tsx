@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import GoogleSignInButton from "../../Auth/GoogleSignInButton";
 import { api } from "../../../services/api";
 import { persistAuthSession, type AuthUser } from "../../../utils/auth";
+import { track } from "../../PublicMenu/funnel";
 import { cs } from "../checkoutStyles";
 
 interface Props {
@@ -30,6 +31,10 @@ export default function AuthGateStep({ onAuthenticated, onBack }: Props) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    track("auth_view");
+  }, []);
+
   const emailLogin = async () => {
     setError("");
     if (!email.trim() || !password) {
@@ -37,15 +42,19 @@ export default function AuthGateStep({ onAuthenticated, onBack }: Props) {
       return;
     }
     setLoading(true);
+    track("auth_email_submit");
     try {
       const { data } = await api.post<{ token: string; user?: AuthUser }>("/auth/login", {
         username: email.trim(),
         password,
       });
       persistAuthSession(data.token, data.user);
+      track("auth_success", "email");
       onAuthenticated();
     } catch (e) {
-      setError(extractMsg(e) || "Não foi possível entrar. Confira e-mail e senha.");
+      const msg = extractMsg(e) || "Não foi possível entrar. Confira e-mail e senha.";
+      track("auth_email_error", msg);
+      setError(msg);
     } finally {
       setLoading(false);
     }

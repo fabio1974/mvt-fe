@@ -12,6 +12,7 @@ import SummaryStep from "./steps/SummaryStep";
 import PixStep from "./steps/PixStep";
 import SuccessStep from "./steps/SuccessStep";
 import OrderingAsBadge from "./steps/OrderingAsBadge";
+import { track } from "../PublicMenu/funnel";
 import "./checkout.css";
 
 type Step = "cart" | "auth" | "address" | "summary" | "pix" | "success";
@@ -78,6 +79,11 @@ export default function CheckoutWizard({ store, cart, onClose }: Props) {
       cancelled = true;
     };
   }, [authNonce]);
+
+  // Funil: cada passo do checkout vira um evento (checkout_step_<step>).
+  useEffect(() => {
+    track("checkout_step_" + step);
+  }, [step]);
 
   const afterAuth = (): Step => (fulfillment === "PICKUP" ? "summary" : "address");
 
@@ -163,6 +169,7 @@ export default function CheckoutWizard({ store, cart, onClose }: Props) {
             fulfillment={fulfillment}
             deliveryAddress={address}
             onSubmit={(o) => {
+              track("order_placed");
               setOrder(o);
               setStep(o.pixQrCode ? "pix" : "success");
             }}

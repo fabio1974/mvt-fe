@@ -3,6 +3,7 @@ import type {
   AdSpendSnapshot,
   CampaignDetail,
   CreativeStoreLink,
+  FunnelReport,
   MarketingCampaign,
   MarketingCharacter,
   MarketingCreative,
@@ -36,6 +37,10 @@ export const marketingApi = {
   // Lojas ativas com cardápio (slug) pro multi-select de campanhas
   listStores: async () =>
     (await api.get<MarketingStore[]>(`${BASE}/stores`)).data,
+
+  // Funil do cardápio (visitantes únicos por estágio, por loja)
+  funnelReport: async (days = 30) =>
+    (await api.get<FunnelReport>(`${BASE}/funnel`, { params: { days } })).data,
 
   // Cria 1 campanha por loja selecionada (briefing personalizado); sem lojas = 1 institucional
   createCampaignBatch: async (input: {
@@ -138,7 +143,7 @@ export const marketingApi = {
     (await api.get<MarketingPaidCampaign[]>(`${BASE}/ads`)).data,
 
   audienceEstimate: async (link: string) =>
-    (await api.get<{ lowerBound: number; upperBound: number; radiusKm: number; hasStore: boolean }>(
+    (await api.get<{ lowerBound: number; upperBound: number; radiusKm: number; hasStore: boolean; scheduleSummary: string | null }>(
       `${BASE}/ads/audience-estimate`,
       { params: { link } }
     )).data,

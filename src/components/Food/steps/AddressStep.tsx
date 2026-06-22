@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ChevronLeft } from "lucide-react";
 import { AddressMapPicker, type AddressData } from "../../Common/AddressMapPicker";
 import type { DeliveryAddress } from "../foodTypes";
+import { track } from "../../PublicMenu/funnel";
 import { cs } from "../checkoutStyles";
 
 interface Props {
@@ -36,9 +37,11 @@ export default function AddressStep({ initial, onConfirm, onBack }: Props) {
 
   const confirm = () => {
     if (!canConfirm) {
+      track("address_invalid");
       setError("Posicione o pin no mapa e confirme o endereço.");
       return;
     }
+    track("address_submit");
     onConfirm({
       address: addr.address.trim(),
       latitude: addr.latitude,

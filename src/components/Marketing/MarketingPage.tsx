@@ -7,17 +7,19 @@ import NewCampaignTab from "./NewCampaignTab";
 import ApprovalTab from "./ApprovalTab";
 import PublishedTab from "./PublishedTab";
 import AdsTab from "./AdsTab";
+import FunnelTab from "./FunnelTab";
 import MemoryTab from "./MemoryTab";
 import CharactersTab from "./CharactersTab";
 import HealthBanner from "./HealthBanner";
 
-type TabKey = "new" | "approval" | "published" | "ads" | "characters" | "memory";
+type TabKey = "new" | "approval" | "published" | "ads" | "funnel" | "characters" | "memory";
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: "new", label: "Nova campanha" },
   { key: "approval", label: "Em aprovação" },
   { key: "published", label: "Publicados" },
   { key: "ads", label: "📣 Ads" },
+  { key: "funnel", label: "📊 Funil" },
   { key: "characters", label: "🎭 Personagens" },
   { key: "memory", label: "🧠 Memória" },
 ];
@@ -134,6 +136,7 @@ const MarketingPage: React.FC = () => {
       {activeTab === "ads" && (
         <AdsTab published={published} />
       )}
+      {activeTab === "funnel" && <FunnelTab />}
       {activeTab === "characters" && (
         <CharactersTab />
       )}
