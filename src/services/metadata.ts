@@ -1,6 +1,6 @@
 import { api } from './api';
 import type { EntityMetadata, MetadataResponse } from '../types/metadata';
-import { VERSION } from '../version';
+import { VERSION, COMMIT_HASH } from '../version';
 
 const METADATA_STORAGE_KEY = 'app_metadata_cache';
 const METADATA_VERSION_KEY = 'app_metadata_version';
@@ -13,6 +13,7 @@ interface CachedMetadata {
   data: MetadataResponse;
   timestamp: number;
   version: string;
+  commit: string;
 }
 
 class MetadataService {
@@ -118,9 +119,11 @@ class MetadataService {
       if (!cached) return null;
 
       const parsedCache: CachedMetadata = JSON.parse(cached);
-      
-      // Verifica se a versão mudou (invalida cache)
-      if (parsedCache.version !== VERSION) {
+
+      // Invalida o cache quando a versão OU o commit do build muda. Usar o commit
+      // garante que qualquer mudança de metadata (inclusive só no BE, sem bump de
+      // versão) apareça no próximo deploy — antes ficava 24h preso no cache.
+      if (parsedCache.version !== VERSION || parsedCache.commit !== COMMIT_HASH) {
         return null;
       }
       
@@ -151,6 +154,7 @@ class MetadataService {
         data: metadata,
         timestamp: Date.now(),
         version: VERSION, // Usa a versão da aplicação
+        commit: COMMIT_HASH, // invalida o cache a cada deploy (metadata pode ter mudado)
       };
 
       localStorage.setItem(METADATA_STORAGE_KEY, JSON.stringify(cacheData));
