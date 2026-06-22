@@ -31,6 +31,7 @@ const STAGES: { key: string; label: string; main?: boolean; sub?: boolean; bad?:
 /** Marcos compactos pra tabela por loja. */
 const MILESTONES = [
   { key: "cardapio_view", label: "Viu" },
+  { key: "product_open", label: "Abriu" },
   { key: "cart_add", label: "Montou" },
   { key: "checkout_open", label: "Checkout" },
   { key: "checkout_step_auth", label: "Login" },
