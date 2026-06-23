@@ -59,10 +59,28 @@ export async function getAvailableCoupon(): Promise<{ code: string; description?
   return data || null;
 }
 
-/** Valida um cupom contra o total do pedido. */
+/**
+ * Valida um cupom contra o total do pedido.
+ *
+ * O BE responde 200 com `ValidationResult { code, discountValue, minOrderValue }` quando o
+ * cupom é aplicável, e lança `CouponException` (HTTP 400 com `{ message }`) quando não é.
+ * Normalizamos os dois casos pro shape `CouponValidation { valid, code, discount, message }`
+ * que a UI consome — sem isso, o sucesso vinha sem `valid` e a tela mostrava "Cupom inválido".
+ */
 export async function validateCoupon(code: string, orderTotal: number): Promise<CouponValidation> {
-  const { data } = await api.post<CouponValidation>("/coupons/validate", { code, orderTotal });
-  return data;
+  try {
+    const { data } = await api.post<{ code: string; discountValue: number; minOrderValue?: number }>(
+      "/coupons/validate",
+      { code, orderTotal },
+    );
+    return { valid: true, code: data.code, discount: data.discountValue };
+  } catch (e) {
+    const message =
+      e && typeof e === "object" && "response" in e
+        ? (e as { response?: { data?: { message?: string } } }).response?.data?.message
+        : undefined;
+    return { valid: false, message };
+  }
 }
 
 /** Cupom-promoção PÚBLICO (sem auth) — valores lidos da campanha no BE. Pro banner do
