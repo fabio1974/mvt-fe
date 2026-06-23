@@ -26,6 +26,34 @@ interface Section {
   products: PublicProduct[];
 }
 
+/** 2 botões grandes de loja lado a lado (App Store / Google Play) — porta de conversão pro app. */
+function StoreCtaRow() {
+  return (
+    <div className="pm-store-cta-row">
+      <a
+        className="pm-store-cta"
+        href={APP_STORE_URL}
+        target="_blank"
+        rel="noreferrer"
+        onClick={() => track("getapp_click", "ios")}
+      >
+        <span className="pm-store-cta-sub">Baixar na</span>
+        <span className="pm-store-cta-name"> App Store</span>
+      </a>
+      <a
+        className="pm-store-cta"
+        href={PLAY_STORE_URL}
+        target="_blank"
+        rel="noreferrer"
+        onClick={() => track("getapp_click", "android")}
+      >
+        <span className="pm-store-cta-sub">Disponível no</span>
+        <span className="pm-store-cta-name"> Google Play</span>
+      </a>
+    </div>
+  );
+}
+
 export default function PublicMenuPage() {
   const { slug = "" } = useParams<{ slug: string }>();
   const [menu, setMenu] = useState<PublicMenu | null>(null);
@@ -249,28 +277,7 @@ export default function PublicMenuPage() {
         <div className="pm-store-cta-label">
           <Download size={15} /> Baixe o app <BrandName /> pra pedir
         </div>
-        <div className="pm-store-cta-row">
-          <a
-            className="pm-store-cta"
-            href={APP_STORE_URL}
-            target="_blank"
-            rel="noreferrer"
-            onClick={() => track("getapp_click", "ios")}
-          >
-            <span className="pm-store-cta-sub">Baixar na</span>
-            <span className="pm-store-cta-name"> App Store</span>
-          </a>
-          <a
-            className="pm-store-cta"
-            href={PLAY_STORE_URL}
-            target="_blank"
-            rel="noreferrer"
-            onClick={() => track("getapp_click", "android")}
-          >
-            <span className="pm-store-cta-sub">Disponível no</span>
-            <span className="pm-store-cta-name"> Google Play</span>
-          </a>
-        </div>
+        <StoreCtaRow />
 
         {/* Banners */}
         {notEnabled && (
@@ -377,6 +384,17 @@ export default function PublicMenuPage() {
               </div>
             ))
           )}
+        </div>
+
+        {/* Rodapé: reforço de conversão pro app pra quem rolou o cardápio todo. */}
+        <div className="pm-store-cta-foot">
+          <div className="pm-store-cta-foot-title">
+            Gostou? Peça pelo app <BrandName />
+          </div>
+          <div className="pm-store-cta-foot-sub">
+            Pague, acompanhe a entrega e receba novidades — é rapidinho.
+          </div>
+          <StoreCtaRow />
         </div>
 
         {/* Barra fixa do carrinho → abre o checkout na própria web */}

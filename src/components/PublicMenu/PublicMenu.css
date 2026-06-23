@@ -517,6 +517,24 @@
   font-size: 17px;
   font-weight: 800;
 }
+/* Rodapé de conversão no fim do cardápio */
+.pm-store-cta-foot {
+  margin: 28px 0 96px; /* margem inferior pra não ficar atrás da cart-bar flutuante */
+  padding-top: 22px;
+  border-top: 1px solid #e2e8f0;
+  text-align: center;
+}
+.pm-store-cta-foot-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+.pm-store-cta-foot-sub {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0 16px 12px;
+}
 
 .pm-badges {
   display: flex;
