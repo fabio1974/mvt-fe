@@ -342,6 +342,7 @@ const AdsTab: React.FC<Props> = ({ published }) => {
                     <th>⏰ Veiculação</th>
                     <th>Verba/dia</th>
                     <th>Gasto</th>
+                    <th style={{ width: 90 }}>Atualizar</th>
                     <th style={{ width: 96 }}>Ações</th>
                   </tr>
                 </thead>
@@ -395,6 +396,12 @@ const PaidRow: React.FC<{
   const [spend, setSpend] = useState<AdSpendSnapshot | null>(null);
   const st = STATUS_STYLE[pc.status] || STATUS_STYLE.DRAFT;
 
+  // Carrega o gasto automaticamente ao montar (célula mostra só o dado, sem botão "Ver gasto").
+  useEffect(() => {
+    if (pc.fbCampaignId) refreshSpend();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const act = async (fn: () => Promise<unknown>) => {
     setBusy(true);
     try {
@@ -412,7 +419,7 @@ const PaidRow: React.FC<{
     try {
       setSpend(await marketingApi.refreshAdSpend(pc.id));
     } catch (e: any) {
-      alert(e?.response?.data?.message || e?.message || "Erro");
+      console.error("[Ads] refreshSpend failed:", e?.response?.data?.message || e?.message || e);
     } finally {
       setBusy(false);
     }
@@ -497,10 +504,18 @@ const PaidRow: React.FC<{
             <div>👁️ {spend.reach}</div>
           </div>
         ) : (
-          <button onClick={refreshSpend} disabled={busy} style={btnGhost}>
-            Ver gasto
-          </button>
+          <span style={{ color: "#94a3b8" }}>{busy ? "atualizando…" : "—"}</span>
         )}
+      </td>
+      <td style={{ textAlign: "center" }}>
+        <button
+          onClick={refreshSpend}
+          disabled={busy || !pc.fbCampaignId}
+          style={{ ...btnGhost, padding: "6px 10px" }}
+          title="Atualizar gasto/cliques/impressões desta campanha"
+        >
+          {busy ? "…" : "🔄"}
+        </button>
       </td>
       <td>
         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>

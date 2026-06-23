@@ -159,4 +159,7 @@ export const marketingApi = {
 
   refreshAdSpend: async (id: number) =>
     (await api.post<AdSpendSnapshot>(`${BASE}/ads/${id}/refresh-spend`)).data,
+
+  refreshAllAdSpend: async () =>
+    (await api.post<{ updated: number }>(`${BASE}/ads/refresh-spend-all`)).data,
 };
