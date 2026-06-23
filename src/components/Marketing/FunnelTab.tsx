@@ -42,7 +42,7 @@ const MILESTONES = [
 const pct = (n: number, base: number) => (base > 0 ? Math.round((n / base) * 100) : 0);
 
 const FunnelTab: React.FC = () => {
-  const [days, setDays] = useState(30);
+  const [days, setDays] = useState(0); // default "Hoje" (desde 00:00 BR)
   const [report, setReport] = useState<FunnelReport | null>(null);
   const [loading, setLoading] = useState(false);
 
