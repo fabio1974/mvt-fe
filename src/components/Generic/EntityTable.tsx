@@ -61,6 +61,7 @@ interface EntityTableProps {
   excludeFilterOptions?: Record<string, string[]>; // Opcional - exclui opções de filtros select
   multiSelectFilters?: string[]; // Opcional - filtros select que usam multi-seleção com checkboxes
   hideIdColumn?: boolean; // Opcional - oculta a coluna "Número" (id) da tabela
+  defaultHiddenColumns?: string[]; // Opcional - colunas escondidas por padrão na 1ª visita (depois localStorage manda)
 }
 
 const EntityTable: React.FC<EntityTableProps> = ({
@@ -83,6 +84,7 @@ const EntityTable: React.FC<EntityTableProps> = ({
   excludeFilterOptions = {},
   multiSelectFilters = [],
   hideIdColumn = false,
+  defaultHiddenColumns,
 }) => {
   const {
     getEntityMetadata,
@@ -124,9 +126,12 @@ const EntityTable: React.FC<EntityTableProps> = ({
   const [hiddenCols, setHiddenCols] = useState<Set<string>>(() => {
     try {
       const raw = localStorage.getItem(`entity_hidden_cols::${entityName}`);
-      return raw ? new Set<string>(JSON.parse(raw)) : new Set<string>();
+      // Já customizou antes → respeita a escolha salva (mesmo que seja "nada escondido", "[]").
+      if (raw != null) return new Set<string>(JSON.parse(raw));
+      // 1ª visita → semeia com o default fornecido (ex.: estabelecimento esconde Estabelecimento/Mesa/...).
+      return new Set<string>(defaultHiddenColumns ?? []);
     } catch {
-      return new Set<string>();
+      return new Set<string>(defaultHiddenColumns ?? []);
     }
   });
   const [showColMenu, setShowColMenu] = useState(false);

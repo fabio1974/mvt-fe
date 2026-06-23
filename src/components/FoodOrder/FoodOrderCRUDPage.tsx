@@ -5,9 +5,18 @@ import EntityCRUD from "../Generic/EntityCRUD";
 import FoodOrderEditPanel from "./FoodOrderEditPanel";
 import printKitchenOrder from "./printKitchenOrder";
 import { api } from "../../services/api";
+import { getUserRole } from "../../utils/auth";
 import { useNewOrderAlert } from "../../hooks/useNewOrderAlert";
 
 const FINAL_STATUSES = new Set(["COMPLETED", "CANCELLED"]);
+
+// Estabelecimento (CLIENT) só vê os próprios pedidos no balcão/entrega — colunas que viram ruído
+// pra ele ficam escondidas por padrão na 1ª visita (depois ele ajusta no seletor de Colunas).
+const ESTABLISHMENT_DEFAULT_HIDDEN = ["storeName", "tableNumberField", "notes", "deliveryAddress"];
+const isEstablishment = () => {
+  const r = getUserRole();
+  return r === "ROLE_CLIENT" || r === "CLIENT";
+};
 
 const handlePrint = async (orderId: number) => {
   try {
@@ -46,6 +55,7 @@ const FoodOrderCRUDPage: React.FC = () => {
       initialMode={entityId ? "edit" : undefined}
       hideCreateButton={true}
       disableView={true}
+      defaultHiddenColumns={isEstablishment() ? ESTABLISHMENT_DEFAULT_HIDDEN : undefined}
       hiddenFields={["deliveryLatitude", "deliveryLongitude", "items"]}
       hideFields={["subtotal", "deliveryFee", "total", "estimatedPreparationMinutes"]}
       customActions={(row: any) => (

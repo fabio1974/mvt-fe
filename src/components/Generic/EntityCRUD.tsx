@@ -59,6 +59,8 @@ interface EntityCRUDProps {
   hideFields?: string[];
   /** Campos que devem ser forçadamente exibidos na tabela (mesmo com visible:false no metadata) */
   showFields?: string[];
+  /** Colunas escondidas por padrão (só na 1ª visita; depois respeita a escolha salva no localStorage). */
+  defaultHiddenColumns?: string[];
   /** Campos que devem ficar readonly no formulário */
   readonlyFields?: string[];
   /** Campos que devem ficar escondidos (hidden) no formulário */
@@ -143,6 +145,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
   initialValues,
   hideFields,
   showFields,
+  defaultHiddenColumns,
   readonlyFields,
   hiddenFields,
   beforeFormComponent,
@@ -453,6 +456,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
             initialFilters={initialFilters}
             hideFields={[...(hideFields ?? []), ...tableHideFields]}
             showFields={showFields}
+            defaultHiddenColumns={defaultHiddenColumns}
             hideFilters={hideFilters}
             excludeFilterOptions={excludeFilterOptions}
             multiSelectFilters={multiSelectFilters}
