@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import BrandName from "../Brand/BrandName";
-import { Download, ImageOff, Minus, Plus, ShoppingCart } from "lucide-react";
+import { Download, ImageOff, Minus, Plus, ShoppingCart, Ticket } from "lucide-react";
 import { FaApple, FaGooglePlay } from "react-icons/fa";
 import type { PublicMenu, PublicProduct } from "./publicMenuApi";
 import { fetchMenuBySlug, productPrice } from "./publicMenuApi";
@@ -280,11 +280,17 @@ export default function PublicMenuPage() {
 
         {store.description && <div className="pm-desc">{store.description}</div>}
 
-        {/* Porta de conversão pro app: 2 botões grandes lado a lado (App Store / Google Play). */}
-        <div className="pm-store-cta-label">
-          <Download size={15} /> Baixe o app <BrandName /> pra pedir
+        {/* App CTA fica só no rodapé: deixa o cardápio liderar (web pede aqui mesmo).
+            No topo, o ímã de conversão é o cupom de 1ª compra. */}
+        <div className="pm-coupon">
+          <Ticket size={30} className="pm-coupon-icon" />
+          <div className="pm-coupon-text">
+            <span className="pm-coupon-head">R$15 OFF na sua 1ª compra</span>
+            <span className="pm-coupon-sub">
+              Cupom <strong>ZAPI10</strong> · aplicado no checkout · pedidos a partir de R$30
+            </span>
+          </div>
         </div>
-        <StoreCtaRow />
 
         {/* Banners */}
         {notEnabled && (
