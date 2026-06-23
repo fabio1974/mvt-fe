@@ -71,7 +71,7 @@ const FunnelTab: React.FC = () => {
           </p>
         </div>
         <div style={{ display: "flex", gap: 6 }}>
-          {[7, 30, 90].map((d) => (
+          {[0, 7, 30, 90].map((d) => (
             <button
               key={d}
               onClick={() => setDays(d)}
@@ -85,7 +85,7 @@ const FunnelTab: React.FC = () => {
                 cursor: "pointer",
               }}
             >
-              {d}d
+              {d === 0 ? "Hoje" : `${d}d`}
             </button>
           ))}
         </div>
@@ -95,7 +95,7 @@ const FunnelTab: React.FC = () => {
 
       {!loading && base === 0 && (
         <div style={{ padding: 28, textAlign: "center", color: "#64748b", background: "white", borderRadius: 12, border: "1px dashed #cbd5e1" }}>
-          Ainda sem dados de funil nos últimos {days} dias. Os eventos aparecem conforme os visitantes
+          Ainda sem dados de funil {days === 0 ? "hoje" : `nos últimos ${days} dias`}. Os eventos aparecem conforme os visitantes
           abrem os cardápios (precisa do build novo no ar).
         </div>
       )}
