@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import BrandName from "../Brand/BrandName";
 import { Download, ImageOff, Minus, Plus, ShoppingCart } from "lucide-react";
+import { FaApple, FaGooglePlay } from "react-icons/fa";
 import type { PublicMenu, PublicProduct } from "./publicMenuApi";
 import { fetchMenuBySlug, productPrice } from "./publicMenuApi";
 import { startFunnel, stopFunnel, track } from "./funnel";
@@ -31,24 +32,30 @@ function StoreCtaRow() {
   return (
     <div className="pm-store-cta-row">
       <a
-        className="pm-store-cta"
+        className="pm-store-cta app-store"
         href={APP_STORE_URL}
         target="_blank"
         rel="noreferrer"
         onClick={() => track("getapp_click", "ios")}
       >
-        <span className="pm-store-cta-sub">Baixar na</span>
-        <span className="pm-store-cta-name"> App Store</span>
+        <FaApple size={26} />
+        <span className="pm-store-cta-text">
+          <span className="pm-store-cta-sub">Baixar na</span>
+          <span className="pm-store-cta-name">App Store</span>
+        </span>
       </a>
       <a
-        className="pm-store-cta"
+        className="pm-store-cta google-play"
         href={PLAY_STORE_URL}
         target="_blank"
         rel="noreferrer"
         onClick={() => track("getapp_click", "android")}
       >
-        <span className="pm-store-cta-sub">Disponível no</span>
-        <span className="pm-store-cta-name"> Google Play</span>
+        <FaGooglePlay size={22} />
+        <span className="pm-store-cta-text">
+          <span className="pm-store-cta-sub">Disponível no</span>
+          <span className="pm-store-cta-name">Google Play</span>
+        </span>
       </a>
     </div>
   );
