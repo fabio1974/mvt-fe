@@ -7,6 +7,7 @@ import { fetchMenuBySlug, productPrice } from "./publicMenuApi";
 import { startFunnel, stopFunnel, track } from "./funnel";
 import { useCart } from "./useCart";
 import AppDownloadModal from "./AppDownloadModal";
+import { APP_STORE_URL, PLAY_STORE_URL } from "./platform";
 import ProductDetailModal from "../Food/ProductDetailModal";
 import CheckoutWizard from "../Food/CheckoutWizard";
 import OrderingAsBadge from "../Food/steps/OrderingAsBadge";
@@ -244,10 +245,32 @@ export default function PublicMenuPage() {
 
         {store.description && <div className="pm-desc">{store.description}</div>}
 
-        {/* Botão baixar app (sempre visível como porta de conversão) */}
-        <button className="pm-getapp" onClick={openApp}>
-          <Download size={16} /> Baixar o app <BrandName />
-        </button>
+        {/* Porta de conversão pro app: 2 botões grandes lado a lado (App Store / Google Play). */}
+        <div className="pm-store-cta-label">
+          <Download size={15} /> Baixe o app <BrandName /> pra pedir
+        </div>
+        <div className="pm-store-cta-row">
+          <a
+            className="pm-store-cta"
+            href={APP_STORE_URL}
+            target="_blank"
+            rel="noreferrer"
+            onClick={() => track("getapp_click", "ios")}
+          >
+            <span className="pm-store-cta-sub">Baixar na</span>
+            <span className="pm-store-cta-name"> App Store</span>
+          </a>
+          <a
+            className="pm-store-cta"
+            href={PLAY_STORE_URL}
+            target="_blank"
+            rel="noreferrer"
+            onClick={() => track("getapp_click", "android")}
+          >
+            <span className="pm-store-cta-sub">Disponível no</span>
+            <span className="pm-store-cta-name"> Google Play</span>
+          </a>
+        </div>
 
         {/* Banners */}
         {notEnabled && (

@@ -474,6 +474,50 @@
   text-decoration: none;
   margin-bottom: 10px;
 }
+/* Porta de conversão no topo do cardápio: 2 botões grandes de loja lado a lado */
+.pm-store-cta-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 14px 16px 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #475569;
+}
+.pm-store-cta-row {
+  display: flex;
+  gap: 10px;
+  margin: 0 16px;
+}
+.pm-store-cta {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 8px;
+  border-radius: 14px;
+  background: #111827;
+  color: #fff;
+  text-decoration: none;
+  line-height: 1.15;
+  box-shadow: 0 2px 8px rgba(17, 24, 39, 0.18);
+}
+.pm-store-cta:active {
+  transform: translateY(1px);
+}
+.pm-store-cta-sub {
+  font-size: 11px;
+  opacity: 0.8;
+  font-weight: 500;
+}
+.pm-store-cta-name {
+  font-size: 17px;
+  font-weight: 800;
+}
+
 .pm-badges {
   display: flex;
   gap: 10px;
