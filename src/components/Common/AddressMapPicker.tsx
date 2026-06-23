@@ -22,6 +22,9 @@ interface AddressMapPickerProps {
   required?: boolean;
   onAddressSelect?: (address: AddressData) => void;
   showConfirmButton?: boolean;
+  /** Centro inicial do mapa quando não há endereço (ex.: GPS salvo do usuário). Tem
+   *  prioridade sobre a geolocation do browser e sobre o default. */
+  fallbackCenter?: { lat: number; lng: number } | null;
 }
 
 const libraries: ("places" | "geometry")[] = ["places", "geometry"];
@@ -54,6 +57,7 @@ export const AddressMapPicker: React.FC<AddressMapPickerProps> = ({
   disabled = false,
   onAddressSelect,
   showConfirmButton = false,
+  fallbackCenter = null,
 }) => {
   const buildInitialAddress = () => {
     let address = value.street || value.address || "";
@@ -68,7 +72,7 @@ export const AddressMapPicker: React.FC<AddressMapPickerProps> = ({
   const [mapCenter, setMapCenter] = useState(
     value.latitude && value.longitude
       ? { lat: value.latitude, lng: value.longitude }
-      : defaultCenter
+      : fallbackCenter ?? defaultCenter // GPS salvo do usuário tem prioridade sobre o default
   );
   const [isLocating, setIsLocating] = useState(false);
   const [isMapDragging, setIsMapDragging] = useState(false);
@@ -106,9 +110,11 @@ export const AddressMapPicker: React.FC<AddressMapPickerProps> = ({
     }
   }, [value.latitude, value.longitude]);
 
-  // Obtém localização do usuário apenas quando não há endereço inicial
+  // Geolocation do browser só como FALLBACK: quando não há endereço inicial NEM GPS salvo
+  // do usuário (fallbackCenter). Se temos o GPS salvo, centramos nele sem prompt do browser.
   useEffect(() => {
     if (value.latitude && value.longitude) return;
+    if (fallbackCenter) return;
     if (!("geolocation" in navigator)) return;
     navigator.geolocation.getCurrentPosition(
       (position) => {

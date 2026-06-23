@@ -35,6 +35,17 @@ export default function AddressStep({ initial, onConfirm, onBack }: Props) {
   const hasAddress = addr.address.trim() !== "";
   const canConfirm = hasCoords && hasAddress;
 
+  // Centro inicial do mapa = GPS salvo do usuário logado (do login, no localStorage).
+  // Evita o prompt do browser e centra direto na região do usuário; se não houver,
+  // o AddressMapPicker cai pra geolocation do browser e só então pro default.
+  const userGps = (() => {
+    const la = parseFloat(localStorage.getItem("latitude") || "");
+    const lo = parseFloat(localStorage.getItem("longitude") || "");
+    return Number.isFinite(la) && Number.isFinite(lo) && (la !== 0 || lo !== 0)
+      ? { lat: la, lng: lo }
+      : null;
+  })();
+
   const confirm = () => {
     if (!canConfirm) {
       track("address_invalid");
@@ -60,7 +71,7 @@ export default function AddressStep({ initial, onConfirm, onBack }: Props) {
           <p style={cs.muted}>Arraste o mapa pra posicionar o pin no seu endereço.</p>
         </div>
 
-        <AddressMapPicker value={addr} onChange={setAddr} />
+        <AddressMapPicker value={addr} onChange={setAddr} fallbackCenter={userGps} />
 
         <div>
           <div style={cs.label}>Número</div>
