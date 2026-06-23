@@ -48,12 +48,12 @@ class MetadataService {
       if (cachedMetadata) {
         this.populateCache(cachedMetadata);
         this.isLoaded = true;
-        
-        // Verifica se o cache é antigo (> 24h) e atualiza em background
-        const cacheAge = Date.now() - this.getCacheTimestamp();
-        if (cacheAge > METADATA_CACHE_DURATION) {
-          this.refreshMetadataInBackground();
-        }
+
+        // Sempre revalida em background: pega mudanças de metadata feitas SÓ no BE
+        // (sem deploy de FE, ex.: nova coluna no relatório) já na próxima navegação,
+        // em vez de ficar até 24h preso no cache. A 1ª renderização ainda usa o cache
+        // (instantâneo); o refetch atualiza o localStorage + cache em memória pra depois.
+        this.refreshMetadataInBackground();
         return;
       }
 
@@ -162,21 +162,6 @@ class MetadataService {
     } catch (error) {
       console.error('❌ Erro ao salvar cache no localStorage:', error);
       // Se falhar (ex: quota exceeded), apenas loga mas não quebra
-    }
-  }
-
-  /**
-   * Obtém o timestamp do cache
-   */
-  private getCacheTimestamp(): number {
-    try {
-      const cached = localStorage.getItem(METADATA_STORAGE_KEY);
-      if (!cached) return 0;
-      
-      const parsedCache: CachedMetadata = JSON.parse(cached);
-      return parsedCache.timestamp;
-    } catch {
-      return 0;
     }
   }
 
