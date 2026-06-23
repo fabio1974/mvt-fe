@@ -15,6 +15,7 @@ import OrderingAsBadge from "../Food/steps/OrderingAsBadge";
 import SwitchAccountModal from "../Auth/SwitchAccountModal";
 import { addonGroupsForProduct, allProducts, productHasAddons } from "../Food/addonGroups";
 import type { CartAddon } from "../Food/foodTypes";
+import { getPublicPromo, promoDiscountLabel, promoMinLabel, type PublicPromoCoupon } from "../Food/foodApi";
 import "./PublicMenu.css";
 
 const brl = (n: number) => `R$ ${n.toFixed(2).replace(".", ",")}`;
@@ -74,6 +75,8 @@ export default function PublicMenuPage() {
   const [switchOpen, setSwitchOpen] = useState(false);
   // Força recomputar a identidade exibida após trocar de conta.
   const [authNonce, setAuthNonce] = useState(0);
+  // Cupom-promoção pro banner (desconto/mínimo vêm da campanha no BE; null = sem promo).
+  const [promo, setPromo] = useState<PublicPromoCoupon | null>(null);
 
   const cart = useCart(slug);
   // Todos os produtos (pra escopar os addons por categoria do produto aberto).
@@ -106,6 +109,17 @@ export default function PublicMenuPage() {
     track("cardapio_view");
     return () => stopFunnel();
   }, [slug]);
+
+  // Cupom-promoção pro banner do topo (valores lidos da campanha no BE; some se não houver).
+  useEffect(() => {
+    let alive = true;
+    getPublicPromo().then((p) => {
+      if (alive) setPromo(p);
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   // Handlers instrumentados (cada clique relevante vira um passo do funil).
   const openDetail = (p: PublicProduct) => {
@@ -281,16 +295,22 @@ export default function PublicMenuPage() {
         {store.description && <div className="pm-desc">{store.description}</div>}
 
         {/* App CTA fica só no rodapé: deixa o cardápio liderar (web pede aqui mesmo).
-            No topo, o ímã de conversão é o cupom de 1ª compra. */}
-        <div className="pm-coupon">
-          <Ticket size={30} className="pm-coupon-icon" />
-          <div className="pm-coupon-text">
-            <span className="pm-coupon-head">R$15 OFF na sua 1ª compra</span>
-            <span className="pm-coupon-sub">
-              Cupom <strong>ZAPI10</strong> · aplicado no checkout · pedidos a partir de R$25
-            </span>
+            No topo, o ímã é o cupom de 1ª compra — desconto e mínimo vêm da campanha no BE. */}
+        {promo && (
+          <div className="pm-coupon">
+            <Ticket size={30} className="pm-coupon-icon" />
+            <div className="pm-coupon-text">
+              <span className="pm-coupon-head">
+                {promoDiscountLabel(promo)}
+                {promo.firstPurchaseOnly ? " na sua 1ª compra" : ""}
+              </span>
+              <span className="pm-coupon-sub">
+                Cupom <strong>{promo.code}</strong> · aplicado no checkout
+                {promoMinLabel(promo) ? ` · pedidos a partir de ${promoMinLabel(promo)}` : ""}
+              </span>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Banners */}
         {notEnabled && (

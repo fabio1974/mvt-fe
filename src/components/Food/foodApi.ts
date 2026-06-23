@@ -64,3 +64,44 @@ export async function validateCoupon(code: string, orderTotal: number): Promise<
   const { data } = await api.post<CouponValidation>("/coupons/validate", { code, orderTotal });
   return data;
 }
+
+/** Cupom-promoção PÚBLICO (sem auth) — valores lidos da campanha no BE. Pro banner do
+ *  cardápio e o ribbon da landing. Nada de número fixo no FE. */
+export interface PublicPromoCoupon {
+  code: string;
+  discountType: "FIXED" | "PERCENT";
+  discountValue: number;
+  maxDiscountValue?: number | null;
+  minOrderValue?: number | null;
+  description?: string | null;
+  firstPurchaseOnly: boolean;
+}
+
+/** GET /coupons/public/promo. 204 → null. Best-effort: nunca lança (banner não pode quebrar a página). */
+export async function getPublicPromo(): Promise<PublicPromoCoupon | null> {
+  try {
+    const { data } = await api.get<PublicPromoCoupon | null>("/coupons/public/promo");
+    return data || null;
+  } catch {
+    return null;
+  }
+}
+
+/** Inteiro sem casas; fracionado com vírgula (15 → "15", 15.5 → "15,50"). */
+function promoNum(n: number): string {
+  const v = Number(n);
+  return Number.isInteger(v) ? String(v) : v.toFixed(2).replace(".", ",");
+}
+
+/** "R$15 OFF" (FIXED) ou "15% OFF" (PERCENT) — direto da campanha. */
+export function promoDiscountLabel(p: PublicPromoCoupon): string {
+  return p.discountType === "PERCENT"
+    ? `${promoNum(p.discountValue)}% OFF`
+    : `R$${promoNum(p.discountValue)} OFF`;
+}
+
+/** "R$25" se há mínimo > 0; null caso contrário (sem mínimo a exibir). */
+export function promoMinLabel(p: PublicPromoCoupon): string | null {
+  const min = Number(p.minOrderValue ?? 0);
+  return min > 0 ? `R$${promoNum(min)}` : null;
+}
