@@ -74,7 +74,7 @@ export default function PublicMenuPage() {
   // Handlers instrumentados (cada clique relevante vira um passo do funil).
   const openDetail = (p: PublicProduct) => {
     track("product_open", p.name);
-    openDetail(p);
+    setDetailProduct(p);
   };
   const quickAdd = (p: PublicProduct) => {
     track("cart_add", p.name);
