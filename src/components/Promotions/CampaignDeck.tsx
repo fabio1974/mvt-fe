@@ -121,7 +121,7 @@ function renderSlide(slide: CampaignSlide, campaign: Campaign) {
     return (
       <div className="pp-slide-cta">
         <div className="pp-kicker">Baixe agora e aproveite</div>
-        <h3 className="pp-cta-title">Comida boa, com R$15 de desconto</h3>
+        <h3 className="pp-cta-title">Comida boa, com {campaign.amountLabel} de desconto</h3>
         <div className="pp-store-buttons">
           <a className="pp-store-btn" href={APP_STORE_URL} target="_blank" rel="noopener noreferrer">
              App Store

@@ -1,15 +1,16 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import LOGO_PATH from "../../config/logo";
 import BrandMark from "../Brand/BrandMark";
 import BrandName from "../Brand/BrandName";
-import { CAMPAIGNS } from "./promotionsData";
+import { buildCampaigns, type Campaign } from "./promotionsData";
+import { getPublicPromo } from "../Food/foodApi";
 import CampaignDeck from "./CampaignDeck";
 import "./Promotions.css";
 
 const PAGE_TITLE = "Promoções Zapi10 — descontos no app de comida";
 const PAGE_DESC =
-  "Aproveite as promoções do Zapi10. Hoje: R$15 de desconto na primeira compra de comida com o cupom ZAPI10.";
+  "Aproveite as promoções do Zapi10 — desconto na primeira compra de comida com o cupom.";
 
 function upsertMeta(attr: "name" | "property", key: string, content: string) {
   let el = document.head.querySelector(`meta[${attr}="${key}"]`) as HTMLMetaElement | null;
@@ -45,7 +46,20 @@ export default function PromotionsPage() {
     };
   }, []);
 
-  const activeCount = CAMPAIGNS.filter((c) => c.active).length;
+  const [campaigns, setCampaigns] = useState<Campaign[] | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    getPublicPromo().then((p) => {
+      if (alive) setCampaigns(buildCampaigns(p));
+    });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  const list = campaigns ?? [];
+  const activeCount = list.filter((c) => c.active).length;
 
   return (
     <div className="pp-page">
@@ -64,14 +78,16 @@ export default function PromotionsPage() {
           Promoções <BrandName onDark />
         </h1>
         <p className="pp-hero-sub">
-          {activeCount > 0
+          {campaigns === null
+            ? "Carregando promoções…"
+            : activeCount > 0
             ? "Aproveite as campanhas ativas — é só baixar o app e usar."
             : "Nenhuma campanha ativa no momento. Volte em breve!"}
         </p>
       </section>
 
       <main className="pp-campaigns">
-        {CAMPAIGNS.map((campaign) => (
+        {list.map((campaign) => (
           <section className="pp-campaign" key={campaign.id}>
             <div className="pp-campaign-head">
               <span className="pp-badge">{campaign.badge}</span>

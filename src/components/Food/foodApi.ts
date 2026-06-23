@@ -105,3 +105,8 @@ export function promoMinLabel(p: PublicPromoCoupon): string | null {
   const min = Number(p.minOrderValue ?? 0);
   return min > 0 ? `R$${promoNum(min)}` : null;
 }
+
+/** Só o valor do desconto, sem "OFF" (pra cópia "X de desconto"). FIXED→"R$15", PERCENT→"15%". */
+export function promoAmountLabel(p: PublicPromoCoupon): string {
+  return p.discountType === "PERCENT" ? `${promoNum(p.discountValue)}%` : `R$${promoNum(p.discountValue)}`;
+}
