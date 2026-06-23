@@ -623,6 +623,7 @@ const EntityForm: React.FC<EntityFormProps> = ({
       if (
         isTextField &&
         minLength !== undefined &&
+        minLength !== null &&
         String(value).length < minLength
       ) {
         return (
@@ -632,7 +633,8 @@ const EntityForm: React.FC<EntityFormProps> = ({
 
       if (
         isTextField &&
-        maxLength !== undefined
+        maxLength !== undefined &&
+        maxLength !== null
       ) {
         // ⚠️ Campos de documento (CPF/CNPJ) têm validação específica — pular validação genérica de maxLength
         if (isDocumentField(field.name)) {

@@ -287,7 +287,7 @@ export default function PublicMenuPage() {
           <div className="pm-coupon-text">
             <span className="pm-coupon-head">R$15 OFF na sua 1ª compra</span>
             <span className="pm-coupon-sub">
-              Cupom <strong>ZAPI10</strong> · aplicado no checkout · pedidos a partir de R$30
+              Cupom <strong>ZAPI10</strong> · aplicado no checkout · pedidos a partir de R$25
             </span>
           </div>
         </div>
