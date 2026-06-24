@@ -8,7 +8,7 @@ const STAGES: { key: string; label: string; main?: boolean; sub?: boolean; bad?:
   { key: "product_open", label: "Abriu um produto", main: true },
   { key: "cart_add", label: "Montou o pedido (1º item)", main: true },
   { key: "checkout_open", label: "Abriu o checkout", main: true },
-  { key: "checkout_step_auth", label: "Tela de login/cadastro", main: true },
+  { key: "checkout_step_auth", label: "Tela de login/cadastro (ramo)", sub: true },
   { key: "auth_view", label: "viu a tela de auth", sub: true },
   { key: "auth_email_submit", label: "tentou login (e-mail)", sub: true },
   { key: "auth_email_error", label: "erro no login e-mail", sub: true, bad: true },
@@ -19,7 +19,7 @@ const STAGES: { key: string; label: string; main?: boolean; sub?: boolean; bad?:
   { key: "auth_cpf_invalid", label: "CPF inválido (validação)", sub: true, bad: true },
   { key: "auth_cpf_submit", label: "enviou CPF", sub: true },
   { key: "auth_cpf_error", label: "erro ao salvar CPF", sub: true, bad: true },
-  { key: "auth_success", label: "Autenticou ✓", main: true },
+  { key: "auth_success", label: "Autenticou (ramo) ✓", sub: true },
   { key: "checkout_step_address", label: "Tela de endereço", main: true },
   { key: "address_submit", label: "confirmou endereço", sub: true },
   { key: "checkout_step_summary", label: "Resumo do pedido", main: true },
@@ -34,8 +34,6 @@ const MILESTONES = [
   { key: "product_open", label: "Abriu" },
   { key: "cart_add", label: "Montou" },
   { key: "checkout_open", label: "Checkout" },
-  { key: "checkout_step_auth", label: "Login" },
-  { key: "auth_success", label: "Autenticou" },
   { key: "order_placed", label: "Pedido" },
 ];
 
@@ -65,9 +63,10 @@ const FunnelTab: React.FC = () => {
     <div>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
         <div>
-          <h3 style={{ margin: 0, fontSize: 16 }}>📊 Funil do cardápio</h3>
+          <h3 style={{ margin: 0, fontSize: 16 }}>📊 Funil do cardápio (web)</h3>
           <p style={{ margin: "2px 0 0", fontSize: 13, color: "#64748b" }}>
-            Visitantes únicos por estágio — onde exatamente o pessoal para.
+            Sessões que chegaram <b>pelo menos</b> até cada etapa (cumulativo). Login é ramo à parte —
+            quem já entra logado pula. Só mede o cardápio web (<code>/c/&lt;loja&gt;</code>), não o app.
           </p>
         </div>
         <div style={{ display: "flex", gap: 6 }}>
@@ -150,7 +149,8 @@ const FunnelTab: React.FC = () => {
               })}
             </div>
             <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 10 }}>
-              ↓ = queda em relação ao marco principal anterior. Vermelho = sub-evento de erro/abandono.
+              ↓ = queda vs. etapa principal anterior · └ cinza = ramo (login) / sub-evento · vermelho = erro/abandono.
+              {" "}<b>Sucesso</b> = pagamento confirmado na tela; PIX pago após fechar a página não conta — a verdade de pagos está em <b>Pedidos</b>.
             </div>
           </div>
 

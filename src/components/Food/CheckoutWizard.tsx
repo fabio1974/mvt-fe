@@ -171,7 +171,12 @@ export default function CheckoutWizard({ store, cart, onClose }: Props) {
             onSubmit={(o) => {
               track("order_placed");
               setOrder(o);
-              setStep(o.pixQrCode ? "pix" : "success");
+              if (o.pixQrCode) {
+                setStep("pix");
+              } else {
+                track("checkout_step_success"); // não-PIX: pedido já concluído na tela
+                setStep("success");
+              }
             }}
             onAuthExpired={switchAccount}
             onBack={() => setStep(fulfillment === "PICKUP" ? "cart" : "address")}
@@ -181,6 +186,7 @@ export default function CheckoutWizard({ store, cart, onClose }: Props) {
           <PixStep
             order={order}
             onPaid={(o) => {
+              track("checkout_step_success"); // PIX confirmado na tela
               setOrder(o);
               setStep("success");
             }}
