@@ -35,6 +35,9 @@ export const LABEL_TRANSLATIONS: Record<string, string> = {
   "paymentCompleted": "Pagamento",
   "Payment Captured": "Pagamento Capturado",
   "paymentCaptured": "Pagamento Capturado",
+  // Colunas sintéticas da tabela de Pedidos (Zapi-Food)
+  "paymentSituation": "Pagamento",
+  "paymentForma": "Forma",
   "createdAt": "Criado Em",
   "Created At": "Criado Em",
 

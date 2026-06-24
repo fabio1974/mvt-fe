@@ -10,6 +10,61 @@ import { useNewOrderAlert } from "../../hooks/useNewOrderAlert";
 
 const FINAL_STATUSES = new Set(["COMPLETED", "CANCELLED"]);
 
+// ── Coluna "Pagamento": badge da situação consolidada (vem do BE em row.paymentSituation,
+// que já considera estorno do Payment). Cobre PAID/PENDING/FAILED/CANCELLED/REFUNDED/PARTIALLY_REFUNDED.
+const PAYMENT_STATUS_UI: Record<string, { label: string; bg: string; color: string }> = {
+  PAID: { label: "Pago", bg: "#dcfce7", color: "#15803d" },
+  PENDING: { label: "Pendente", bg: "#fef3c7", color: "#b45309" },
+  FAILED: { label: "Falhou", bg: "#fee2e2", color: "#b91c1c" },
+  CANCELLED: { label: "Cancelado", bg: "#f1f5f9", color: "#475569" },
+  REFUNDED: { label: "Estornado", bg: "#f3e8ff", color: "#7e22ce" },
+  PARTIALLY_REFUNDED: { label: "Estorno parcial", bg: "#f3e8ff", color: "#7e22ce" },
+};
+
+const renderPaymentBadge = (value: any): React.ReactNode => {
+  const status = value ? String(value) : null;
+  if (!status) return <span style={{ color: "#94a3b8" }}>—</span>;
+  const ui =
+    PAYMENT_STATUS_UI[status] ?? { label: status, bg: "#f1f5f9", color: "#475569" };
+  return (
+    <span
+      style={{
+        display: "inline-block",
+        padding: "2px 10px",
+        borderRadius: 999,
+        background: ui.bg,
+        color: ui.color,
+        fontSize: 12,
+        fontWeight: 600,
+        whiteSpace: "nowrap",
+      }}
+    >
+      {ui.label}
+    </span>
+  );
+};
+
+// ── Coluna "Forma": método + momento do pagamento (lidos direto da linha; serializados
+// no JSON mesmo com @Visible(table=false)). Ex.: "PIX no checkout", "Na entrega", "Mesa".
+const PAYMENT_METHOD_LABEL: Record<string, string> = {
+  PIX: "PIX",
+  CASH: "Dinheiro",
+  CREDIT_CARD: "Cartão",
+  DEBIT_CARD: "Cartão",
+  BANK_SLIP: "Boleto",
+  WALLET: "Carteira",
+};
+
+const renderForma = (_value: any, row: any): React.ReactNode => {
+  const method = row?.customerPaymentMethod;
+  const methodLabel = method ? PAYMENT_METHOD_LABEL[method] ?? method : null;
+  const timing = row?.paymentTiming;
+  if (timing === "AT_CHECKOUT") return methodLabel ? `${methodLabel} no checkout` : "No checkout";
+  if (timing === "ON_DELIVERY") return methodLabel ? `${methodLabel} na entrega` : "Na entrega";
+  if (row?.orderType === "TABLE") return "Mesa";
+  return methodLabel ?? <span style={{ color: "#94a3b8" }}>—</span>;
+};
+
 // Estabelecimento (CLIENT) só vê os próprios pedidos no balcão/entrega — colunas que viram ruído
 // pra ele ficam escondidas por padrão na 1ª visita (depois ele ajusta no seletor de Colunas).
 const ESTABLISHMENT_DEFAULT_HIDDEN = ["storeName", "tableNumberField", "notes", "deliveryAddress"];
@@ -58,6 +113,8 @@ const FoodOrderCRUDPage: React.FC = () => {
       defaultHiddenColumns={isEstablishment() ? ESTABLISHMENT_DEFAULT_HIDDEN : undefined}
       hiddenFields={["deliveryLatitude", "deliveryLongitude", "items"]}
       hideFields={["subtotal", "deliveryFee", "total", "estimatedPreparationMinutes"]}
+      // Colunas de pagamento (não vêm no metadata): situação consolidada + forma de pagamento
+      showFields={["paymentSituation", "paymentForma"]}
       customActions={(row: any) => (
         <button
           className="btn-action btn-print"
@@ -85,6 +142,8 @@ const FoodOrderCRUDPage: React.FC = () => {
             </button>
           );
         },
+        paymentSituation: (value) => renderPaymentBadge(value),
+        paymentForma: (value, row: any) => renderForma(value, row),
       }}
       customEditComponent={(entityId, viewMode, onBack) => (
         <FoodOrderEditPanel
