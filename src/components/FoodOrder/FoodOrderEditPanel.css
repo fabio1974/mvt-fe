@@ -588,3 +588,29 @@
   border: 1.5px solid rgba(0, 153, 255, 0.4);
   color: hsl(0, 0%, 90%);
 }
+
+/* ── Card financeiro (Pagamento) ───────────────────────────── */
+.fop-pay-card { display: flex; flex-direction: column; gap: 16px; }
+.fop-pay-grid {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 12px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;
+}
+.fop-pay-row {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 14px; color: #475569; gap: 12px;
+}
+.fop-pay-row span { color: #64748b; }
+.fop-pay-row strong { color: #1e293b; }
+.fop-pay-emph { border-top: 1px dashed #cbd5e1; padding-top: 8px; margin-top: 2px; }
+.fop-pay-emph span, .fop-pay-emph strong { font-size: 15px; font-weight: 700; color: #0f172a; }
+.fop-pay-badge {
+  display: inline-block; padding: 2px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 600; white-space: nowrap;
+}
+.fop-pay-code {
+  font-size: 12px; color: #475569; background: #eef2f7;
+  padding: 2px 6px; border-radius: 6px; word-break: break-all;
+}
+.fop-pay-block { display: flex; flex-direction: column; gap: 6px; }
+.fop-pay-block-title { font-size: 13px; font-weight: 700; color: #334155; text-transform: uppercase; letter-spacing: .02em; }
+.fop-pay-empty { font-size: 14px; color: #94a3b8; font-style: italic; padding: 4px 2px; }

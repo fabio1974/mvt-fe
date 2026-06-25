@@ -71,6 +71,46 @@ interface Props {
   onBack: () => void;
 }
 
+// Card financeiro — composição vinda de GET /api/orders/{id}/payment-details
+interface PaymentDetails {
+  order: {
+    orderId: number;
+    total: number | null;
+    discountValue: number | null;
+    couponCode: string | null;
+    amountCharged: number | null;
+    customerPaymentStatus: string | null;
+    paymentSituation: string | null;
+  };
+  payment: {
+    id: number;
+    status: string | null;
+    method: string | null;
+    amount: number | null;
+    gatewayFee: number | null;
+    paymentDate: string | null;
+    providerPaymentId: string | null;
+    paymentType: string | null;
+  } | null;
+  refunds: Array<{
+    amountCents: number;
+    status: string | null;
+    reason: string | null;
+    isTotal: boolean | null;
+    createdAt: string | null;
+    completedAt: string | null;
+    pagarmeRefundId: string | null;
+  }>;
+  transfers: Array<{
+    recipientName: string | null;
+    recipientRole: string | null;
+    kind: string | null;
+    amountCents: number;
+    status: string | null;
+    executedAt: string | null;
+  }>;
+}
+
 const STEPS = [
   { key: "ACCEPTED", action: "accept", label: "Aceitar", icon: "✅", color: "#3b82f6" },
   { key: "PREPARING", action: "preparing", label: "Preparar", icon: "👨‍🍳", color: "#8b5cf6" },
@@ -91,11 +131,41 @@ const STATUS_LABELS: Record<string, { label: string; color: string; icon: string
 
 const PRINT_PREF_KEY = "fop_skip_print_prompt";
 
+// ── Card de pagamento: badges de status (cobre payment / refund / transfer)
+const PAY_BADGE: Record<string, { label: string; bg: string; color: string }> = {
+  PAID: { label: "Pago", bg: "#dcfce7", color: "#15803d" },
+  PENDING: { label: "Pendente", bg: "#fef3c7", color: "#b45309" },
+  PROCESSING: { label: "Processando", bg: "#fef3c7", color: "#b45309" },
+  FAILED: { label: "Falhou", bg: "#fee2e2", color: "#b91c1c" },
+  CANCELLED: { label: "Cancelado", bg: "#f1f5f9", color: "#475569" },
+  EXPIRED: { label: "Expirado", bg: "#f1f5f9", color: "#475569" },
+  REFUNDED: { label: "Estornado", bg: "#f3e8ff", color: "#7e22ce" },
+  PARTIALLY_REFUNDED: { label: "Estorno parcial", bg: "#f3e8ff", color: "#7e22ce" },
+  SUCCEEDED: { label: "Concluído", bg: "#dcfce7", color: "#15803d" },
+  SENT: { label: "Enviado", bg: "#dcfce7", color: "#15803d" },
+  EXECUTED: { label: "Executado", bg: "#dcfce7", color: "#15803d" },
+};
+const payBadge = (status: string | null | undefined): React.ReactNode => {
+  if (!status) return <span style={{ color: "#94a3b8" }}>—</span>;
+  const ui = PAY_BADGE[status] ?? { label: status, bg: "#f1f5f9", color: "#475569" };
+  return <span className="fop-pay-badge" style={{ background: ui.bg, color: ui.color }}>{ui.label}</span>;
+};
+const PAY_METHOD: Record<string, string> = {
+  PIX: "PIX", CASH: "Dinheiro", CREDIT_CARD: "Cartão de crédito",
+  DEBIT_CARD: "Cartão de débito", BANK_SLIP: "Boleto", WALLET: "Carteira",
+};
+const payMethodLabel = (m: string | null | undefined) => (m ? PAY_METHOD[m] ?? m : "—");
+const ROLE_LABEL: Record<string, string> = {
+  CLIENT: "Loja", ORGANIZER: "Gerente", COURIER: "Entregador", CUSTOMER: "Cliente", ADMIN: "Admin",
+};
+const roleLabel = (r: string) => ROLE_LABEL[r] ?? r;
+
 
 const FoodOrderEditPanel: React.FC<Props> = ({ orderId, viewMode }) => {
   const navigate = useNavigate();
   const [order, setOrder] = useState<FoodOrder | null>(null);
   const [commands, setCommands] = useState<OrderCommand[]>([]);
+  const [payDetails, setPayDetails] = useState<PaymentDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [showPrintModal, setShowPrintModal] = useState(false);
@@ -104,12 +174,14 @@ const FoodOrderEditPanel: React.FC<Props> = ({ orderId, viewMode }) => {
 
   const fetchOrder = async () => {
     try {
-      const [orderRes, cmdsRes] = await Promise.all([
+      const [orderRes, cmdsRes, payRes] = await Promise.all([
         api.get<FoodOrder>(`/api/orders/${orderId}`),
         api.get<OrderCommand[]>(`/api/orders/${orderId}/commands`).catch(() => ({ data: [] as OrderCommand[] })),
+        api.get<PaymentDetails>(`/api/orders/${orderId}/payment-details`).catch(() => ({ data: null as PaymentDetails | null })),
       ]);
       setOrder(orderRes.data);
       setCommands(cmdsRes.data || []);
+      setPayDetails(payRes.data);
     } catch (e) {
       console.error("Erro ao carregar pedido:", e);
     } finally {
@@ -634,6 +706,71 @@ const FoodOrderEditPanel: React.FC<Props> = ({ orderId, viewMode }) => {
             </div>
           )}
         </FormContainer>
+
+        {/* Card financeiro — pagamento + estornos + repasses (GET /orders/{id}/payment-details) */}
+        {payDetails && (
+          <FormContainer title="💳 Pagamento">
+            <div className="fop-pay-card">
+              {/* Resumo do pedido */}
+              <div className="fop-pay-grid">
+                <div className="fop-pay-row"><span>Total (bruto)</span><strong>{fmtMoney(payDetails.order.total ?? 0)}</strong></div>
+                {(payDetails.order.discountValue ?? 0) > 0 && (
+                  <div className="fop-pay-row"><span>Cupom {payDetails.order.couponCode || ""}</span><strong style={{ color: "#16a34a" }}>−{fmtMoney(payDetails.order.discountValue ?? 0)}</strong></div>
+                )}
+                <div className="fop-pay-row fop-pay-emph"><span>Valor cobrado</span><strong>{fmtMoney(payDetails.order.amountCharged ?? 0)}</strong></div>
+                <div className="fop-pay-row"><span>Situação</span>{payBadge(payDetails.order.paymentSituation)}</div>
+              </div>
+
+              {/* Dados do pagamento */}
+              {payDetails.payment ? (
+                <div className="fop-pay-grid">
+                  <div className="fop-pay-row"><span>Status do pagamento</span>{payBadge(payDetails.payment.status)}</div>
+                  <div className="fop-pay-row"><span>Método</span><strong>{payMethodLabel(payDetails.payment.method)}</strong></div>
+                  <div className="fop-pay-row"><span>Valor pago</span><strong>{fmtMoney(payDetails.payment.amount ?? 0)}</strong></div>
+                  {payDetails.payment.gatewayFee != null && (
+                    <div className="fop-pay-row"><span>Taxa do gateway</span><strong>{fmtMoney(payDetails.payment.gatewayFee)}</strong></div>
+                  )}
+                  <div className="fop-pay-row"><span>Pago em</span><strong>{payDetails.payment.paymentDate ? fmt(payDetails.payment.paymentDate) : "—"}</strong></div>
+                  {payDetails.payment.providerPaymentId && (
+                    <div className="fop-pay-row"><span>ID gateway</span><code className="fop-pay-code">{payDetails.payment.providerPaymentId}</code></div>
+                  )}
+                </div>
+              ) : (
+                <div className="fop-pay-empty">Sem pagamento registrado para este pedido.</div>
+              )}
+
+              {/* Estornos */}
+              {payDetails.refunds.length > 0 && (
+                <div className="fop-pay-block">
+                  <div className="fop-pay-block-title">Estornos</div>
+                  {payDetails.refunds.map((r, i) => (
+                    <div key={i} className="fop-pay-row">
+                      <span>{r.isTotal ? "Total" : "Parcial"}{r.reason ? ` · ${r.reason}` : ""}</span>
+                      <span style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                        <strong>{fmtMoney((r.amountCents ?? 0) / 100)}</strong>{payBadge(r.status)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Repasses (split) */}
+              {payDetails.transfers.length > 0 && (
+                <div className="fop-pay-block">
+                  <div className="fop-pay-block-title">Repasses (split)</div>
+                  {payDetails.transfers.map((t, i) => (
+                    <div key={i} className="fop-pay-row">
+                      <span>{t.recipientName || "—"}{t.recipientRole ? ` (${roleLabel(t.recipientRole)})` : ""}</span>
+                      <span style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                        <strong>{fmtMoney((t.amountCents ?? 0) / 100)}</strong>{payBadge(t.status)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </FormContainer>
+        )}
       </div>
     </div>
   );
