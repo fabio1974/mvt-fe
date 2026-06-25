@@ -5,6 +5,7 @@ import { FormContainer, FormField, FormInput } from "../Common/FormComponents";
 import { buildStoreHeader, escapeHtml as escapeHtmlShared, PRINT_STYLES } from "./printHeader";
 import BridgePrintButton from "../Common/BridgePrintButton";
 import { printOrder as printOrderViaBridge, getSavedBridgeUrl } from "../../services/printBridge";
+import { getUserRole } from "../../utils/auth";
 import "./FoodOrderEditPanel.css";
 
 interface OrderItemAddon {
@@ -755,19 +756,54 @@ const FoodOrderEditPanel: React.FC<Props> = ({ orderId, viewMode }) => {
               )}
 
               {/* Repasses (split) */}
-              {payDetails.transfers.length > 0 && (
-                <div className="fop-pay-block">
-                  <div className="fop-pay-block-title">Repasses (split)</div>
-                  {payDetails.transfers.map((t, i) => (
-                    <div key={i} className="fop-pay-row">
-                      <span>{t.recipientName || "—"}{t.recipientRole ? ` (${roleLabel(t.recipientRole)})` : ""}</span>
-                      <span style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                        <strong>{fmtMoney((t.amountCents ?? 0) / 100)}</strong>{payBadge(t.status)}
-                      </span>
+              {payDetails.transfers.length > 0 && (() => {
+                const role = getUserRole();
+                const isEstablishment = role === "ROLE_CLIENT" || role === "CLIENT";
+
+                // Para a loja: oculta o repasse do gerente (e demais) e mostra só o
+                // repasse da própria loja + a taxa da plataforma (o que ela paga p/ a
+                // plataforma = total bruto − repasse da loja − repasse do entregador).
+                if (isEstablishment) {
+                  const storeTransfers = payDetails.transfers.filter((t) => t.recipientRole === "CLIENT");
+                  const storeCents = storeTransfers.reduce((s, t) => s + (t.amountCents ?? 0), 0);
+                  const courierCents = payDetails.transfers
+                    .filter((t) => t.recipientRole === "COURIER")
+                    .reduce((s, t) => s + (t.amountCents ?? 0), 0);
+                  const grossCents = Math.round((payDetails.order.total ?? 0) * 100);
+                  const platformFeeCents = Math.max(0, grossCents - storeCents - courierCents);
+                  return (
+                    <div className="fop-pay-block">
+                      <div className="fop-pay-block-title">Repasses (split)</div>
+                      {storeTransfers.map((t, i) => (
+                        <div key={i} className="fop-pay-row">
+                          <span>{t.recipientName || "—"}{t.recipientRole ? ` (${roleLabel(t.recipientRole)})` : ""}</span>
+                          <span style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                            <strong>{fmtMoney((t.amountCents ?? 0) / 100)}</strong>{payBadge(t.status)}
+                          </span>
+                        </div>
+                      ))}
+                      <div className="fop-pay-row">
+                        <span>Taxa de serviço</span>
+                        <strong>{fmtMoney(platformFeeCents / 100)}</strong>
+                      </div>
                     </div>
-                  ))}
-                </div>
-              )}
+                  );
+                }
+
+                return (
+                  <div className="fop-pay-block">
+                    <div className="fop-pay-block-title">Repasses (split)</div>
+                    {payDetails.transfers.map((t, i) => (
+                      <div key={i} className="fop-pay-row">
+                        <span>{t.recipientName || "—"}{t.recipientRole ? ` (${roleLabel(t.recipientRole)})` : ""}</span>
+                        <span style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                          <strong>{fmtMoney((t.amountCents ?? 0) / 100)}</strong>{payBadge(t.status)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
           </FormContainer>
         )}
