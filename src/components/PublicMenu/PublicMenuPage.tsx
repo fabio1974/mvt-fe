@@ -201,6 +201,13 @@ export default function PublicMenuPage() {
     }
   };
 
+  // Seção "builder" = só produtos de montagem (Monte sua Pizza/Sorvete). O chip dela abre o popup
+  // direto e a seção não vira card no cardápio (evita o card "R$ 0,00" sem imagem).
+  const isBuilderSection = (s: Section) =>
+    s.products.length > 0 && s.products.every((p) => p.addonGroups && p.addonGroups.length > 0);
+  const onTabClick = (s: Section) =>
+    isBuilderSection(s) ? openDetail(s.products[0]) : scrollTo(s.key);
+
   if (loading) {
     return (
       <div className="pm-root">
@@ -336,7 +343,7 @@ export default function PublicMenuPage() {
               <button
                 key={s.key}
                 className={`pm-tab ${activeKey === s.key ? "active" : ""}`}
-                onClick={() => scrollTo(s.key)}
+                onClick={() => onTabClick(s)}
               >
                 {s.title}
               </button>
@@ -353,7 +360,7 @@ export default function PublicMenuPage() {
               <p>Esta loja ainda não cadastrou produtos. Volte em breve.</p>
             </div>
           ) : (
-            sections.map((s) => (
+            sections.filter((s) => !isBuilderSection(s)).map((s) => (
               <div
                 key={s.key}
                 className="pm-cat"

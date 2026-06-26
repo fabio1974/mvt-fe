@@ -75,7 +75,8 @@ export function computePizza(groups: RichAddonGroup[], sel: BuilderSelection): P
       }
       if (prices.length === n && n > 0) base += combineFlavors(g.fractionRule, prices);
       if (n) {
-        const sym = FRACTION_SYMBOL[n] ?? "";
+        // Fração (½/⅓) só em grupo fracionado (pizza meio-a-meio); sorvete = sabores contados.
+        const sym = g.allowFraction ? (FRACTION_SYMBOL[n] ?? "") : "";
         labels.push({ groupName: g.name, label: chosenOpts.map((o) => `${sym}${o.name}`).join(", ") });
       }
     } else {
@@ -96,7 +97,8 @@ export function toAddonSelections(groups: RichAddonGroup[], sel: BuilderSelectio
     const ids = sel[g.id] ?? [];
     if (!ids.length) continue;
     if (g.pricingMode === "FLAVOR_MATRIX") {
-      const frac = Math.round((1 / ids.length) * 1000) / 1000;
+      // Fracionado (pizza): cada opção = 1/n. Contado (sorvete): cada bola = 1.0.
+      const frac = g.allowFraction ? Math.round((1 / ids.length) * 1000) / 1000 : 1;
       out.push({ groupId: g.id, options: ids.map((pid) => ({ productId: pid, fraction: frac })) });
     } else if (g.pricingMode === "SIZE_SELECTOR") {
       out.push({ groupId: g.id, options: [{ productId: ids[0], fraction: 1 }] });

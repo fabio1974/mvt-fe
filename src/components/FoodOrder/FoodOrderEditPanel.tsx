@@ -14,6 +14,10 @@ interface OrderItemAddon {
   productName: string;
   quantity: number;
   unitPrice: number;
+  /** Composição da montagem (pizza/sorvete): grupo + fração + modo da opção. */
+  addonGroupName?: string | null;
+  addonPricingMode?: string | null;
+  fraction?: number | null;
 }
 
 interface OrderItem {
@@ -609,26 +613,54 @@ const FoodOrderEditPanel: React.FC<Props> = ({ orderId, viewMode, onBack }) => {
                   const cmdChanged = !prev || prev.commandId !== item.commandId;
                   const next = idx < sortedItems.length - 1 ? sortedItems[idx + 1] : null;
                   const lastOfGroup = !next || next.commandId !== item.commandId;
-                  const addons = item.addons ?? [];
+                  // Ordena Tamanho → Sabores → Borda; conta sabores pra "Tamanho: X (N sabores)".
+                  const rank = (m?: string | null) => m === "SIZE_SELECTOR" ? 0 : m === "FLAVOR_MATRIX" ? 1 : m === "ADDITIVE" ? 2 : 3;
+                  const addons = [...(item.addons ?? [])].sort((a, b) => rank(a.addonPricingMode) - rank(b.addonPricingMode));
+                  const flavorCount = addons.filter((a) => a.addonPricingMode === "FLAVOR_MATRIX").length;
                   const addonsTotal = addons.reduce((s, a) => s + a.unitPrice * a.quantity, 0);
                   const lineTotal = item.unitPrice * item.quantity + addonsTotal;
                   const obsText = item.observation || item.notes;
+                  // Nome "limpo": tira o "(Monte a Sua)"/"(Monte o Seu)" — vira ruído, a composição já vem nos detalhes.
+                  const cleanName = (item.productName || "Item").replace(/\s*\(monte [^)]*\)\s*/i, " ").trim();
+                  // Linhas de composição (tamanho/sabores/borda/addons) já ordenadas; renderizadas no bloco da direita.
+                  let flavorSeq = 0;
+                  const detailLines = addons.map((a) => {
+                    // grupo + fração (½/⅓) + nome; Tamanho leva "(N sabores)"; preço só quando > 0.
+                    const f = a.fraction != null ? Number(a.fraction) : 1;
+                    const frac = f >= 0.99 ? "" : (f >= 0.49 && f <= 0.51) ? "½ " : (f >= 0.32 && f <= 0.34) ? "⅓ " : (f >= 0.24 && f <= 0.26) ? "¼ " : "";
+                    const qty = (a.quantity ?? 1) > 1 ? `${a.quantity}x ` : "";
+                    const price = (a.unitPrice ?? 0) * (a.quantity ?? 1);
+                    const isSize = a.addonPricingMode === "SIZE_SELECTOR";
+                    const isFlavor = a.addonPricingMode === "FLAVOR_MATRIX";
+                    // Sabores numerados ("Sabor 1", "Sabor 2"); demais grupos usam o nome do grupo.
+                    const prefix = isFlavor ? `Sabor ${++flavorSeq}: ` : a.addonGroupName ? `${a.addonGroupName}: ` : "+ ";
+                    const text = isSize
+                      ? `${prefix}${a.productName}${flavorCount > 0 ? ` (${flavorCount} ${flavorCount > 1 ? "sabores" : "sabor"})` : ""}`
+                      : `${prefix}${qty}${frac}${a.productName}${price > 0 ? ` (+${fmtMoney(price)})` : ""}`;
+                    return { id: a.id, text };
+                  });
                   return (
                     <React.Fragment key={item.id}>
                       <tr className={cmdChanged && isTableOrder ? "fop-cmd-first" : ""}>
                         <td><strong>{item.quantity}x</strong></td>
                         <td>
-                          {item.productName || "Item"}
-                          {addons.map((a) => (
-                            <div key={a.id} style={{ fontSize: "12px", color: "#64748b", marginTop: 2 }}>
-                              + {a.quantity}x {a.productName} (+{fmtMoney(a.unitPrice * a.quantity)})
+                          <div style={{ display: "flex", alignItems: "stretch", gap: 16 }}>
+                            {/* Split esquerdo (50%): nome principal centralizado horizontal e verticalmente */}
+                            <div style={{ flex: 1, minWidth: 0, display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", fontWeight: 600, color: "#1e293b" }}>
+                              {cleanName}
                             </div>
-                          ))}
-                          {obsText && (
-                            <div style={{ fontSize: "12px", color: "#94a3b8", marginTop: 2, fontStyle: "italic" }}>
-                              📝 {obsText}
+                            {/* Split direito (50%): composição, alinhada à esquerda */}
+                            <div style={{ flex: 1, minWidth: 0, textAlign: "left", fontSize: 13, lineHeight: 1.55, color: "#475569", borderLeft: "1px solid #e2e8f0", paddingLeft: 16 }}>
+                              {detailLines.map((d) => (
+                                <div key={d.id}>{d.text}</div>
+                              ))}
+                              {obsText && (
+                                <div style={{ marginTop: 2, fontStyle: "italic", color: "#64748b" }}>
+                                  📝 {obsText}
+                                </div>
+                              )}
                             </div>
-                          )}
+                          </div>
                         </td>
                         {isTableOrder && <td>{cmdLabel(item.commandId)}</td>}
                         <td style={{ textAlign: "right" }}>{fmtMoney(item.unitPrice)}</td>

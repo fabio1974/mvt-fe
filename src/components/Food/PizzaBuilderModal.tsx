@@ -45,6 +45,19 @@ export default function PizzaBuilderModal({ product, onClose, onConfirm }: Props
     ? sizeGroup.options.find((o) => String(o.productId) === sizeKey)?.flavorsAllowed ?? null
     : null;
 
+  // Preço-âncora do tamanho: uniform=true (sorvete: sabores iguais → preço é do tamanho) vs varia (pizza).
+  const flavorGroup = groups.find((g) => g.pricingMode === "FLAVOR_MATRIX");
+  const sizePriceInfo = (sizeProductId: number): { min: number; uniform: boolean } | null => {
+    if (!flavorGroup) return null;
+    const prices = flavorGroup.options
+      .map((o) => o.pricePerSize?.[String(sizeProductId)])
+      .filter((p): p is number => p != null);
+    if (!prices.length) return null;
+    const min = Math.min(...prices);
+    return { min, uniform: prices.every((p) => p === min) };
+  };
+  const selectedSizeUniform = sizeKey ? (sizePriceInfo(Number(sizeKey))?.uniform ?? false) : false;
+
   if (!product) return null;
 
   const selectSize = (groupId: number, productId: number) =>
@@ -96,7 +109,7 @@ export default function PizzaBuilderModal({ product, onClose, onConfirm }: Props
         <div style={S.header}>
           <div style={{ minWidth: 0, flex: 1 }}>
             <div style={S.title}>{product.name}</div>
-            <div style={S.subtitle}>Monte sua pizza</div>
+            {product.description && <div style={S.subtitle}>{product.description}</div>}
           </div>
           <button style={S.closeBtn} onClick={onClose} aria-label="Fechar"><X size={22} /></button>
         </div>
@@ -151,8 +164,18 @@ export default function PizzaBuilderModal({ product, onClose, onConfirm }: Props
                           <span style={S.optSub}> · até {o.flavorsAllowed} {o.flavorsAllowed > 1 ? "sabores" : "sabor"}</span>
                         )}
                       </span>
-                      {priceForSize != null && priceForSize > 0 && (
-                        <span style={S.optPrice}>{g.pricingMode === "ADDITIVE" ? `+ ${brl(priceForSize)}` : brl(priceForSize)}</span>
+                      {/* TAMANHO carrega o preço-âncora (sorvete: exato; pizza: "a partir de"). */}
+                      {g.pricingMode === "SIZE_SELECTOR" && (() => {
+                        const info = sizePriceInfo(o.productId);
+                        if (!info) return null;
+                        return <span style={S.optPrice}>{info.uniform ? brl(info.min) : `a partir de ${brl(info.min)}`}</span>;
+                      })()}
+                      {g.pricingMode === "ADDITIVE" && priceForSize != null && priceForSize > 0 && (
+                        <span style={S.optPrice}>+ {brl(priceForSize)}</span>
+                      )}
+                      {/* SABOR só mostra preço quando há diferença entre sabores (premium); uniforme = sem preço. */}
+                      {g.pricingMode === "FLAVOR_MATRIX" && priceForSize != null && !selectedSizeUniform && (
+                        <span style={S.optPrice}>{brl(priceForSize)}</span>
                       )}
                       {g.pricingMode === "FLAVOR_MATRIX" && sizeKey && priceForSize == null && (
                         <span style={{ ...S.optPrice, color: "#b91c1c" }}>indisp.</span>

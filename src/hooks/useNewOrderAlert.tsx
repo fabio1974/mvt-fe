@@ -49,9 +49,11 @@ const Ctx = createContext<NewOrderAlertContextValue>({
   refreshTick: 0,
 });
 
+// localStorage (não sessionStorage): "Ver depois" é à prova de refresh E de fechar/reabrir a aba.
+// IDs acked que saem de PLACED (aceitos/cancelados) são limpos pelo effect de reconciliação.
 const loadAck = (): Set<number> => {
   try {
-    const raw = sessionStorage.getItem(ACK_STORAGE_KEY);
+    const raw = localStorage.getItem(ACK_STORAGE_KEY);
     if (!raw) return new Set();
     const arr = JSON.parse(raw);
     return Array.isArray(arr) ? new Set(arr as number[]) : new Set();
@@ -62,9 +64,9 @@ const loadAck = (): Set<number> => {
 
 const persistAck = (set: Set<number>) => {
   try {
-    sessionStorage.setItem(ACK_STORAGE_KEY, JSON.stringify([...set]));
+    localStorage.setItem(ACK_STORAGE_KEY, JSON.stringify([...set]));
   } catch {
-    /* swallow — sessionStorage pode falhar em modo private */
+    /* swallow — localStorage pode falhar em modo private */
   }
 };
 
@@ -184,7 +186,11 @@ export const NewOrderAlertProvider: React.FC<{ children: React.ReactNode }> = ({
   }, [hasUnackedPlaced]);
 
   // Limpa do `acknowledged` qualquer ID que não está mais em PLACED (foi aceito/cancelado fora dessa sessão).
+  // IMPORTANTE: só reconcilia DEPOIS do 1º poll. No mount, placedOrders=[] (antes de buscar) e, sem
+  // este guard, o effect achava que nenhum id acked ainda estava em PLACED e APAGAVA o localStorage —
+  // o "Ver depois" voltava a cada refresh. (bug: cache do ack sendo zerado na montagem)
   useEffect(() => {
+    if (!hasFirstPollRef.current) return;
     setAcknowledged((prev) => {
       if (prev.size === 0) return prev;
       const placedIds = new Set(placedOrders.map((o) => o.id));

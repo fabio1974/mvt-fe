@@ -9,6 +9,7 @@ import {
   printOrder,
   type BridgeHealth,
 } from "../../services/printBridge";
+import { printOrderAsPdf } from "../FoodOrder/printPdfFallback";
 
 /**
  * Botão "Imprimir (Térmica)" — chama o BE pra obter bytes ESC/POS e
@@ -59,7 +60,14 @@ export default function BridgePrintButton({ orderId, paperWidth = "80mm", label 
       }
       const r = await printOrder(orderId, paperWidth);
       if (!r.ok) {
-        alert(`Falha ao imprimir:\n\n${r.error}`);
+        // Fallback: oferece impressão pelo navegador (Salvar como PDF / qualquer impressora do SO).
+        const wantsPdf = window.confirm(
+          `Falha ao imprimir na térmica:\n\n${r.error}\n\nDeseja imprimir como PDF (pelo navegador)?`
+        );
+        if (wantsPdf) {
+          const pdf = await printOrderAsPdf(orderId);
+          if (!pdf.ok) alert(`Não foi possível gerar o PDF:\n\n${pdf.error}`);
+        }
       }
     } finally {
       setPrinting(false);

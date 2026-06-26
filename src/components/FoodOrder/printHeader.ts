@@ -6,6 +6,8 @@ export interface StoreHeaderOptions {
   storeDocument?: string | null;
   storePhone?: string | null;
   storeAddress?: string | null;
+  /** Logo da loja (mesma regra do BE: print_logo_url ?? logo_url). Renderiza no topo do recibo. */
+  storeLogoUrl?: string | null;
   tableNumber?: number | null;
   /** Se true, inclui data/hora atual como última linha do header */
   includeDate?: boolean;
@@ -30,6 +32,7 @@ export function buildStoreHeader(opts: StoreHeaderOptions): string {
     : "";
 
   let html = `<div class="ph-header">`;
+  if (opts.storeLogoUrl) html += `<img class="ph-logo" src="${escapeHtml(opts.storeLogoUrl)}" alt="logo" />`;
   html += `<div class="ph-title-row">`;
   html += `<div class="ph-store-name">${escapeHtml(storeName)}</div>`;
   html += tableBadge;
@@ -46,8 +49,11 @@ export function buildStoreHeader(opts: StoreHeaderOptions): string {
 export const PRINT_STYLES = `
   @page { size: 80mm auto; margin: 0; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Courier New', monospace; font-size: 12px; width: 80mm; padding: 4mm; color: #000; }
-  .ph-header { border-bottom: 2px dashed #000; padding-bottom: 6px; margin-bottom: 6px; }
+  body { font-family: 'Courier New', monospace; font-size: 12px; width: 80mm; padding: 3mm; color: #000; }
+  /* Moldura do recibo: linhas verticais (esquerda/direita) + topo/base, finas e sólidas. */
+  .ph-frame { border: 1px solid #000; padding: 4mm 3mm; }
+  .ph-header { border-bottom: 1px solid #000; margin: 0 -3mm 6px; padding: 0 3mm 6px; }
+  .ph-logo { display: block; margin: 0 auto 6px; max-width: 60mm; max-height: 28mm; object-fit: contain; }
   .ph-title-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
   .ph-store-name { flex: 1; text-align: center; font-size: 20px; font-weight: 900; letter-spacing: 1px; }
   .ph-info { font-size: 11px; margin-top: 2px; text-align: center; }
@@ -55,11 +61,11 @@ export const PRINT_STYLES = `
   .ph-table-badge strong { font-size: 16px; }
   .ph-section-title { font-weight: 900; text-align: center; margin: 8px 0 4px; font-size: 13px; letter-spacing: 1px; }
   .ph-order-meta { text-align: center; font-size: 11px; margin-bottom: 4px; }
-  .ph-divider { border-bottom: 2px dashed #000; margin: 6px 0 8px; }
-  .ph-cmd-title { font-size: 13px; font-weight: 700; margin: 10px 0 4px; border-bottom: 1px dashed #000; padding-bottom: 2px; }
+  .ph-divider { border-bottom: 1px solid #000; margin: 6px -3mm 8px; }
+  .ph-cmd-title { font-size: 13px; font-weight: 700; margin: 10px 0 4px; border-bottom: 1px solid #000; padding-bottom: 2px; }
   .ph-items { width: 100%; border-collapse: collapse; }
   .ph-items td { padding: 2px 0; vertical-align: top; font-size: 13px; }
   .ph-qty { width: 32px; }
   .ph-note { color: #333; font-size: 11px; padding-left: 36px; font-style: italic; }
-  .ph-total-row { margin-top: 8px; border-top: 1px dashed #000; padding-top: 4px; display: flex; justify-content: space-between; font-weight: 700; font-size: 14px; }
+  .ph-total-row { margin-top: 8px; border-top: 1px solid #000; padding-top: 4px; display: flex; justify-content: space-between; font-weight: 700; font-size: 14px; }
 `;
