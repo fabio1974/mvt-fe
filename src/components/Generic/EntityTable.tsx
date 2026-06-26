@@ -63,6 +63,8 @@ interface EntityTableProps {
   hideIdColumn?: boolean; // Opcional - oculta a coluna "Número" (id) da tabela
   defaultHiddenColumns?: string[]; // Opcional - colunas escondidas por padrão na 1ª visita (depois localStorage manda)
   refreshSignal?: number; // Opcional - quando muda, re-busca os dados em background (refresh suave, sem flash de loading)
+  editIcon?: React.ReactNode; // Opcional - ícone customizado da ação de editar (default: FiEdit). Ex.: lupa para "ver"
+  editTitle?: string; // Opcional - tooltip da ação de editar (default: "Editar")
 }
 
 const EntityTable: React.FC<EntityTableProps> = ({
@@ -87,6 +89,8 @@ const EntityTable: React.FC<EntityTableProps> = ({
   hideIdColumn = false,
   defaultHiddenColumns,
   refreshSignal,
+  editIcon,
+  editTitle,
 }) => {
   const {
     getEntityMetadata,
@@ -787,9 +791,9 @@ const EntityTable: React.FC<EntityTableProps> = ({
                                   const id = row.id || row.paymentId || row.ID;
                                   if (id) onEdit(id);
                                 }}
-                                title="Editar"
+                                title={editTitle ?? "Editar"}
                               >
-                                <FiEdit />
+                                {editIcon ?? <FiEdit />}
                               </button>
                             )}
                             {customActions && customActions(row)}

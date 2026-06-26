@@ -128,6 +128,7 @@ export default function Header({
         return "Cliente";
       case "ROLE_CLIENT":
       case "CLIENT":
+        return "Estabelecimento";
       case "ROLE_CUSTOMER":
       case "CUSTOMER":
         return "Cliente";

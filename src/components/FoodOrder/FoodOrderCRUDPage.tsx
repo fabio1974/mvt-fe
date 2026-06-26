@@ -1,5 +1,5 @@
 import React from "react";
-import { FiPrinter } from "react-icons/fi";
+import { FiPrinter, FiSearch } from "react-icons/fi";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import EntityCRUD from "../Generic/EntityCRUD";
 import FoodOrderEditPanel from "./FoodOrderEditPanel";
@@ -67,7 +67,8 @@ const renderForma = (_value: any, row: any): React.ReactNode => {
 
 // Estabelecimento (CLIENT) só vê os próprios pedidos no balcão/entrega — colunas que viram ruído
 // pra ele ficam escondidas por padrão na 1ª visita (depois ele ajusta no seletor de Colunas).
-const ESTABLISHMENT_DEFAULT_HIDDEN = ["storeName", "tableNumberField", "notes", "deliveryAddress"];
+// "storeName" (Estabelecimento) é sempre o próprio dele, então é removida de vez da tabela (tableHideFields).
+const ESTABLISHMENT_DEFAULT_HIDDEN = ["tableNumberField", "notes", "deliveryAddress"];
 const isEstablishment = () => {
   const r = getUserRole();
   return r === "ROLE_CLIENT" || r === "CLIENT";
@@ -99,6 +100,7 @@ const FoodOrderCRUDPage: React.FC = () => {
   const orderIdParam = searchParams.get("orderId");
   const entityId = orderIdParam ? Number(orderIdParam) : undefined;
   const { refreshTick } = useNewOrderAlert();
+  const establishment = isEstablishment();
 
   return (
     <EntityCRUD
@@ -110,12 +112,18 @@ const FoodOrderCRUDPage: React.FC = () => {
       initialMode={entityId ? "edit" : undefined}
       hideCreateButton={true}
       disableView={true}
-      defaultHiddenColumns={isEstablishment() ? ESTABLISHMENT_DEFAULT_HIDDEN : undefined}
+      // Estabelecimento: só visualiza/atende o pedido (edit vira "lupa"), sem excluir nem imprimir;
+      // a coluna Estabelecimento é redundante (é sempre ele mesmo).
+      disableDelete={establishment}
+      editIcon={establishment ? <FiSearch /> : undefined}
+      editTitle={establishment ? "Visualizar" : undefined}
+      defaultHiddenColumns={establishment ? ESTABLISHMENT_DEFAULT_HIDDEN : undefined}
+      tableHideFields={establishment ? ["storeName"] : []}
       hiddenFields={["deliveryLatitude", "deliveryLongitude", "items"]}
       hideFields={["subtotal", "deliveryFee", "total", "estimatedPreparationMinutes"]}
       // Colunas de pagamento (não vêm no metadata): situação consolidada + forma de pagamento
       showFields={["paymentSituation", "paymentForma"]}
-      customActions={(row: any) => (
+      customActions={establishment ? undefined : (row: any) => (
         <button
           className="btn-action btn-print"
           onClick={() => handlePrint(row.id)}

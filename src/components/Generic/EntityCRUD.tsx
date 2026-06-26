@@ -107,6 +107,10 @@ interface EntityCRUDProps {
   hideIdColumn?: boolean;
   /** Chave externa pra forçar re-fetch da tabela sem remontar (preserva filtros/scroll). Incrementa o número pra disparar. */
   externalRefreshKey?: number;
+  /** Ícone customizado da ação de editar na tabela (default: lápis). Ex.: lupa pra abrir como "visualização". */
+  editIcon?: React.ReactNode;
+  /** Tooltip da ação de editar na tabela (default: "Editar"). */
+  editTitle?: string;
 }
 
 /**
@@ -171,6 +175,8 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
   condensed = false,
   hideIdColumn = false,
   externalRefreshKey,
+  editIcon,
+  editTitle,
 }) => {
   // Determina o modo inicial baseado nas props
   const getInitialMode = (): ViewMode => {
@@ -470,6 +476,8 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
             canDelete={canDelete}
             canEdit={canEdit}
             hideIdColumn={hideIdColumn}
+            editIcon={editIcon}
+            editTitle={editTitle}
           />
         </ErrorBoundary>
       </div>

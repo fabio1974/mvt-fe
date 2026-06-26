@@ -162,7 +162,7 @@ const ROLE_LABEL: Record<string, string> = {
 const roleLabel = (r: string) => ROLE_LABEL[r] ?? r;
 
 
-const FoodOrderEditPanel: React.FC<Props> = ({ orderId, viewMode }) => {
+const FoodOrderEditPanel: React.FC<Props> = ({ orderId, viewMode, onBack }) => {
   const navigate = useNavigate();
   const [order, setOrder] = useState<FoodOrder | null>(null);
   const [commands, setCommands] = useState<OrderCommand[]>([]);
@@ -460,6 +460,19 @@ const FoodOrderEditPanel: React.FC<Props> = ({ orderId, viewMode }) => {
           >
             <span className="fop-btn-icon">❌</span>
             <span className="fop-btn-label">Cancelar</span>
+          </button>
+          <button
+            className="fop-status-btn"
+            style={{
+              borderColor: "#94a3b8",
+              backgroundColor: "transparent",
+              color: "#475569",
+            }}
+            disabled={updating}
+            onClick={onBack}
+          >
+            <span className="fop-btn-icon">←</span>
+            <span className="fop-btn-label">Voltar</span>
           </button>
         </div>
       )}
