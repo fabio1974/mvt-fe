@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { CartAddon, CartLine, FoodProduct } from "./foodTypes";
+import type { AddonSelection, CartAddon, CartLine, FoodProduct } from "./foodTypes";
 import { lineTotal, newLineId } from "./foodTypes";
 
 /**
@@ -79,6 +79,23 @@ export function useFoodCart(cartKey: string) {
     []
   );
 
+  /** Linha de montagem rica (pizza): seleções + preço já computado. */
+  const addRichLine = useCallback(
+    (
+      product: FoodProduct,
+      args: { quantity: number; notes: string; addonSelections: AddonSelection[]; richUnitPrice: number; richLabel: string[] }
+    ) => {
+      setLines((prev) => [
+        ...prev,
+        {
+          id: newLineId(), product, quantity: Math.max(1, args.quantity), notes: args.notes, addons: [],
+          addonSelections: args.addonSelections, richUnitPrice: args.richUnitPrice, richLabel: args.richLabel,
+        },
+      ]);
+    },
+    []
+  );
+
   const updateLine = useCallback(
     (id: string, patch: Partial<Pick<CartLine, "quantity" | "notes" | "addons">>) => {
       setLines((prev) => prev.map((l) => (l.id === id ? { ...l, ...patch } : l)));
@@ -109,6 +126,7 @@ export function useFoodCart(cartKey: string) {
     addQuick,
     removeQuick,
     addCustomLine,
+    addRichLine,
     updateLine,
     removeLine,
     clear,

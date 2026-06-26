@@ -134,6 +134,8 @@ export default function SummaryStep({ store, cart, fulfillment, deliveryAddress,
           quantity: l.quantity,
           notes: l.notes || null,
           addons: l.addons.length > 0 ? l.addons.map((a) => ({ productId: a.productId, quantity: a.quantity })) : undefined,
+          // Montagem rica (pizza): seleções por grupo. BE recomputa o preço autoritativamente.
+          addonSelections: l.addonSelections && l.addonSelections.length > 0 ? l.addonSelections : undefined,
         })),
         notes: notes.trim() || null,
         deliveryAddress:
@@ -171,12 +173,17 @@ export default function SummaryStep({ store, cart, fulfillment, deliveryAddress,
 
         <div style={cs.card}>
           {cart.lines.map((l) => (
-            <div key={l.id} style={{ ...cs.rowBetween, marginBottom: 6 }}>
-              <span style={{ fontSize: 14 }}>
-                {l.quantity}× {l.product.name}
-                {l.addons.length > 0 && <span style={{ color: "#9ca3af" }}> (+{l.addons.reduce((s, a) => s + a.quantity, 0)})</span>}
-              </span>
-              <span style={{ fontSize: 14 }}>{brl(lineTotal(l))}</span>
+            <div key={l.id} style={{ marginBottom: 6 }}>
+              <div style={cs.rowBetween}>
+                <span style={{ fontSize: 14 }}>
+                  {l.quantity}× {l.product.name}
+                  {l.addons.length > 0 && <span style={{ color: "#9ca3af" }}> (+{l.addons.reduce((s, a) => s + a.quantity, 0)})</span>}
+                </span>
+                <span style={{ fontSize: 14 }}>{brl(lineTotal(l))}</span>
+              </div>
+              {l.richLabel?.map((lbl, i) => (
+                <div key={i} style={{ fontSize: 12, color: "#6b7280", paddingLeft: 14 }}>• {lbl}</div>
+              ))}
             </div>
           ))}
         </div>

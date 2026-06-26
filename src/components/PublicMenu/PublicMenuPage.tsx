@@ -10,6 +10,7 @@ import { useCart } from "./useCart";
 import AppDownloadModal from "./AppDownloadModal";
 import { APP_STORE_URL, PLAY_STORE_URL } from "./platform";
 import ProductDetailModal from "../Food/ProductDetailModal";
+import PizzaBuilderModal from "../Food/PizzaBuilderModal";
 import CheckoutWizard from "../Food/CheckoutWizard";
 import OrderingAsBadge from "../Food/steps/OrderingAsBadge";
 import SwitchAccountModal from "../Auth/SwitchAccountModal";
@@ -70,6 +71,7 @@ export default function PublicMenuPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const [detailProduct, setDetailProduct] = useState<PublicProduct | null>(null);
+  const [pizzaProduct, setPizzaProduct] = useState<PublicProduct | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   // "Trocar" no banner abre um modal de troca (OAuth / e-mail+senha).
   const [switchOpen, setSwitchOpen] = useState(false);
@@ -124,6 +126,8 @@ export default function PublicMenuPage() {
   // Handlers instrumentados (cada clique relevante vira um passo do funil).
   const openDetail = (p: PublicProduct) => {
     track("product_open", p.name);
+    // Produto com grupos de montagem (pizza) → builder rico; senão, modal de detalhe baseline.
+    if (p.addonGroups && p.addonGroups.length > 0) { setPizzaProduct(p); return; }
     setDetailProduct(p);
   };
   const quickAdd = (p: PublicProduct) => {
@@ -391,7 +395,7 @@ export default function PublicMenuPage() {
                             <button
                               className="pm-qty-btn plus"
                               aria-label="Adicionar"
-                              onClick={() => (productHasAddons(allProds, p) ? openDetail(p) : quickAdd(p))}
+                              onClick={() => ((p.addonGroups?.length || productHasAddons(allProds, p)) ? openDetail(p) : quickAdd(p))}
                             >
                               <Plus size={16} />
                             </button>
@@ -461,6 +465,18 @@ export default function PublicMenuPage() {
             setDetailProduct(null);
           }}
         />
+
+        {pizzaProduct && (
+          <PizzaBuilderModal
+            product={pizzaProduct}
+            onClose={() => setPizzaProduct(null)}
+            onConfirm={(args) => {
+              track("cart_add", pizzaProduct.name);
+              cart.addRichLine(pizzaProduct, args);
+              setPizzaProduct(null);
+            }}
+          />
+        )}
 
         {checkoutOpen && (
           <CheckoutWizard store={store} cart={cart} onClose={() => setCheckoutOpen(false)} />

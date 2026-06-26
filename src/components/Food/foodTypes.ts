@@ -15,6 +15,46 @@ export interface FoodProduct {
   available?: boolean;
   categoryId?: number | null;
   categoryName?: string | null;
+  /** Modelo rico (montagem de pizza). Presente só nos produtos com grupos; ausente = produto comum. */
+  addonGroups?: RichAddonGroup[];
+}
+
+/** Opção de um grupo de montagem (sabor/tamanho/borda). Espelha o DTO do BE. */
+export interface RichAddonOption {
+  productId: number;
+  name: string;
+  imageUrl: string | null;
+  /** ADDITIVE (borda/extras); null em SIZE_SELECTOR/FLAVOR_MATRIX (preço vem da matriz). */
+  price: number | null;
+  /** Só em opção de TAMANHO: quantos sabores o tamanho comporta. */
+  flavorsAllowed?: number | null;
+  /** Só em FLAVOR_MATRIX: preço do sabor por tamanho — { [sizeProductId]: price }. */
+  pricePerSize?: Record<string, number>;
+}
+
+/** Grupo de montagem (Tamanho/Sabores/Borda) com regras. Espelha AddonGroup do BE. */
+export interface RichAddonGroup {
+  id: number;
+  name: string;
+  description?: string | null;
+  required: boolean;
+  minSelect: number;
+  maxSelect: number | null;
+  pricingMode: "ADDITIVE" | "SIZE_SELECTOR" | "FLAVOR_MATRIX";
+  fractionRule: "AVG" | "HIGHEST" | "PROPORTIONAL";
+  allowFraction: boolean;
+  options: RichAddonOption[];
+}
+
+/** Seleção do cliente p/ um grupo (payload do pedido + estado do builder). */
+export interface AddonSelectionOption {
+  productId: number;
+  fraction?: number;
+  quantity?: number;
+}
+export interface AddonSelection {
+  groupId: number;
+  options: AddonSelectionOption[];
 }
 
 export interface CartAddon {
@@ -31,6 +71,12 @@ export interface CartLine {
   quantity: number;
   notes: string;
   addons: CartAddon[];
+  /** Montagem rica (pizza): seleções por grupo. Presente só em produtos com addonGroups. */
+  addonSelections?: AddonSelection[];
+  /** Preço UNITÁRIO já computado da montagem (base + ADDITIVE); fonte de verdade da linha quando presente. */
+  richUnitPrice?: number;
+  /** Rótulos pra exibição: ["Grande", "½ Calabresa, ½ Portuguesa", "Borda Catupiry"]. */
+  richLabel?: string[];
 }
 
 /** Produtos is_addon da loja agrupados por categoria (montados pelo addonGroups.ts). */
@@ -51,9 +97,13 @@ export interface DeliveryAddress {
 /** Preço efetivo do produto (delivery tem prioridade, como no app). */
 export const productPrice = (p: FoodProduct): number => p.deliveryPrice ?? p.price;
 
-/** Subtotal de uma linha = produto×qtd + Σ addon.unitPrice×qtd. */
+/** Preço unitário da linha: montagem rica (pizza) usa o preço computado; senão, o do produto. */
+export const lineUnit = (l: CartLine): number =>
+  l.richUnitPrice != null ? l.richUnitPrice : productPrice(l.product);
+
+/** Subtotal de uma linha = unitário×qtd + Σ addon.unitPrice×qtd. */
 export const lineTotal = (l: CartLine): number =>
-  productPrice(l.product) * l.quantity +
+  lineUnit(l) * l.quantity +
   l.addons.reduce((s, a) => s + a.unitPrice * a.quantity, 0);
 
 /** Id único de linha (sem depender de libs). */
@@ -73,6 +123,8 @@ export interface CreateOrderRequest {
     quantity: number;
     notes: string | null;
     addons?: Array<{ productId: number; quantity: number }>;
+    /** Montagem rica (pizza): seleções por grupo. Espelha AddonSelectionRequest do BE. */
+    addonSelections?: AddonSelection[];
   }>;
   notes: string | null;
   deliveryAddress?: {
