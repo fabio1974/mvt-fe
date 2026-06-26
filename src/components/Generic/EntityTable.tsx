@@ -62,6 +62,7 @@ interface EntityTableProps {
   multiSelectFilters?: string[]; // Opcional - filtros select que usam multi-seleção com checkboxes
   hideIdColumn?: boolean; // Opcional - oculta a coluna "Número" (id) da tabela
   defaultHiddenColumns?: string[]; // Opcional - colunas escondidas por padrão na 1ª visita (depois localStorage manda)
+  refreshSignal?: number; // Opcional - quando muda, re-busca os dados em background (refresh suave, sem flash de loading)
 }
 
 const EntityTable: React.FC<EntityTableProps> = ({
@@ -85,6 +86,7 @@ const EntityTable: React.FC<EntityTableProps> = ({
   multiSelectFilters = [],
   hideIdColumn = false,
   defaultHiddenColumns,
+  refreshSignal,
 }) => {
   const {
     getEntityMetadata,
@@ -193,11 +195,16 @@ const EntityTable: React.FC<EntityTableProps> = ({
 
   // Busca dados
   const fetchData = useCallback(
-    async (filterValues: Record<string, string>) => {
+    async (filterValues: Record<string, string>, opts?: { silent?: boolean }) => {
       if (!metadata) return;
 
-      setLoading(true);
-      setError(null);
+      // silent: refresh em background (polling) — não pisca o spinner nem mostra erro;
+      // mantém os dados atuais na tela até a nova resposta chegar.
+      const silent = opts?.silent ?? false;
+      if (!silent) {
+        setLoading(true);
+        setError(null);
+      }
 
       try {
         // Usa endpoint do metadata se disponível, senão usa o prop, senão gera erro
@@ -239,21 +246,42 @@ const EntityTable: React.FC<EntityTableProps> = ({
           setTotalPages(responseData.totalPages || 1);
           setTotalElements(responseData.totalElements || 0);
         }
+        if (silent) setError(null); // refresh suave deu certo → limpa erro anterior, se houver
       } catch (err) {
-        setError("Erro ao carregar dados. Tente novamente.");
+        if (!silent) setError("Erro ao carregar dados. Tente novamente.");
         console.error("Erro ao buscar dados:", err);
       } finally {
-        setLoading(false);
+        if (!silent) setLoading(false);
       }
     },
     [metadata, currentPage, itemsPerPage, apiEndpoint, sortBy, sortDir]
   );
+
+  // Referência sempre atual do fetchData pro refresh externo (evita closure stale
+  // sem precisar re-disparar o efeito a cada mudança de página/sort).
+  const fetchDataRef = useRef(fetchData);
+  useEffect(() => {
+    fetchDataRef.current = fetchData;
+  }, [fetchData]);
 
   useEffect(() => {
     if (metadata) {
       fetchData(filters);
     }
   }, [metadata, currentPage, itemsPerPage, fetchData, filters, sortBy, sortDir]);
+
+  // Refresh SUAVE disparado de fora (polling de pedidos): re-busca em background sem
+  // remontar a tabela — sem o flash de "Carregando...", preservando filtros, paginação
+  // e scroll. Ignora o valor inicial (o fetch de mount já roda no efeito acima).
+  const firstRefreshSignal = useRef(true);
+  useEffect(() => {
+    if (refreshSignal === undefined) return;
+    if (firstRefreshSignal.current) {
+      firstRefreshSignal.current = false;
+      return;
+    }
+    fetchDataRef.current(filtersRef.current, { silent: true });
+  }, [refreshSignal]);
 
   // Reseta para página 1 quando os filtros mudarem
   useEffect(() => {

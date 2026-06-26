@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   FiPlus,
@@ -190,10 +190,17 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
   const [refreshKey, setRefreshKey] = useState(0);
   const navigate = useNavigate();
 
-  // Propaga externalRefreshKey (incremento externo, ex: polling de novos pedidos) pro refreshKey interno
-  // sem remontar — EntityTable lê via key abaixo e re-fetcha mantendo filtros/scroll do user.
+  // Propaga externalRefreshKey (incremento externo, ex: polling de pedidos) pro refreshKey interno,
+  // repassado como refreshSignal pra EntityTable — que re-fetcha em background (sem remontar/flash),
+  // preservando filtros, paginação e scroll do usuário. Ignora o valor inicial (mount): só dispara
+  // quando o externalRefreshKey REALMENTE muda, evitando uma busca redundante ao abrir a tela.
+  const firstExternalRefresh = useRef(true);
   useEffect(() => {
     if (externalRefreshKey === undefined) return;
+    if (firstExternalRefresh.current) {
+      firstExternalRefresh.current = false;
+      return;
+    }
     setRefreshKey((prev) => prev + 1);
   }, [externalRefreshKey]);
 
@@ -442,7 +449,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
 
         <ErrorBoundary>
           <EntityTable
-            key={refreshKey}
+            refreshSignal={refreshKey}
             entityName={entityName}
             apiEndpoint={apiEndpoint}
             onView={disableView ? undefined : handleView}

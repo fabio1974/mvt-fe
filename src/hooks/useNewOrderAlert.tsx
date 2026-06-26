@@ -3,7 +3,7 @@ import { api } from "../services/api";
 import { getUserRole } from "../utils/auth";
 import { playNewOrderAlert } from "../utils/newOrderSound";
 
-const POLL_INTERVAL_MS = 5000;
+const POLL_INTERVAL_MS = 20000;         // alarme de pedido novo + refresh suave da lista (sincronizados em 20s)
 const TITLE_FLASH_INTERVAL_MS = 1000;
 const SIREN_REPEAT_INTERVAL_MS = 10000;
 const ACK_STORAGE_KEY = "zapi10.newOrderAck";
@@ -37,7 +37,7 @@ interface NewOrderAlertContextValue {
   acknowledge: (orderId: number) => void;
   /** Aceita o pedido no BE (PATCH /orders/{id}/accept) e remove da fila local. */
   accept: (orderId: number) => Promise<void>;
-  /** Incrementa a cada poll bem-sucedido — use como externalRefreshKey pra re-fetchar listas dependentes. */
+  /** Incrementa a cada poll (20s) — use como externalRefreshKey pra re-fetchar listas dependentes em background. */
   refreshTick: number;
 }
 
