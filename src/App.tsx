@@ -224,9 +224,14 @@ function App() {
     );
   }
 
+  // Landing e páginas de parceiros não usam a metadata do backend: para o
+  // visitante deslogado, abrem mesmo com o backend fora do ar.
+  const isPublicMarketingPage =
+    !isLoggedIn && ["/", "/parceiros", "/parceiro-cliente"].includes(location.pathname);
+
   return (
     <MetadataProvider>
-      <MetadataLoader>
+      <MetadataLoader bypass={isPublicMarketingPage}>
         <NewOrderAlertProvider>
         <div className="App" style={{ display: "flex", minHeight: "100vh" }}>
           {/* Cadastro obrigatório do CLIENT — overlay global (z 2000) que trava a tela

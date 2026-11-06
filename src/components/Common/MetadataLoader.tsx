@@ -3,10 +3,15 @@ import "./MetadataLoader.css";
 
 interface MetadataLoaderProps {
   children: React.ReactNode;
+  /** Páginas públicas (landing) não dependem da metadata: renderizam mesmo
+   *  com o backend fora do ar. */
+  bypass?: boolean;
 }
 
-const MetadataLoader: React.FC<MetadataLoaderProps> = ({ children }) => {
+const MetadataLoader: React.FC<MetadataLoaderProps> = ({ children, bypass = false }) => {
   const { isLoading, error } = useMetadata();
+
+  if (bypass) return <>{children}</>;
 
   if (isLoading) {
     return (

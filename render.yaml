@@ -21,34 +21,3 @@ services:
     autoDeploy: true
     # Health check path
     healthCheckPath: /
-
-  # Landing do Zapi10 como Static Site (plano free, sem custo e sem hibernar).
-  # Substitui o serviço Docker acima: depois de apontar zapi10.com.br para cá,
-  # o mvt-fe pode ser apagado no painel do Render.
-  # Arquivos que existem em dist/ (ex.: /.well-known/*, /privacy-policy.html)
-  # são servidos antes do rewrite.
-  - type: web
-    runtime: static
-    name: zapi10-site
-    repo: https://github.com/fabio1974/mvt-fe
-    branch: main
-    buildCommand: npm ci && npm run build
-    staticPublishPath: ./dist
-    autoDeploy: true
-    envVars:
-      - key: VITE_API_URL
-        value: https://mvt-events-api.onrender.com/api
-      - key: VITE_GOOGLE_MAPS_API_KEY
-        value: AIzaSyBpJ-PEX_eQunOFbDXKLC3Xr3q69xoROmU
-      - key: VITE_DEBUG_MODE
-        value: false
-      - key: VITE_ENVIRONMENT
-        value: production
-    headers:
-      - path: /.well-known/apple-app-site-association
-        name: Content-Type
-        value: application/json
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
