@@ -14,6 +14,13 @@
   isolation: isolate;
 }
 
+/* Todos os wrappers têm z-index 10: o dropdown aberto ficava ATRÁS do próximo typeahead
+   do grid de filtros (o input de baixo "comia" o clique na opção). Em foco, sobe acima. */
+.entity-select-wrapper:focus-within,
+.entity-typeahead-wrapper:focus-within {
+  z-index: 60;
+}
+
 /* Dropdown do Typeahead */
 .entity-typeahead-dropdown {
   position: absolute;

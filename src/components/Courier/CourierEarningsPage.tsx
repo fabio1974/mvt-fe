@@ -72,11 +72,11 @@ const CourierEarningsPage: React.FC = () => {
   useEffect(() => {
     const fetchConfig = async () => {
       try {
-        const res = await api.get<{ content: any[] }>("/api/site-configuration", {
-          params: { isActive: true, size: 1 },
-        });
-        const config = res.data?.content?.[0];
-        if (config?.recentDays) setRecentDays(config.recentDays);
+        // /api/site-configuration (lista) agora é só ADMIN → 403; /active é liberado p/ qualquer logado.
+        const res = await api.get<any>("/api/site-configuration/active");
+        const config = res.data;
+        const days = config?.recentDays ?? config?.paymentHistoryDays;
+        if (days) setRecentDays(days);
       } catch {
         // silently fail
       }

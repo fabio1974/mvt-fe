@@ -43,7 +43,8 @@ export const CityTypeahead: React.FC<CityTypeaheadProps> = ({
 
   // Debounced search
   const searchCities = useCallback(async (searchTerm: string) => {
-    if (searchTerm.length < 2) {
+    // Busca já a partir da 1ª letra (preferência: typeahead desde o 1º caractere)
+    if (searchTerm.trim().length < 1) {
       setCities([]);
       setIsOpen(false);
       return;
@@ -195,7 +196,7 @@ export const CityTypeahead: React.FC<CityTypeaheadProps> = ({
             <li className="city-typeahead-item loading">Buscando cidades...</li>
           )}
 
-          {!loading && cities.length === 0 && inputValue.length >= 2 && (
+          {!loading && cities.length === 0 && inputValue.trim().length >= 1 && (
             <li className="city-typeahead-item no-results">
               Nenhuma cidade encontrada
             </li>

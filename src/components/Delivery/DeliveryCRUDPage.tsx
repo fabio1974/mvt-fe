@@ -471,7 +471,8 @@ const DeliveryCRUDPage: React.FC = () => {
           isClient() ? { status: ["WAITING_PAYMENT"] } : {}
         }
         hideFields={
-          isClient() ? ["client", "deliveryType"] : isOrganizer() ? ["organizer"] : []
+          // O próprio papel não filtra por si mesmo (o BE já restringe às corridas dele)
+          isClient() ? ["client", "deliveryType"] : isOrganizer() ? ["organizer"] : isCourier() ? ["courier"] : []
         }
         hiddenFields={
           ["fromLatitude", "fromLongitude", "toLatitude", "toLongitude"].concat(

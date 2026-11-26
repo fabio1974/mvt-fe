@@ -2,7 +2,7 @@
 
 export type FieldType = 'string' | 'integer' | 'long' | 'double' | 'boolean' | 'date' | 'datetime' | 'enum' | 'select' | 'nested' | 'nested-one' | 'entity' | 'actions';
 export type Alignment = 'left' | 'center' | 'right';
-export type FilterType = 'text' | 'select' | 'date' | 'datetime' | 'daterange' | 'number' | 'boolean' | 'entity';
+export type FilterType = 'text' | 'select' | 'multiselect' | 'date' | 'datetime' | 'daterange' | 'number' | 'numberrange' | 'month' | 'boolean' | 'entity';
 
 export interface FieldMetadata {
   name: string;

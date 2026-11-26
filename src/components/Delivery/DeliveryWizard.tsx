@@ -259,7 +259,8 @@ const DeliveryWizard: React.FC<DeliveryWizardProps> = ({
       // Busca pricePerKm da configuração do site
       let pricePerKm = 3.5; // fallback
       try {
-        const configResp = await api.get("/api/site-configuration");
+        // /active: liberado p/ qualquer logado (a lista /api/site-configuration é só ADMIN)
+        const configResp = await api.get("/api/site-configuration/active");
         const config = configResp.data as any;
         const raw = Array.isArray(config)
           ? config.find((c: any) => c.key === "pricePerKm")?.value

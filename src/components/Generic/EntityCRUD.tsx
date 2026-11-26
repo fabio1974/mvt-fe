@@ -99,6 +99,8 @@ interface EntityCRUDProps {
   hideCreateButton?: boolean;
   /** Campos a esconder SOMENTE na tabela (não afeta o formulário) */
   tableHideFields?: string[];
+  /** Filtros a esconder (a coluna continua na tabela) — ex.: filtro só de ADMIN */
+  hideFilterFields?: string[];
   /** Componente customizado para modo edit (substitui EntityForm no edit) */
   customEditComponent?: (entityId: number | string | undefined, viewMode: string, onBack: () => void) => React.ReactNode;
   /** Modo condensado: inputs e fontes menores, mesma estrutura */
@@ -169,6 +171,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
   extraHeaderActions,
   hideCreateButton = false,
   tableHideFields = [] as string[],
+  hideFilterFields,
   customEditComponent,
   // transformData, // Unused parameter
   pageTitle,
@@ -468,6 +471,7 @@ const EntityCRUD: React.FC<EntityCRUDProps> = ({
             noWrapper={true}
             initialFilters={initialFilters}
             hideFields={[...(hideFields ?? []), ...tableHideFields]}
+            hideFilterFields={hideFilterFields}
             showFields={showFields}
             defaultHiddenColumns={defaultHiddenColumns}
             hideFilters={hideFilters}
