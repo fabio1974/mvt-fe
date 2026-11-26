@@ -61,7 +61,9 @@ const EntityTypeahead: React.FC<EntityTypeaheadProps> = ({
   // Carrega opções quando usuário digita
   useEffect(() => {
     const fetchOptions = async () => {
-      if (searchTerm.length < 2) {
+      // Busca já a partir da 1ª letra (preferência: typeahead desde o 1º caractere).
+      // Não busca de novo quando o texto é o rótulo do item já escolhido.
+      if (searchTerm.trim().length < 1 || (selectedLabel && searchTerm === selectedLabel)) {
         setOptions([]);
         return;
       }
@@ -104,7 +106,7 @@ const EntityTypeahead: React.FC<EntityTypeaheadProps> = ({
 
     const debounce = setTimeout(fetchOptions, 300);
     return () => clearTimeout(debounce);
-  }, [searchTerm, config.endpoint, config.labelField, config.entityName]);
+  }, [searchTerm, selectedLabel, config.endpoint, config.labelField, config.entityName]);
 
   // Carrega label do item selecionado
   useEffect(() => {
@@ -141,6 +143,13 @@ const EntityTypeahead: React.FC<EntityTypeaheadProps> = ({
           return;
         }
 
+        // Valor = rótulo (ex.: bairro): não há registro para buscar por id
+        if (config.valueField === config.labelField) {
+          setSelectedLabel(String(valueId));
+          setSearchTerm(String(valueId));
+          return;
+        }
+
         let endpoint = config.endpoint;
         // Garante que o endpoint começa com /
         if (!endpoint.startsWith("/")) {
@@ -159,7 +168,7 @@ const EntityTypeahead: React.FC<EntityTypeaheadProps> = ({
     };
 
     fetchSelectedItem();
-  }, [value, config.endpoint, config.labelField, config.entityName]);
+  }, [value, config.endpoint, config.labelField, config.valueField, config.entityName]);
 
   const handleSelect = (option: EntityOption) => {
     const newValue = String(option[config.valueField]);
@@ -187,6 +196,8 @@ const EntityTypeahead: React.FC<EntityTypeaheadProps> = ({
           placeholder={disabled ? "" : (config.searchPlaceholder || "Digite para buscar...")}
           value={selectedLabel || searchTerm}
           onChange={(e) => {
+            // Editar o texto depois de escolher volta a buscar (o filtro só muda ao escolher outro)
+            if (selectedLabel) setSelectedLabel("");
             setSearchTerm(e.target.value);
             setShowDropdown(true);
             if (!e.target.value) {
@@ -215,7 +226,7 @@ const EntityTypeahead: React.FC<EntityTypeaheadProps> = ({
         {/* Dropdown de opções — só mostra quando há resultados ou carregando */}
         {!disabled &&
           showDropdown &&
-          searchTerm.length >= 2 &&
+          searchTerm.trim().length >= 1 &&
           (loading || options.length > 0) && (
             <div className="entity-typeahead-dropdown">
               {loading ? (

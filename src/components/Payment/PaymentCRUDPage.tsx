@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import EntityCRUD from "../Generic/EntityCRUD";
-import { getUserRole, isClient } from "../../utils/auth";
+import { getUserRole, isAdmin, isClient } from "../../utils/auth";
 import { FiInfo, FiFileText, FiImage } from "react-icons/fi";
 import { api } from "../../services/api";
 import PaymentReportModal from "./PaymentReportModal";
@@ -277,6 +277,9 @@ const PaymentCRUDPage: React.FC = () => {
         hideArrayFields={true}
         showFields={["createdAt"]}
         hideFields={isClient() ? ["payer"] : []}
+        // Pagador é filtro de ADMIN (typeahead sobre todos os usuários); os demais papéis já
+        // só veem os pagamentos deles.
+        hideFilterFields={isAdmin() ? [] : ["payer"]}
         initialFilters={{ status: "PENDING,PAID" }}
         multiSelectFilters={["status"]}
         customActions={customActions}

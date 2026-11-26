@@ -26,6 +26,19 @@ interface EntityFiltersProps {
   multiSelectFilters?: string[];
 }
 
+/** "yyyy-MM-dd" no fuso LOCAL (toISOString() usa UTC e pode trocar o dia). */
+const toLocalISODate = (d: Date) =>
+  `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+/** Lê "yyyy-MM-dd" como data LOCAL (new Date("yyyy-MM-dd") é meia-noite UTC = dia anterior no Brasil). */
+const parseLocalDate = (v?: string): Date | null => {
+  if (!v) return null;
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v);
+  if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  const d = new Date(v);
+  return isNaN(d.getTime()) ? null : d;
+};
+
 const EntityFilters: React.FC<EntityFiltersProps> = ({
   filters,
   values,
@@ -131,17 +144,14 @@ const EntityFilters: React.FC<EntityFiltersProps> = ({
         );
 
       case "date": {
-        const dateValue = values[filter.name]
-          ? new Date(values[filter.name])
-          : null;
+        const dateValue = parseLocalDate(values[filter.name]);
         return (
           <FormField key={filter.name} label={filter.label}>
             <FormDatePicker
               selected={dateValue}
               onChange={(date) => {
                 if (date) {
-                  const formatted = date.toISOString().split("T")[0];
-                  onChange(filter.name, formatted);
+                  onChange(filter.name, toLocalISODate(date));
                 } else {
                   onChange(filter.name, "");
                 }
@@ -184,15 +194,15 @@ const EntityFilters: React.FC<EntityFiltersProps> = ({
         // URLSearchParams do EntityTable e batem com a convenção do BE.
         const fromKey = `${filter.name}From`;
         const toKey = `${filter.name}To`;
-        const fromValue = values[fromKey] ? new Date(values[fromKey]) : null;
-        const toValue = values[toKey] ? new Date(values[toKey]) : null;
+        const fromValue = parseLocalDate(values[fromKey]);
+        const toValue = parseLocalDate(values[toKey]);
         return (
           <FormField key={filter.name} label={filter.label}>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
               <FormDatePicker
                 selected={fromValue}
                 onChange={(date) => {
-                  onChange(fromKey, date ? date.toISOString().split("T")[0] : "");
+                  onChange(fromKey, date ? toLocalISODate(date) : "");
                 }}
                 placeholder="Início"
                 showTimeSelect={false}
@@ -202,7 +212,7 @@ const EntityFilters: React.FC<EntityFiltersProps> = ({
               <FormDatePicker
                 selected={toValue}
                 onChange={(date) => {
-                  onChange(toKey, date ? date.toISOString().split("T")[0] : "");
+                  onChange(toKey, date ? toLocalISODate(date) : "");
                 }}
                 placeholder="Fim"
                 showTimeSelect={false}
@@ -212,6 +222,45 @@ const EntityFilters: React.FC<EntityFiltersProps> = ({
           </FormField>
         );
       }
+
+      case "numberrange": {
+        // Faixa numérica: persistida como `<name>Min` / `<name>Max` (convenção do BE).
+        const minKey = `${filter.name}Min`;
+        const maxKey = `${filter.name}Max`;
+        return (
+          <FormField key={filter.name} label={filter.label}>
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <FormInput
+                type="number"
+                placeholder="Mín."
+                aria-label={`${filter.label} mínimo`}
+                value={values[minKey] || ""}
+                onChange={(e) => onChange(minKey, e.target.value)}
+              />
+              <span style={{ color: "var(--text-secondary, #64748b)" }}>até</span>
+              <FormInput
+                type="number"
+                placeholder="Máx."
+                aria-label={`${filter.label} máximo`}
+                value={values[maxKey] || ""}
+                onChange={(e) => onChange(maxKey, e.target.value)}
+              />
+            </div>
+          </FormField>
+        );
+      }
+
+      case "month":
+        // Seletor de mês: valor "yyyy-MM"
+        return (
+          <FormField key={filter.name} label={filter.label}>
+            <FormInput
+              type="month"
+              value={values[filter.name] || ""}
+              onChange={(e) => onChange(filter.name, e.target.value)}
+            />
+          </FormField>
+        );
 
       case "boolean":
         return (

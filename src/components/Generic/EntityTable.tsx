@@ -55,6 +55,7 @@ interface EntityTableProps {
   noWrapper?: boolean; // Opcional - remove o container entity-table-page
   hideFilters?: boolean; // Opcional - esconde apenas os filtros (mantém header)
   hideFields?: string[]; // Opcional - array de nomes de campos a serem escondidos
+  hideFilterFields?: string[]; // Opcional - filtros a esconder (sem esconder a coluna)
   showFields?: string[]; // Opcional - array de nomes de campos a serem forçadamente exibidos (mesmo com visible:false)
   canDelete?: (row: any) => boolean; // Opcional - função que determina se uma linha pode ser deletada
   canEdit?: (row: any) => boolean; // Opcional - função que determina se uma linha pode ser editada
@@ -83,6 +84,7 @@ const EntityTable: React.FC<EntityTableProps> = ({
   noWrapper = false,
   hideFilters = false,
   hideFields = [],
+  hideFilterFields = [],
   showFields = [],
   excludeFilterOptions = {},
   multiSelectFilters = [],
@@ -108,6 +110,10 @@ const EntityTable: React.FC<EntityTableProps> = ({
   const [filters, setFilters] =
     useState<Record<string, string>>(initialFilters);
   const filtersRef = useRef<Record<string, string>>(initialFilters);
+  // Filtros efetivamente enviados à API (após debounce)
+  const [appliedFilters, setAppliedFilters] =
+    useState<Record<string, string>>(initialFilters);
+  const appliedFiltersRef = useRef<Record<string, string>>(initialFilters);
   const [filterClearKey, setFilterClearKey] = useState(0);
   const debounceRef = useRef<number | null>(null);
   // Sort: clicar no header de uma coluna sortable cicla asc → desc → unset
@@ -271,11 +277,14 @@ const EntityTable: React.FC<EntityTableProps> = ({
     fetchDataRef.current = fetchData;
   }, [fetchData]);
 
+  // UMA requisição por mudança: os campos (filters) atualizam na hora, mas a API só vê
+  // appliedFilters, que muda após o debounce (300ms). Antes o efeito disparava com `filters`
+  // e o debounce disparava de novo — 2 requisições idênticas a cada mudança de filtro.
   useEffect(() => {
     if (metadata) {
-      fetchData(filters);
+      fetchData(appliedFilters);
     }
-  }, [metadata, currentPage, itemsPerPage, fetchData, filters, sortBy, sortDir]);
+  }, [metadata, fetchData, appliedFilters]);
 
   // Refresh SUAVE disparado de fora (polling de pedidos): re-busca em background sem
   // remontar a tabela — sem o flash de "Carregando...", preservando filtros, paginação
@@ -287,19 +296,25 @@ const EntityTable: React.FC<EntityTableProps> = ({
       firstRefreshSignal.current = false;
       return;
     }
-    fetchDataRef.current(filtersRef.current, { silent: true });
+    fetchDataRef.current(appliedFiltersRef.current, { silent: true });
   }, [refreshSignal]);
 
-  // Reseta para página 1 quando os filtros mudarem
-  useEffect(() => {
+  // Cancela debounce pendente ao desmontar
+  useEffect(() => () => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+  }, []);
+
+  const applyFilters = useCallback((next: Record<string, string>) => {
+    appliedFiltersRef.current = next;
+    // Mesmo tick (batch do React 18): página 1 + filtros novos → um único fetch
     setCurrentPage(1);
-  }, [filters]);
+    setAppliedFilters(next);
+  }, []);
 
   const handleFilterChange = useCallback(
     (field: string, value: string) => {
       const newFilters = { ...filtersRef.current, [field]: value };
       setFilters(newFilters);
-      setCurrentPage(1);
       filtersRef.current = newFilters;
 
       if (debounceRef.current) {
@@ -307,21 +322,25 @@ const EntityTable: React.FC<EntityTableProps> = ({
       }
 
       debounceRef.current = window.setTimeout(() => {
-        fetchData(newFilters);
+        debounceRef.current = null;
+        applyFilters(newFilters);
       }, 300);
     },
-    [fetchData]
+    [applyFilters]
   );
 
   const clearFilters = useCallback(() => {
     // Restaura os initialFilters (ex: status=PENDING,PAID) em vez de limpar tudo
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+      debounceRef.current = null;
+    }
     const resetFilters: Record<string, string> = { ...initialFilters };
     setFilters(resetFilters);
     filtersRef.current = resetFilters;
-    setCurrentPage(1);
     setFilterClearKey(k => k + 1); // Força re-mount dos componentes de filtro (typeahead, etc)
-    fetchData(resetFilters);
-  }, [fetchData, initialFilters]);
+    applyFilters(resetFilters);
+  }, [applyFilters, initialFilters]);
 
   const getFieldValue = (row: any, field: FieldMetadata): any => {
     const fieldPath = field.name.split(".");
@@ -590,7 +609,7 @@ const EntityTable: React.FC<EntityTableProps> = ({
       {!hideFilters && metadata.filters && metadata.filters.length > 0 && (
         <EntityFilters
           key={filterClearKey}
-          filters={metadata.filters.filter((f) => !hideFields.includes(f.field) && !hideFields.includes(f.name))}
+          filters={metadata.filters.filter((f) => !hideFields.includes(f.field) && !hideFields.includes(f.name) && !hideFilterFields.includes(f.name))}
           values={filters}
           onChange={handleFilterChange}
           onClear={clearFilters}
