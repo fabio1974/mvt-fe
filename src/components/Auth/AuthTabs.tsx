@@ -6,50 +6,13 @@ import RegisterForm from "./RegisterForm";
 import GoogleSignInButton from "./GoogleSignInButton";
 import { buildSupportWhatsappUrl } from "../../config/support";
 
-// Tipos de usuário para o wizard
-type UserTypeOption = {
-  value: string;
-  label: string;
-  description: string;
-  icon: string;
-};
-
-const USER_TYPE_OPTIONS: UserTypeOption[] = [
-  {
-    value: "CUSTOMER",
-    label: "Cliente Pessoa Física",
-    description: "Quero pedir comida, fazer uma corrida ou uma entrega de objeto",
-    icon: "👤",
-  },
-  {
-    value: "CLIENT",
-    label: "Estabelecimento Comercial",
-    description: "Tenho um negócio e preciso de corridas para meus clientes",
-    icon: "🏪",
-  },
-  {
-    value: "COURIER",
-    label: "Motoboy / Entregador",
-    description: "Quero trabalhar como entregador na plataforma",
-    icon: "🏍️",
-  },
-  {
-    value: "ORGANIZER",
-    label: "Gerente Zapi10",
-    description: "Tenho uma equipe de motoristas e estabelecimentos comerciais e ganho com as corridas deles",
-    icon: "👥",
-  },
-  {
-    value: "WAITER",
-    label: "Garçom",
-    description: "Trabalho como garçom em um estabelecimento",
-    icon: "🧑‍🍳",
-  },
-];
+// Tipos de usuário para o wizard — fonte única (sem ORGANIZER: gerente só por convite).
+import { USER_TYPE_OPTIONS, sanitizePublicRole } from "../../config/userTypes";
 
 export default function AuthTabs() {
   const [searchParams] = useSearchParams();
-  const preselectedRole = searchParams.get("role") || undefined;
+  // ?role=ORGANIZER (link antigo) é ignorado: gerente só entra por convite do admin.
+  const preselectedRole = sanitizePublicRole(searchParams.get("role"));
   const lockRole = searchParams.get("lockRole") === "true";
   // Sem role no link de cadastro → tela de escolha (Google vs formulário). Com role
   // (links de parceiro) → vai direto pro formulário manual com o papel travado.

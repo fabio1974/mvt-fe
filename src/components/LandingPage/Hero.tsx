@@ -31,12 +31,6 @@ const USER_TYPE_OPTIONS: UserTypeOption[] = [
     description: "Quero trabalhar como entregador na plataforma",
     icon: "🏍️",
   },
-  {
-    value: "ORGANIZER",
-    label: "Gerente Zapi10",
-    description: "Tenho uma equipe de motoristas e estabelecimentos comerciais e ganho com as corridas deles",
-    icon: "👥",
-  },
 ];
 
 const Hero = () => {

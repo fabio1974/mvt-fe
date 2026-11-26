@@ -1,4 +1,5 @@
 import { useForm } from "react-hook-form";
+import { sanitizePublicRole } from "../../config/userTypes";
 import { useNavigate } from "react-router-dom";
 import { api } from "../../services/api";
 import { useState, useEffect } from "react";
@@ -26,7 +27,9 @@ interface RegisterFormProps {
   onChangeRole?: () => void;
 }
 
-export default function RegisterForm({ onSuccess, preselectedRole }: RegisterFormProps) {
+export default function RegisterForm({ onSuccess, preselectedRole: rawPreselectedRole }: RegisterFormProps) {
+  // Gerente (ORGANIZER) não se cadastra sozinho — só por convite do admin.
+  const preselectedRole = sanitizePublicRole(rawPreselectedRole);
   const {
     register,
     handleSubmit,
@@ -146,7 +149,6 @@ export default function RegisterForm({ onSuccess, preselectedRole }: RegisterFor
     { value: "CUSTOMER", label: "Cliente" },
     { value: "CLIENT", label: "Estabelecimento" },
     { value: "COURIER", label: "Motoboy" },
-    { value: "ORGANIZER", label: "Gerente" },
   ];
 
   return (

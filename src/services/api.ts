@@ -70,6 +70,17 @@ let sessionExpiredHandled = false;
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Senha temporária (gerente convidado): o BE bloqueia tudo com 403 PASSWORD_CHANGE_REQUIRED
+    // até a troca — manda pra "Criar sua senha" (guard central também cobre pelo JWT).
+    if (
+      error.response?.status === 403 &&
+      error.response?.data?.error === "PASSWORD_CHANGE_REQUIRED" &&
+      typeof window !== "undefined" &&
+      window.location.pathname !== "/criar-senha"
+    ) {
+      window.location.href = "/criar-senha";
+      return Promise.reject(error);
+    }
     if (error.response?.status === 401 && !sessionExpiredHandled && !isOnPublicPage()) {
       sessionExpiredHandled = true;
 

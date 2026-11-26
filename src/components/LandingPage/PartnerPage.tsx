@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiCheck, FiArrowLeft } from "react-icons/fi";
 import BrandName from "../Brand/BrandName";
+import { buildSupportWhatsappUrl } from "../../config/support";
 
 const PartnerPage: React.FC = () => {
   const navigate = useNavigate();
@@ -194,7 +195,9 @@ const PartnerPage: React.FC = () => {
 
           <button
             style={styles.ctaButton}
-            onClick={() => navigate("/login?tab=register&role=ORGANIZER&lockRole=true")}
+            // Gerente não se cadastra sozinho: entra por convite do admin — o botão abre o
+            // WhatsApp do time Zapi10 pra pedir o convite.
+            onClick={() => window.open(buildSupportWhatsappUrl("Olá! Quero ser gerente Zapi10. Como recebo o convite?"), "_blank")}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = "scale(1.02)";
               e.currentTarget.style.boxShadow = "0 6px 25px rgba(102, 126, 234, 0.5)";
@@ -204,7 +207,7 @@ const PartnerPage: React.FC = () => {
               e.currentTarget.style.boxShadow = "0 4px 15px rgba(102, 126, 234, 0.4)";
             }}
           >
-            Cadastrar como Gerente
+            Quero ser gerente (pedir convite)
           </button>
         </div>
 
