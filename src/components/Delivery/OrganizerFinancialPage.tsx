@@ -18,6 +18,7 @@ const OrganizerFinancialPage: React.FC = () => {
   const [totalPending, setTotalPending] = useState(0);
   const [deliveryCount, setDeliveryCount] = useState(0);
   const [organizerPercentage, setOrganizerPercentage] = useState(0);
+  const [rideProfitPercentage, setRideProfitPercentage] = useState(0);
   const [totalShippingFeesGross, setTotalShippingFeesGross] = useState(0); // Total bruto (sem porcentagem)
 
   const userId = getUserId();
@@ -49,6 +50,7 @@ const OrganizerFinancialPage: React.FC = () => {
         
         const percentage = activeConfig.deliveryOrganizerPercentage || 0;
         setOrganizerPercentage(percentage);
+        setRideProfitPercentage(activeConfig.rideOrganizerProfitPercentage || 0);
         return percentage; // Retorna para usar no cálculo
       } else {
         console.warn("⚠️ Nenhuma configuração ativa encontrada, usando 0%");
@@ -63,45 +65,26 @@ const OrganizerFinancialPage: React.FC = () => {
     }
   };
 
-  const loadFinancialSummary = async (percentage: number) => {
+  // Resumo a partir dos repasses reais do gerente (/organizers/me/earnings): entregas de loja
+  // (percentual do frete) e corridas de passageiro (percentual do lucro da plataforma) já vêm
+  // calculadas pelo backend — antes a tela estimava tudo como X% do frete.
+  const loadFinancialSummary = async (_percentage: number) => {
     try {
+      const response = await api.get<any>("/api/organizers/me/earnings");
+      const items: any[] = response.data?.deliveries || [];
+      const live = items.filter((d) => d.transferStatus !== "CANCELLED" && d.transferStatus !== "FAILED");
+      setDeliveryCount(live.length);
 
-      // Busca todas as entregas completadas do organizer
-      const response = await api.get<{ content: any[] }>("/api/deliveries", {
-        params: {
-          "organizer.id": userId,
-          status: "COMPLETED",
-          size: 1000,
-        },
-      });
+      const gross = live.reduce((acc, d) => acc + Number(d.totalAmount || 0), 0);
+      const total = live.reduce((acc, d) => acc + Number(d.organizerAmount || 0), 0);
+      const paid = live
+        .filter((d) => d.transferStatus === "SUCCEEDED")
+        .reduce((acc, d) => acc + Number(d.organizerAmount || 0), 0);
 
-      const deliveries = response.data.content || [];
-      setDeliveryCount(deliveries.length);
-
-      // Calcula os totais
-      let shippingTotal = 0;
-      let paidTotal = 0;
-
-      deliveries.forEach((delivery: any) => {
-        const shippingFee = delivery.shippingFee || 0;
-        shippingTotal += shippingFee;
-
-        // Se tem payment e está pago
-        if (delivery.payment && delivery.payment.amount > 0) {
-          paidTotal += delivery.payment.amount;
-        }
-      });
-
-      // Total que o organizer tem direito (baseado na porcentagem configurada)
-      const organizerTotal = shippingTotal * (percentage / 100);
-      
-      // Pendente = o que o organizer tem direito - o que já foi pago
-      const pendingTotal = organizerTotal - paidTotal;
-
-      setTotalShippingFeesGross(shippingTotal); // Total bruto (sem porcentagem)
-      setTotalShippingFees(organizerTotal); // Total do organizer (com porcentagem)
-      setTotalPaid(paidTotal);
-      setTotalPending(pendingTotal);
+      setTotalShippingFeesGross(gross);
+      setTotalShippingFees(total);
+      setTotalPaid(paid);
+      setTotalPending(Math.max(0, total - paid));
     } catch (error) {
       console.error("❌ Erro ao carregar resumo financeiro:", error);
       showToast("Erro ao carregar resumo financeiro", "error");
@@ -197,7 +180,7 @@ const OrganizerFinancialPage: React.FC = () => {
                   <p className="card-label">Total de Fretes</p>
                   <p className="card-value">{formatCurrency(totalShippingFeesGross)}</p>
                   <p className="card-subtitle">
-                    {deliveryCount} {deliveryCount === 1 ? "corrida completada" : "corridas completadas"}
+                    {deliveryCount} {deliveryCount === 1 ? "corrida/entrega com repasse" : "corridas/entregas com repasse"}
                   </p>
                 </div>
               </div>
@@ -211,7 +194,7 @@ const OrganizerFinancialPage: React.FC = () => {
                   <p className="card-label">Sua Comissão Total</p>
                   <p className="card-value">{formatCurrency(totalShippingFees)}</p>
                   <p className="card-subtitle">
-                    {organizerPercentage}% dos fretes
+                    Entregas: {organizerPercentage}% do frete · Corridas: {rideProfitPercentage}% do lucro
                   </p>
                 </div>
               </div>
