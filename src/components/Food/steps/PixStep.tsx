@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, Copy, Loader2 } from "lucide-react";
+import QRCode from "react-qr-code";
 import type { FoodOrderInfo } from "../foodTypes";
 import { brl } from "../foodTypes";
 import * as foodApi from "../foodApi";
@@ -69,6 +70,13 @@ export default function PixStep({ order, onPaid }: Props) {
             alt="QR Code PIX"
             style={{ width: 220, height: 220, borderRadius: 12, border: "1px solid #eef0f2" }}
           />
+        </div>
+      ) : order.pixQrCode ? (
+        // Banco Inter não devolve imagem do QR — desenha a partir do copia-e-cola.
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <div style={{ padding: 12, background: "#fff", borderRadius: 12, border: "1px solid #eef0f2" }}>
+            <QRCode value={order.pixQrCode} size={196} />
+          </div>
         </div>
       ) : (
         <p style={{ ...cs.muted, textAlign: "center" }}>Use o código copia-e-cola abaixo no seu banco.</p>
