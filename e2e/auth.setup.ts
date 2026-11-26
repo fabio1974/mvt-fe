@@ -32,3 +32,28 @@ for (const role of ROLES) {
     expect.soft(mon.failures, `respostas 4xx/5xx no login/home de ${role}`).toEqual([]);
   });
 }
+
+/**
+ * Dados de apoio para os filtros (banco LOCAL, idempotente): sem isso alguns filtros só podem
+ * ser conferidos "no vazio" (ex.: ninguém tem versão do app, nenhum pagamento tem vencimento).
+ * Só mexe em registros dummy de e2e; nunca roda contra backend que não seja localhost.
+ */
+setup('dados de apoio dos filtros (banco local)', async () => {
+  const { dbAvailable, psql } = await import('./db');
+  setup.skip(!dbAvailable, 'banco local indisponível (docker zapi10-local-db)');
+  // versões do app (select "Versão" do relatório de versões mobile)
+  psql(`update users set mobile_app_version = case username when 'e2e.client@mvt.com' then 'v1.0.8-90' else 'v1.0.9-99' end,
+          mobile_platform = case username when 'e2e.customer@mvt.com' then 'ios' else 'android' end,
+          mobile_version_updated_at = coalesce(mobile_version_updated_at, now() - interval '2 days')
+        where username in ('e2e.client@mvt.com','e2e.courier@mvt.com','e2e.customer@mvt.com')`);
+  // cidade do GPS (typeahead "Cidade" das telas de usuário)
+  psql(`update users set gps_city_id = (select id from cities where name='Sobral' and state_code='CE')
+        where gps_city_id is null and username in ('client1@mvt.com','courier1@mvt.com','organizer1@mvt.com','e2e.client@mvt.com','e2e.courier@mvt.com')`);
+  psql(`update users set gps_city_id = (select id from cities where name='Fortaleza' and state_code='CE')
+        where gps_city_id is null and username in ('client3@mvt.com','courier2@mvt.com')`);
+  // um usuário bloqueado (filtro "Blocked"); client4 não é usado para login em nenhum e2e
+  psql(`update users set blocked = true where username = 'client4@mvt.com'`);
+  // vencimento e mês de referência em 3 pagamentos (filtros "Vencimento" e "Mês de Referência")
+  psql(`update payments set due_date = date '2026-12-10', reference_month = '2026-11'
+        where id in (select id from payments order by id limit 3) and due_date is null`);
+});

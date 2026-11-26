@@ -3,6 +3,7 @@ import {
   API, Role, authFile, tokenOf, monitor, saveResult, waitList, rowCount, firstRowText,
   pageInfo, totalRecords, getPath, listOf, hideOrderAlert,
 } from './helpers';
+import { ORACLE, oracleCount, distinct } from './db';
 
 /**
  * Sanity check das telas de LISTAGEM genéricas (EntityCRUD/EntityTable, dirigidas por /api/metadata):
@@ -268,19 +269,73 @@ for (const tp of PAGES) {
         if (!hasFilters) {
           add('filtros', 'n/a', 'tela sem painel de filtros');
         } else {
-          // base para amostras: primeira página com size maior
           const baseItems = items0;
+          const isAdmin = role === 'ADMIN';
+          const spec = ORACLE[tp.entity];
           const clearBtn = filtersBox.locator('button', { hasText: 'Limpar Filtros' });
+          const totalOf = (j: any) => (Array.isArray(j) ? j.length : j.totalElements);
+
+          // Consulta independente (ADMIN): total da API = COUNT(*) no banco com os mesmos parâmetros
+          const oracle = (r: Response, tot: number): string | null => {
+            if (!isAdmin) return null;
+            const qs = new URL(r.url()).searchParams;
+            const exp = oracleCount(tp.entity, qs);
+            if (exp === null) return null;
+            return exp === tot ? `banco=${exp} ✓` : `DIVERGE do banco: API=${tot} banco=${exp}`;
+          };
+          if (isAdmin) {
+            const o = oracle(res0, total0);
+            if (o) add('carga x banco', o.startsWith('DIVERGE') ? 'falha' : 'ok', o);
+          }
+          // amostra direto do banco (ADMIN) quando o campo não vem na resposta
+          const dbSample = (filterName: string, extraWhere = ''): string | undefined => {
+            if (!isAdmin || !spec?.cols[filterName]) return undefined;
+            const col = spec.cols[filterName].col;
+            const v = distinct(`select ${col}::text from ${spec.from} where ${col} is not null ${extraWhere} order by 1 limit 1`);
+            return v[0];
+          };
+
           const clearAndCheck = async (label: string) => {
             const p = safeWait(waitList(page, endpoint, () => true));
             await clearBtn.click();
             const r = await p;
             await settle(page);
             if (!r || r.status() >= 400) { add(`${label} — limpar`, 'falha', r ? `status ${r.status()}` : 'sem requisição'); return; }
-            const j = await r.json();
-            const tot = Array.isArray(j) ? j.length : j.totalElements;
-            if (tot !== total0) add(`${label} — limpar`, 'falha', `total após limpar=${tot} ≠ inicial=${total0}`);
+            const tot = totalOf(await r.json());
+            if (tot !== total0) {
+              // dados podem mudar durante a suíte (outras abas criam registros): confere no banco
+              const o = oracle(r, tot);
+              if (!o || o.startsWith('DIVERGE')) add(`${label} — limpar`, 'falha', `total após limpar=${tot} ≠ inicial=${total0}${o ? ' — ' + o : ''}`);
+            }
           };
+
+          /** Confere a resposta de um filtro aplicado: status, linhas na tela, coerência e banco. */
+          const verify = async (r: Response | null, what: string, coherent: (it: any) => boolean | undefined,
+                                opts: { expectRows?: boolean } = {}) => {
+            if (!r) return { ok: false, msg: `${what}: NÃO enviou o parâmetro` };
+            if (r.status() >= 400) return { ok: false, msg: `${what}: ${r.status()} ${(await r.text()).slice(0, 120)}` };
+            await settle(page);
+            const j = await r.json();
+            const items = listOf(j);
+            const tot = totalOf(j);
+            const size = Number(new URL(r.url()).searchParams.get('size') || items.length);
+            const shown = await rowsFor(page, Math.min(size, tot));
+            const verdicts = items.map(coherent);
+            const wrong = items.filter((_, i) => verdicts[i] === false);
+            const unverifiable = items.length > 0 && verdicts.every((v) => v === undefined);
+            const o = oracle(r, tot);
+            const problems: string[] = [];
+            if (wrong.length) problems.push(`${wrong.length}/${items.length} linhas incoerentes`);
+            if (shown !== Math.min(size, tot)) problems.push(`exibiu ${shown} linhas, esperado ${Math.min(size, tot)}`);
+            if (o && o.startsWith('DIVERGE')) problems.push(o);
+            if (opts.expectRows && tot === 0) problems.push('valor existente → 0 resultados');
+            if (unverifiable && !o) problems.push('campo ausente na resposta e sem consulta independente');
+            return { ok: problems.length === 0, msg: `${what} → ${tot}${o && !o.startsWith('DIVERGE') ? ` (${o})` : ''}${problems.length ? ' — ' + problems.join('; ') : ''}` };
+          };
+
+          const fmtBR = (iso: string) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}`;
+          const asDay = (v: any) => (v == null ? undefined : String(v).length > 10
+            ? new Date(String(v)).toLocaleDateString('sv-SE', { timeZone: 'America/Fortaleza' }) : String(v).slice(0, 10));
 
           for (const f of meta.filters as any[]) {
             if (f.visible === false) continue;
@@ -290,6 +345,7 @@ for (const tp of PAGES) {
             const name: string = f.name;
             const label = `filtro ${name} (${type})`;
             const isMulti = type === 'multiselect' || (tp.multi || []).includes(name);
+            const csvHas = (v: any, want: string) => String(v).split(',').map((s) => s.trim()).includes(want);
 
             try {
               if (isMulti) {
@@ -304,7 +360,6 @@ for (const tp of PAGES) {
                   const txt = await toggleAll.innerText();
                   if (/Desmarcar/.test(txt)) { await toggleAll.locator('input').click(); }
                   else {
-                    // desmarca os marcados individualmente
                     const checked = field.locator('label:not(:has-text("Selecionar todos")) input:checked');
                     while (await checked.count()) { await checked.first().click(); await page.waitForTimeout(150); }
                   }
@@ -313,75 +368,115 @@ for (const tp of PAGES) {
                   const r = await p;
                   await page.keyboard.press('Escape');
                   await page.mouse.click(5, 5);
-                  if (!r) { results.push(`${o.value}: sem parâmetro`); bad++; continue; }
-                  if (r.status() >= 400) { results.push(`${o.value}: ${r.status()}`); bad++; continue; }
-                  const items = listOf(await r.json());
-                  const wrong = items.filter((it) => itemValue(it, name) !== undefined && String(itemValue(it, name)) !== o.value);
-                  if (wrong.length) { results.push(`${o.value}: ${wrong.length} linha(s) incoerente(s)`); bad++; }
-                  else results.push(`${o.value}: ${items.length}`);
+                  const v = await verify(r, o.value, (it) => { const x = itemValue(it, name); return x === undefined || x === null ? undefined : csvHas(x, o.value); });
+                  results.push(v.msg); if (!v.ok) bad++;
                 }
                 add(label, bad ? 'falha' : 'ok', results.join(', '));
                 await clearAndCheck(label);
                 continue;
               }
 
-              if (type === 'select' || type === 'boolean') {
+              // select de valores fixos, boolean e select carregado do banco (entity renderAs=select)
+              const isEntitySelect = type === 'entity' && (f.entityConfig?.renderAs || 'select') === 'select';
+              if (type === 'select' || type === 'boolean' || isEntitySelect) {
                 const sel = field.locator('select').first();
+                if (isEntitySelect) await expect(sel).toBeEnabled({ timeout: 10_000 });
                 const values = (await sel.locator('option').evaluateAll((os) => os.map((o) => (o as HTMLOptionElement).value))).filter(Boolean);
+                if (!values.length) { add(label, 'falha', 'select sem opções'); continue; }
                 const results: string[] = [];
-                let bad = 0; let unverifiable = 0;
-                for (const v of values) {
+                let bad = 0;
+                // conta as requisições por mudança — deve sair UMA só. Mede até 2 opções: telas com
+                // refresh em background (ex.: polling de pedidos) podem coincidir com uma medição.
+                let countChecked = false;
+                const countNotes: string[] = [];
+                for (const [idx, v] of values.entries()) {
+                  const measuring = !countChecked && idx < 2;
+                  const reqs: string[] = [];
+                  const onReq = (rq: any) => { if (rq.method() === 'GET' && new URL(rq.url()).pathname === endpoint) reqs.push(rq.url()); };
+                  if (measuring) page.on('request', onReq);
                   const p = safeWait(waitList(page, endpoint, (q) => q.get(name) === v));
                   await sel.selectOption(v);
                   const r = await p;
-                  if (!r) { results.push(`${v}: NÃO enviou parâmetro`); bad++; continue; }
-                  if (r.status() >= 400) { results.push(`${v}: ${r.status()} ${(await r.text()).slice(0, 100)}`); bad++; continue; }
-                  await settle(page);
-                  const j = await r.json();
-                  const items = listOf(j);
-                  const vals = items.map((it) => itemValue(it, name));
-                  if (items.length && vals.every((x) => x === undefined)) unverifiable++;
-                  const wrong = vals.filter((x) => x !== undefined && String(x) !== v);
-                  const size = Number(new URL(r.url()).searchParams.get('size'));
-                  const tot = Array.isArray(j) ? j.length : j.totalElements;
-                  const shown = await rowsFor(page, Math.min(size, tot));
-                  if (wrong.length) { results.push(`${v}: ${wrong.length}/${items.length} incoerentes (ex.: ${String(wrong[0])})`); bad++; }
-                  else if (shown !== Math.min(size, tot)) { results.push(`${v}: exibiu ${shown} linhas, esperado ${Math.min(size, tot)}`); bad++; }
-                  else results.push(`${v}: ${tot}`);
+                  const res = await verify(r, v, (it) => { const x = itemValue(it, name); return x === undefined || x === null ? undefined : String(x) === v; });
+                  if (measuring) {
+                    await page.waitForTimeout(700);
+                    page.off('request', onReq);
+                    if (reqs.length === 1) countChecked = true;
+                    else countNotes.push(`${v}: ${reqs.length} requisições para 1 mudança`);
+                  }
+                  results.push(res.msg); if (!res.ok) bad++;
                 }
+                if (!countChecked && values.length) { results.push(...countNotes); bad++; }
                 const p = safeWait(waitList(page, endpoint, (q) => !q.get(name)));
                 await sel.selectOption('');
                 await p;
-                add(label, bad ? 'falha' : unverifiable === values.length && values.length ? 'aviso' : 'ok',
-                  results.join(', ') + (unverifiable ? ` [campo "${name}" ausente na resposta em ${unverifiable} opção(ões) — coerência não verificável]` : ''));
+                add(label, bad ? 'falha' : 'ok', results.join(', '));
                 await clearAndCheck(label);
                 continue;
               }
 
               if (type === 'text' || type === 'number') {
                 const input = field.locator('input').first();
-                const sample = sampleValue(baseItems, name);
-                let val: string;
-                if (sample === undefined) val = type === 'number' ? '1' : 'a';
-                else val = type === 'number' ? String(sample) : String(sample).slice(0, Math.min(4, String(sample).length));
+                let sample = sampleValue(baseItems, name);
+                if (sample === undefined) sample = dbSample(name);
+                if (sample === undefined) { add(label, 'falha', 'sem valor de amostra (nem na resposta nem no banco)'); continue; }
+                const val = type === 'number' ? String(sample) : String(sample).slice(0, Math.min(4, String(sample).length));
+                // digita tecla a tecla: com o debounce deve sair UMA requisição só (a do valor final)
+                const reqs: string[] = [];
+                const onReq = (rq: any) => { if (rq.method() === 'GET' && new URL(rq.url()).pathname === endpoint) reqs.push(rq.url()); };
+                page.on('request', onReq);
+                const p = safeWait(waitList(page, endpoint, (q) => q.get(name) === val));
+                await input.pressSequentially(val, { delay: 40 });
+                const r = await p;
+                await page.waitForTimeout(700);
+                page.off('request', onReq);
+                const res = await verify(r, `${name}=${val}`, (it) => {
+                  const x = getPath(it, name);
+                  if (x == null) return undefined;
+                  return type === 'number' ? Number(x) === Number(val) : String(x).toLowerCase().normalize('NFD').replace(/\p{M}/gu, '')
+                    .includes(val.toLowerCase().normalize('NFD').replace(/\p{M}/gu, ''));
+                }, { expectRows: true });
+                const extra = reqs.length !== 1 ? ` — ${reqs.length} requisições ao digitar (esperado 1, com debounce)` : '';
+                add(label, res.ok && !extra ? 'ok' : 'falha', res.msg + extra);
+                await clearAndCheck(label);
+                continue;
+              }
+
+              if (type === 'numberrange') {
+                const inputs = field.locator('input');
+                let sample: any = sampleValue(baseItems, name);
+                if (sample === undefined) sample = dbSample(name);
+                const lo = sample !== undefined ? Number(sample) : 0;
+                const hi = sample !== undefined ? Number(sample) : 999999;
+                const p = safeWait(waitList(page, endpoint, (q) => q.get(`${name}Min`) === String(lo) && q.get(`${name}Max`) === String(hi)));
+                await inputs.nth(0).fill(String(lo));
+                await inputs.nth(1).fill(String(hi));
+                const r = await p;
+                const res = await verify(r, `${name}Min=${lo}&${name}Max=${hi}`, (it) => {
+                  const x = getPath(it, name); if (x == null) return undefined; return Number(x) >= lo && Number(x) <= hi;
+                }, { expectRows: sample !== undefined });
+                // faixa vazia (mín > máx) → 0 linhas
+                const p2 = safeWait(waitList(page, endpoint, (q) => q.get(`${name}Min`) === String(hi + 1)));
+                await inputs.nth(0).fill(String(hi + 1));
+                const r2 = await p2;
+                const tot2 = r2 && r2.status() < 400 ? totalOf(await r2.json()) : -1;
+                const emptyOk = tot2 === 0;
+                add(label, res.ok && emptyOk ? 'ok' : 'falha', `${res.msg}; mín>máx → ${tot2}${emptyOk ? '' : ' (esperado 0)'}${sample === undefined ? ' [sem amostra: faixa ampla]' : ''}`);
+                await clearAndCheck(label);
+                continue;
+              }
+
+              if (type === 'month') {
+                const input = field.locator('input').first();
+                let sample: any = sampleValue(baseItems, name);
+                if (sample === undefined) sample = dbSample(name);
+                const val = sample ? String(sample).slice(0, 7) : new Date().toISOString().slice(0, 7);
                 const p = safeWait(waitList(page, endpoint, (q) => q.get(name) === val));
                 await input.fill(val);
                 const r = await p;
-                if (!r) { add(label, 'falha', `digitou "${val}" e a requisição NÃO levou ${name}=`); await clearAndCheck(label); continue; }
-                if (r.status() >= 400) { add(label, 'falha', `${name}=${val} → ${r.status()} ${(await r.text()).slice(0, 150)}`); await clearAndCheck(label); continue; }
-                await settle(page);
-                const j = await r.json();
-                const items = listOf(j);
-                const tot = Array.isArray(j) ? j.length : j.totalElements;
-                let wrong: any[] = [];
-                if (type === 'number') wrong = items.filter((it) => getPath(it, name) != null && Number(getPath(it, name)) !== Number(val));
-                else wrong = items.filter((it) => getPath(it, name) != null && !String(getPath(it, name)).toLowerCase().includes(val.toLowerCase()));
-                const ignored = sample !== undefined && tot === total0 && wrong.length === 0 && total0 > 1 && items.length > 0
-                  && items.every((it) => String(getPath(it, name)).toLowerCase().includes(val.toLowerCase())) === false;
-                if (wrong.length) add(label, 'falha', `${name}=${val}: ${wrong.length}/${items.length} linhas incoerentes (ex.: "${getPath(wrong[0], name)}") — filtro ignorado/errado no BE?`);
-                else if (sample === undefined) add(label, 'aviso', `${name}=${val} → ${r.status()} total=${tot} (campo ausente na resposta; coerência não verificável)`);
-                else if (tot === 0) add(label, 'falha', `${name}=${val} (valor existente) → 0 resultados`);
-                else add(label, ignored ? 'aviso' : 'ok', `${name}=${val} → total=${tot}`);
+                const res = await verify(r, `${name}=${val}`, (it) => { const x = getPath(it, name); return x == null ? undefined : String(x) === val; },
+                  { expectRows: !!sample });
+                add(label, res.ok ? 'ok' : 'falha', res.msg);
                 await clearAndCheck(label);
                 continue;
               }
@@ -389,31 +484,41 @@ for (const tp of PAGES) {
               if (type === 'entity') {
                 const input = field.locator('input').first();
                 const isCity = name === 'city' || name === 'cityId' || f.entityConfig?.entityName === 'city';
-                const suggestPath = isCity ? '/api/cities' : (f.entityConfig?.endpoint || '');
-                // amostra: nome do relacionado no próprio resultado
+                const suggestPath = isCity ? '/api/cities/search' : (f.entityConfig?.endpoint || '');
+                // amostra: nome do relacionado no próprio resultado (ou o 1º das sugestões)
                 let sampleName: string | undefined = sampleValue(baseItems, `${name}.name`) ?? sampleValue(baseItems, `${name}Name`);
-                if (!sampleName) sampleName = isCity ? 'Sobral' : 'Ca';
-                // a) 1ª letra dispara busca? (preferência do dono)
-                let oneLetterFired = false;
-                const onReq = (rq: any) => { if (rq.url().includes(suggestPath.replace('/api', ''))) oneLetterFired = true; };
-                page.on('request', onReq);
-                await input.fill(sampleName.slice(0, 1));
-                await page.waitForTimeout(900);
-                page.off('request', onReq);
-                // b) 2 letras → sugestões
+                if (!sampleName && isCity) sampleName = sampleValue(baseItems, `${name}.name`) ?? 'Sobral';
+                // a) 1ª letra dispara a busca de sugestões (preferência do dono)
+                const firstLetter = (sampleName || 'a').slice(0, 1);
                 const pS = safeWait(page.waitForResponse((r) => r.url().startsWith(API) && new URL(r.url()).pathname.startsWith(suggestPath) && r.request().method() === 'GET', { timeout: 10_000 }));
-                await input.fill(sampleName.slice(0, 3));
+                await input.fill(firstLetter);
                 const rS = await pS;
-                if (!rS) { add(label, 'falha', `typeahead não buscou sugestões em ${suggestPath}`); await clearAndCheck(label); continue; }
+                if (!rS) { add(label, 'falha', `1 letra ("${firstLetter}") não buscou sugestões em ${suggestPath}`); await clearAndCheck(label); continue; }
                 const sugUrl = rS.url().replace(API, '');
                 if (rS.status() >= 400) { add(label, 'falha', `sugestões GET ${sugUrl} → ${rS.status()} ${(await rS.text()).slice(0, 150)}`); await clearAndCheck(label); continue; }
                 const sug = listOf(await rS.json());
-                const item = field.locator(isCity ? '.city-typeahead-item:not(.loading):not(.no-results)' : '.entity-typeahead-item').first();
-                if (!sug.length || !(await item.isVisible().catch(() => false))) {
-                  await item.waitFor({ timeout: 4000 }).catch(() => {});
+                // b) com o nome da amostra, escolhe a sugestão correspondente
+                let item = field.locator(isCity ? '.city-typeahead-item:not(.loading):not(.no-results)' : '.entity-typeahead-item').first();
+                if (sampleName && sampleName.length > 1) {
+                  const pS2 = safeWait(page.waitForResponse((r) => r.url().startsWith(API) && new URL(r.url()).pathname.startsWith(suggestPath), { timeout: 10_000 }));
+                  await input.fill(sampleName.slice(0, 3));
+                  await pS2;
+                  const match = field.locator(isCity ? '.city-typeahead-item' : '.entity-typeahead-item', { hasText: sampleName }).first();
+                  await match.waitFor({ timeout: 1500 }).catch(() => {});
+                  if (await match.isVisible().catch(() => false)) item = match;
                 }
                 if (!(await item.isVisible().catch(() => false))) {
-                  add(label, 'aviso', `GET ${sugUrl} → ${rS.status()} com ${sug.length} sugestões para "${sampleName.slice(0, 3)}"; nada para escolher${oneLetterFired ? '' : '; não busca com 1 letra'}`);
+                  // o dropdown fecha sozinho após 3s sem interação: redigita a 1ª letra para reabrir
+                  const pS3 = safeWait(page.waitForResponse((r) => r.url().startsWith(API) && new URL(r.url()).pathname.startsWith(suggestPath), { timeout: 10_000 }));
+                  await input.fill('');
+                  await input.fill(firstLetter);
+                  await pS3;
+                  item = field.locator(isCity ? '.city-typeahead-item:not(.loading):not(.no-results)' : '.entity-typeahead-item').first();
+                }
+                await item.waitFor({ timeout: 2000 }).catch(() => {});
+                if (!(await item.isVisible().catch(() => false))) {
+                  // sem nenhuma contraparte para escolher: só é aceitável se a 1ª letra trouxe 0 sugestões
+                  add(label, sug.length === 0 ? 'ok' : 'falha', `GET ${sugUrl} → ${rS.status()} com ${sug.length} sugestões para "${firstLetter}"; nada para escolher`);
                   await clearAndCheck(label); continue;
                 }
                 const p = safeWait(waitList(page, endpoint, (q) => !!q.get(name)));
@@ -421,62 +526,44 @@ for (const tp of PAGES) {
                 const r = await p;
                 if (!r) { add(label, 'falha', 'escolheu sugestão e a requisição NÃO levou o parâmetro'); await clearAndCheck(label); continue; }
                 const chosen = new URL(r.url()).searchParams.get(name)!;
-                if (r.status() >= 400) { add(label, 'falha', `${name}=${chosen} → ${r.status()} ${(await r.text()).slice(0, 150)}`); await clearAndCheck(label); continue; }
-                await settle(page);
-                const items = listOf(await r.json());
-                const vals = items.map((it) => itemValue(it, name));
-                const wrong = vals.filter((x) => x !== undefined && String(x) !== chosen && !(isCity && typeof x === 'string'));
-                const extra = `${oneLetterFired ? '' : ' [typeahead só busca a partir da 2ª letra]'}`;
-                if (wrong.length) add(label, 'falha', `${name}=${chosen}: ${wrong.length}/${items.length} linhas de outro ${name}${extra}`);
-                else add(label, items.length && vals.every((x) => x === undefined) ? 'aviso' : 'ok', `sugestões ${sugUrl} → ${rS.status()}; ${name}=${chosen} → ${items.length} linha(s)${extra}`);
+                const res = await verify(r, `${name}=${chosen}`, (it) => {
+                  const x = itemValue(it, name);
+                  if (x === undefined || x === null) return undefined;
+                  if (isCity && typeof x === 'string') return x.toLowerCase().includes(chosen.toLowerCase());
+                  return String(x) === chosen;
+                });
+                add(label, res.ok ? 'ok' : 'falha', `sugestões ${sugUrl} (1 letra) → ${sug.length}; ${res.msg}`);
                 await clearAndCheck(label);
                 continue;
               }
 
               if (type === 'date' || type === 'datetime') {
-                const input = field.locator('input').first();
-                const sample = sampleValue(baseItems, name);
-                const d = sample ? new Date(String(sample).length === 10 ? `${sample}T12:00:00` : sample) : new Date();
-                const br = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
-                const p = safeWait(waitList(page, endpoint, (q) => !!q.get(name)));
-                await input.fill(type === 'datetime' ? `${br} 12:00` : br);
-                await input.press('Enter');
-                await page.mouse.click(5, 5);
-                const r = await p;
-                if (!r) { add(label, 'falha', `data ${br} não gerou parâmetro ${name}`); await clearAndCheck(label); continue; }
-                const sent = new URL(r.url()).searchParams.get(name);
-                if (r.status() >= 400) { add(label, 'falha', `${name}=${sent} → ${r.status()} ${(await r.text()).slice(0, 150)}`); await clearAndCheck(label); continue; }
-                const items = listOf(await r.json());
-                const iso = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-                const tzShift = sent && type === 'date' && sent !== iso ? ` [ATENÇÃO: escolheu ${iso} e enviou ${sent}]` : '';
-                const wrong = items.filter((it) => getPath(it, name) && !String(getPath(it, name)).startsWith(String(sent).slice(0, 10)));
-                add(label, wrong.length || tzShift ? 'falha' : 'ok', `${name}=${sent} → ${items.length} linha(s)${wrong.length ? `; ${wrong.length} com outra data (ex.: ${getPath(wrong[0], name)})` : ''}${tzShift}`);
-                await clearAndCheck(label);
+                add(label, 'falha', 'filtro de data exata — deveria ser intervalo (daterange)');
                 continue;
               }
 
               if (type === 'daterange') {
                 const inputs = field.locator('input');
-                const to = new Date(); const from = new Date(Date.now() - 30 * 864e5);
-                const fmt = (d: Date) => `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
-                const p1 = safeWait(waitList(page, endpoint, (q) => !!q.get(`${name}From`)));
-                await inputs.nth(0).fill(fmt(from)); await inputs.nth(0).press('Enter'); await page.mouse.click(5, 5);
-                const r1 = await p1;
-                const p2 = safeWait(waitList(page, endpoint, (q) => !!q.get(`${name}From`) && !!q.get(`${name}To`)));
-                await inputs.nth(1).fill(fmt(to)); await inputs.nth(1).press('Enter'); await page.mouse.click(5, 5);
-                const r2 = await p2;
-                if (!r1 || !r2) { add(label, 'falha', `intervalo não gerou ${name}From/${name}To`); await clearAndCheck(label); continue; }
-                const q = new URL(r2.url()).searchParams;
-                if (r2.status() >= 400) { add(label, 'falha', `${q.toString()} → ${r2.status()}`); await clearAndCheck(label); continue; }
-                const items = listOf(await r2.json());
-                const fromS = q.get(`${name}From`)!; const toS = q.get(`${name}To`)!;
-                const wrong = items.filter((it) => { const v = getPath(it, name); if (!v) return false; const s = String(v).slice(0, 10); return s < fromS || s > toS; });
-                add(label, wrong.length ? 'falha' : 'ok', `${name}From=${fromS}&${name}To=${toS} → ${items.length} linha(s)${wrong.length ? `; ${wrong.length} fora do intervalo` : ''}`);
+                let sample: string | undefined = asDay(sampleValue(baseItems, name));
+                if (!sample && isAdmin && spec?.cols[name]) {
+                  const c = spec.cols[name];
+                  sample = distinct(`select ${c.kind === 'ts' ? `(${c.col} at time zone 'America/Fortaleza')::date` : c.col}::text from ${spec.from} where ${c.col} is not null order by 1 desc limit 1`)[0];
+                }
+                const fromS = sample || new Date(Date.now() - 30 * 864e5).toLocaleDateString('sv-SE');
+                const toS = sample || new Date().toLocaleDateString('sv-SE');
+                const p = safeWait(waitList(page, endpoint, (q) => q.get(`${name}From`) === fromS && q.get(`${name}To`) === toS));
+                await inputs.nth(0).fill(fmtBR(fromS)); await inputs.nth(0).press('Enter'); await page.mouse.click(5, 5);
+                await inputs.nth(1).fill(fmtBR(toS)); await inputs.nth(1).press('Enter'); await page.mouse.click(5, 5);
+                const r = await p;
+                const res = await verify(r, `${name}From=${fromS}&${name}To=${toS}`, (it) => {
+                  const d = asDay(getPath(it, name)); if (!d) return undefined; return d >= fromS && d <= toS;
+                }, { expectRows: !!sample });
+                add(label, res.ok ? 'ok' : 'falha', res.msg + (r ? '' : ` [escolheu ${fromS}..${toS}; verifique fuso/formato]`));
                 await clearAndCheck(label);
                 continue;
               }
 
-              add(label, 'n/a', `tipo ${type} não coberto`);
+              add(label, 'falha', `tipo ${type} não coberto pelo teste`);
             } catch (e: any) {
               add(label, 'falha', `exceção no teste: ${String(e?.message || e).split('\n')[0].slice(0, 200)}`);
               await page.mouse.click(5, 5).catch(() => {});
