@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import EntityCRUD from "../Generic/EntityCRUD";
 import { getUserRole, isAdmin, isClient } from "../../utils/auth";
-import { FiInfo, FiFileText, FiImage } from "react-icons/fi";
+import { FiInfo, FiFileText, FiImage, FiRefreshCw } from "react-icons/fi";
 import { api } from "../../services/api";
+import QRCode from "react-qr-code";
 import PaymentReportModal from "./PaymentReportModal";
 
 /**
@@ -146,12 +147,57 @@ const PaymentCRUDPage: React.FC = () => {
     }
   };
 
+  // Segunda via da fatura (Serviço de Mesas): Pix vencido gera outro, com multa e juros se atrasada.
+  const [reissuingId, setReissuingId] = useState<number | null>(null);
+  const isInvoice = (payment: any) => !!payment.referenceMonth;
+  const isExpiredInvoice = (payment: any) =>
+    isInvoice(payment) &&
+    (payment.status === "EXPIRED" ||
+      (payment.status === "PENDING" && payment.expiresAt && new Date(payment.expiresAt).getTime() < Date.now()));
+
+  const handleReissue = async (payment: any) => {
+    if (!window.confirm("Gerar a 2ª via desta fatura? Se estiver em atraso, o novo Pix inclui multa de 3% e juros de 1% ao mês.")) return;
+    setReissuingId(payment.id);
+    try {
+      const response = await api.post(`/api/payments/${payment.id}/reissue`);
+      setQrCodeData(response.data);
+      setShowQrCode(true);
+    } catch (error: any) {
+      alert(error.response?.data?.message || "Não foi possível gerar a 2ª via agora. Tente novamente.");
+    } finally {
+      setReissuingId(null);
+    }
+  };
+
   const customActions = (payment: any) => {
     const hasErrorInGateway = checkIfHasError(payment);
     const buttonColor = hasErrorInGateway ? "#ef4444" : "#10b981";
     
     return (
       <>
+        {isExpiredInvoice(payment) && (isAdmin() || isClient()) && (
+          <button
+            onClick={() => handleReissue(payment)}
+            style={{
+              backgroundColor: "#f59e0b",
+              color: "white",
+              border: "none",
+              borderRadius: "4px",
+              padding: "6px 10px",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "4px",
+              fontSize: "14px",
+              marginRight: "8px",
+            }}
+            title="Gerar 2ª via"
+            aria-label="Gerar 2ª via"
+            disabled={reissuingId === payment.id}
+          >
+            <FiRefreshCw /> 2ª via
+          </button>
+        )}
         {(payment.status === "PENDING" || payment.status === "PAID") && (
           <>
             <button
@@ -371,6 +417,13 @@ const PaymentCRUDPage: React.FC = () => {
                     borderRadius: "8px",
                   }}
                 />
+              </div>
+            ) : qrCodeData.pixQrCode ? (
+              // Banco Inter não devolve imagem do QR — desenha a partir do copia-e-cola.
+              <div style={{ marginBottom: "24px", display: "flex", justifyContent: "center" }}>
+                <div style={{ padding: 12, background: "#fff", border: "2px solid #e5e7eb", borderRadius: 8 }}>
+                  <QRCode value={qrCodeData.pixQrCode} size={240} />
+                </div>
               </div>
             ) : (
               <div
