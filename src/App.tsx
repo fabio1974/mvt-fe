@@ -10,11 +10,11 @@ import MetadataLoader from "./components/Common/MetadataLoader";
 import { MetadataProvider } from "./contexts/MetadataContext";
 import { NewOrderAlertProvider } from "./hooks/useNewOrderAlert";
 import NewOrderAlertModal from "./components/NewOrderAlert/NewOrderAlertModal";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { registerToast } from "./utils/toast";
 import { installAudioUnlock } from "./utils/newOrderSound";
-import { getUserRole } from "./utils/auth";
+import { getUserRole, mustChangePassword, CREATE_PASSWORD_PATH } from "./utils/auth";
 import { useDarkMode } from "./hooks/useDarkMode";
 import { useHeaderCollapsed } from "./hooks/useHeaderCollapsed";
 
@@ -41,12 +41,15 @@ const NewPasswordPage = lazy(() => import("./components/Auth/NewPasswordPage"));
 const ConfirmEmailPage = lazy(() => import("./components/Auth/ConfirmEmailPage"));
 const ResendConfirmationPage = lazy(() => import("./components/Auth/ResendConfirmationPage"));
 const ChangePasswordPage = lazy(() => import("./components/Auth/ChangePasswordPage"));
+// Primeiro acesso do gerente convidado: troca obrigatória da senha temporária.
+const CreatePasswordPage = lazy(() => import("./components/Auth/CreatePasswordPage"));
 const PublicRouteGuard = lazy(() => import("./components/Auth/PublicRouteGuard"));
 const OrganizationCRUDPage = lazy(() => import("./components/Organization/OrganizationCRUDPage"));
 const OrganizerOrganizationPage = lazy(() => import("./components/Organization/OrganizerOrganizationPage"));
 const CourierCRUDPage = lazy(() => import("./components/Courier/CourierCRUDPage"));
 const ClientCRUDPage = lazy(() => import("./components/Client/ClientCRUDPage"));
 const ManagerCRUDPage = lazy(() => import("./components/Manager/ManagerCRUDPage"));
+const OrganizerInvitesPage = lazy(() => import("./components/Manager/OrganizerInvitesPage"));
 const DeliveryCRUDPage = lazy(() => import("./components/Delivery/DeliveryCRUDPage"));
 const OrganizerFinancialPage = lazy(() => import("./components/Delivery/OrganizerFinancialPage"));
 const PaymentSuccessPage = lazy(() => import("./components/Payment/PaymentSuccessPage"));
@@ -191,6 +194,21 @@ function App() {
   const sidebarWidth = getSidebarWidth();
   const location = useLocation();
 
+  // Guard central: senha temporária (gerente convidado) → só "Criar sua senha", antes de
+  // qualquer outra tela (sem sidebar/header, que chamariam rotas bloqueadas pelo BE com
+  // 403 PASSWORD_CHANGE_REQUIRED). Qualquer outra URL redireciona pra cá.
+  if (isLoggedIn && mustChangePassword()) {
+    return (
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
+          <Route path={CREATE_PASSWORD_PATH} element={<CreatePasswordPage />} />
+          <Route path="*" element={<Navigate to={CREATE_PASSWORD_PATH} replace />} />
+        </Routes>
+        {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
+      </Suspense>
+    );
+  }
+
   // Rota pública de rastreamento — renderiza fora do layout principal
   if (location.pathname.startsWith("/rastreio/")) {
     return (
@@ -283,6 +301,7 @@ function App() {
                 <Route path="/esqueci-senha" element={<PublicRouteGuard><ForgotPasswordPage /></PublicRouteGuard>} />
                 <Route path="/nova-senha" element={<PublicRouteGuard><NewPasswordPage /></PublicRouteGuard>} />
                 <Route path="/alterar-senha" element={<ChangePasswordPage />} />
+                <Route path={CREATE_PASSWORD_PATH} element={isLoggedIn ? <CreatePasswordPage /> : <Navigate to="/login" replace />} />
                 <Route path="/organizacao" element={<OrganizerOrganizationPage />} />
                 <Route
                   path="/organizacao/gerenciar"
@@ -290,6 +309,7 @@ function App() {
                 />
                 <Route path="/estabelecimentos" element={<ClientCRUDPage />} />
                 <Route path="/gerentes" element={<ManagerCRUDPage />} />
+                <Route path="/gerentes/convidar" element={<OrganizerInvitesPage />} />
                 <Route path="/motoboy" element={<CourierCRUDPage />} />
                 <Route path="/deliveries" element={<DeliveryCRUDPage />} />
                 <Route path="/pedidos" element={<FoodOrderCRUDPage />} />

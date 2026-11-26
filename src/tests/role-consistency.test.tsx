@@ -42,7 +42,7 @@ describe("Role Consistency - RegisterForm", () => {
     vi.clearAllMocks();
   });
 
-  it("o select de role contem ORGANIZER como opcao", () => {
+  it("o select de role NAO contem ORGANIZER (gerente so por convite do admin)", () => {
     render(
       <BrowserRouter>
         <RegisterForm />
@@ -55,7 +55,9 @@ describe("Role Consistency - RegisterForm", () => {
     ) as HTMLOptionElement[];
     const optionValues = options.map((o) => o.value).filter((v) => v !== "");
 
-    expect(optionValues).toContain("ORGANIZER");
+    expect(optionValues).not.toContain("ORGANIZER");
+    // todo papel oferecido existe no backend
+    optionValues.forEach((v) => expect(BACKEND_VALID_ROLES).toContain(v));
   });
 
   it("o select de role NAO contem MANAGER", () => {

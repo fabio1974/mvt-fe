@@ -30,6 +30,7 @@ import {
   FiTag,
   FiBookOpen,
   FiShoppingCart,
+  FiUserPlus,
 } from "react-icons/fi";
 import "./Sidebar.css";
 
@@ -85,6 +86,12 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
         label: "Gerentes",
         icon: <FiUsers size={22} color="#8b5cf6" />,
         path: "/gerentes",
+        roles: ["ROLE_ADMIN"],
+      },
+      {
+        label: "Convidar gerente",
+        icon: <FiUserPlus size={22} color="#8b5cf6" />,
+        path: "/gerentes/convidar",
         roles: ["ROLE_ADMIN"],
       },
       {

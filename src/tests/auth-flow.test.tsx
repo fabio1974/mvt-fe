@@ -63,7 +63,7 @@ describe("Auth - Register Form", () => {
     });
   });
 
-  it("select de role contém ORGANIZER e não MANAGER", () => {
+  it("select de role NÃO contém ORGANIZER (gerente só por convite) nem MANAGER", () => {
     render(
       <BrowserRouter>
         <RegisterForm />
@@ -74,8 +74,9 @@ describe("Auth - Register Form", () => {
     const options = Array.from(select.querySelectorAll("option")) as HTMLOptionElement[];
     const values = options.map((o) => o.value).filter((v) => v !== "");
 
-    expect(values).toContain("ORGANIZER");
+    expect(values).not.toContain("ORGANIZER");
     expect(values).not.toContain("MANAGER");
+    expect(values).toEqual(expect.arrayContaining(["CUSTOMER", "CLIENT", "COURIER"]));
   });
 
   it("registro envia payload correto para o backend (mock)", async () => {
@@ -98,7 +99,7 @@ describe("Auth - Register Form", () => {
     await user.type(screen.getByPlaceholderText("Nome e sobrenome"), "João Teste");
     await user.type(screen.getByPlaceholderText("000.000.000-00"), "039.056.943-79");
     await user.type(screen.getByPlaceholderText("admin@test.com"), "joao@test.com");
-    await user.selectOptions(screen.getByRole("combobox"), "ORGANIZER");
+    await user.selectOptions(screen.getByRole("combobox"), "CLIENT");
 
     // Senha: preenche todos os campos de password
     const passwordFields = screen.getAllByPlaceholderText("••••••");
@@ -115,7 +116,7 @@ describe("Auth - Register Form", () => {
         expect.objectContaining({
           name: "João Teste",
           username: "joao@test.com",
-          role: "ORGANIZER",
+          role: "CLIENT",
         })
       );
     });

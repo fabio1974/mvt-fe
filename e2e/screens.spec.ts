@@ -8,7 +8,7 @@ import { Role, authFile, monitor, saveResult } from './helpers';
  */
 const SCREENS: Record<Role, string[]> = {
   ADMIN: ['/', '/repasses', '/ganhos', '/zonas-especiais', '/marketing', '/processar-pagamentos', '/suporte',
-    '/downloads', '/alterar-senha', '/dados-pessoais', '/dados-endereco'],
+    '/downloads', '/alterar-senha', '/dados-pessoais', '/dados-endereco', '/gerentes/convidar'],
   CLIENT: ['/', '/cardapio', '/configurar-loja', '/caixa', '/mesas', '/relatorios/caixa', '/chave-pix', '/suporte',
     '/dados-pessoais', '/dados-estabelecimento', '/dados-endereco', '/alterar-senha'],
   ORGANIZER: ['/', '/organizacao', '/balanco-financeiro', '/chave-pix', '/suporte', '/dados-pessoais', '/dados-endereco'],

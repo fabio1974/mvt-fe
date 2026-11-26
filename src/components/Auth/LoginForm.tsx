@@ -37,6 +37,7 @@ export default function LoginForm() {
           latitude?: number;
           longitude?: number;
           address?: string;
+          mustChangePassword?: boolean;
         };
       }>("/auth/login", {
         username: data.username,
@@ -76,6 +77,14 @@ export default function LoginForm() {
         }
         
         setSuccess("Login realizado com sucesso!");
+        // Gerente convidado no 1º acesso: cria a senha antes de qualquer outra tela
+        // (inclusive no celular — não manda pro app ainda).
+        if (response.data.user?.mustChangePassword) {
+          setTimeout(() => {
+            window.location.href = "/criar-senha";
+          }, 500);
+          return;
+        }
         setTimeout(() => {
           const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
           if (isMobile) {

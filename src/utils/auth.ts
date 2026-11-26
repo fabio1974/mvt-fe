@@ -29,6 +29,8 @@ export interface AuthUser {
   longitude?: number;
   address?: string;
   avatarUrl?: string;
+  /** Senha temporária (gerente convidado): precisa criar a senha antes de usar o painel. */
+  mustChangePassword?: boolean;
 }
 
 // Persiste o token + dados do usuário no localStorage (mesmas chaves do login por senha).
@@ -46,6 +48,19 @@ export function persistAuthSession(token: string, user?: AuthUser) {
   if (user.address) localStorage.setItem("userAddress", user.address);
   // avatarUrl não vai pro localStorage: getAvatarUrl() lê direto do JWT (token-only),
   // evitando estado stale entre usuários no mesmo navegador.
+}
+
+/** Rota da troca obrigatória da senha temporária (primeiro acesso do gerente convidado). */
+export const CREATE_PASSWORD_PATH = "/criar-senha";
+
+/**
+ * O usuário logado ainda está com a senha temporária do convite? Lê o claim
+ * mustChangePassword do JWT (o BE devolve um token novo, sem o claim, ao trocar a senha).
+ */
+export function mustChangePassword(): boolean {
+  const token = localStorage.getItem("authToken");
+  if (!token) return false;
+  return decodeJWT(token)?.mustChangePassword === true;
 }
 
 // Função para obter o role do usuário logado
