@@ -224,6 +224,9 @@ const EntityTypeahead: React.FC<EntityTypeaheadProps> = ({
                 options.map((option) => (
                   <div
                     key={option[config.valueField] as string}
+                    // Evita o blur do input no mousedown: sem isso o wrapper perde :focus-within,
+                    // volta pra trás do próximo filtro e o click cai no input vizinho.
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={() => handleSelect(option)}
                     className="entity-typeahead-item"
                   >

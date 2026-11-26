@@ -39,14 +39,10 @@ const OrganizerFinancialPage: React.FC = () => {
     try {
 
       // Busca a configuração ativa
-      const response = await api.get<{ content: any[] }>("/api/site-configuration", {
-        params: {
-          isActive: true,
-          size: 1,
-        },
-      });
+      // /api/site-configuration (lista) agora é só ADMIN → 403 p/ ORGANIZER; usa /active.
+      const response = await api.get<any>("/api/site-configuration/active");
 
-      const configs = response.data.content || [];
+      const configs = response.data ? [response.data] : [];
 
       if (configs.length > 0) {
         const activeConfig = configs[0];

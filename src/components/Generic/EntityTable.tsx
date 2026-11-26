@@ -242,7 +242,10 @@ const EntityTable: React.FC<EntityTableProps> = ({
 
         // Suporta array direto ou estrutura paginada
         if (Array.isArray(responseData)) {
-          setData(responseData);
+          // Endpoint sem paginação (ex.: /api/coupons devolve array): pagina no cliente,
+          // senão a tabela mostrava todas as linhas em toda página e ignorava o tamanho.
+          const start = (currentPage - 1) * itemsPerPage;
+          setData(responseData.slice(start, start + itemsPerPage));
           setTotalPages(Math.ceil(responseData.length / itemsPerPage));
           setTotalElements(responseData.length);
         } else {
