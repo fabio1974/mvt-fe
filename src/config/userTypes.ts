@@ -1,6 +1,6 @@
 // Papéis que o cadastro público pode criar (espelha a whitelist do BE em
-// AuthController.PUBLIC_SIGNUP_ROLES). Gerente (ORGANIZER) NÃO entra aqui: só por convite
-// do admin (tela "Convidar gerente"). Fonte única usada pelo wizard de cadastro
+// AuthController.PUBLIC_SIGNUP_ROLES): só Cliente PF e Motorista/Entregador. Gerente
+// (ORGANIZER), Estabelecimento (CLIENT) e Garçom (WAITER) só entram por convite. Fonte única usada pelo wizard de cadastro
 // (AuthTabs) e pelo seletor de perfil do login com Google (GoogleSignInButton).
 export type UserTypeOption = {
   value: string;
@@ -17,26 +17,20 @@ export const USER_TYPE_OPTIONS: UserTypeOption[] = [
     icon: "👤",
   },
   {
-    value: "CLIENT",
-    label: "Estabelecimento Comercial",
-    description: "Tenho um negócio e preciso de corridas para meus clientes",
-    icon: "🏪",
-  },
-  {
     value: "COURIER",
-    label: "Motoboy / Entregador",
-    description: "Quero trabalhar como entregador na plataforma",
+    label: "Motorista / Entregador",
+    description: "Faço entregas ou levo passageiros, de moto ou de carro",
     icon: "🏍️",
-  },
-  {
-    value: "WAITER",
-    label: "Garçom",
-    description: "Trabalho como garçom em um estabelecimento",
-    icon: "🧑‍🍳",
   },
 ];
 
-/** Papéis aceitos no cadastro público (o resto — ADMIN, ORGANIZER — é recusado pelo BE). */
+/** Aviso mostrado no cadastro: os outros perfis entram por convite. */
+export const INVITE_ONLY_NOTICE = "Gerente, loja ou garçom? Essas contas entram por convite.";
+
+/** Aviso do tipo de serviço no cadastro público: passageiro só com convite de gerente. */
+export const PASSENGER_INVITE_NOTICE = "Para levar passageiros, peça o convite a um gerente";
+
+/** Papéis aceitos no cadastro público (o resto — ADMIN, ORGANIZER, CLIENT, WAITER — é recusado pelo BE). */
 export const PUBLIC_SIGNUP_ROLE_VALUES = USER_TYPE_OPTIONS.map((o) => o.value);
 
 /** Papel pedido por link (?role=) só vale se for de cadastro público; senão, ignora. */

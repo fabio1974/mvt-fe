@@ -50,6 +50,7 @@ const CourierCRUDPage = lazy(() => import("./components/Courier/CourierCRUDPage"
 const ClientCRUDPage = lazy(() => import("./components/Client/ClientCRUDPage"));
 const ManagerCRUDPage = lazy(() => import("./components/Manager/ManagerCRUDPage"));
 const OrganizerInvitesPage = lazy(() => import("./components/Manager/OrganizerInvitesPage"));
+const AccountInvitesPage = lazy(() => import("./components/Manager/AccountInvitesPage"));
 const DeliveryCRUDPage = lazy(() => import("./components/Delivery/DeliveryCRUDPage"));
 const OrganizerFinancialPage = lazy(() => import("./components/Delivery/OrganizerFinancialPage"));
 const PaymentSuccessPage = lazy(() => import("./components/Payment/PaymentSuccessPage"));
@@ -310,6 +311,9 @@ function App() {
                 <Route path="/estabelecimentos" element={<ClientCRUDPage />} />
                 <Route path="/gerentes" element={<ManagerCRUDPage />} />
                 <Route path="/gerentes/convidar" element={<OrganizerInvitesPage />} />
+                <Route path="/estabelecimentos/convidar" element={<AccountInvitesPage kind="store" />} />
+                <Route path="/motoristas/convidar" element={<AccountInvitesPage kind="courier" />} />
+                <Route path="/garcons/convidar" element={<AccountInvitesPage kind="waiter" />} />
                 <Route path="/motoboy" element={<CourierCRUDPage />} />
                 <Route path="/deliveries" element={<DeliveryCRUDPage />} />
                 <Route path="/pedidos" element={<FoodOrderCRUDPage />} />

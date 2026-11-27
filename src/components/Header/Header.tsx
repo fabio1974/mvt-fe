@@ -123,7 +123,7 @@ export default function Header({
         return "Gerente";
       case "ROLE_COURIER":
       case "ROLE_MOTOBOY":
-        return "Motoboy";
+        return "Motorista / Entregador";
       case "ROLE_USER":
         return "Cliente";
       case "ROLE_CLIENT":
