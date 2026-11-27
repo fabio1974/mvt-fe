@@ -20,15 +20,9 @@ const USER_TYPE_OPTIONS: UserTypeOption[] = [
     icon: "👤",
   },
   {
-    value: "CLIENT",
-    label: "Estabelecimento Comercial",
-    description: "Tenho um negócio e preciso de entregas para meus clientes",
-    icon: "🏪",
-  },
-  {
     value: "COURIER",
-    label: "Motoboy / Entregador",
-    description: "Quero trabalhar como entregador na plataforma",
+    label: "Motorista / Entregador",
+    description: "Faço entregas ou levo passageiros, de moto ou de carro",
     icon: "🏍️",
   },
 ];

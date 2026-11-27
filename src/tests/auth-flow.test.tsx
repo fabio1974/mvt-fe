@@ -76,7 +76,10 @@ describe("Auth - Register Form", () => {
 
     expect(values).not.toContain("ORGANIZER");
     expect(values).not.toContain("MANAGER");
-    expect(values).toEqual(expect.arrayContaining(["CUSTOMER", "CLIENT", "COURIER"]));
+    // Loja (CLIENT) e garçom (WAITER) também só por convite.
+    expect(values).not.toContain("CLIENT");
+    expect(values).not.toContain("WAITER");
+    expect(values).toEqual(["CUSTOMER", "COURIER"]);
   });
 
   it("registro envia payload correto para o backend (mock)", async () => {
@@ -99,7 +102,7 @@ describe("Auth - Register Form", () => {
     await user.type(screen.getByPlaceholderText("Nome e sobrenome"), "João Teste");
     await user.type(screen.getByPlaceholderText("000.000.000-00"), "039.056.943-79");
     await user.type(screen.getByPlaceholderText("admin@test.com"), "joao@test.com");
-    await user.selectOptions(screen.getByRole("combobox"), "CLIENT");
+    await user.selectOptions(screen.getByRole("combobox"), "COURIER");
 
     // Senha: preenche todos os campos de password
     const passwordFields = screen.getAllByPlaceholderText("••••••");
@@ -116,7 +119,7 @@ describe("Auth - Register Form", () => {
         expect.objectContaining({
           name: "João Teste",
           username: "joao@test.com",
-          role: "CLIENT",
+          role: "COURIER",
         })
       );
     });

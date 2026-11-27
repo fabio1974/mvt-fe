@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { api } from "../../services/api";
 import BrandName from "../Brand/BrandName";
 import { persistAuthSession, type AuthUser } from "../../utils/auth";
-import { USER_TYPE_OPTIONS } from "../../config/userTypes";
+import { USER_TYPE_OPTIONS, INVITE_ONLY_NOTICE, PASSENGER_INVITE_NOTICE } from "../../config/userTypes";
 import { maskCPF, maskPhone, validateCPF } from "../../utils/masks";
 
 /**
@@ -54,11 +54,9 @@ const VEHICLE_COLOR_LABELS: Record<string, string> = {
   FANTASIA: "Fantasia", OUTROS: "Outros",
 };
 
-const SERVICE_TYPES = [
-  { value: "DELIVERY", label: "Entrega" },
-  { value: "PASSENGER_TRANSPORT", label: "Transporte de Passageiro" },
-  { value: "BOTH", label: "Ambos" },
-];
+// Cadastro público: o motorista só escolhe Entrega. Passageiro/Ambos só com vínculo de gerente
+// (convite) — o BE recusa com PASSENGER_REQUIRES_MANAGER.
+const SERVICE_TYPES = [{ value: "DELIVERY", label: "Entrega" }];
 
 function extractMsg(e: unknown, fallback: string): string {
   if (e && typeof e === "object" && "response" in e) {
@@ -207,6 +205,7 @@ export default function GoogleOnboardingWizard({ idToken, name, initialRole, onC
                 </button>
               ))}
             </div>
+            <p style={styles.subtitle} data-testid="invite-only-notice">{INVITE_ONLY_NOTICE}</p>
           </>
         )}
 
@@ -308,6 +307,7 @@ export default function GoogleOnboardingWizard({ idToken, name, initialRole, onC
                 </button>
               ))}
             </div>
+            <p style={styles.subtitle} data-testid="passenger-invite-notice">{PASSENGER_INVITE_NOTICE}</p>
           </>
         )}
 

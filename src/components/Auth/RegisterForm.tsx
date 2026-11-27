@@ -145,10 +145,10 @@ export default function RegisterForm({ onSuccess, preselectedRole: rawPreselecte
     }
   };
 
+  // Cadastro público: só Cliente e Motorista/Entregador (loja, garçom e gerente entram por convite).
   const roleOptions = [
     { value: "CUSTOMER", label: "Cliente" },
-    { value: "CLIENT", label: "Estabelecimento" },
-    { value: "COURIER", label: "Motoboy" },
+    { value: "COURIER", label: "Motorista / Entregador" },
   ];
 
   return (

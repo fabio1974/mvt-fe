@@ -24,7 +24,7 @@ const CourierCRUDPage: React.FC = () => {
       hideArrayFields={false}
       hideFields={["clientContracts", "clientContract", "storeProfile"]}
       hiddenFields={["clientContracts", "clientContract", "storeProfile"]}
-      pageTitle="Motoboys"
+      pageTitle="Motoristas / Entregadores"
       pageDescription="Gerencie os motoboys da plataforma"
       initialFilters={{ role: "COURIER" }}
     />

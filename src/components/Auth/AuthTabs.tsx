@@ -6,8 +6,8 @@ import RegisterForm from "./RegisterForm";
 import GoogleSignInButton from "./GoogleSignInButton";
 import { buildSupportWhatsappUrl } from "../../config/support";
 
-// Tipos de usuário para o wizard — fonte única (sem ORGANIZER: gerente só por convite).
-import { USER_TYPE_OPTIONS, sanitizePublicRole } from "../../config/userTypes";
+// Tipos de usuário para o wizard — fonte única (só Cliente e Motorista: loja, garçom e gerente só por convite).
+import { USER_TYPE_OPTIONS, INVITE_ONLY_NOTICE, sanitizePublicRole } from "../../config/userTypes";
 
 export default function AuthTabs() {
   const [searchParams] = useSearchParams();
@@ -394,6 +394,9 @@ export default function AuthTabs() {
                   </button>
                 ))}
               </div>
+              <p style={{ ...modalStyles.question, fontSize: 13, marginTop: 12 }} data-testid="invite-only-notice">
+                {INVITE_ONLY_NOTICE}
+              </p>
               <button
                 style={{
                   ...modalStyles.continueButton,

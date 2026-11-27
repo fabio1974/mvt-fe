@@ -47,7 +47,7 @@ const fmtBRL = (cents: number) =>
 const roleLabel = (role: string | null | undefined): string => {
   if (role === "ORGANIZER") return "Gerente";
   if (role === "CLIENT") return "Estabelecimento";
-  if (role === "COURIER") return "Motoboy";
+  if (role === "COURIER") return "Motorista / Entregador";
   return "Recebedor";
 };
 

@@ -97,7 +97,7 @@ const PaymentReportModal: React.FC<PaymentReportModalProps> = ({
 
   const getRoleLabel = (role: string): string => {
     const labels: Record<string, string> = {
-      COURIER: "Motoboy",
+      COURIER: "Motorista / Entregador",
       ORGANIZER: "Gerente",
       PLATFORM: "Plataforma",
       CLIENT: "Estabelecimento",

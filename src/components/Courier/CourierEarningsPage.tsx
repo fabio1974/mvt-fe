@@ -213,7 +213,7 @@ const CourierEarningsPage: React.FC = () => {
                       <div className="earnings-split-row you">
                         <div className="earnings-split-left">
                           <span className="earnings-you-badge">VOCÊ</span>
-                          <span className="earnings-split-label">Motoboy</span>
+                          <span className="earnings-split-label">Motorista / Entregador</span>
                         </div>
                         <div className="earnings-split-right">
                           <span className="earnings-split-amount you">{fmt(item.courierAmount)}</span>

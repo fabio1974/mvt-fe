@@ -63,6 +63,26 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
     path: "/organizacao",
     roles: ["ROLE_ORGANIZER"],
   },
+  // Gerente convida loja e motorista (já entram no grupo dele)
+  {
+    label: "Convidar",
+    icon: <FiUserPlus size={22} color="#8b5cf6" />,
+    roles: ["ROLE_ORGANIZER"],
+    items: [
+      {
+        label: "Convidar estabelecimento",
+        icon: <FiUserPlus size={22} color="#16a34a" />,
+        path: "/estabelecimentos/convidar",
+        roles: ["ROLE_ORGANIZER"],
+      },
+      {
+        label: "Convidar motorista",
+        icon: <FiUserPlus size={22} color="#60a5fa" />,
+        path: "/motoristas/convidar",
+        roles: ["ROLE_ORGANIZER"],
+      },
+    ],
+  },
   // Itens de primeiro nível (ordem alfabética)
   {
     label: "Corridas",
@@ -95,13 +115,31 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
         roles: ["ROLE_ADMIN"],
       },
       {
+        label: "Convidar estabelecimento",
+        icon: <FiUserPlus size={22} color="#16a34a" />,
+        path: "/estabelecimentos/convidar",
+        roles: ["ROLE_ADMIN"],
+      },
+      {
+        label: "Convidar motorista",
+        icon: <FiUserPlus size={22} color="#60a5fa" />,
+        path: "/motoristas/convidar",
+        roles: ["ROLE_ADMIN"],
+      },
+      {
+        label: "Convidar garçom",
+        icon: <FiUserPlus size={22} color="#f59e0b" />,
+        path: "/garcons/convidar",
+        roles: ["ROLE_ADMIN"],
+      },
+      {
         label: "Grupos",
         icon: <FiBriefcase size={22} color="#60a5fa" />,
         path: "/organizacao/gerenciar",
         roles: ["ROLE_ADMIN"],
       },
       {
-        label: "Motoboy",
+        label: "Motoristas / Entregadores",
         icon: <FiTruck size={22} color="#60a5fa" />,
         path: "/motoboy",
         roles: ["ROLE_ADMIN"],
@@ -130,6 +168,12 @@ const menuStructure: (MenuItem | MenuGroup)[] = [
         label: "Configurar Loja",
         icon: <FiSettings size={22} color="#60a5fa" />,
         path: "/configurar-loja",
+        roles: ["ROLE_CLIENT", "CLIENT"],
+      },
+      {
+        label: "Convidar garçom",
+        icon: <FiUserPlus size={22} color="#f59e0b" />,
+        path: "/garcons/convidar",
         roles: ["ROLE_CLIENT", "CLIENT"],
       },
     ],
